@@ -39,7 +39,7 @@
     </div>
     <div class="media-grid">
       {{ range first 4 (where .Site.RegularPages "Section" "media") }}
-      <a href="{{ with .Params.external_url }}{{ . }}{{ else }}{{ .Permalink }}{{ end }}" class="media-item"{{ with .Params.external_url }} target="_blank" rel="noopener"{{ end }}>
+      <a href="{{ .Permalink }}" class="media-item">
         <div class="media-thumb{{ if or (eq .Params.type_label "TV") (eq .Params.type_label "Assembly") }} has-play{{ end }}">
           {{ with .Params.youtube_id }}
           <img src="https://img.youtube.com/vi/{{ . }}/mqdefault.jpg" alt="">
