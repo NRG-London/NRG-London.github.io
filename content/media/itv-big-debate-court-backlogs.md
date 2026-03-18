@@ -8,7 +8,7 @@ external_url: ""
 summary: "Panellist on ITV London's Late Debate, discussing the Iran war and Al-Quds march ban, the court backlog crisis, and protecting children online."
 ---
 
-Appeared on ITV London's The Late Debate alongside Rupa Huq MP (Labour, Ealing Central & Acton) and Helen Maguire MP (Liberal Democrat, Epsom & Ewell), hosted by Alistair Stewart. The programme covered three topics with a London focus.
+Appeared on ITV London's The Late Debate alongside Rupa Huq MP (Labour, Ealing Central & Acton) and Helen Maguire MP (Liberal Democrat, Epsom & Ewell), hosted by Simon Harris, ITV London's Political Correspondent. The programme covered three topics with a London focus.
 
 ## The Iran war and the Al-Quds Day march
 
