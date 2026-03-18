@@ -41,8 +41,10 @@
       {{ range first 4 (where .Site.RegularPages "Section" "media") }}
       <a href="{{ .Permalink }}" class="media-item">
         <div class="media-thumb{{ if or (eq .Params.type_label "TV") (eq .Params.type_label "Assembly") }} has-play{{ end }}">
-          {{ with .Params.youtube_id }}
-          <img src="https://img.youtube.com/vi/{{ . }}/mqdefault.jpg" alt="">
+          {{ if .Params.youtube_id }}
+          <img src="https://img.youtube.com/vi/{{ .Params.youtube_id }}/mqdefault.jpg" alt="">
+          {{ else if .Params.thumbnail }}
+          <img src="{{ .Params.thumbnail }}" alt="">
           {{ end }}
         </div>
         <div class="media-info">

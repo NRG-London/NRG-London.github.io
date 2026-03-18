@@ -4,6 +4,7 @@ date: 2026-03-13
 type_label: "Op-Ed"
 outlet: "ConservativeHome"
 youtube_id: ""
+thumbnail: "/images/media/conservativehome-affordable-housing.jpg"
 external_url: "https://conservativehome.com/2026/03/13/neil-garratt-and-luke-robert-black-stop-building-affordable-housing-build-subsidised-instead/"
 summary: "Joint article with Luke Robert Black arguing that the term 'affordable housing' is misleading and should be replaced with 'subsidised housing' to enable honest debate."
 ---
