@@ -1,0 +1,33 @@
+{{ define "main" }}
+
+<div class="page-header">
+  <a href="/media/" class="back-link">&larr; All media</a>
+  <h1>{{ .Title }}</h1>
+  <div class="page-meta">
+    <span class="tag">{{ .Params.type_label }}</span>
+    <span>{{ .Params.outlet }}</span>
+    <span>{{ .Date.Format "2 January 2006" }}</span>
+  </div>
+</div>
+
+<div class="page-content">
+  {{ with .Params.youtube_id }}
+  <div class="video-embed">
+    <iframe
+      src="https://www.youtube-nocookie.com/embed/{{ . }}"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen
+      loading="lazy"
+      title="{{ $.Title }}">
+    </iframe>
+  </div>
+  {{ end }}
+
+  {{ .Content }}
+
+  {{ with .Params.external_url }}
+  <p><a href="{{ . }}" target="_blank" rel="noopener">Read the full article &rarr;</a></p>
+  {{ end }}
+</div>
+
+{{ end }}

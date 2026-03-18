@@ -1,0 +1,53 @@
+{{ define "main" }}
+
+<div class="archive-header">
+  <h1>In the Media</h1>
+  <p>TV appearances, op-eds, Assembly scrutiny clips, and more.</p>
+</div>
+
+<div class="archive-content">
+  <div class="filter-bar">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="tv">TV</button>
+    <button class="filter-btn" data-filter="op-ed">Op-Ed</button>
+    <button class="filter-btn" data-filter="assembly">Assembly</button>
+    <button class="filter-btn" data-filter="radio">Radio</button>
+    <button class="filter-btn" data-filter="podcast">Podcast</button>
+  </div>
+
+  <div class="media-grid media-grid--light">
+    {{ range .RegularPages }}
+    <a href="{{ with .Params.external_url }}{{ . }}{{ else }}{{ .Permalink }}{{ end }}" class="media-item" data-type="{{ .Params.type_label | urlize }}"{{ with .Params.external_url }} target="_blank" rel="noopener"{{ end }}>
+      <div class="media-thumb{{ if or (eq .Params.type_label "TV") (eq .Params.type_label "Assembly") }} has-play{{ end }}">
+        {{ with .Params.youtube_id }}
+        <img src="https://img.youtube.com/vi/{{ . }}/mqdefault.jpg" alt="">
+        {{ end }}
+      </div>
+      <div class="media-info">
+        <span class="media-type-badge badge-{{ .Params.type_label | urlize }}">{{ .Params.type_label }}</span>
+        <h4>{{ .Title }}</h4>
+        <div class="media-meta">{{ .Params.outlet }} &middot; {{ .Date.Format "2 January 2006" }}</div>
+      </div>
+    </a>
+    {{ end }}
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.filter-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    this.classList.add('active');
+    var filter = this.getAttribute('data-filter');
+    document.querySelectorAll('.media-item').forEach(function(item) {
+      if (filter === 'all' || item.getAttribute('data-type') === filter) {
+        item.style.display = '';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  });
+});
+</script>
+
+{{ end }}

@@ -1,0 +1,17 @@
+{{ define "main" }}
+
+<div class="page-header">
+  <a href="/campaigns/" class="back-link">&larr; All campaigns</a>
+  <h1>{{ .Title }}</h1>
+  <div class="page-meta">
+    <span class="tag">{{ .Params.category }}</span>
+    <span>{{ .Params.status | title }}</span>
+    <span>{{ .Date.Format "January 2006" }}</span>
+  </div>
+</div>
+
+<div class="page-content">
+  {{ .Content }}
+</div>
+
+{{ end }}

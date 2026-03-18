@@ -1,0 +1,35 @@
+{{ define "main" }}
+
+<div class="archive-header">
+  <h1>Campaigns</h1>
+  <p>Holding the Mayor and City Hall to account — from transport and policing to housing and finance.</p>
+</div>
+
+<div class="archive-content">
+  {{ $active := where .RegularPages ".Params.status" "active" }}
+  {{ $other := where .RegularPages ".Params.status" "!=" "active" }}
+
+  {{ if $active }}
+  <div class="section-header">
+    <h2>Active</h2>
+  </div>
+  <div class="campaigns-grid" style="margin-bottom: 3rem;">
+    {{ range $active }}
+      {{ partial "campaign-card.html" . }}
+    {{ end }}
+  </div>
+  {{ end }}
+
+  {{ if $other }}
+  <div class="section-header">
+    <h2>Previous Campaigns &amp; Research</h2>
+  </div>
+  <div class="campaigns-grid">
+    {{ range $other }}
+      {{ partial "campaign-card.html" . }}
+    {{ end }}
+  </div>
+  {{ end }}
+</div>
+
+{{ end }}

@@ -1,0 +1,155 @@
+{{ define "main" }}
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-text">
+    <div class="hero-label">London Assembly Member</div>
+    <h1>Neil Garratt</h1>
+    <p class="hero-intro">{{ .Params.hero_intro | safeHTML }}</p>
+  </div>
+  <div class="hero-photo">
+    <div class="photo-frame">
+      <img src="/images/neil-portrait.jpg" alt="Neil Garratt">
+    </div>
+    <div class="photo-caption">{{ .Params.photo_caption }}</div>
+  </div>
+</header>
+
+<!-- CAMPAIGNS -->
+<section id="campaigns">
+  <div class="container">
+    <div class="section-header">
+      <h2>Current Campaigns</h2>
+      <a href="/campaigns/" class="view-all">View all &rarr;</a>
+    </div>
+    <div class="campaigns-grid">
+      {{ range first 3 (where (where .Site.RegularPages "Section" "campaigns") ".Params.status" "active") }}
+        {{ partial "campaign-card.html" . }}
+      {{ end }}
+    </div>
+  </div>
+</section>
+
+<!-- MEDIA -->
+<div class="band" id="media">
+  <div class="band-inner">
+    <div class="section-header">
+      <h2>In the Media</h2>
+      <a href="/media/" class="view-all">Full archive &rarr;</a>
+    </div>
+    <div class="media-grid">
+      {{ range first 4 (where .Site.RegularPages "Section" "media") }}
+      <a href="{{ with .Params.external_url }}{{ . }}{{ else }}{{ .Permalink }}{{ end }}" class="media-item"{{ with .Params.external_url }} target="_blank" rel="noopener"{{ end }}>
+        <div class="media-thumb{{ if or (eq .Params.type_label "TV") (eq .Params.type_label "Assembly") }} has-play{{ end }}">
+          {{ with .Params.youtube_id }}
+          <img src="https://img.youtube.com/vi/{{ . }}/mqdefault.jpg" alt="">
+          {{ end }}
+        </div>
+        <div class="media-info">
+          <span class="media-type-badge badge-{{ .Params.type_label | urlize }}">{{ .Params.type_label }}</span>
+          <h4>{{ .Title }}</h4>
+          <div class="media-meta">{{ .Params.outlet }} &middot; {{ .Date.Format "January 2006" }}</div>
+        </div>
+      </a>
+      {{ end }}
+    </div>
+  </div>
+</div>
+
+<!-- NEWSLETTER -->
+<section id="newsletter">
+  <div class="container">
+    <div class="section-header">
+      <h2>Newsletter</h2>
+      <a href="{{ .Site.Params.substackURL }}" class="view-all" target="_blank" rel="noopener">Subscribe on Substack &rarr;</a>
+    </div>
+    <div class="newsletter-section">
+      <div class="newsletter-about">
+        <h3>{{ .Params.newsletter_title }}</h3>
+        <p>{{ .Params.newsletter_description }}</p>
+        <p>Delivered free to your inbox via Substack.</p>
+        <a href="{{ .Site.Params.substackURL }}" class="substack-btn" target="_blank" rel="noopener">
+          <span>Subscribe free</span>
+          <span>&rarr;</span>
+        </a>
+      </div>
+      <div class="recent-posts" id="substack-feed">
+        <!-- Populated by JavaScript from Substack RSS -->
+        <noscript>
+          <p><a href="{{ .Site.Params.substackURL }}">Read the newsletter on Substack &rarr;</a></p>
+        </noscript>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="container">
+    <div class="section-header">
+      <h2>About</h2>
+    </div>
+    <div class="bio-layout">
+      <div class="bio-text">
+        {{ .Content }}
+      </div>
+      <div class="bio-sidebar">
+        <h4>At a Glance</h4>
+        <ul>
+          {{ range .Params.sidebar_facts }}
+          <li>{{ . }}</li>
+          {{ end }}
+        </ul>
+        <div class="party-badge">
+          <img class="tree-logo" src="/images/conservative-logo.png" alt="Conservative Party">
+          <span class="party-badge-text">Conservative Party</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<div class="contact-band" id="contact">
+  <div class="contact-inner">
+    <h2>Get in Touch</h2>
+    <p>Whether it's a local issue in Croydon or Sutton, a question about the Assembly's work, or a media enquiry.</p>
+    <a href="mailto:{{ .Site.Params.email }}" class="contact-email">{{ .Site.Params.email }}</a>
+    <div class="social-links">
+      {{ with .Site.Params.social.twitter }}<a href="{{ . }}" target="_blank" rel="noopener">Twitter / X</a>{{ end }}
+      {{ with .Site.Params.social.youtube }}<a href="{{ . }}" target="_blank" rel="noopener">YouTube</a>{{ end }}
+      {{ with .Site.Params.social.substack }}<a href="{{ . }}" target="_blank" rel="noopener">Substack</a>{{ end }}
+      {{ with .Site.Params.social.linkedin }}<a href="{{ . }}" target="_blank" rel="noopener">LinkedIn</a>{{ end }}
+    </div>
+  </div>
+</div>
+
+<!-- Substack RSS Feed Script -->
+<script>
+(function() {
+  var feedURL = '{{ .Site.Params.substackRSS }}';
+  var apiURL = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feedURL);
+  var container = document.getElementById('substack-feed');
+
+  fetch(apiURL)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data.items || !data.items.length) return;
+      var html = '';
+      data.items.slice(0, 4).forEach(function(item) {
+        var date = new Date(item.pubDate);
+        var month = date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+        html += '<a href="' + item.link + '" class="post-item" target="_blank" rel="noopener">';
+        html += '<div class="post-date">' + month + '</div>';
+        html += '<div class="post-title">' + item.title + '</div>';
+        html += '</a>';
+      });
+      container.innerHTML = html;
+    })
+    .catch(function() {
+      container.innerHTML = '<p><a href="' + feedURL.replace('/feed', '') + '">Read the newsletter on Substack &rarr;</a></p>';
+    });
+})();
+</script>
+
+{{ end }}

@@ -1,0 +1,47 @@
+baseURL = "https://nrg-london.github.io/"
+languageCode = "en-gb"
+title = "Neil Garratt — London Assembly"
+paginate = 12
+
+[params]
+  description = "Neil Garratt, Conservative London Assembly Member for Croydon & Sutton. Chair of the Budget & Performance Committee."
+  author = "Neil Garratt"
+  email = "London@NeilGarratt.com"
+  substackURL = "https://neilgarratt.substack.com"
+  substackRSS = "https://neilgarratt.substack.com/feed"
+  imprint = "Promoted by Ian Parker on behalf of Neil Garratt, both of 36 Brighton Road, Purley, CR8 2LG."
+
+  [params.social]
+    twitter = "https://twitter.com/NeilGarratt"
+    youtube = ""
+    substack = "https://neilgarratt.substack.com"
+    linkedin = ""
+
+[taxonomies]
+  category = "categories"
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+
+[outputs]
+  home = ["HTML"]
+
+[menu]
+  [[menu.main]]
+    name = "About"
+    url = "/about/"
+    weight = 1
+  [[menu.main]]
+    name = "Campaigns"
+    url = "/campaigns/"
+    weight = 2
+  [[menu.main]]
+    name = "Media"
+    url = "/media/"
+    weight = 3
+  [[menu.main]]
+    name = "Newsletter"
+    url = "#newsletter"
+    weight = 4

@@ -1,0 +1,9 @@
+<div class="video-embed">
+  <iframe
+    src="https://www.youtube-nocookie.com/embed/{{ .Get 0 }}"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowfullscreen
+    loading="lazy"
+    title="{{ with .Get 1 }}{{ . }}{{ else }}Video{{ end }}">
+  </iframe>
+</div>
