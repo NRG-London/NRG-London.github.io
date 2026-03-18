@@ -1,6 +1,6 @@
 ---
 title: "The Late Debate: London feels the impact of the Iran war"
-date: 2026-03-13
+date: 2026-03-12
 type_label: "TV"
 outlet: "ITV London"
 youtube_id: "qyNMM6e05DY"
