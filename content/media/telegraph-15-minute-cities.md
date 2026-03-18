@@ -4,7 +4,7 @@ date: 2023-03-05
 type_label: "Op-Ed"
 outlet: "The Sunday Telegraph"
 youtube_id: ""
-thumbnail: ""
+thumbnail: "/images/media/telegraph-15-minute-cities.jpg"
 external_url: "https://www.telegraph.co.uk/news/2023/03/05/15-minute-city-isnt-conspiracy-just-bad-idea/"
 summary: "Arguing that 15-minute cities aren't a conspiracy but ignore how cities actually work — and risk dismantling the dynamism that makes them thrive."
 ---

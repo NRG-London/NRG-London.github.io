@@ -4,8 +4,8 @@ date: 2025-04-22
 type_label: "Op-Ed"
 outlet: "Greater London Project"
 youtube_id: ""
-thumbnail: ""
-external_url: ""
+thumbnail: "/images/media/glp-car-ownership-two-londons.jpg"
+external_url: "https://www.greaterlondon.co/p/a-tale-of-two-sub-regional-urban"
 summary: "Analysis of TfL's own data showing London is two distinct transport cities — and one-size-fits-all anti-car policies ignore the reality of how outer London lives."
 ---
 

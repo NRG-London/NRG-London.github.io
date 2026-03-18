@@ -4,8 +4,8 @@ date: 2025-11-01
 type_label: "Assembly"
 outlet: "London Assembly Budget & Performance Committee"
 youtube_id: ""
-thumbnail: ""
-external_url: ""
+thumbnail: "/images/media/assembly-capital-projects-foreword.jpg"
+external_url: "https://www.london.gov.uk/who-we-are/what-london-assembly-does/london-assembly-work/london-assembly-publications/euston-we-have-problem-mind-funding-gap"
 summary: "Foreword to the London Assembly report on capital projects, arguing that modular, repeatable designs and local funding can break the cycle of slow, expensive infrastructure."
 ---
 
