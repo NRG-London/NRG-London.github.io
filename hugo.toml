@@ -9,7 +9,7 @@ paginate = 12
   email = "London@NeilGarratt.com"
   substackURL = "https://neilgarratt.substack.com"
   substackRSS = "https://neilgarratt.substack.com/feed"
-  imprint = "Promoted by Ian Parker on behalf of Neil Garratt, both of 36 Brighton Road, Purley, CR8 2LG."
+  imprint = "Promoted by Neil Garratt, Donnington House, 2a Sutton Court Road, Sutton, SM1 4SY."
 
   [params.social]
     twitter = "https://twitter.com/NeilGarratt"
