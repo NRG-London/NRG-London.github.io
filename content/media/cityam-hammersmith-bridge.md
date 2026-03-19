@@ -13,11 +13,7 @@ Published in CityAM, 4 February 2026.
 
 ## The argument
 
-Hammersmith Bridge has been closed to motor traffic for seven years — a national embarrassment that severs communities and symbolises a nation going backwards. The article works through who could pay for the £250m replacement and eliminates each candidate in turn: the borough cannot afford it, TfL has its own growing backlog of £400m per year in deferred maintenance, and the City Bridge Foundation — which has kept London Bridge standing for 900 years — should not be punished for being the one institution that does its job properly.
-
-That leaves the government. It hesitates to set a precedent, but as Sherlock Holmes would observe: when you have eliminated the impossible, whatever remains must be the truth. No other body can take on Hammersmith Bridge, Broadmead Road bridge in Redbridge (also closed indefinitely), and whichever bridge, road or tunnel fails next.
-
-The deeper point is that the sight of our rundown Victorian infrastructure should jolt us out of a degrowth daydream. Britain must recommit to growth and productivity — which won't solve everything, but in the end will solve almost everything. If nothing else, it will pay for a new bridge.
+Hammersmith Bridge has been closed to motor traffic for seven years. Working through who could pay for the £250m replacement — the borough, TfL, the City Bridge Foundation — and eliminating each, the article concludes that only the government can and must act. The sight of our rundown Victorian infrastructure should jolt Britain out of its degrowth daydream and back to a commitment to growth.
 
 ---
 

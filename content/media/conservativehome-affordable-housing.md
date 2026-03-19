@@ -13,13 +13,7 @@ Joint article with Luke Robert Black MBE, Chairman of the LGBT+ Conservatives, p
 
 ## The argument
 
-The term "affordable housing" misleads the public. When people hear it, they assume it means housing that ordinary people can afford on ordinary wages. In reality, it means housing where someone else — the taxpayer or the buyer next door paying above market rate — is subsidising part of the cost. It is subsidised housing, and we should call it that.
-
-This matters because the phrase is routinely used to block, delay or shrink housing developments. Councillors, activist groups and residents object to schemes for lacking "affordable housing" without understanding the trade-offs: more subsidy requirements mean higher costs, longer timelines, and ultimately fewer homes built.
-
-In London, where land and construction costs have soared, the viability crisis is acute — house-building is down 84 per cent since Boris Johnson's Mayoralty, and Molior reports that across half the city no new housing development is viable for developers. Piling on subsidy requirements makes this worse, not better.
-
-The proposed fix is simple but necessary: replace the term "affordable housing" with "subsidised housing" in all future discussions, planning committees and policy debates. This won't solve the housing crisis alone, but it forces honesty about who is paying, what the real costs are, and what trade-offs are being made — a precondition for any serious housing debate.
+"Affordable housing" doesn't mean housing people can afford — it means housing where someone else is subsidising the cost. The term misleads the public and is routinely used to block, delay or shrink developments. Replacing it with the honest term "subsidised housing" won't solve the crisis alone, but it forces transparency about who is paying and what trade-offs are being made.
 
 ---
 
