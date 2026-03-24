@@ -10,6 +10,7 @@ paginate = 12
   substackURL = "https://neilgarratt.substack.com"
   substackRSS = "https://neilgarratt.substack.com/feed"
   imprint = "Promoted by Neil Garratt, Donnington House, 2a Sutton Court Road, Sutton, SM1 4SY."
+  googleAnalyticsMeasurementID = "G-WCX2010C7W"
 
   [params.social]
     twitter = "https://twitter.com/NeilGarratt"
