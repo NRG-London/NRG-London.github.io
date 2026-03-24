@@ -861,3 +861,42 @@ a:hover { color: var(--ink); }
   .page-header, .archive-header { padding: 6rem 1.25rem 2rem; }
   .page-content, .archive-content { padding: 1.5rem 1.25rem 3rem; }
 }
+
+/* 404 page */
+.error-page {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 8rem 1.5rem 4rem;
+  text-align: center;
+}
+.error-page h1 {
+  font-family: var(--serif);
+  font-size: 2rem;
+  color: var(--ink);
+  margin-bottom: 2rem;
+}
+.error-photo {
+  max-width: 320px;
+  margin: 0 auto 2rem;
+}
+.error-photo img {
+  width: 100%;
+  border-radius: 6px;
+}
+.error-haiku {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.15rem;
+  line-height: 2;
+  color: var(--mid-grey);
+  margin-bottom: 2rem;
+}
+.error-home {
+  font-family: var(--sans);
+  font-weight: 600;
+  color: var(--blue);
+  text-decoration: none;
+}
+.error-home:hover {
+  color: var(--blue-dark);
+}
