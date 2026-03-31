@@ -123,6 +123,10 @@ a:hover { color: var(--ink); }
   padding: 0 2rem;
 }
 
+section {
+  padding: 5rem 2rem;
+}
+
 .section-padding {
   padding: 5rem 2rem;
 }
