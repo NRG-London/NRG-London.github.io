@@ -45,4 +45,4 @@ The short-termism is glaring. By trying to pump as much tax as possible from the
 
 The capital deserves a Mayor who knows in their bones that prosperity does not come from slicing the pie ever-more finely, but from letting people bake more and bigger pies. A Mayor who sees that when businesses succeed, the benefits flow to everyone: to the companies in their supply chains, to the employees who see their pay rise, to the wider economy that benefits from their spending. My report, which you can read at the link above, shows how Sadiq Khan could be more pro-business and unlock the abundant potential in London. Or, on the off-chance he chooses not to listen, how a future Conservative Mayor can bring London galloping back.
 
-*Neil Garratt is London Assembly and the London Assembly member for Croydon and Sutton*
+*Neil Garratt is the London Assembly member for Croydon and Sutton*
