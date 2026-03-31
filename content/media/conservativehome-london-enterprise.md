@@ -15,6 +15,8 @@ Published in ConservativeHome, 27 March 2026.
 
 London risks losing its most ambitious companies to places like America where funding and support for growth are more readily available. The capital needs mayoral leadership that genuinely believes in enterprise and is willing to back businesses looking to scale.
 
+The article is to launch my new report, [read the report online](https://www.cityhallconservatives.com/post/economythriving).
+
 ---
 
 ## Full article
@@ -41,6 +43,6 @@ Tax and bureaucracy came up repeatedly. Labour's jobs tax is predictably cutting
 
 The short-termism is glaring. By trying to pump as much tax as possible from the private sector, from the point of sale to the back office costs, Labour are blocking companies from achieving the long-term success that would generate natural increases in tax revenue. Not to mention creating jobs, selling goods and services to willing buyers, and inventing the products of the future we've barely dreamed of. Churchill's willing horse can pull the cart a long way, but not if you keep loading it with rocks.
 
-The capital deserves a Mayor who knows in their bones that prosperity does not come from slicing the pie ever-more finely, but from letting people bake more and bigger pies. A Mayor who sees that when businesses succeed, the benefits flow to everyone: to the companies in their supply chains, to the employees who see their pay rise, to the wider economy that benefits from their spending. My report, which you can read here, shows how Sadiq Khan could be more pro-business and unlock the abundant potential in London. Or, on the off-chance he chooses not to listen, how a future Conservative Mayor can bring London galloping back.
+The capital deserves a Mayor who knows in their bones that prosperity does not come from slicing the pie ever-more finely, but from letting people bake more and bigger pies. A Mayor who sees that when businesses succeed, the benefits flow to everyone: to the companies in their supply chains, to the employees who see their pay rise, to the wider economy that benefits from their spending. My report, which you can read at the link above, shows how Sadiq Khan could be more pro-business and unlock the abundant potential in London. Or, on the off-chance he chooses not to listen, how a future Conservative Mayor can bring London galloping back.
 
-*Neil Garratt is the Leader of the Conservative Group on the London Assembly and the London Assembly member for Croydon and Sutton*
+*Neil Garratt is London Assembly and the London Assembly member for Croydon and Sutton*
