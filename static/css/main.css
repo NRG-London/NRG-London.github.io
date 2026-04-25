@@ -13,7 +13,7 @@
   --blue-light: #E2EEF7;
   --blue-dark: #004d80;
   --blue-muted: #5a9fd4;
-  --deep: #1a2332;
+  --deep: #243142;
   --white: #ffffff;
   --serif: 'Libre Baskerville', Georgia, serif;
   --sans: 'DM Sans', system-ui, sans-serif;
@@ -206,7 +206,7 @@ section {
 
 .hero-intro {
   font-size: 1.15rem;
-  color: var(--mid-grey);
+  color: rgb(26 35 50 / 0.72);
   line-height: 1.7;
   max-width: 520px;
   font-weight: 300;
@@ -222,7 +222,8 @@ section {
   aspect-ratio: 3/4;
   border-radius: 2px;
   overflow: hidden;
-  border: 3px solid var(--blue);
+  border: 1px solid var(--warm-grey);
+  box-shadow: inset 0 1px 3px rgba(26, 35, 50, 0.06);
 }
 
 .hero-photo .photo-frame img {
@@ -384,11 +385,14 @@ section {
   border-radius: 2px;
 }
 
-.badge-tv { background: var(--blue); color: white; }
-.badge-op-ed { background: rgba(255,255,255,0.15); color: #f3f6f4; }
-.badge-assembly { background: #3d6a8e; color: white; }
-.badge-radio { background: #6b5b7b; color: white; }
-.badge-podcast { background: #5b7b6b; color: white; }
+.badge-tv,
+.badge-op-ed,
+.badge-assembly,
+.badge-radio,
+.badge-podcast {
+  background: var(--blue);
+  color: white;
+}
 
 /* Media items on light background (archive page) */
 .media-grid--light .media-item {
@@ -405,11 +409,6 @@ section {
 
 .media-grid--light .media-thumb {
   background: var(--blue-light);
-}
-
-.media-grid--light .media-type-badge.badge-op-ed {
-  background: var(--warm-grey);
-  color: var(--ink);
 }
 
 .media-grid--light .media-meta {
@@ -451,6 +450,11 @@ section {
   font-size: 0.95rem;
 }
 
+.newsletter-about .subscriber-count {
+  color: var(--ink);
+  font-weight: 500;
+}
+
 .substack-btn {
   display: inline-flex;
   align-items: center;
@@ -489,20 +493,18 @@ section {
 .post-item:first-child { border-top: 1px solid var(--warm-grey); }
 .post-item:hover { padding-left: 0.5rem; }
 
-.post-date {
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--mid-grey);
-  margin-bottom: 0.25rem;
-}
-
 .post-title {
   font-family: var(--serif);
   font-size: 0.95rem;
   font-weight: 700;
   line-height: 1.4;
+  margin-bottom: 0.35rem;
+}
+
+.post-desc {
+  font-size: 0.85rem;
+  color: var(--mid-grey);
+  line-height: 1.5;
 }
 
 /* ── ABOUT / BIO ── */

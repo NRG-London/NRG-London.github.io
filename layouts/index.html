@@ -69,7 +69,7 @@
       <div class="newsletter-about">
         <h3>{{ .Params.newsletter_title }}</h3>
         <p>{{ .Params.newsletter_description }}</p>
-        <p>Delivered free to your inbox via Substack.</p>
+        <p class="subscriber-count">More than 2,000 people subscribe.</p>
         <a href="{{ .Site.Params.substackURL }}" class="substack-btn" target="_blank" rel="noopener">
           <span>Subscribe free</span>
           <span>&rarr;</span>
@@ -133,17 +133,25 @@
   var apiURL = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feedURL);
   var container = document.getElementById('substack-feed');
 
+  var stripHTML = function(s) {
+    var d = document.createElement('div');
+    d.innerHTML = s;
+    var t = (d.textContent || d.innerText || '').trim();
+    if (t.length > 140) t = t.slice(0, 140).replace(/\s+\S*$/, '') + '…';
+    return t;
+  };
+
   fetch(apiURL)
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (!data.items || !data.items.length) return;
       var html = '';
       data.items.slice(0, 4).forEach(function(item) {
-        var date = new Date(item.pubDate);
-        var month = date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
         html += '<a href="' + item.link + '" class="post-item" target="_blank" rel="noopener">';
-        html += '<div class="post-date">' + month + '</div>';
         html += '<div class="post-title">' + item.title + '</div>';
+        if (item.description) {
+          html += '<div class="post-desc">' + stripHTML(item.description) + '</div>';
+        }
         html += '</a>';
       });
       container.innerHTML = html;
