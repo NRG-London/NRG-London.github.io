@@ -54,7 +54,7 @@
   function apply() {
     items.forEach(function(el) {
       var match = currentFilter === 'all' || el.getAttribute('data-type') === currentFilter;
-      el.style.display = match ? '' : 'none';
+      el.classList.toggle('filter-hidden', !match);
     });
     if (typeof window.applyPagination === 'function') window.applyPagination();
   }
@@ -87,7 +87,7 @@
   window.resetPaginationLimit = function() { visibleLimit = BATCH; };
 
   window.applyPagination = function() {
-    var visible = items.filter(function(el) { return el.style.display !== 'none'; });
+    var visible = items.filter(function(el) { return !el.classList.contains('filter-hidden'); });
     var shown = Math.min(visibleLimit, visible.length);
 
     visible.forEach(function(el, i) {

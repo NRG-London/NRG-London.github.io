@@ -858,6 +858,8 @@ section {
   background: var(--blue-light);
 }
 
+.media-item.filter-hidden { display: none; }
+
 /* Pagination — "Show older" progressive disclosure on media archive */
 .pagination {
   display: flex;
