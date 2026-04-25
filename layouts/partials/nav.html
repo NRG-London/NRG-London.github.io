@@ -2,7 +2,10 @@
   <div class="nav-inner">
     <a href="/" class="nav-brand">
       <img class="party-logo" src="/images/conservative-tree.png" alt="Conservatives">
-      Neil Garratt
+      <picture class="nav-wordmark">
+        <source media="(max-width: 480px)" srcset="/images/wordmark-short.svg">
+        <img src="/images/wordmark-full.svg" alt="Neil Garratt">
+      </picture>
     </a>
     <button class="nav-toggle" aria-label="Toggle menu" onclick="document.querySelector('.nav-links').classList.toggle('open')">
       <span></span><span></span><span></span>
