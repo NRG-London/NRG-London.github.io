@@ -10,7 +10,7 @@
   </div>
 </div>
 
-<div class="page-content">
+<div class="page-content{{ if eq .Params.type_label "Op-Ed" }} op-ed{{ end }}">
   {{ with .Params.youtube_id }}
   <div class="video-embed">
     <iframe
@@ -25,8 +25,20 @@
 
   {{ .Content }}
 
+  {{ if eq .Params.type_label "Op-Ed" }}
+  <p class="article-foot-attribution">
+    First published in
+    {{ with .Params.external_url }}
+    <a href="{{ . }}" target="_blank" rel="noopener">{{ $.Params.outlet }}</a>,
+    {{ else }}
+    {{ .Params.outlet }},
+    {{ end }}
+    {{ .Date.Format "2 January 2006" }}.
+  </p>
+  {{ else }}
   {{ with .Params.external_url }}
-  <p><a href="{{ . }}" target="_blank" rel="noopener">Read the full article &rarr;</a></p>
+  <p><a href="{{ . }}" target="_blank" rel="noopener">Read on {{ $.Params.outlet }} &rarr;</a></p>
+  {{ end }}
   {{ end }}
 </div>
 

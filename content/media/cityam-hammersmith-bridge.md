@@ -9,19 +9,9 @@ external_url: "https://www.cityam.com/fix-hammersmith-bridge-to-jolt-britain-out
 summary: "Op-ed arguing that the Hammersmith Bridge saga is a symbol of national decline — and that only the government can and must pay to fix it."
 ---
 
-Published in CityAM, 4 February 2026.
-
-## The argument
+## Summary
 
 Hammersmith Bridge has been closed to motor traffic for seven years. Working through who could pay for the £250m replacement — the borough, TfL, the City Bridge Foundation — and eliminating each, the article concludes that only the government can and must act. The sight of our rundown Victorian infrastructure should jolt Britain out of its degrowth daydream and back to a commitment to growth.
-
----
-
-## Full article
-
-*Fix Hammersmith Bridge to jolt Britain out of degrowth daydream*
-
-*Neil Garratt*
 
 "When you have eliminated the impossible, whatever remains, however improbable, must be the truth." We might picture a bewhiskered Victorian Londoner contemplating those words in Arthur Conan Doyle's latest novel, The Sign of the Four, as he gazed across the Thames from Bazalgette's grand new Hammersmith Bridge, then just three years old. Now, dilapidation has seen it closed to motor traffic for seven years. Sherlock Holmes's famous maxim would lead him straight to the only answer to our present problem: the government must pay for Hammersmith Bridge.
 

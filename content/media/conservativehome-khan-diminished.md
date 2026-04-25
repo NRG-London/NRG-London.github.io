@@ -9,19 +9,9 @@ external_url: "https://conservativehome.com/2024/09/27/neil-garratt-no-longer-ab
 summary: "Starmer's refusal to give Khan more funding has demolished the Mayor's eight-year strategy of blaming government for his failures."
 ---
 
-Published in ConservativeHome, 27 September 2024.
-
-## The argument
+## Summary
 
 Starmer's rejection of Khan's pleas for more funding demolished the Mayor's eight-year political strategy of blaming the Conservative government for every failure. With a £21 billion annual budget, vast land holdings through GLAP, and a Business Rates deal that rewards economic growth, Khan has the tools to deliver — but years of populist fares freezes have hollowed out TfL's investment capacity. London is left with a lame duck Mayor bereft of strategy.
-
----
-
-## Full article
-
-*No longer able to blame the Conservatives, Khan is a diminished figure*
-
-*Neil Garratt*
 
 Last week, Sir Keir Starmer carefully straightened his tie, strode into the Downing Street garden, and effectively ended Sadiq Khan's political career – by rejecting the Mayor's pleas for more funding.
 

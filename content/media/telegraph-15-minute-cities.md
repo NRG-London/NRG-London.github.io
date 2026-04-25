@@ -9,19 +9,9 @@ external_url: "https://www.telegraph.co.uk/news/2023/03/05/15-minute-city-isnt-c
 summary: "Arguing that 15-minute cities aren't a conspiracy but ignore how cities actually work — and risk dismantling the dynamism that makes them thrive."
 ---
 
-Published in The Sunday Telegraph, 5 March 2023.
-
-## The argument
+## Summary
 
 The 15-minute city isn't a conspiracy — its advocates are sincere. But as urbanist Alain Bertaud showed, the idea that large cities can be broken into self-contained "urban villages" ignores how cities actually work. Cities create prosperity through specialisation and wide labour markets. The risk is that planners, finding people won't stay in their village voluntarily, resort to blocking routes elsewhere — dismantling the dynamism at the heart of the city.
-
----
-
-## Full article
-
-*The 15-minute city isn't a conspiracy. It's just a bad idea*
-
-*Neil Garratt*
 
 Wouldn't it be lovely to find most of what you need within a short walk of home? Advocates call it the 15-minute city and want everyone to enjoy this lifestyle. Opponents call it a conspiracy to trap people in their "urban village" by blocking roads and breaking up cities.
 

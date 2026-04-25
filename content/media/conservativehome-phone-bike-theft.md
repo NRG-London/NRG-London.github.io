@@ -9,19 +9,9 @@ external_url: "https://conservativehome.com/2025/02/28/neil-garratt-time-to-take
 summary: "Proposing practical steps to tackle London's epidemic of phone and bike theft, including a dedicated £7m Theft Reduction Unit and targeted policing of hotspots."
 ---
 
-Published in ConservativeHome, 28 February 2025.
-
-## The argument
+## Summary
 
 Every six minutes a Londoner has their phone stolen, yet cases are closed within 24 hours even when victims can track the stolen property. Just two council wards account for 40% of phone thefts and 10% of criminals are responsible for half of all thefts. The article proposes a dedicated £7 million Theft Reduction Unit, enhanced surveillance in hotspots, and stronger legislation against the organised crime groups directing these operations.
-
----
-
-## Full article
-
-*Time to take phone and bike theft seriously*
-
-*Neil Garratt*
 
 If you're reading this on your phone, I hope you've got a good grip, because every six minutes a Londoner has their phone stolen.
 

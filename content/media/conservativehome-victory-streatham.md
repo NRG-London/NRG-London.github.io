@@ -9,19 +9,9 @@ external_url: "https://conservativehome.com/2024/03/11/neil-garratt-victory-in-s
 summary: "How we forced Lambeth Labour to suspend the Streatham Wells LTN — and why TfL's own data shows there is no traffic crisis justifying these schemes."
 ---
 
-Published in ConservativeHome, 11 March 2024.
-
-## The argument
+## Summary
 
 After months of pressure, Lambeth Labour suspended the Streatham Wells LTN on 7 March 2024 and the A23 immediately flowed freely. TfL's own data shows that road traffic in London has been broadly stable for two decades despite a 22% population increase, and outer London congestion is unchanged in 15 years. The real cause of worsening inner London congestion -- less traffic but more delays -- is the proliferation of anti-car measures that create the very problem they claim to solve.
-
----
-
-## Full article
-
-*Victory in Streatham! Labour suspends Low Traffic Neighbourhood which made congestion worse*
-
-*Neil Garratt*
 
 Victory in Streatham! After months of denial and deflection, Lambeth Labour finally faced reality: the Streatham Wells Low Traffic Neighbourhood (LTN) was suspended on 7th March. And, in a shock to no one, the A23 Streatham High Road immediately flowed freely: the wall of buses gone, common sense ascendant. For now. Labour has retreated, but they will regroup and return. How do we prepare for that and how do we challenge LTNs elsewhere? I have some surprising evidence that rarely sees the light of day.
 

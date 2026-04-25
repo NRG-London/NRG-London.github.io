@@ -9,21 +9,9 @@ external_url: "https://conservativehome.com/2026/03/27/neil-garratt-london-needs
 summary: "Ambitious companies are increasingly relocating abroad where funding is more accessible — London needs a Mayor committed to supporting business growth and enterprise."
 ---
 
-Published in ConservativeHome, 27 March 2026.
+## Summary
 
-## The argument
-
-London risks losing its most ambitious companies to places like America where funding and support for growth are more readily available. The capital needs mayoral leadership that genuinely believes in enterprise and is willing to back businesses looking to scale.
-
-The article is to launch my new report, [read the report online](https://www.cityhallconservatives.com/post/economythriving).
-
----
-
-## Full article
-
-*London needs a Mayor who believes in enterprise*
-
-*Neil Garratt*
+London risks losing its most ambitious companies to places like America where funding and support for growth are more readily available. The capital needs mayoral leadership that genuinely believes in enterprise and is willing to back businesses looking to scale. The article launches my new report — [read it online](https://www.cityhallconservatives.com/post/economythriving).
 
 In 1959, Winston Churchill observed to his Woodford constituents:
 

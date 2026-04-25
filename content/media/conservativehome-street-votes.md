@@ -9,19 +9,9 @@ external_url: "https://conservativehome.com/2022/05/13/neil-garratt-what-street-
 summary: "Explaining the street votes policy announced in the Queen's Speech — not neighbours voting on kitchen extensions, but giving streets collective control over appropriate development."
 ---
 
-Published in ConservativeHome, 13 May 2022.
-
-## The argument
+## Summary
 
 Street votes, announced in the Queen's Speech, were widely misunderstood as neighbours voting on each other's extensions. In reality, they allow a two-thirds majority of street residents to agree what kind of development would fit their street — a mansard roof storey, a mews conversion, space for a growing family. It is not about forcing development but enabling it where residents want it, with their consent.
-
----
-
-## Full article
-
-*What street votes really means*
-
-*Neil Garratt*
 
 We awakened on Wednesday to a curious wooden rustling and rattling permeating our nation's airwaves, as if a bewildered pack of lost ramblers was thrashing vainly through dense unfamiliar woodland. It transpired that this commotion was the nation's political pundits grabbing the wrong end of a whole forest of wrong sticks, an then waving them furiously at Michael Gove.
 

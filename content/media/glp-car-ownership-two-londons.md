@@ -9,19 +9,9 @@ external_url: "https://www.greaterlondon.co/p/a-tale-of-two-sub-regional-urban"
 summary: "Analysis of TfL's own data showing London is two distinct transport cities — and one-size-fits-all anti-car policies ignore the reality of how outer London lives."
 ---
 
-Published in Greater London Project, 22 April 2025.
-
-## The argument
+## Summary
 
 TfL's own data reveals London as two distinct transport cities. In inner London, 62% of households are car-free; in outer London, where the majority of Londoners live, only a third manage without a car. Nearly 80% of couples with children own at least one vehicle. Despite more than a decade of campaigns, road traffic has been broadly stable for two decades. Transport policy crafted for a non-existent average Londoner is doomed.
-
----
-
-## Full article
-
-*A Tale of Two Sub-Regional Urban Zones, Or What Car Use Statistics Tell Us About Our City*
-
-*Neil Garratt*
 
 In the clamour for a greener, car-free London, planners and politicians have long pushed a 'one-size-fits-all' approach to travel. Yet beneath the London-wide averages lies a far more nuanced reality – one that reveals London as not one city, but two distinct halves living different transport lives.
 

@@ -9,19 +9,9 @@ external_url: "https://conservativehome.com/2024/07/04/neil-garratt-would-a-abou
 summary: "Election day warning: a Labour government risks importing failed Welsh school policies, Scottish rent controls, and Khan's mismanagement of TfL to suburban railways."
 ---
 
-Published in ConservativeHome, 4 July 2024.
-
-## The argument
+## Summary
 
 Published on election day 2024, this article warned that a Labour government would empower Mayor Khan to pursue three damaging agendas: importing Wales's failed education model into London's successful state schools, introducing Scottish-style rent controls that paradoxically drive rents up, and extending his mismanagement of TfL fares to suburban commuter railways.
-
----
-
-## Full article
-
-*Would a Labour government mean rent control in London?*
-
-*Neil Garratt*
 
 Today the stakes for Londoners have never been higher: for our children, for our city's renters, and for our rail commuters, a Labour government would be a disaster for London.
 

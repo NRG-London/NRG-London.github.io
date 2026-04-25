@@ -9,19 +9,9 @@ external_url: "https://conservativehome.com/2026/03/13/neil-garratt-and-luke-rob
 summary: "Joint article with Luke Robert Black arguing that the term 'affordable housing' is misleading and should be replaced with 'subsidised housing' to enable honest debate."
 ---
 
-Joint article with Luke Robert Black MBE, Chairman of the LGBT+ Conservatives, published on ConservativeHome.
-
-## The argument
+## Summary
 
 "Affordable housing" doesn't mean housing people can afford — it means housing where someone else is subsidising the cost. The term misleads the public and is routinely used to block, delay or shrink developments. Replacing it with the honest term "subsidised housing" won't solve the crisis alone, but it forces transparency about who is paying and what trade-offs are being made.
-
----
-
-## Full article
-
-*Neil Garratt and Luke Robert Black: Stop building affordable housing – build subsidised instead*
-
-*Neil Garratt AM is the Conservative Assembly member for Sutton and Croydon. Luke Robert Black MBE is the Chairman of the LGBT+ Conservatives and running for Newham Council.*
 
 If we ever want to have a sensible debate about making housing affordable, we must start by banning the phrase 'Affordable Housing'.
 
@@ -56,3 +46,5 @@ But housing profits offer even more immediate and visible advantages, leading to
 Because if developers make a profit, they are more incentivised to build communities and, importantly, increase their risk appetite. By ensuring stronger returns, we are more likely to see more diversity, more beauty and, chiefly, higher quality homes for Londoners. Isn't that what we all want?
 
 Banning the misleading phrase "affordable housing" for the honest, down-to-earth "subsidised housing" won't get us there in a single bound, but it will mean everyone knows what we're talking about.
+
+*Neil Garratt AM is the Conservative Assembly member for Sutton and Croydon. Luke Robert Black MBE is the Chairman of the LGBT+ Conservatives and running for Newham Council.*

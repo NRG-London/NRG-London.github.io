@@ -6,13 +6,26 @@
 </div>
 
 <div class="archive-content">
+  {{ $all := .RegularPages }}
+  {{ $labels := dict "tv" "TV" "op-ed" "Op-Ed" "assembly" "Assembly" "radio" "Radio" "podcast" "Podcast" }}
+  {{ $types := slice "tv" "op-ed" "assembly" "radio" "podcast" }}
   <div class="filter-bar">
-    <button class="filter-btn active" data-filter="all">All</button>
-    <button class="filter-btn" data-filter="tv">TV</button>
-    <button class="filter-btn" data-filter="op-ed">Op-Ed</button>
-    <button class="filter-btn" data-filter="assembly">Assembly</button>
-    <button class="filter-btn" data-filter="radio">Radio</button>
-    <button class="filter-btn" data-filter="podcast">Podcast</button>
+    <span class="filter-label">Filter</span>
+    <button class="chip active" data-filter="all">All <span class="count">{{ len $all }}</span></button>
+    {{ range $types }}
+      {{ $count := len (where $all "Params.type_label" "==" (index $labels .)) }}
+      {{ if gt $count 0 }}
+      <button class="chip" data-filter="{{ . }}">{{ index $labels . }} <span class="count">{{ $count }}</span></button>
+      {{ end }}
+    {{ end }}
+    <span class="filter-divider"></span>
+    <label class="filter-sort">
+      <span class="visually-hidden">Sort</span>
+      <select id="sort-select">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+      </select>
+    </label>
   </div>
 
   <div class="media-grid media-grid--light">
@@ -33,23 +46,99 @@
     </a>
     {{ end }}
   </div>
+
+  <div class="pagination" id="pagination">
+    <p class="pagination-count">Showing <b id="page-shown">0</b> of <b id="page-total">0</b></p>
+    <button id="show-more" class="pagination-btn">Show older &rarr;</button>
+  </div>
 </div>
 
 <script>
-document.querySelectorAll('.filter-btn').forEach(function(btn) {
-  btn.addEventListener('click', function() {
-    document.querySelectorAll('.filter-btn').forEach(function(b) { b.classList.remove('active'); });
-    this.classList.add('active');
-    var filter = this.getAttribute('data-filter');
-    document.querySelectorAll('.media-item').forEach(function(item) {
-      if (filter === 'all' || item.getAttribute('data-type') === filter) {
-        item.style.display = '';
-      } else {
-        item.style.display = 'none';
-      }
+(function() {
+  var grid = document.querySelector('.media-grid');
+  var items = Array.prototype.slice.call(grid.querySelectorAll('.media-item'));
+
+  items.forEach(function(el, i) { el.dataset.order = i; });
+
+  var currentFilter = 'all';
+  var currentSort = 'newest';
+
+  function apply() {
+    var sorted = items.slice().sort(function(a, b) {
+      var oa = +a.dataset.order, ob = +b.dataset.order;
+      return currentSort === 'oldest' ? ob - oa : oa - ob;
+    });
+    sorted.forEach(function(el) {
+      var match = currentFilter === 'all' || el.getAttribute('data-type') === currentFilter;
+      el.style.display = match ? '' : 'none';
+      grid.appendChild(el);
+    });
+    if (typeof window.resetPaginationLimit === 'function') window.resetPaginationLimit();
+    if (typeof window.applyPagination === 'function') window.applyPagination();
+  }
+
+  document.querySelectorAll('.chip').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.chip').forEach(function(b) { b.classList.remove('active'); });
+      this.classList.add('active');
+      currentFilter = this.getAttribute('data-filter');
+      apply();
     });
   });
-});
+
+  document.getElementById('sort-select').addEventListener('change', function() {
+    currentSort = this.value;
+    apply();
+  });
+
+  apply();
+})();
+</script>
+
+<script>
+(function() {
+  var BATCH = 12;
+  var grid = document.querySelector('.media-grid');
+  var items = Array.prototype.slice.call(grid.querySelectorAll('.media-item'));
+  var btn = document.getElementById('show-more');
+  var shownEl = document.getElementById('page-shown');
+  var totalEl = document.getElementById('page-total');
+  var pagBox = document.getElementById('pagination');
+  var visibleLimit = BATCH;
+
+  window.resetPaginationLimit = function() { visibleLimit = BATCH; };
+
+  window.applyPagination = function() {
+    var visible = items.filter(function(el) { return el.style.display !== 'none'; });
+    var shown = Math.min(visibleLimit, visible.length);
+
+    visible.forEach(function(el, i) {
+      el.style.display = (i < shown) ? '' : 'none';
+    });
+
+    if (visible.length <= BATCH) {
+      pagBox.style.display = 'none';
+      return;
+    }
+    pagBox.style.display = '';
+    shownEl.textContent = shown;
+    totalEl.textContent = visible.length;
+    var more = visible.length - shown;
+    if (more <= 0) {
+      btn.style.display = 'none';
+    } else {
+      btn.style.display = '';
+      btn.textContent = 'Show ' + Math.min(BATCH, more) + ' older →';
+    }
+  };
+
+  btn.addEventListener('click', function() {
+    visibleLimit += BATCH;
+    window.applyPagination();
+  });
+
+  window.applyPagination();
+})();
 </script>
 
 {{ end }}

@@ -9,19 +9,9 @@ external_url: "https://conservativehome.com/2023/10/23/neil-garratt-london-cant-
 summary: "A three-part recipe for unleashing London's potential: affordable housing, a transport system that expands opportunity, and a rejuvenated leisure economy."
 ---
 
-Published in ConservativeHome, 23 October 2023.
-
-## The argument
+## Summary
 
 London's potential rests on three ingredients: housing that normal people can afford, a transport system designed to expand travel horizons (not just change how people travel), and a rejuvenated leisure economy. Under Khan, TfL has lost sight of its core purpose, the Night Czar is gagged from criticising the Mayor, and the housing crisis deepens.
-
----
-
-## Full article
-
-*London can't thrive if couples hoping to start or grow their family are forced out*
-
-*Neil Garratt*
 
 Think of a city and we picture its built environment: the landmark buildings and streets; its bustling squares and tranquil parks; the famous monuments and iconic shops. But in truth, a city is its people. To unleash London's potential is really to unleash the potential of its people, both those already here and those around the world who aspire to be part of the next chapter in our ancient city's story.
 

@@ -9,19 +9,9 @@ external_url: "https://www.lbc.co.uk/article/sadiq-khans-budget-opinion-5HjdTYS_
 summary: "London Budget Day article exposing City Hall waste and presenting the Conservative Alternative Budget: freeze the Mayoral precept, cut deputy mayors, fund police and pothole repairs."
 ---
 
-Published in LBC, 26 February 2026.
-
-## The argument
+## Summary
 
 On London Budget Day, the Conservative Alternative Budget proposed freezing the Mayoral precept (up 80% under Khan), cutting five of nine deputy mayors, and redirecting savings to £22 million for frontline policing and £15 million annually for pothole repairs — all without tax rises or raiding reserves. City Hall HQ staff costs have ballooned from £36 million under Johnson to £122 million under Khan.
-
----
-
-## Full article
-
-*Nine deputy mayors, £200k each, and your council tax up*
-
-*Neil Garratt*
 
 What's the toughest pub quiz question in London? "Name the Deputy Mayors." If you struggled to bring even one to mind, I'll give you half a mark for knowing there are nine. Each costs around £200k in salary and benefits, not counting their personal support staff, but this is barely the start of the waste at City Hall. Since today is London Budget Day, let's lift the lid on the waste, the misplaced priorities, and imagine how things could be better.
 

@@ -9,19 +9,9 @@ external_url: "https://www.cityam.com/whitewash-croydon-tram-inquest-verdict-rai
 summary: "Response to the Sandilands tram crash inquest verdict, criticising the failure to call TfL or Tram Operations Ltd to give evidence."
 ---
 
-Published in CityAM, 22 July 2021.
-
-## The argument
+## Summary
 
 The inquest into the 2016 Sandilands tram crash returned a verdict of accidental death, but neither TfL nor Tram Operations Ltd were called to give evidence. There were serious unanswered questions about missing speed limit signs, inadequate fatigue management, and a culture of hiding safety problems. The pursuit of justice for the seven victims continues.
-
----
-
-## Full article
-
-*Whitewash: Croydon tram inquest verdict raises more questions than answers*
-
-*Neil Garratt*
 
 Today the inquest into the Sandilands tram crash concluded with the jury returning a disappointing verdict of accidental death. I share the anger that seven people's deaths are put down as simply an accident, when we have seen both the safety problems that the investigation brought to light, and the attempts to hide from scrutiny.
 

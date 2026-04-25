@@ -9,19 +9,9 @@ external_url: "https://www.cityam.com/dont-abolish-the-mayor-just-get-rid-of-sad
 summary: "Response to calls to scrap the GLA, arguing that the failures are Khan's, not the institution's — and abolition would send transport and policing powers back to Whitehall."
 ---
 
-Published in CityAM, 24 April 2025.
-
-## The argument
+## Summary
 
 Responding to Tony Lodge's call to scrap the GLA, this article argues that London's problems — transport dysfunction, rising crime, housing crisis — are the consequence of poor leadership, not a flawed institution. The Oyster card, Elizabeth Line, and Olympics all happened because a Mayor could drive them. If abolished, transport and policing powers would return to national government, making London a half-forgotten afterthought.
-
----
-
-## Full article
-
-*Don't abolish the Mayor, just get rid of Sadiq Khan*
-
-*Neil Garratt*
 
 Tony Lodge's recent article in City AM questioning the value of London's Mayoralty after 25 years provokes an important debate, but reaches the wrong conclusion. The problem facing London is not the institution of the Mayor or the London Assembly that scrutinises him – it's the incumbent, Sadiq Khan.
 
