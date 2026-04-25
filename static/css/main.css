@@ -1,8 +1,37 @@
 /* ================================================================
    neilgarratt.com — Main Stylesheet
    Palette: Sage Mist + Conservative Blue
-   Fonts: Libre Baskerville (serif), DM Sans (sans)
+   Fonts: Libre Baskerville (serif), DM Sans (sans) — self-hosted
    ================================================================ */
+
+@font-face {
+  font-family: 'Libre Baskerville';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/libre-baskerville.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Libre Baskerville';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/libre-baskerville.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Libre Baskerville';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/libre-baskerville-italic.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url('/fonts/dm-sans.woff2') format('woff2');
+}
 
 :root {
   --ink: #1a2332;
@@ -649,6 +678,13 @@ section {
   color: rgba(255,255,255,0.3);
   line-height: 1.6;
 }
+
+.site-footer a {
+  color: rgba(255,255,255,0.5);
+  text-decoration: none;
+}
+
+.site-footer a:hover { color: rgba(255,255,255,0.85); }
 
 /* ── SINGLE PAGE CONTENT (campaigns, media) ── */
 .page-header {
