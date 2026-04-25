@@ -44,5 +44,5 @@ paginate = 12
     weight = 3
   [[menu.main]]
     name = "Newsletter"
-    url = "#newsletter"
+    url = "/#newsletter"
     weight = 4
