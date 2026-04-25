@@ -1015,6 +1015,8 @@ section {
   line-height: 2;
   color: var(--mid-grey);
   margin-bottom: 2rem;
+  display: inline-block;
+  text-align: left;
 }
 .error-home {
   font-family: var(--sans);
