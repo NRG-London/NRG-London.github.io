@@ -7,7 +7,6 @@ newsletter_description: "A regular look at what's really happening in London gov
 sidebar_facts:
   - "Conservative AM for Croydon & Sutton"
   - "Chair, Budget & Performance Committee"
-  - "Belmont ward councillor"
   - "Background in IT networks"
   - "Constituent of Sutton for 20 years"
 ---

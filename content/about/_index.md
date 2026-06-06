@@ -15,5 +15,3 @@ The London Assembly exists to hold the Mayor of London to account. As an Assembl
 ## Background
 
 Before entering politics, I spent my career in IT, working on global data networks and large-scale project management. That background — the instinct to follow the data, check the assumptions, and read the small print — has become central to how I do the job.
-
-I've lived in Sutton for nearly twenty years and serve as a ward councillor in Belmont alongside my Assembly role.

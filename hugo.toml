@@ -34,10 +34,11 @@ paginate = 12
     name = "About"
     url = "/about/"
     weight = 1
-  [[menu.main]]
-    name = "Campaigns"
-    url = "/campaigns/"
-    weight = 2
+  # TEMP: Campaigns nav link hidden for launch — uncomment to restore.
+  #  [[menu.main]]
+  #    name = "Campaigns"
+  #    url = "/campaigns/"
+  #    weight = 2
   [[menu.main]]
     name = "Media"
     url = "/media/"
