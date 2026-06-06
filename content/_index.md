@@ -1,6 +1,6 @@
 ---
 title: "Neil Garratt — London Assembly"
-hero_intro: "<strong>Chair of the Budget &amp; Performance Committee</strong>, representing Croydon &amp; Sutton. Holding the Mayor and City Hall to account through forensic scrutiny, data-driven analysis, and a relentless focus on what matters to outer London."
+hero_intro: "<strong>Representing Croydon and Sutton</strong>,<br>Chair of the Budget &amp; Performance Committee. Holding the Mayor and City Hall to account through forensic scrutiny, data-driven analysis, and a relentless focus on what matters to London."
 photo_caption: "At the London Assembly, City Hall"
 newsletter_title: "The View from City Hall"
 newsletter_description: "A regular look at what's really happening in London government — the stories the Mayor would rather you didn't read. Data, detail, and the occasional dry observation."
