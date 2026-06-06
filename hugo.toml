@@ -1,5 +1,5 @@
 baseURL = "https://neilgarratt.com/"
-languageCode = "en-gb"
+locale = "en-GB"
 title = "Neil Garratt — London Assembly"
 paginate = 12
 
