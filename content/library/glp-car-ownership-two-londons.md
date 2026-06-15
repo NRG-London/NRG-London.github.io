@@ -1,4 +1,7 @@
 ---
+format: "oped"
+campaigns: []
+aliases: ["/media/glp-car-ownership-two-londons/"]
 title: "A tale of two sub-regional urban zones"
 date: 2025-04-22
 type_label: "Op-Ed"

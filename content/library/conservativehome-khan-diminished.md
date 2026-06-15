@@ -1,4 +1,7 @@
 ---
+format: "oped"
+campaigns: []
+aliases: ["/media/conservativehome-khan-diminished/"]
 title: "No longer able to blame the Conservatives, Khan is a diminished figure"
 date: 2024-09-27
 type_label: "Op-Ed"

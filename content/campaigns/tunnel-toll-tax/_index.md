@@ -1,8 +1,7 @@
 ---
 title: "Tunnel Toll Tax"
-date: 2025-03-01
+weight: 30
 category: "Transport"
-status: "active"
 summary: "FOI data reveals fine income exceeding toll income at the Blackwall and Silvertown tunnels. Demanding transparency on a scheme that's become a revenue trap, not a congestion tool."
 ---
 

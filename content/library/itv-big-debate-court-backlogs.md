@@ -1,4 +1,7 @@
 ---
+format: "appearance"
+campaigns: []
+aliases: ["/media/itv-big-debate-court-backlogs/"]
 title: "The Late Debate: London feels the impact of the Iran war"
 date: 2026-03-12
 type_label: "TV"

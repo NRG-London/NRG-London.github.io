@@ -1,4 +1,7 @@
 ---
+format: "oped"
+campaigns: []
+aliases: ["/media/conservativehome-rent-control/"]
 title: "Would a Labour government mean rent control in London?"
 date: 2024-07-04
 type_label: "Op-Ed"

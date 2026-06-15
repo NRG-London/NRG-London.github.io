@@ -1,4 +1,7 @@
 ---
+format: "report"
+campaigns: []
+aliases: ["/media/assembly-capital-projects-foreword/"]
 title: "Foreword: How can we build capital projects in London?"
 date: 2025-11-01
 type_label: "Assembly"

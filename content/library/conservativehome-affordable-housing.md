@@ -1,4 +1,7 @@
 ---
+format: "oped"
+campaigns: []
+aliases: ["/media/conservativehome-affordable-housing/"]
 title: "Stop building affordable housing – build subsidised instead"
 date: 2026-03-13
 type_label: "Op-Ed"

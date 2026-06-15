@@ -1,8 +1,7 @@
 ---
 title: "TfL's \"Operating Surplus\""
-date: 2025-02-01
+weight: 20
 category: "Accountability"
-status: "active"
 summary: "Challenging the misleading claim that TfL runs an operating surplus. Following the money through letters to auditors, the statistics regulator, and Parliament."
 ---
 

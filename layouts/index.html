@@ -15,8 +15,6 @@
   </div>
 </header>
 
-{{/* TEMP: Campaigns hidden for launch — remove this comment wrapper to restore. */}}
-{{/*
 <!-- CAMPAIGNS -->
 <section id="campaigns">
   <div class="container">
@@ -25,37 +23,25 @@
       <a href="/campaigns/" class="view-all">View all &rarr;</a>
     </div>
     <div class="campaigns-grid">
-      {{ range first 3 (where (where .Site.RegularPages "Section" "campaigns") ".Params.status" "active") }}
-        {{ partial "campaign-card.html" . }}
+      {{ with site.GetPage "/campaigns" }}
+        {{ range first 3 .Pages.ByWeight }}
+          {{ partial "campaign-card.html" . }}
+        {{ end }}
       {{ end }}
     </div>
   </div>
 </section>
-*/}}
 
-<!-- MEDIA -->
-<div class="band" id="media">
+<!-- RECENT ACTIVITY -->
+<div class="band" id="activity">
   <div class="band-inner">
     <div class="section-header">
-      <h2>In the Media</h2>
-      <a href="/media/" class="view-all">Full archive &rarr;</a>
+      <h2>Recent Activity</h2>
+      <a href="/activity/" class="view-all">Full archive &rarr;</a>
     </div>
     <div class="media-grid">
-      {{ range first 4 (where .Site.RegularPages "Section" "media") }}
-      <a href="{{ .Permalink }}" class="media-item">
-        <div class="media-thumb{{ if or (eq .Params.type_label "TV") (eq .Params.type_label "Assembly") }} has-play{{ end }}">
-          {{ if .Params.youtube_id }}
-          <img src="https://img.youtube.com/vi/{{ .Params.youtube_id }}/mqdefault.jpg" alt="">
-          {{ else if .Params.thumbnail }}
-          <img src="{{ .Params.thumbnail }}" alt="">
-          {{ end }}
-        </div>
-        <div class="media-info">
-          <span class="media-type-badge badge-{{ .Params.type_label | urlize }}">{{ .Params.type_label }}</span>
-          <h4>{{ .Title }}</h4>
-          <div class="media-meta">{{ .Params.outlet }} &middot; {{ .Date.Format "January 2006" }}</div>
-        </div>
-      </a>
+      {{ range first 4 (where .Site.RegularPages "Section" "library").ByDate.Reverse }}
+        {{ partial "activity-card.html" . }}
       {{ end }}
     </div>
   </div>

@@ -1,4 +1,7 @@
 ---
+format: "oped"
+campaigns: []
+aliases: ["/media/conservativehome-london-enterprise/"]
 title: "London needs a Mayor who believes in enterprise"
 date: 2026-03-27
 type_label: "Op-Ed"

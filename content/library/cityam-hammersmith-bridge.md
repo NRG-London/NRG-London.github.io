@@ -1,4 +1,7 @@
 ---
+format: "oped"
+campaigns: []
+aliases: ["/media/cityam-hammersmith-bridge/"]
 title: "Fix Hammersmith Bridge to jolt Britain out of degrowth daydream"
 date: 2026-02-04
 type_label: "Op-Ed"

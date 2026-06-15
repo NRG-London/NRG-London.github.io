@@ -1,8 +1,7 @@
 ---
 title: "Heavier Buses, Weaker Roads"
-date: 2025-01-15
+weight: 10
 category: "Transport"
-status: "active"
 summary: "New research: switching one diesel single-decker to electric adds road wear equivalent to 13,000 extra petrol cars. Who pays for the damage?"
 ---
 

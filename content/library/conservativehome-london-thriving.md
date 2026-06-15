@@ -1,4 +1,7 @@
 ---
+format: "oped"
+campaigns: []
+aliases: ["/media/conservativehome-london-thriving/"]
 title: "London can't thrive if couples hoping to start or grow their family are forced out"
 date: 2023-10-23
 type_label: "Op-Ed"

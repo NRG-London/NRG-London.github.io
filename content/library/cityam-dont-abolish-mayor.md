@@ -1,4 +1,7 @@
 ---
+format: "oped"
+campaigns: []
+aliases: ["/media/cityam-dont-abolish-mayor/"]
 title: "Don't abolish the Mayor, just get rid of Sadiq Khan"
 date: 2025-04-24
 type_label: "Op-Ed"

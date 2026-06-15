@@ -1,4 +1,7 @@
 ---
+format: "oped"
+campaigns: []
+aliases: ["/media/conservativehome-victory-streatham/"]
 title: "Victory in Streatham! Labour suspends Low Traffic Neighbourhood which made congestion worse"
 date: 2024-03-11
 type_label: "Op-Ed"

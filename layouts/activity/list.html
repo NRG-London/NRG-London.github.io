@@ -1,18 +1,18 @@
 {{ define "main" }}
 
 <div class="archive-header">
-  <h1>In the Media</h1>
-  <p>TV appearances, op-eds, Assembly scrutiny clips, and more.</p>
+  <h1>{{ .Title }}</h1>
+  {{ with .Description }}<p>{{ . }}</p>{{ end }}
 </div>
 
 <div class="archive-content">
-  {{ $all := .RegularPages }}
-  {{ $labels := dict "tv" "TV" "op-ed" "Op-Ed" "assembly" "Assembly" "radio" "Radio" "podcast" "Podcast" }}
-  {{ $types := slice "tv" "op-ed" "assembly" "radio" "podcast" }}
+  {{ $all := where .Site.RegularPages "Section" "library" }}
+  {{ $formats := slice "report" "oped" "appearance" "newsletter" "petition" }}
+  {{ $labels := dict "report" "Reports" "oped" "Articles" "appearance" "Media" "newsletter" "Newsletter" "petition" "Petitions" }}
   <div class="filter-bar">
     <button class="filter-btn active" data-filter="all">All</button>
-    {{ range $types }}
-      {{ $count := len (where $all "Params.type_label" "==" (index $labels .)) }}
+    {{ range $formats }}
+      {{ $count := len (where $all "Params.format" "==" .) }}
       {{ if gt $count 0 }}
       <button class="filter-btn" data-filter="{{ . }}">{{ index $labels . }}</button>
       {{ end }}
@@ -20,21 +20,8 @@
   </div>
 
   <div class="media-grid media-grid--light">
-    {{ range .RegularPages }}
-    <a href="{{ .Permalink }}" class="media-item" data-type="{{ .Params.type_label | urlize }}">
-      <div class="media-thumb{{ if or (eq .Params.type_label "TV") (eq .Params.type_label "Assembly") }} has-play{{ end }}">
-        {{ if .Params.youtube_id }}
-        <img src="https://img.youtube.com/vi/{{ .Params.youtube_id }}/mqdefault.jpg" alt="">
-        {{ else if .Params.thumbnail }}
-        <img src="{{ .Params.thumbnail }}" alt="">
-        {{ end }}
-      </div>
-      <div class="media-info">
-        <span class="media-type-badge badge-{{ .Params.type_label | urlize }}">{{ .Params.type_label }}</span>
-        <h4>{{ .Title }}</h4>
-        <div class="media-meta">{{ .Params.outlet }} &middot; {{ .Date.Format "2 January 2006" }}</div>
-      </div>
-    </a>
+    {{ range $all.ByDate.Reverse }}
+      {{ partial "activity-card.html" . }}
     {{ end }}
   </div>
 
@@ -53,7 +40,7 @@
 
   function apply() {
     items.forEach(function(el) {
-      var match = currentFilter === 'all' || el.getAttribute('data-type') === currentFilter;
+      var match = currentFilter === 'all' || el.getAttribute('data-format') === currentFilter;
       el.classList.toggle('filter-hidden', !match);
     });
     if (typeof window.applyPagination === 'function') window.applyPagination();

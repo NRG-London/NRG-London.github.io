@@ -1,4 +1,7 @@
 ---
+format: "oped"
+campaigns: []
+aliases: ["/media/conservativehome-phone-bike-theft/"]
 title: "Time to take phone and bike theft seriously"
 date: 2025-02-28
 type_label: "Op-Ed"

@@ -1,4 +1,7 @@
 ---
+format: "oped"
+campaigns: []
+aliases: ["/media/lbc-budget-day-2026/"]
 title: "Nine deputy mayors, £200k each, and your council tax up"
 date: 2026-02-26
 type_label: "Op-Ed"

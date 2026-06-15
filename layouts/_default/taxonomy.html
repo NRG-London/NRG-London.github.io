@@ -1,0 +1,50 @@
+{{ define "main" }}
+{{ if eq .Kind "term" }}
+{{/* ---- Campaign hub (single term): framing prose + auto-aggregated content ---- */}}
+<div class="page-header">
+  <a href="/campaigns/" class="back-link">&larr; All campaigns</a>
+  <h1>{{ .Title }}</h1>
+  {{ with .Params.category }}<div class="page-meta"><span class="tag">{{ . }}</span></div>{{ end }}
+</div>
+
+<div class="page-content">
+  {{ .Content }}
+</div>
+
+{{ $groups := slice
+  (dict "key" "report" "heading" "The research")
+  (dict "key" "appearance" "heading" "In the media")
+  (dict "key" "oped" "heading" "Articles")
+  (dict "key" "newsletter" "heading" "From the newsletter")
+  (dict "key" "petition" "heading" "Take action") }}
+
+<div class="archive-content">
+  {{ range $groups }}
+    {{ $heading := .heading }}
+    {{ with (where $.Pages "Params.format" .key).ByDate.Reverse }}
+    <div class="section-header"><h2>{{ $heading }}</h2></div>
+    <div class="media-grid media-grid--light">
+      {{ range . }}
+        {{ partial "activity-card.html" . }}
+      {{ end }}
+    </div>
+    {{ end }}
+  {{ end }}
+</div>
+
+{{ else }}
+{{/* ---- Campaigns index (list of all campaign hubs, ordered by weight) ---- */}}
+<div class="archive-header">
+  <h1>{{ .Title }}</h1>
+  {{ with .Description }}<p>{{ . }}</p>{{ end }}
+</div>
+
+<div class="archive-content">
+  <div class="campaigns-grid">
+    {{ range .Pages.ByWeight }}
+      {{ partial "campaign-card.html" . }}
+    {{ end }}
+  </div>
+</div>
+{{ end }}
+{{ end }}

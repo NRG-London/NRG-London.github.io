@@ -1,4 +1,7 @@
 ---
+format: "oped"
+campaigns: []
+aliases: ["/media/conservativehome-street-votes/"]
 title: "What street votes really means"
 date: 2022-05-13
 type_label: "Op-Ed"

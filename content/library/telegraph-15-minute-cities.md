@@ -1,4 +1,7 @@
 ---
+format: "oped"
+campaigns: []
+aliases: ["/media/telegraph-15-minute-cities/"]
 title: "The 15-minute city isn't a conspiracy. It's just a bad idea"
 date: 2023-03-05
 type_label: "Op-Ed"

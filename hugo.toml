@@ -20,6 +20,7 @@ paginate = 12
 
 [taxonomies]
   category = "categories"
+  campaign = "campaigns"
 
 [markup]
   [markup.goldmark]
@@ -34,14 +35,13 @@ paginate = 12
     name = "About"
     url = "/about/"
     weight = 1
-  # TEMP: Campaigns nav link hidden for launch — uncomment to restore.
-  #  [[menu.main]]
-  #    name = "Campaigns"
-  #    url = "/campaigns/"
-  #    weight = 2
   [[menu.main]]
-    name = "Media"
-    url = "/media/"
+    name = "Campaigns"
+    url = "/campaigns/"
+    weight = 2
+  [[menu.main]]
+    name = "Recent Activity"
+    url = "/activity/"
     weight = 3
   [[menu.main]]
     name = "Newsletter"

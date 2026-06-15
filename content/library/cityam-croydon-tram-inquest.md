@@ -1,4 +1,7 @@
 ---
+format: "oped"
+campaigns: []
+aliases: ["/media/cityam-croydon-tram-inquest/"]
 title: "Whitewash: Croydon tram inquest verdict raises more questions than answers"
 date: 2021-07-22
 type_label: "Op-Ed"
