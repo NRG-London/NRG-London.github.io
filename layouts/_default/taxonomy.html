@@ -11,6 +11,11 @@
   {{ .Content }}
 </div>
 
+{{/* Aggregate from the full library pool by campaign membership (not taxonomy
+     .Pages) so render:never stubs — which carry list:always — are included. */}}
+{{ $key := path.Base (strings.TrimSuffix "/" .RelPermalink) }}
+{{ $members := where (where .Site.RegularPages "Section" "library") "Params.campaigns" "intersect" (slice $key) }}
+
 {{ $groups := slice
   (dict "key" "report" "heading" "The research")
   (dict "key" "appearance" "heading" "In the media")
@@ -21,7 +26,7 @@
 <div class="archive-content">
   {{ range $groups }}
     {{ $heading := .heading }}
-    {{ with (where $.Pages "Params.format" .key).ByDate.Reverse }}
+    {{ with (where $members "Params.format" .key).ByDate.Reverse }}
     <div class="section-header"><h2>{{ $heading }}</h2></div>
     <div class="media-grid media-grid--light">
       {{ range . }}

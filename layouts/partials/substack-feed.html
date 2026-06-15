@@ -1,0 +1,33 @@
+{{- /* Fetches the Substack RSS feed at build time and returns a slice of
+       newsletter dicts: {title, url, summary, date, ts}. Never fails the
+       build — on any fetch/parse error it warns and returns an empty slice
+       (Hugo's `try` keyword captures the error). Call via partialCached so
+       the fetch happens once per build. */ -}}
+{{- $items := slice -}}
+{{- $url := .Site.Params.substackRSS -}}
+{{- if $url -}}
+  {{- $r := try (resources.GetRemote $url) -}}
+  {{- if $r.Err -}}
+    {{- warnf "Substack feed fetch failed: %s" $r.Err -}}
+  {{- else -}}
+    {{- with $r.Value -}}
+      {{- $u := try (transform.Unmarshal .) -}}
+      {{- if $u.Err -}}
+        {{- warnf "Substack feed parse failed: %s" $u.Err -}}
+      {{- else -}}
+        {{- range (default slice $u.Value.channel.item) -}}
+          {{- $date := time.AsTime .pubDate -}}
+          {{- $items = $items | append (dict
+              "title"   .title
+              "url"     .link
+              "summary" (.description | plainify | htmlUnescape | strings.TrimSpace | truncate 140)
+              "date"    $date
+              "ts"      $date.Unix) -}}
+        {{- end -}}
+      {{- end -}}
+    {{- else -}}
+      {{- warnf "Substack feed returned nothing: %s" $url -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- return $items -}}

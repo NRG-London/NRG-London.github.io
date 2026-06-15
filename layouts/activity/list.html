@@ -6,13 +6,13 @@
 </div>
 
 <div class="archive-content">
-  {{ $all := where .Site.RegularPages "Section" "library" }}
+  {{ $all := partial "activity-entries.html" . }}
   {{ $formats := slice "report" "oped" "appearance" "newsletter" "petition" }}
   {{ $labels := dict "report" "Reports" "oped" "Articles" "appearance" "Media" "newsletter" "Newsletter" "petition" "Petitions" }}
   <div class="filter-bar">
     <button class="filter-btn active" data-filter="all">All</button>
     {{ range $formats }}
-      {{ $count := len (where $all "Params.format" "==" .) }}
+      {{ $count := len (where $all "format" "==" .) }}
       {{ if gt $count 0 }}
       <button class="filter-btn" data-filter="{{ . }}">{{ index $labels . }}</button>
       {{ end }}
@@ -20,8 +20,8 @@
   </div>
 
   <div class="media-grid media-grid--light">
-    {{ range $all.ByDate.Reverse }}
-      {{ partial "activity-card.html" . }}
+    {{ range $all }}
+      {{ partial "entry-card.html" . }}
     {{ end }}
   </div>
 

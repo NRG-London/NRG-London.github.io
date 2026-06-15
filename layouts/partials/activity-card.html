@@ -1,19 +1,3 @@
-{{- /* One content-item card. Links to the local page, or straight to external_url
-       for a "stub" (an item with no body but an external_url). Reused by the
-       Recent Activity feed, campaign hubs, and the homepage preview. */ -}}
-{{- $isStub := and .Params.external_url (eq (len (.RawContent | strings.TrimSpace)) 0) -}}
-{{- $url := cond $isStub .Params.external_url .RelPermalink -}}
-<a href="{{ $url }}" class="media-item" data-format="{{ .Params.format }}"{{ if $isStub }} target="_blank" rel="noopener"{{ end }}>
-  <div class="media-thumb{{ if .Params.youtube_id }} has-play{{ end }}">
-    {{ if .Params.youtube_id }}
-    <img src="https://img.youtube.com/vi/{{ .Params.youtube_id }}/mqdefault.jpg" alt="" loading="lazy">
-    {{ else if .Params.thumbnail }}
-    <img src="{{ .Params.thumbnail }}" alt="" loading="lazy">
-    {{ end }}
-  </div>
-  <div class="media-info">
-    <span class="media-type-badge badge-{{ .Params.type_label | urlize }}">{{ .Params.type_label }}</span>
-    <h4>{{ .Title }}{{ if $isStub }} <span class="offsite" title="Off-site link">&#8599;</span>{{ end }}</h4>
-    <div class="media-meta">{{ .Params.outlet }} &middot; {{ .Date.Format "2 January 2006" }}</div>
-  </div>
-</a>
+{{- /* Page-based card wrapper: convert the Page to an entry dict and render it.
+       Lets campaign hubs and other Page contexts keep calling activity-card. */ -}}
+{{- partial "entry-card.html" (partial "page-to-entry.html" .) -}}
