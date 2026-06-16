@@ -17,16 +17,12 @@
       {{- else -}}
         {{- range (default slice $u.Value.channel.item) -}}
           {{- $date := time.AsTime .pubDate -}}
-          {{- $slug := path.Base (index (split .link "?") 0) -}}
-          {{- $rel := printf "images/thumbs/nl-%s.jpg" $slug -}}
-          {{- $thumb := cond (os.FileExists (printf "static/%s" $rel)) (printf "/%s" $rel) "" -}}
           {{- $items = $items | append (dict
-              "title"     .title
-              "url"       .link
-              "summary"   (.description | plainify | htmlUnescape | strings.TrimSpace | truncate 140)
-              "date"      $date
-              "ts"        $date.Unix
-              "thumbnail" $thumb) -}}
+              "title"   .title
+              "url"     .link
+              "summary" (.description | plainify | htmlUnescape | strings.TrimSpace | truncate 140)
+              "date"    $date
+              "ts"      $date.Unix) -}}
         {{- end -}}
       {{- end -}}
     {{- else -}}

@@ -11,6 +11,11 @@
 {{- end -}}
 {{- range (partialCached "substack-feed.html" . ) -}}
   {{- if not (in $stubURLs .url) -}}
+    {{- /* Resolve the committed thumbnail here (not in the cached feed partial),
+           so a long-running `hugo server` picks up newly-added images. */ -}}
+    {{- $slug := path.Base (index (split .url "?") 0) -}}
+    {{- $rel := printf "images/thumbs/nl-%s.jpg" $slug -}}
+    {{- $thumb := cond (os.FileExists (printf "static/%s" $rel)) (printf "/%s" $rel) "" -}}
     {{- $entries = $entries | append (dict
         "title"      .title
         "url"        .url
@@ -22,7 +27,7 @@
         "outlet"     "Substack"
         "summary"    .summary
         "youtube_id" ""
-        "thumbnail"  .thumbnail) -}}
+        "thumbnail"  $thumb) -}}
   {{- end -}}
 {{- end -}}
 {{- return (sort $entries "ts" "desc") -}}
