@@ -22,6 +22,13 @@ paginate = 12
   category = "categories"
   campaign = "campaigns"
 
+# Re-fetch remote resources (the Substack RSS) at most every 10 min locally,
+# so a long-running `hugo server` doesn't serve a stale feed. No effect on CI,
+# which builds on a fresh runner with an empty cache.
+[caches]
+  [caches.getresource]
+    maxAge = "10m"
+
 [markup]
   [markup.goldmark]
     [markup.goldmark.renderer]
