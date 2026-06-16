@@ -1,7 +1,14 @@
 {{- /* Converts a library Page into an "entry" dict for entry-card.html.
        A stub (external_url + empty body) links off-site; everything else
-       links to its local page. Returns the dict. */ -}}
+       links to its local page. Thumbnail: a committed stub-<slug>.jpg
+       (fetched from a stub's thumbnail_url by scripts/fetch-thumbnails.ps1)
+       wins; otherwise the front-matter `thumbnail`. Returns the dict. */ -}}
 {{- $isStub := and .Params.external_url (eq (len (.RawContent | strings.TrimSpace)) 0) -}}
+{{- $thumb := default "" .Params.thumbnail -}}
+{{- with .File -}}
+  {{- $rel := printf "images/thumbs/stub-%s.jpg" .ContentBaseName -}}
+  {{- if os.FileExists (printf "static/%s" $rel) -}}{{- $thumb = printf "/%s" $rel -}}{{- end -}}
+{{- end -}}
 {{- return (dict
   "title"      .Title
   "url"        (cond $isStub .Params.external_url .RelPermalink)
@@ -13,4 +20,4 @@
   "outlet"     .Params.outlet
   "summary"    .Params.summary
   "youtube_id" (default "" .Params.youtube_id)
-  "thumbnail"  (default "" .Params.thumbnail)) -}}
+  "thumbnail"  $thumb) -}}
