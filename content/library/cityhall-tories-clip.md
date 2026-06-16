@@ -1,8 +1,8 @@
 ---
-# Social clip stub. Paste the tweet text as the title (X can't be auto-scraped).
-# For the image: right-click the tweet's media -> Copy image address (a
-# pbs.twimg.com URL), put it in thumbnail_url, then run
-# ./scripts/fetch-thumbnails.ps1 to download + commit the thumbnail.
+# Social clip stub. Paste the tweet text as the title (manual entry lets you trim
+# length and use your plain name). The thumbnail is fetched automatically from the
+# tweet link by ./scripts/fetch-thumbnails.ps1 (via X's public syndication CDN);
+# set thumbnail_url only to override it.
 title: "The Mayor talks a big game about tackling fare evasion, but as Neil Garratt reveals, it's all talk and no action"
 date: 2026-06-09
 format: "appearance"

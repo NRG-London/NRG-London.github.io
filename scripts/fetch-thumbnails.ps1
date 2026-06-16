@@ -26,8 +26,9 @@ $maxWidth = 720
 
 if (-not (Test-Path $thumbDir)) { New-Item -ItemType Directory -Path $thumbDir -Force | Out-Null }
 
+$ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 $client = New-Object System.Net.WebClient
-$client.Headers.Add('User-Agent', 'Mozilla/5.0 (neilgarratt.com thumbnail fetcher)')
+$client.Headers.Add('User-Agent', $ua)
 
 # Download an image, downscale to <=maxWidth preserving aspect, save as JPEG.
 function Save-Thumb([string]$url, [string]$dest) {
@@ -70,17 +71,33 @@ if ($hugoToml -match '(?m)^\s*substackRSS\s*=\s*"([^"]+)"') {
   Write-Warning "Could not find substackRSS in hugo.toml - skipping newsletters"
 }
 
-# --- 2. Library stubs with an explicit thumbnail_url ---
+# --- 2. Library stubs: explicit thumbnail_url, or auto-resolved from an X/Twitter link ---
 Get-ChildItem (Join-Path $root 'content\library') -Filter '*.md' | ForEach-Object {
-  $raw = Get-Content $_.FullName -Raw
+  $raw  = Get-Content $_.FullName -Raw
+  $slug = $_.BaseName
+  $dest = Join-Path $thumbDir "stub-$slug.jpg"
+  if (Test-Path $dest) { $skipped++; return }
+
+  $imgUrl = $null
   if ($raw -match '(?m)^\s*thumbnail_url:\s*"([^"]+)"') {
     $imgUrl = $Matches[1].Trim()
-    $slug = $_.BaseName
-    $dest = Join-Path $thumbDir "stub-$slug.jpg"
-    if (Test-Path $dest) { $skipped++; return }
-    try { $dim = Save-Thumb $imgUrl $dest; Write-Host ("  + stub-{0}.jpg  {1}" -f $slug, $dim); $downloaded++ }
-    catch { Write-Warning "Failed stub '$slug': $($_.Exception.Message)"; $failed++ }
   }
+  elseif ($raw -match '(?m)^\s*external_url:\s*"[^"]*(?:twitter\.com|x\.com)/[^"/]+/status/(\d+)') {
+    # X/Twitter: pull the media poster from the public syndication CDN (no auth).
+    $tweetId = $Matches[1]
+    try {
+      $syn = Invoke-RestMethod "https://cdn.syndication.twimg.com/tweet-result?id=$tweetId&token=a" -UserAgent $ua -ErrorAction Stop
+      if     ($syn.mediaDetails)                 { $imgUrl = $syn.mediaDetails[0].media_url_https }
+      elseif ($syn.video -and $syn.video.poster) { $imgUrl = $syn.video.poster }
+      elseif ($syn.photos)                       { $imgUrl = $syn.photos[0].url }
+      if (-not $imgUrl) { Write-Warning "No media found in tweet for '$slug'" }
+    }
+    catch { Write-Warning "X syndication lookup failed for '$slug': $($_.Exception.Message)" }
+  }
+
+  if ([string]::IsNullOrWhiteSpace($imgUrl)) { return }
+  try { $dim = Save-Thumb $imgUrl $dest; Write-Host ("  + stub-{0}.jpg  {1}" -f $slug, $dim); $downloaded++ }
+  catch { Write-Warning "Failed stub '$slug': $($_.Exception.Message)"; $failed++ }
 }
 
 Write-Host ""

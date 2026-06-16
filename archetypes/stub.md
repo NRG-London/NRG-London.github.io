@@ -7,9 +7,10 @@ outlet: ""             # where it lives, e.g. "X / Twitter", "YouTube"
 campaigns: []          # campaign keys this belongs to, e.g. ["tunnel-toll-tax"]
 external_url: ""        # REQUIRED for a stub: the off-site link
 thumbnail: ""          # optional local image path under /static/images/ (used as-is)
-thumbnail_url: ""      # optional remote image (e.g. a tweet's pbs.twimg.com URL);
-                       # ./scripts/fetch-thumbnails.ps1 downloads + resizes + commits
-                       # it to /images/thumbs/stub-<slug>.jpg (takes precedence)
+thumbnail_url: ""      # optional image override. For X/Twitter `external_url`s the
+                       # poster is auto-fetched from the tweet; otherwise put any
+                       # public image URL here. ./scripts/fetch-thumbnails.ps1
+                       # downloads + resizes + commits to /images/thumbs/stub-<slug>.jpg
 summary: ""
 build:
   render: never        # no local page — list views link straight to external_url
