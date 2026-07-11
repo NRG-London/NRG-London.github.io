@@ -5,7 +5,7 @@ category: "Policing & Crime"
 summary: "London's phone-theft epidemic was extraordinarily concentrated — my report showed a handful of central wards drove it, and that targeted enforcement there could break it. The police followed that playbook, and phone theft fell for the first time on record."
 ---
 
-For two years, London lived through a phone-theft epidemic — phones snatched in the street, often by riders on illegally modified e-bikes, faster than at any time on record. In February 2025 I published a report that asked a simple question: if we understand *where* this crime happens, can we actually stop it? The answer turned out to be yes.
+Since the pandemic, London has been living through a phone-theft epidemic — phones snatched in the street, often by riders on illegally modified e-bikes, faster than at any time on record. In February 2025 I published a report that asked a simple question: if we understand *where* this crime happens, can we actually stop it? The answer turned out to be yes.
 
 **[Download the report — *Tackling London's Theft Epidemic* (PDF) &rarr;](/reports/tackling-londons-theft-epidemic.pdf)**
 
@@ -13,15 +13,15 @@ For two years, London lived through a phone-theft epidemic — phones snatched i
 
 London's phone-theft epidemic was never a national one. Using Theft From Person as a proxy — most Theft From Person in London *is* mobile phone theft, and it is the measure published consistently across every force, so it allows a fair national comparison — London's rate nearly tripled after 2014 while the rest of England and Wales actually fell.
 
-![London's phone-theft proxy nearly tripled since 2014, while the rest of England and Wales fell](/images/charts/phone-theft/tfp-london-vs-national-indexed-web.png)
+<a href="/images/charts/phone-theft/tfp-london-vs-national-indexed-web.png" target="_blank" rel="noopener"><img src="/images/charts/phone-theft/tfp-london-vs-national-indexed-web.png" alt="London's phone-theft proxy nearly tripled since 2014, while the rest of England and Wales fell"></a>
 
 Within London, the concentration is starker still. Rank every ward by phone theft and robbery and half of it happens in around 25 wards. The entire top quartile is just **two** wards — West End and St James's, both in Westminster — which between them account for more than a quarter of all phone theft in the capital.
 
-![Map of London wards in quartiles of phone theft: half of all phone theft is in about 25 wards, and the top quartile is just two wards in Westminster](/images/charts/phone-theft/phone-theft-ward-quartiles-map.png)
+<a href="/images/charts/phone-theft/phone-theft-ward-quartiles-map-full.png" target="_blank" rel="noopener"><img src="/images/charts/phone-theft/phone-theft-ward-quartiles-map.png" alt="Map of London wards in quartiles of phone theft: half of all phone theft is in about 25 wards, and the top quartile is just two wards in Westminster"></a>
 
 Narrow it to the top five wards and they account for a third of the citywide total, with the West End alone responsible for almost one in five thefts.
 
-![Bar chart: five wards account for a third of London's phone theft, led by the West End at 17.6 per cent](/images/charts/phone-theft/phone-theft-top5-wards-ranking.png)
+<a href="/images/charts/phone-theft/phone-theft-top5-wards-ranking.png" target="_blank" rel="noopener"><img src="/images/charts/phone-theft/phone-theft-top5-wards-ranking.png" alt="Bar chart: five wards account for a third of London's phone theft, led by the West End at 17.6 per cent"></a>
 
 This is the *concentration of crime* effect, and it is the single most important fact for setting policing strategy. When a crime clusters this tightly you do not need to police everywhere at once: concentrate enforcement on the handful of places where the crime actually happens and you get results out of all proportion to the effort. That was the heart of my report — a strategy of targeted, intelligence-led enforcement in the hotspots, backed by a specialist team. I [launched it](https://www.cityhallconservatives.com/post/tackling-london-s-theft-epidemic-city-hall-conservatives-leader-joined-by-shadow-home-secretary-and) with the Shadow Home Secretary, Chris Philp MP, and Dr Lawrence Newport of Crush Crime.
 
@@ -31,11 +31,11 @@ Over the following year, the Met did exactly what the data pointed to. Officers 
 
 The result was the first fall in London's phone theft since the Met began publishing the figures.
 
-![Bar chart: London phone theft fell for the first time since records began, from 79,000 in 2024 to 70,600 in 2025](/images/charts/phone-theft/phone-theft-london-total-annual.png)
+<a href="/images/charts/phone-theft/phone-theft-london-total-annual.png" target="_blank" rel="noopener"><img src="/images/charts/phone-theft/phone-theft-london-total-annual.png" alt="Bar chart: London phone theft fell for the first time since records began, from 79,000 in 2024 to 70,600 in 2025"></a>
 
 And — exactly as the concentration-of-crime effect predicts — the fall was overwhelmingly driven by the same wards that drove the epidemic. Nearly four in five of the citywide reduction came from just five wards, led once again by the West End. Target the crime where it concentrates, and that is where the crime falls.
 
-![Bar chart: five wards explain 79 per cent of London's phone-theft fall, led by the West End](/images/charts/phone-theft/phone-theft-top-decliners-ranking.png)
+<a href="/images/charts/phone-theft/phone-theft-top-decliners-ranking.png" target="_blank" rel="noopener"><img src="/images/charts/phone-theft/phone-theft-top-decliners-ranking.png" alt="Bar chart: five wards explain 79 per cent of London's phone-theft fall, led by the West End"></a>
 
 ## The Mayor's blind spot
 
