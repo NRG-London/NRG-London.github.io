@@ -20,6 +20,14 @@ paginate = 12
 
 [taxonomies]
   category = "categories"
+  campaign = "campaigns"
+
+# Re-fetch remote resources (the Substack RSS) at most every 10 min locally,
+# so a long-running `hugo server` doesn't serve a stale feed. No effect on CI,
+# which builds on a fresh runner with an empty cache.
+[caches]
+  [caches.getresource]
+    maxAge = "10m"
 
 [markup]
   [markup.goldmark]
@@ -34,14 +42,13 @@ paginate = 12
     name = "About"
     url = "/about/"
     weight = 1
-  # TEMP: Campaigns nav link hidden for launch — uncomment to restore.
-  #  [[menu.main]]
-  #    name = "Campaigns"
-  #    url = "/campaigns/"
-  #    weight = 2
   [[menu.main]]
-    name = "Media"
-    url = "/media/"
+    name = "Campaigns"
+    url = "/campaigns/"
+    weight = 2
+  [[menu.main]]
+    name = "Recent Activity"
+    url = "/activity/"
     weight = 3
   [[menu.main]]
     name = "Newsletter"

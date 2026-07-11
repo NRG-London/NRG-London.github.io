@@ -15,8 +15,6 @@
   </div>
 </header>
 
-{{/* TEMP: Campaigns hidden for launch — remove this comment wrapper to restore. */}}
-{{/*
 <!-- CAMPAIGNS -->
 <section id="campaigns">
   <div class="container">
@@ -25,37 +23,25 @@
       <a href="/campaigns/" class="view-all">View all &rarr;</a>
     </div>
     <div class="campaigns-grid">
-      {{ range first 3 (where (where .Site.RegularPages "Section" "campaigns") ".Params.status" "active") }}
-        {{ partial "campaign-card.html" . }}
+      {{ with site.GetPage "/campaigns" }}
+        {{ range first 3 .Pages.ByWeight }}
+          {{ partial "campaign-card.html" . }}
+        {{ end }}
       {{ end }}
     </div>
   </div>
 </section>
-*/}}
 
-<!-- MEDIA -->
-<div class="band" id="media">
+<!-- RECENT ACTIVITY -->
+<div class="band" id="activity">
   <div class="band-inner">
     <div class="section-header">
-      <h2>In the Media</h2>
-      <a href="/media/" class="view-all">Full archive &rarr;</a>
+      <h2>Recent Activity</h2>
+      <a href="/activity/" class="view-all">Full archive &rarr;</a>
     </div>
     <div class="media-grid">
-      {{ range first 4 (where .Site.RegularPages "Section" "media") }}
-      <a href="{{ .Permalink }}" class="media-item">
-        <div class="media-thumb{{ if or (eq .Params.type_label "TV") (eq .Params.type_label "Assembly") }} has-play{{ end }}">
-          {{ if .Params.youtube_id }}
-          <img src="https://img.youtube.com/vi/{{ .Params.youtube_id }}/mqdefault.jpg" alt="">
-          {{ else if .Params.thumbnail }}
-          <img src="{{ .Params.thumbnail }}" alt="">
-          {{ end }}
-        </div>
-        <div class="media-info">
-          <span class="media-type-badge badge-{{ .Params.type_label | urlize }}">{{ .Params.type_label }}</span>
-          <h4>{{ .Title }}</h4>
-          <div class="media-meta">{{ .Params.outlet }} &middot; {{ .Date.Format "January 2006" }}</div>
-        </div>
-      </a>
+      {{ range first 4 (partial "activity-entries.html" .) }}
+        {{ partial "entry-card.html" . }}
       {{ end }}
     </div>
   </div>
@@ -78,11 +64,15 @@
           <span>&rarr;</span>
         </a>
       </div>
-      <div class="recent-posts" id="substack-feed">
-        <!-- Populated by JavaScript from Substack RSS -->
-        <noscript>
-          <p><a href="{{ .Site.Params.substackURL }}">Read the newsletter on Substack &rarr;</a></p>
-        </noscript>
+      <div class="recent-posts">
+        {{ range first 4 (partialCached "substack-feed.html" .) }}
+        <a href="{{ .url }}" class="post-item" target="_blank" rel="noopener">
+          <div class="post-title">{{ .title }}</div>
+          {{ with .summary }}<div class="post-desc">{{ . }}</div>{{ end }}
+        </a>
+        {{ else }}
+        <p><a href="{{ .Site.Params.substackURL }}">Read the newsletter on Substack &rarr;</a></p>
+        {{ end }}
       </div>
     </div>
   </div>
@@ -128,41 +118,5 @@
     </div>
   </div>
 </div>
-
-<!-- Substack RSS Feed Script -->
-<script>
-(function() {
-  var feedURL = '{{ .Site.Params.substackRSS }}';
-  var apiURL = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feedURL);
-  var container = document.getElementById('substack-feed');
-
-  var stripHTML = function(s) {
-    var d = document.createElement('div');
-    d.innerHTML = s;
-    var t = (d.textContent || d.innerText || '').trim();
-    if (t.length > 140) t = t.slice(0, 140).replace(/\s+\S*$/, '') + '…';
-    return t;
-  };
-
-  fetch(apiURL)
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (!data.items || !data.items.length) return;
-      var html = '';
-      data.items.slice(0, 4).forEach(function(item) {
-        html += '<a href="' + item.link + '" class="post-item" target="_blank" rel="noopener">';
-        html += '<div class="post-title">' + item.title + '</div>';
-        if (item.description) {
-          html += '<div class="post-desc">' + stripHTML(item.description) + '</div>';
-        }
-        html += '</a>';
-      });
-      container.innerHTML = html;
-    })
-    .catch(function() {
-      container.innerHTML = '<p><a href="' + feedURL.replace('/feed', '') + '">Read the newsletter on Substack &rarr;</a></p>';
-    });
-})();
-</script>
 
 {{ end }}

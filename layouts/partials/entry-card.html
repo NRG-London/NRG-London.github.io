@@ -1,0 +1,18 @@
+{{- /* Renders one content "entry" (a dict) as a card. Works for both library
+       Pages (via page-to-entry.html) and fetched newsletter items. Expects:
+       title, url, external (bool), date (time), format, type_label, outlet,
+       summary, youtube_id, thumbnail. */ -}}
+<a href="{{ .url }}" class="media-item" data-format="{{ .format }}"{{ if .external }} target="_blank" rel="noopener"{{ end }}>
+  <div class="media-thumb{{ if .youtube_id }} has-play{{ end }}">
+    {{ if .youtube_id }}
+    <img src="https://img.youtube.com/vi/{{ .youtube_id }}/mqdefault.jpg" alt="" loading="lazy">
+    {{ else if .thumbnail }}
+    <img src="{{ .thumbnail }}" alt="" loading="lazy">
+    {{ end }}
+  </div>
+  <div class="media-info">
+    <span class="media-type-badge badge-{{ .type_label | urlize }}">{{ .type_label }}</span>
+    <h4>{{ .title }}{{ if .external }} <span class="offsite" title="Off-site link">&#8599;</span>{{ end }}</h4>
+    <div class="media-meta">{{ .outlet }} &middot; {{ .date.Format "2 January 2006" }}</div>
+  </div>
+</a>

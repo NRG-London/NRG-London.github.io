@@ -1,0 +1,3 @@
+{{- /* Page-based card wrapper: convert the Page to an entry dict and render it.
+       Lets campaign hubs and other Page contexts keep calling activity-card. */ -}}
+{{- partial "entry-card.html" (partial "page-to-entry.html" .) -}}

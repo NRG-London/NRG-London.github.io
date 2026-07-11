@@ -1,0 +1,9 @@
+{{- /* Automatic item → campaign back-links, derived from the item's `campaigns`
+       front-matter. Renders nothing for a standalone item. */ -}}
+{{- with .GetTerms "campaigns" }}
+<div class="campaign-backlinks">
+  {{- range . }}
+  <a href="{{ .RelPermalink }}" class="campaign-backlink">Part of the <strong>{{ .LinkTitle }}</strong> campaign &rarr;</a>
+  {{- end }}
+</div>
+{{- end }}

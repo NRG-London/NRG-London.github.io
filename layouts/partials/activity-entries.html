@@ -1,0 +1,33 @@
+{{- /* Returns the full Recent Activity stream as a slice of entry dicts,
+       newest first: every library item plus fetched Substack newsletters.
+       Newsletters whose URL already exists as a library stub are skipped
+       (dedup), so a hand-tagged stub takes precedence. */ -}}
+{{- $entries := slice -}}
+{{- $stubURLs := slice -}}
+{{- range where .Site.RegularPages "Section" "library" -}}
+  {{- $e := partial "page-to-entry.html" . -}}
+  {{- $entries = $entries | append $e -}}
+  {{- with .Params.external_url }}{{ $stubURLs = $stubURLs | append . }}{{ end -}}
+{{- end -}}
+{{- range (partialCached "substack-feed.html" . ) -}}
+  {{- if not (in $stubURLs .url) -}}
+    {{- /* Resolve the committed thumbnail here (not in the cached feed partial),
+           so a long-running `hugo server` picks up newly-added images. */ -}}
+    {{- $slug := path.Base (index (split .url "?") 0) -}}
+    {{- $rel := printf "images/thumbs/nl-%s.jpg" $slug -}}
+    {{- $thumb := cond (os.FileExists (printf "static/%s" $rel)) (printf "/%s" $rel) "" -}}
+    {{- $entries = $entries | append (dict
+        "title"      .title
+        "url"        .url
+        "external"   true
+        "date"       .date
+        "ts"         .ts
+        "format"     "newsletter"
+        "type_label" "Newsletter"
+        "outlet"     "Substack"
+        "summary"    .summary
+        "youtube_id" ""
+        "thumbnail"  $thumb) -}}
+  {{- end -}}
+{{- end -}}
+{{- return (sort $entries "ts" "desc") -}}

@@ -1,8 +1,4 @@
 ---
 title: "Campaigns"
-# TEMP: hidden for launch — delete this cascade block to restore the Campaigns page.
-cascade:
-  build:
-    render: never
-    list: never
+description: "Holding the Mayor and City Hall to account — from transport and policing to housing and finance."
 ---

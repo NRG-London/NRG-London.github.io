@@ -1,0 +1,47 @@
+{{ define "main" }}
+
+<div class="page-header">
+  <a href="/activity/" class="back-link">&larr; Recent activity</a>
+  <h1>{{ .Title }}</h1>
+  <div class="page-meta">
+    <span class="tag">{{ .Params.type_label }}</span>
+    <span>{{ .Params.outlet }}</span>
+    <span>{{ .Date.Format "2 January 2006" }}</span>
+  </div>
+</div>
+
+<div class="page-content{{ if eq .Params.format "oped" }} op-ed{{ end }}">
+  {{ with .Params.youtube_id }}
+  <div class="video-embed">
+    <iframe
+      src="https://www.youtube-nocookie.com/embed/{{ . }}"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      allowfullscreen
+      loading="lazy"
+      title="{{ $.Title }}">
+    </iframe>
+  </div>
+  {{ end }}
+
+  {{ .Content }}
+
+  {{ if eq .Params.format "oped" }}
+  <p class="article-foot-attribution">
+    First published in
+    {{ with .Params.external_url }}
+    <a href="{{ . }}" target="_blank" rel="noopener">{{ $.Params.outlet }}</a>,
+    {{ else }}
+    {{ .Params.outlet }},
+    {{ end }}
+    {{ .Date.Format "2 January 2006" }}.
+  </p>
+  {{ else }}
+  {{ with .Params.external_url }}
+  <p><a href="{{ . }}" target="_blank" rel="noopener">Read on {{ $.Params.outlet }} &rarr;</a></p>
+  {{ end }}
+  {{ end }}
+
+  {{ partial "campaign-backlinks.html" . }}
+</div>
+
+{{ end }}
