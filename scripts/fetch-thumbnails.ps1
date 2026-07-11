@@ -29,6 +29,7 @@ if (-not (Test-Path $thumbDir)) { New-Item -ItemType Directory -Path $thumbDir -
 $ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 $client = New-Object System.Net.WebClient
 $client.Headers.Add('User-Agent', $ua)
+$client.Encoding = [System.Text.Encoding]::UTF8   # RSS is UTF-8 (fixes £, curly quotes, etc.)
 
 # Download an image, downscale to <=maxWidth preserving aspect, save as JPEG.
 function Save-Thumb([string]$url, [string]$dest) {
@@ -67,6 +68,34 @@ if ($hugoToml -match '(?m)^\s*substackRSS\s*=\s*"([^"]+)"') {
     try { $dim = Save-Thumb $imgUrl $dest; Write-Host ("  + nl-{0}.jpg  {1}" -f $slug, $dim); $downloaded++ }
     catch { Write-Warning "Failed newsletter '$slug': $($_.Exception.Message)"; $failed++ }
   }
+
+  # Write the newsletter list to a committed data file. Substack returns 403 to
+  # the CI build-time fetch, so the site reads data/substack.json rather than
+  # fetching the RSS at build. This refreshes it from your (allowed) machine.
+  $news = @()
+  foreach ($item in $rss.rss.channel.item) {
+    # title / description are CDATA-wrapped; use InnerText (not the XML shortcut)
+    $titleNode = $item.SelectSingleNode('title')
+    $descNode  = $item.SelectSingleNode('description')
+    $title = if ($titleNode) { $titleNode.InnerText.Trim() } else { '' }
+    $desc  = if ($descNode)  { $descNode.InnerText } else { '' }
+    $desc = [regex]::Replace($desc, '<[^>]+>', ' ')
+    $desc = [System.Net.WebUtility]::HtmlDecode($desc)
+    $desc = ($desc -replace '\s+', ' ').Trim()
+    if ($desc.Length -gt 140) { $desc = $desc.Substring(0, 140).TrimEnd() + [char]0x2026 }
+    $dt = [datetime]::Parse("$($item.pubDate)", [System.Globalization.CultureInfo]::InvariantCulture).ToUniversalTime()
+    $news += [ordered]@{
+      title   = $title
+      url     = "$($item.link)".Trim()
+      summary = $desc
+      date    = $dt.ToString("yyyy-MM-ddTHH:mm:ssZ")
+    }
+  }
+  $dataDir = Join-Path $root 'data'
+  if (-not (Test-Path $dataDir)) { New-Item -ItemType Directory -Force -Path $dataDir | Out-Null }
+  $json = "[`n" + (($news | ForEach-Object { "  " + ($_ | ConvertTo-Json -Depth 3 -Compress) }) -join ",`n") + "`n]`n"
+  [System.IO.File]::WriteAllText((Join-Path $dataDir 'substack.json'), $json, (New-Object System.Text.UTF8Encoding($false)))
+  Write-Host ("Wrote data/substack.json ({0} posts)" -f $news.Count)
 } else {
   Write-Warning "Could not find substackRSS in hugo.toml - skipping newsletters"
 }

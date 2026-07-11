@@ -15,38 +15,6 @@
   </div>
 </header>
 
-<!-- CAMPAIGNS -->
-<section id="campaigns">
-  <div class="container">
-    <div class="section-header">
-      <h2>Current Campaigns</h2>
-      <a href="/campaigns/" class="view-all">View all &rarr;</a>
-    </div>
-    <div class="campaigns-grid">
-      {{ with site.GetPage "/campaigns" }}
-        {{ range first 3 .Pages.ByWeight }}
-          {{ partial "campaign-card.html" . }}
-        {{ end }}
-      {{ end }}
-    </div>
-  </div>
-</section>
-
-<!-- RECENT ACTIVITY -->
-<div class="band" id="activity">
-  <div class="band-inner">
-    <div class="section-header">
-      <h2>Recent Activity</h2>
-      <a href="/activity/" class="view-all">Full archive &rarr;</a>
-    </div>
-    <div class="media-grid">
-      {{ range first 4 (partial "activity-entries.html" .) }}
-        {{ partial "entry-card.html" . }}
-      {{ end }}
-    </div>
-  </div>
-</div>
-
 <!-- NEWSLETTER -->
 <section id="newsletter">
   <div class="container">
@@ -74,6 +42,38 @@
         <p><a href="{{ .Site.Params.substackURL }}">Read the newsletter on Substack &rarr;</a></p>
         {{ end }}
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- RECENT ACTIVITY -->
+<div class="band" id="activity">
+  <div class="band-inner">
+    <div class="section-header">
+      <h2>Recent Activity</h2>
+      <a href="/activity/" class="view-all">Full archive &rarr;</a>
+    </div>
+    <div class="media-grid">
+      {{ range first 4 (partial "activity-entries.html" .) }}
+        {{ partial "entry-card.html" . }}
+      {{ end }}
+    </div>
+  </div>
+</div>
+
+<!-- CAMPAIGNS -->
+<section id="campaigns">
+  <div class="container">
+    <div class="section-header">
+      <h2>Current Campaigns</h2>
+      <a href="/campaigns/" class="view-all">View all &rarr;</a>
+    </div>
+    <div class="campaigns-grid">
+      {{ with site.GetPage "/campaigns" }}
+        {{ range first 3 .Pages.ByWeight }}
+          {{ partial "campaign-card.html" . }}
+        {{ end }}
+      {{ end }}
     </div>
   </div>
 </section>

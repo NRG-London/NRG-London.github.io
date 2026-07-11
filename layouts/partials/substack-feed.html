@@ -1,36 +1,16 @@
-{{- /* Fetches the Substack RSS feed at build time and returns a slice of
-       newsletter dicts: {title, url, summary, date, ts}. Never fails the
-       build — on any fetch/parse error it warns and returns an empty slice
-       (Hugo's `try` keyword captures the error). Call via partialCached so
-       the fetch happens once per build. */ -}}
+{{- /* Newsletter items come from data/substack.json (committed to the repo),
+       refreshed by scripts/fetch-thumbnails.ps1. Substack returns 403 to the
+       build-time RSS fetch from CI, so the site reads this committed data
+       rather than fetching live. Returns a slice of dicts:
+       {title, url, summary, date, ts}. */ -}}
 {{- $items := slice -}}
-{{- $url := .Site.Params.substackRSS -}}
-{{- if $url -}}
-  {{- /* Send a browser User-Agent: Substack returns 403 Forbidden to the
-         default GetRemote UA (e.g. from the CI runner). */ -}}
-  {{- $ua := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" -}}
-  {{- $r := try (resources.GetRemote $url (dict "headers" (dict "User-Agent" $ua))) -}}
-  {{- if $r.Err -}}
-    {{- warnf "Substack feed fetch failed: %s" $r.Err -}}
-  {{- else -}}
-    {{- with $r.Value -}}
-      {{- $u := try (transform.Unmarshal .) -}}
-      {{- if $u.Err -}}
-        {{- warnf "Substack feed parse failed: %s" $u.Err -}}
-      {{- else -}}
-        {{- range (default slice $u.Value.channel.item) -}}
-          {{- $date := time.AsTime .pubDate -}}
-          {{- $items = $items | append (dict
-              "title"   .title
-              "url"     .link
-              "summary" (.description | plainify | htmlUnescape | strings.TrimSpace | truncate 140)
-              "date"    $date
-              "ts"      $date.Unix) -}}
-        {{- end -}}
-      {{- end -}}
-    {{- else -}}
-      {{- warnf "Substack feed returned nothing: %s" $url -}}
-    {{- end -}}
-  {{- end -}}
+{{- range site.Data.substack -}}
+  {{- $d := time.AsTime .date -}}
+  {{- $items = $items | append (dict
+      "title"   .title
+      "url"     .url
+      "summary" .summary
+      "date"    $d
+      "ts"      $d.Unix) -}}
 {{- end -}}
 {{- return $items -}}
