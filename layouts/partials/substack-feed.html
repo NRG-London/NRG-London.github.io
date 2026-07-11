@@ -6,7 +6,10 @@
 {{- $items := slice -}}
 {{- $url := .Site.Params.substackRSS -}}
 {{- if $url -}}
-  {{- $r := try (resources.GetRemote $url) -}}
+  {{- /* Send a browser User-Agent: Substack returns 403 Forbidden to the
+         default GetRemote UA (e.g. from the CI runner). */ -}}
+  {{- $ua := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" -}}
+  {{- $r := try (resources.GetRemote $url (dict "headers" (dict "User-Agent" $ua))) -}}
   {{- if $r.Err -}}
     {{- warnf "Substack feed fetch failed: %s" $r.Err -}}
   {{- else -}}
