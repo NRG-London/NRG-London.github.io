@@ -27,7 +27,7 @@ This is the *concentration of crime* effect, and it is the single most important
 
 ## What happened next
 
-Over the following year, the Met did exactly what the data pointed to. Officers [set up stop sites in the worst-affected hotspots](https://news.met.police.uk/news/met-officers-target-phone-thieves-in-friday-night-operation-508705) — the West End, Waterloo and the South Bank, Borough — and used drones, plain-clothes teams and pursuit riders to catch offenders, [seizing thousands of illegally modified e-bikes](https://www.itv.com/news/london/2026-04-28/fewer-phone-thefts-after-drone-and-e-bike-tactics-used-to-catch-thieves) along the way.
+Over the following year, the Met did exactly what the data pointed to. Officers concentrated operations on the worst-affected hotspots — [the West End, Waterloo, the South Bank and Borough](https://www.itv.com/news/london/2026-04-28/fewer-phone-thefts-after-drone-and-e-bike-tactics-used-to-catch-thieves) — and [used drones as "eyes in the sky", plain-clothes teams and Sur-Ron pursuit bikes](https://www.bbc.co.uk/news/articles/cdx4762znr6o) to run down the snatchers on their illegally modified e-bikes. The Met's Assistant Commissioner was explicit that neighbourhood policing had been maintained "particularly in the West End" — the very ward my report had flagged as the epicentre.
 
 The result was the first fall in London's phone theft since the Met began publishing the figures.
 
@@ -43,4 +43,4 @@ None of this came from City Hall. When the Mayor published his draft Police and 
 
 A YouGov poll I commissioned in January 2025 confirmed how far City Hall had drifted from the public: Londoners thought phone theft was a serious problem, many had already changed their behaviour because of it, and even Labour voters thought the Mayor was doing too little.
 
-Throughout, neither the Mayor nor his Deputy Mayor for Policing and Crime showed any interest in the concentration-of-crime effect, or in how it could be used to point police resources at the places that would make the biggest difference. The strategy worked — but Londoners got the results *despite* City Hall's plan, not because of it.
+Throughout, neither the Mayor nor his Deputy Mayor for Policing and Crime showed any interest in the concentration-of-crime effect, or in how it could be used to point police resources at the places that would make the biggest difference. Even his belated response now tracks the same map — a new intelligence "command cell" in the West End, the very top of the rankings — though he still reaches first for the phone-makers' "kill switch". The strategy worked — but Londoners got the results *despite* City Hall's plan, not because of it.
