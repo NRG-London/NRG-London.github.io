@@ -7,7 +7,7 @@ outlet: "CapX"
 campaigns: []
 youtube_id: ""
 external_url: "https://capx.co/why-burnhams-number-10-north-wont-work"
-thumbnail: ""
+thumbnail: "/images/media/capx-manc-a-lago-andy-burnham-cant-outrun.jpg"
 summary: "Why Burnham’s Number 10 North won’t work."
 ---
 
