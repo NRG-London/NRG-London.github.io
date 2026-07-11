@@ -1,6 +1,6 @@
 ---
 format: "oped"
-campaigns: []
+campaigns: ["phone-theft"]
 aliases: ["/media/conservativehome-phone-bike-theft/"]
 title: "Time to take phone and bike theft seriously"
 date: 2025-02-28
