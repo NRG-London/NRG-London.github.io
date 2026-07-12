@@ -1,0 +1,26 @@
+---
+title: "Improving Travel Times"
+weight: 20
+category: "Transport"
+summary: "Mapping journey times across London, why travel in outer London looks different, and why the car is not going away any time."
+---
+
+*Why do journeys across outer London take so long, and why does it matter for jobs, opportunity, and quality of life?*
+
+## Exploring the problem: Outer London Access Time
+
+*At City Hall, both the Mayor and TfL put a lot of emphasis on getting people to switch from their car to public transport. It's often quoted that "only half of Londoners own a car", but this hides a fundamental fact: in inner London only about 1/3 of households have a car, but in outer London it's about 2/3. Transport planning tends to ignore this, and the reasons why a car is a rational choice for so many people in outer London.*
+
+I believe that transport planning in London needs to be based on reality not ideology, and although it's true that London has one of the best public transport networks in the world, it's not true in every part of London. In fact, there is a stark divide in the level of public transport in central and inner London versus the outer boroughs, which I think it poorly understood especially by London's transport experts who, by and large, tend to live in the better-connected parts of the city.
+
+Using the R5R transport routing engine, I've built OLAT: the Outer London Access Time map, a colour-coded map of travel times between all parts of London. Blue and green areas show places that are easily reachable by public transport within 45 mins, these are the places that are "in range" for someone looking for work, for example.
+
+The interactive OLAT map allows you to explore how large those easy-travel zones are for well-connected boroughs, and how limited they are for others. In particular, notice that for many outer London boroughs getting to relatively nearby outer boroughs is slow and difficult. These are the orbital journeys that are often 2 to 3 times faster by car, even in busy traffic.
+
+## Interactive Journey Time Map
+
+{{< olat-explorer default="croydon" >}}
+
+Note that I've computed journeys from the main town or population centre for each borough, indicated by the position of the star. In some ways, this flatters outer London journey times as, by definition, those areas with worse public transport are not just slower at getting across the city, but also slower at getting around within the borough. A future version will add more district centres in each borough.
+
+Journey time calculation is based on all London public transport including Tube, DLR, Overground, Elizabeth Line, London buses including Superloop, national rail services, and walking. Cycling and driving are not considered. Journey times are the median travel time between 7.30am and 8.30am on a Tuesday morning, and take into account connection and waiting times.

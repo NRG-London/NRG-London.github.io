@@ -1027,3 +1027,165 @@ section {
 .error-home:hover {
   color: var(--blue-dark);
 }
+
+/* ── OLAT EXPLORER (interactive travel-time map) ── */
+.olat-explorer {
+  margin: 2.5rem 0;
+  background: var(--white);
+  border: 1px solid var(--warm-grey);
+  border-radius: 6px;
+  padding: 1.5rem;
+}
+
+.olat-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.olat-name {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+}
+
+.olat-meta {
+  font-size: 0.85rem;
+  color: var(--mid-grey);
+  margin: 0.15rem 0 0;
+}
+
+.olat-select-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.olat-select-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mid-grey);
+}
+
+.olat-explorer select {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--warm-grey);
+  border-radius: 4px;
+  padding: 0.4rem 0.6rem;
+}
+
+.olat-map {
+  position: relative;
+  line-height: 0;
+}
+
+.olat-map img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.olat-map svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.olat-borough {
+  fill: transparent;
+  stroke: none;
+  cursor: pointer;
+  outline: none;
+  transition: fill 0.15s ease;
+}
+
+.olat-borough:hover,
+.olat-borough:focus-visible {
+  fill: rgba(0, 112, 186, 0.14);
+  stroke: var(--blue);
+  stroke-width: 1.2;
+}
+
+.olat-borough.selected {
+  stroke: var(--ink);
+  stroke-width: 1.8;
+  fill: transparent;
+}
+
+.olat-borough.olat-nodata {
+  cursor: default;
+}
+
+.olat-borough.olat-nodata:hover {
+  fill: rgba(138, 148, 144, 0.15);
+  stroke: var(--mid-grey);
+  stroke-width: 0.8;
+}
+
+.olat-tooltip {
+  display: none;
+  position: fixed;
+  background: var(--deep);
+  color: var(--white);
+  padding: 0.45rem 0.7rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  pointer-events: none;
+  z-index: 200;
+  max-width: 240px;
+}
+
+.olat-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 1rem;
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  color: var(--mid-grey);
+}
+
+.olat-legend-title {
+  font-weight: 700;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.olat-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.olat-legend-item i {
+  width: 14px;
+  height: 11px;
+  border-radius: 2px;
+  border: 1px solid var(--warm-grey);
+  display: inline-block;
+}
+
+.olat-caption {
+  font-size: 0.8rem !important;
+  line-height: 1.6 !important;
+  color: var(--mid-grey) !important;
+  margin: 0.75rem 0 0 !important;
+}
+
+@media (max-width: 640px) {
+  .olat-explorer { padding: 1rem; }
+  .olat-head { align-items: flex-start; flex-direction: column; }
+}
