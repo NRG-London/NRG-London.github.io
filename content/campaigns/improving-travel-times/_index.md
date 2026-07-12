@@ -9,9 +9,11 @@ summary: "Mapping journey times across London, why travel in outer London looks 
 
 ## Exploring the problem: Outer London Access Time
 
-*At City Hall, both the Mayor and TfL put a lot of emphasis on getting people to switch from their car to public transport. It's often quoted that "only half of Londoners own a car", but this hides a fundamental fact: in inner London only about 1/3 of households have a car, but in outer London it's about 2/3. Transport planning tends to ignore this, and the reasons why a car is a rational choice for so many people in outer London.*
+*There's a lot of talk about getting people to switch from their car to public transport, often framed as a moral choice. It's actually a practical choice, driven by people's rational assessment of their options.*
 
-I believe that transport planning in London needs to be based on reality not ideology, and although it's true that London has one of the best public transport networks in the world, it's not true in every part of London. In fact, there is a stark divide in the level of public transport in central and inner London versus the outer boroughs, which I think it poorly understood especially by London's transport experts who, by and large, tend to live in the better-connected parts of the city.
+It's often said that only half of Londoners own a car, but this hides a fundamental fact: in inner London only about 1/3 of households have a car, but in outer London it's about 2/3. Transport planning tends to ignore this, and the reasons why a car is a rational choice for so many people in outer London. See ["A tale of two sub-regional urban zones"](https://neilgarratt.com/library/glp-car-ownership-two-londons/) for more.
+
+Although it's true that London has one of the best public transport networks in the world, it's not true in every part of London. In fact, there is a stark divide in the level of public transport in central and inner London versus the outer boroughs, which I find is poorly understood especially by London's transport experts who, by and large, tend to live in the better-connected parts of the city. I built this map to tackle that knowledge gap.
 
 ## Interactive Journey Time Map
 
