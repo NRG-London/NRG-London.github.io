@@ -1,0 +1,1777 @@
+{
+ "boroughs": [
+  {
+   "slug": "barking-and-dagenham",
+   "name": "Barking and Dagenham",
+   "centres": [
+    {
+     "name": "Barking",
+     "slug": "barking",
+     "cls": "Major",
+     "img": "centres/barking",
+     "mean": "66"
+    },
+    {
+     "name": "Chadwell Heath",
+     "slug": "chadwell-heath",
+     "cls": "District",
+     "img": "centres/chadwell-heath",
+     "mean": "72"
+    },
+    {
+     "name": "Dagenham Heathway",
+     "slug": "dagenham-heathway",
+     "cls": "District",
+     "img": "centres/dagenham-heathway",
+     "mean": "80"
+    },
+    {
+     "name": "Green Lane",
+     "slug": "green-lane",
+     "cls": "District",
+     "img": "centres/green-lane",
+     "mean": "71"
+    }
+   ]
+  },
+  {
+   "slug": "barnet",
+   "name": "Barnet",
+   "centres": [
+    {
+     "name": "Edgware",
+     "slug": "edgware",
+     "cls": "Major",
+     "img": "centres/edgware",
+     "mean": "81"
+    },
+    {
+     "name": "Brent Street",
+     "slug": "brent-street",
+     "cls": "District",
+     "img": "centres/brent-street",
+     "mean": "77"
+    },
+    {
+     "name": "Burnt Oak",
+     "slug": "burnt-oak",
+     "cls": "District",
+     "img": "centres/burnt-oak",
+     "mean": "79"
+    },
+    {
+     "name": "Chipping Barnet",
+     "slug": "chipping-barnet",
+     "cls": "District",
+     "img": "centres/chipping-barnet",
+     "mean": "83"
+    },
+    {
+     "name": "Church End, Finchley",
+     "slug": "church-end-finchley",
+     "cls": "District",
+     "img": "centres/church-end-finchley",
+     "mean": "70"
+    },
+    {
+     "name": "Colindale/The Hyde",
+     "slug": "colindale-the-hyde",
+     "cls": "District",
+     "img": "centres/colindale-the-hyde",
+     "mean": "72"
+    },
+    {
+     "name": "Cricklewood",
+     "slug": "cricklewood",
+     "cls": "District",
+     "img": "centres/cricklewood",
+     "mean": "67"
+    },
+    {
+     "name": "East Finchley",
+     "slug": "east-finchley",
+     "cls": "District",
+     "img": "centres/east-finchley",
+     "mean": "67"
+    },
+    {
+     "name": "Golders Green",
+     "slug": "golders-green",
+     "cls": "District",
+     "img": "centres/golders-green",
+     "mean": "66"
+    },
+    {
+     "name": "Hendon Central",
+     "slug": "hendon-central",
+     "cls": "District",
+     "img": "centres/hendon-central",
+     "mean": "71"
+    },
+    {
+     "name": "Mill Hill",
+     "slug": "mill-hill",
+     "cls": "District",
+     "img": "centres/mill-hill",
+     "mean": "72"
+    },
+    {
+     "name": "New Barnet",
+     "slug": "new-barnet",
+     "cls": "District",
+     "img": "centres/new-barnet",
+     "mean": "75"
+    },
+    {
+     "name": "North Finchley",
+     "slug": "north-finchley",
+     "cls": "District",
+     "img": "centres/north-finchley",
+     "mean": "82"
+    },
+    {
+     "name": "Temple Fortune",
+     "slug": "temple-fortune",
+     "cls": "District",
+     "img": "centres/temple-fortune",
+     "mean": "76"
+    },
+    {
+     "name": "Whetstone",
+     "slug": "whetstone",
+     "cls": "District",
+     "img": "centres/whetstone",
+     "mean": "76"
+    }
+   ]
+  },
+  {
+   "slug": "bexley",
+   "name": "Bexley",
+   "centres": [
+    {
+     "name": "Bexleyheath",
+     "slug": "bexleyheath",
+     "cls": "Major",
+     "img": "centres/bexleyheath",
+     "mean": "79"
+    },
+    {
+     "name": "Crayford",
+     "slug": "crayford",
+     "cls": "District",
+     "img": "centres/crayford",
+     "mean": "90"
+    },
+    {
+     "name": "Erith",
+     "slug": "erith",
+     "cls": "District",
+     "img": "centres/erith",
+     "mean": "88"
+    },
+    {
+     "name": "Sidcup",
+     "slug": "sidcup",
+     "cls": "District",
+     "img": "centres/sidcup",
+     "mean": "77"
+    },
+    {
+     "name": "Welling",
+     "slug": "welling",
+     "cls": "District",
+     "img": "centres/welling",
+     "mean": "79"
+    }
+   ]
+  },
+  {
+   "slug": "brent",
+   "name": "Brent",
+   "centres": [
+    {
+     "name": "Kilburn",
+     "slug": "kilburn",
+     "cls": "Major",
+     "img": "centres/kilburn",
+     "mean": "59"
+    },
+    {
+     "name": "Wembley",
+     "slug": "wembley",
+     "cls": "Major",
+     "img": "centres/wembley",
+     "mean": "70"
+    },
+    {
+     "name": "Burnt Oak",
+     "slug": "burnt-oak",
+     "cls": "District",
+     "img": "centres/burnt-oak",
+     "mean": "79"
+    },
+    {
+     "name": "Colindale/The Hyde",
+     "slug": "colindale-the-hyde",
+     "cls": "District",
+     "img": "centres/colindale-the-hyde",
+     "mean": "72"
+    },
+    {
+     "name": "Cricklewood",
+     "slug": "cricklewood",
+     "cls": "District",
+     "img": "centres/cricklewood",
+     "mean": "67"
+    },
+    {
+     "name": "Ealing Road",
+     "slug": "ealing-road",
+     "cls": "District",
+     "img": "centres/ealing-road",
+     "mean": "78"
+    },
+    {
+     "name": "Harlesden",
+     "slug": "harlesden",
+     "cls": "District",
+     "img": "centres/harlesden",
+     "mean": "65"
+    },
+    {
+     "name": "Kenton",
+     "slug": "kenton",
+     "cls": "District",
+     "img": "centres/kenton",
+     "mean": "76"
+    },
+    {
+     "name": "Kingsbury",
+     "slug": "kingsbury",
+     "cls": "District",
+     "img": "centres/kingsbury",
+     "mean": "73"
+    },
+    {
+     "name": "Neasden",
+     "slug": "neasden",
+     "cls": "District",
+     "img": "centres/neasden",
+     "mean": "67"
+    },
+    {
+     "name": "Preston Road",
+     "slug": "preston-road",
+     "cls": "District",
+     "img": "centres/preston-road",
+     "mean": "70"
+    },
+    {
+     "name": "Wembley Park",
+     "slug": "wembley-park",
+     "cls": "District",
+     "img": "centres/wembley-park",
+     "mean": "66"
+    },
+    {
+     "name": "Willesden Green",
+     "slug": "willesden-green",
+     "cls": "District",
+     "img": "centres/willesden-green",
+     "mean": "63"
+    }
+   ]
+  },
+  {
+   "slug": "bromley",
+   "name": "Bromley",
+   "centres": [
+    {
+     "name": "Bromley",
+     "slug": "bromley",
+     "cls": "Metropolitan",
+     "img": "centres/bromley",
+     "mean": "70"
+    },
+    {
+     "name": "Orpington",
+     "slug": "orpington",
+     "cls": "Major",
+     "img": "centres/orpington",
+     "mean": "77"
+    },
+    {
+     "name": "Beckenham",
+     "slug": "beckenham",
+     "cls": "District",
+     "img": "centres/beckenham",
+     "mean": "74"
+    },
+    {
+     "name": "Penge",
+     "slug": "penge",
+     "cls": "District",
+     "img": "centres/penge",
+     "mean": "69"
+    },
+    {
+     "name": "Petts Wood",
+     "slug": "petts-wood",
+     "cls": "District",
+     "img": "centres/petts-wood",
+     "mean": "78"
+    },
+    {
+     "name": "Upper Norwood/Crystal Palace",
+     "slug": "upper-norwood-crystal-palace",
+     "cls": "District",
+     "img": "centres/upper-norwood-crystal-palace",
+     "mean": "68"
+    },
+    {
+     "name": "West Wickham",
+     "slug": "west-wickham",
+     "cls": "District",
+     "img": "centres/west-wickham",
+     "mean": "81"
+    }
+   ]
+  },
+  {
+   "slug": "camden",
+   "name": "Camden",
+   "centres": [
+    {
+     "name": "West End",
+     "slug": "west-end",
+     "cls": "International",
+     "img": "centres/west-end",
+     "mean": "49"
+    },
+    {
+     "name": "Camden Town",
+     "slug": "camden-town",
+     "cls": "Major",
+     "img": "centres/camden-town",
+     "mean": "56"
+    },
+    {
+     "name": "Kilburn",
+     "slug": "kilburn",
+     "cls": "Major",
+     "img": "centres/kilburn",
+     "mean": "59"
+    },
+    {
+     "name": "Cricklewood",
+     "slug": "cricklewood",
+     "cls": "District",
+     "img": "centres/cricklewood",
+     "mean": "67"
+    },
+    {
+     "name": "Hampstead",
+     "slug": "hampstead",
+     "cls": "District",
+     "img": "centres/hampstead",
+     "mean": "63"
+    },
+    {
+     "name": "Kentish Town",
+     "slug": "kentish-town",
+     "cls": "District",
+     "img": "centres/kentish-town",
+     "mean": "60"
+    },
+    {
+     "name": "Swiss Cottage/Finchley Road",
+     "slug": "swiss-cottage-finchley-road",
+     "cls": "District",
+     "img": "centres/swiss-cottage-finchley-road",
+     "mean": "57"
+    },
+    {
+     "name": "West Hampstead",
+     "slug": "west-hampstead",
+     "cls": "District",
+     "img": "centres/west-hampstead",
+     "mean": "58"
+    }
+   ]
+  },
+  {
+   "slug": "croydon",
+   "name": "Croydon",
+   "centres": [
+    {
+     "name": "Croydon",
+     "slug": "croydon",
+     "cls": "Metropolitan",
+     "img": "centres/croydon",
+     "mean": "63"
+    },
+    {
+     "name": "Addiscombe",
+     "slug": "addiscombe",
+     "cls": "District",
+     "img": "centres/addiscombe",
+     "mean": "73"
+    },
+    {
+     "name": "Coulsdon",
+     "slug": "coulsdon",
+     "cls": "District",
+     "img": "centres/coulsdon",
+     "mean": "83"
+    },
+    {
+     "name": "New Addington",
+     "slug": "new-addington",
+     "cls": "District",
+     "img": "centres/new-addington",
+     "mean": "82"
+    },
+    {
+     "name": "Norbury",
+     "slug": "norbury",
+     "cls": "District",
+     "img": "centres/norbury",
+     "mean": "72"
+    },
+    {
+     "name": "Purley",
+     "slug": "purley",
+     "cls": "District",
+     "img": "centres/purley",
+     "mean": "85"
+    },
+    {
+     "name": "Selsdon",
+     "slug": "selsdon",
+     "cls": "District",
+     "img": "centres/selsdon",
+     "mean": "87"
+    },
+    {
+     "name": "South Norwood",
+     "slug": "south-norwood",
+     "cls": "District",
+     "img": "centres/south-norwood",
+     "mean": "66"
+    },
+    {
+     "name": "Thornton Heath",
+     "slug": "thornton-heath",
+     "cls": "District",
+     "img": "centres/thornton-heath",
+     "mean": "73"
+    },
+    {
+     "name": "Upper Norwood/Crystal Palace",
+     "slug": "upper-norwood-crystal-palace",
+     "cls": "District",
+     "img": "centres/upper-norwood-crystal-palace",
+     "mean": "68"
+    }
+   ]
+  },
+  {
+   "slug": "ealing",
+   "name": "Ealing",
+   "centres": [
+    {
+     "name": "Ealing",
+     "slug": "ealing",
+     "cls": "Metropolitan",
+     "img": "centres/ealing",
+     "mean": "60"
+    },
+    {
+     "name": "Southall",
+     "slug": "southall",
+     "cls": "Major",
+     "img": "centres/southall",
+     "mean": "68"
+    },
+    {
+     "name": "Acton",
+     "slug": "acton",
+     "cls": "District",
+     "img": "centres/acton",
+     "mean": "66"
+    },
+    {
+     "name": "Greenford",
+     "slug": "greenford",
+     "cls": "District",
+     "img": "centres/greenford",
+     "mean": "73"
+    },
+    {
+     "name": "Hanwell",
+     "slug": "hanwell",
+     "cls": "District",
+     "img": "centres/hanwell",
+     "mean": "69"
+    }
+   ]
+  },
+  {
+   "slug": "enfield",
+   "name": "Enfield",
+   "centres": [
+    {
+     "name": "Enfield Town",
+     "slug": "enfield-town",
+     "cls": "Major",
+     "img": "centres/enfield-town",
+     "mean": "81"
+    },
+    {
+     "name": "Angel Edmonton",
+     "slug": "angel-edmonton",
+     "cls": "District",
+     "img": "centres/angel-edmonton",
+     "mean": "74"
+    },
+    {
+     "name": "Edmonton Green",
+     "slug": "edmonton-green",
+     "cls": "District",
+     "img": "centres/edmonton-green",
+     "mean": "74"
+    },
+    {
+     "name": "Palmers Green",
+     "slug": "palmers-green",
+     "cls": "District",
+     "img": "centres/palmers-green",
+     "mean": "75"
+    },
+    {
+     "name": "Southgate",
+     "slug": "southgate",
+     "cls": "District",
+     "img": "centres/southgate",
+     "mean": "75"
+    }
+   ]
+  },
+  {
+   "slug": "greenwich",
+   "name": "Greenwich",
+   "centres": [
+    {
+     "name": "Eltham",
+     "slug": "eltham",
+     "cls": "Major",
+     "img": "centres/eltham",
+     "mean": "74"
+    },
+    {
+     "name": "Woolwich",
+     "slug": "woolwich",
+     "cls": "Major",
+     "img": "centres/woolwich",
+     "mean": "63"
+    },
+    {
+     "name": "Blackheath",
+     "slug": "blackheath",
+     "cls": "District",
+     "img": "centres/blackheath",
+     "mean": "68"
+    },
+    {
+     "name": "East Greenwich",
+     "slug": "east-greenwich",
+     "cls": "District",
+     "img": "centres/east-greenwich",
+     "mean": "69"
+    },
+    {
+     "name": "Greenwich West",
+     "slug": "greenwich-west",
+     "cls": "District",
+     "img": "centres/greenwich-west",
+     "mean": "68"
+    },
+    {
+     "name": "Lee Green",
+     "slug": "lee-green",
+     "cls": "District",
+     "img": "centres/lee-green",
+     "mean": "74"
+    },
+    {
+     "name": "Plumstead",
+     "slug": "plumstead",
+     "cls": "District",
+     "img": "centres/plumstead",
+     "mean": "70"
+    },
+    {
+     "name": "Thamesmead",
+     "slug": "thamesmead",
+     "cls": "District",
+     "img": "centres/thamesmead",
+     "mean": "81"
+    }
+   ]
+  },
+  {
+   "slug": "hackney",
+   "name": "Hackney",
+   "centres": [
+    {
+     "name": "Dalston",
+     "slug": "dalston",
+     "cls": "Major",
+     "img": "centres/dalston",
+     "mean": "59"
+    },
+    {
+     "name": "Hackney Central",
+     "slug": "hackney-central",
+     "cls": "Major",
+     "img": "centres/hackney-central",
+     "mean": "62"
+    },
+    {
+     "name": "Finsbury Park",
+     "slug": "finsbury-park",
+     "cls": "District",
+     "img": "centres/finsbury-park",
+     "mean": "56"
+    },
+    {
+     "name": "Stamford Hill",
+     "slug": "stamford-hill",
+     "cls": "District",
+     "img": "centres/stamford-hill",
+     "mean": "66"
+    },
+    {
+     "name": "Stoke Newington",
+     "slug": "stoke-newington",
+     "cls": "District",
+     "img": "centres/stoke-newington",
+     "mean": "68"
+    }
+   ]
+  },
+  {
+   "slug": "hammersmith-and-fulham",
+   "name": "Hammersmith and Fulham",
+   "centres": [
+    {
+     "name": "Shepherds Bush",
+     "slug": "shepherds-bush",
+     "cls": "Metropolitan",
+     "img": "centres/shepherds-bush",
+     "mean": "55"
+    },
+    {
+     "name": "Fulham",
+     "slug": "fulham",
+     "cls": "Major",
+     "img": "centres/fulham",
+     "mean": "63"
+    },
+    {
+     "name": "Hammersmith",
+     "slug": "hammersmith",
+     "cls": "Major",
+     "img": "centres/hammersmith",
+     "mean": "61"
+    }
+   ]
+  },
+  {
+   "slug": "haringey",
+   "name": "Haringey",
+   "centres": [
+    {
+     "name": "Wood Green",
+     "slug": "wood-green",
+     "cls": "Metropolitan",
+     "img": "centres/wood-green",
+     "mean": "68"
+    },
+    {
+     "name": "Bruce Grove/Tottenham High Road",
+     "slug": "bruce-grove-tottenham-high-road",
+     "cls": "District",
+     "img": "centres/bruce-grove-tottenham-high-road",
+     "mean": "69"
+    },
+    {
+     "name": "Crouch End",
+     "slug": "crouch-end",
+     "cls": "District",
+     "img": "centres/crouch-end",
+     "mean": "74"
+    },
+    {
+     "name": "Finsbury Park",
+     "slug": "finsbury-park",
+     "cls": "District",
+     "img": "centres/finsbury-park",
+     "mean": "56"
+    },
+    {
+     "name": "Green Lanes",
+     "slug": "green-lanes",
+     "cls": "District",
+     "img": "centres/green-lanes",
+     "mean": "67"
+    },
+    {
+     "name": "Muswell Hill",
+     "slug": "muswell-hill",
+     "cls": "District",
+     "img": "centres/muswell-hill",
+     "mean": "76"
+    },
+    {
+     "name": "West Green Road/Seven Sisters",
+     "slug": "west-green-road-seven-sisters",
+     "cls": "District",
+     "img": "centres/west-green-road-seven-sisters",
+     "mean": "60"
+    }
+   ]
+  },
+  {
+   "slug": "harrow",
+   "name": "Harrow",
+   "centres": [
+    {
+     "name": "Harrow",
+     "slug": "harrow",
+     "cls": "Metropolitan",
+     "img": "centres/harrow",
+     "mean": "70"
+    },
+    {
+     "name": "Edgware",
+     "slug": "edgware",
+     "cls": "Major",
+     "img": "centres/edgware",
+     "mean": "81"
+    },
+    {
+     "name": "Burnt Oak",
+     "slug": "burnt-oak",
+     "cls": "District",
+     "img": "centres/burnt-oak",
+     "mean": "79"
+    },
+    {
+     "name": "Kenton",
+     "slug": "kenton",
+     "cls": "District",
+     "img": "centres/kenton",
+     "mean": "76"
+    },
+    {
+     "name": "Kingsbury",
+     "slug": "kingsbury",
+     "cls": "District",
+     "img": "centres/kingsbury",
+     "mean": "73"
+    },
+    {
+     "name": "North Harrow",
+     "slug": "north-harrow",
+     "cls": "District",
+     "img": "centres/north-harrow",
+     "mean": "77"
+    },
+    {
+     "name": "Pinner",
+     "slug": "pinner",
+     "cls": "District",
+     "img": "centres/pinner",
+     "mean": "81"
+    },
+    {
+     "name": "Rayners Lane",
+     "slug": "rayners-lane",
+     "cls": "District",
+     "img": "centres/rayners-lane",
+     "mean": "78"
+    },
+    {
+     "name": "South Harrow",
+     "slug": "south-harrow",
+     "cls": "District",
+     "img": "centres/south-harrow",
+     "mean": "78"
+    },
+    {
+     "name": "Stanmore",
+     "slug": "stanmore",
+     "cls": "District",
+     "img": "centres/stanmore",
+     "mean": "78"
+    },
+    {
+     "name": "Wealdstone",
+     "slug": "wealdstone",
+     "cls": "District",
+     "img": "centres/wealdstone",
+     "mean": "71"
+    }
+   ]
+  },
+  {
+   "slug": "havering",
+   "name": "Havering",
+   "centres": [
+    {
+     "name": "Romford",
+     "slug": "romford",
+     "cls": "Metropolitan",
+     "img": "centres/romford",
+     "mean": "75"
+    },
+    {
+     "name": "Collier Row",
+     "slug": "collier-row",
+     "cls": "District",
+     "img": "centres/collier-row",
+     "mean": "89"
+    },
+    {
+     "name": "Elm Park",
+     "slug": "elm-park",
+     "cls": "District",
+     "img": "centres/elm-park",
+     "mean": "84"
+    },
+    {
+     "name": "Harold Hill",
+     "slug": "harold-hill",
+     "cls": "District",
+     "img": "centres/harold-hill",
+     "mean": "92"
+    },
+    {
+     "name": "Hornchurch",
+     "slug": "hornchurch",
+     "cls": "District",
+     "img": "centres/hornchurch",
+     "mean": "83"
+    },
+    {
+     "name": "Rainham",
+     "slug": "rainham",
+     "cls": "District",
+     "img": "centres/rainham",
+     "mean": "83"
+    },
+    {
+     "name": "Upminster",
+     "slug": "upminster",
+     "cls": "District",
+     "img": "centres/upminster",
+     "mean": "77"
+    }
+   ]
+  },
+  {
+   "slug": "hillingdon",
+   "name": "Hillingdon",
+   "centres": [
+    {
+     "name": "Uxbridge",
+     "slug": "uxbridge",
+     "cls": "Metropolitan",
+     "img": "centres/uxbridge",
+     "mean": "85"
+    },
+    {
+     "name": "Eastcote",
+     "slug": "eastcote",
+     "cls": "District",
+     "img": "centres/eastcote",
+     "mean": "77"
+    },
+    {
+     "name": "Hayes",
+     "slug": "hayes",
+     "cls": "District",
+     "img": "centres/hayes",
+     "mean": "70"
+    },
+    {
+     "name": "Northwood",
+     "slug": "northwood",
+     "cls": "District",
+     "img": "centres/northwood",
+     "mean": "84"
+    },
+    {
+     "name": "Ruislip",
+     "slug": "ruislip",
+     "cls": "District",
+     "img": "centres/ruislip",
+     "mean": "81"
+    },
+    {
+     "name": "Yiewsley/West Drayton",
+     "slug": "yiewsley-west-drayton",
+     "cls": "District",
+     "img": "centres/yiewsley-west-drayton",
+     "mean": "75"
+    }
+   ]
+  },
+  {
+   "slug": "hounslow",
+   "name": "Hounslow",
+   "centres": [
+    {
+     "name": "Hounslow",
+     "slug": "hounslow",
+     "cls": "Metropolitan",
+     "img": "centres/hounslow",
+     "mean": "81"
+    },
+    {
+     "name": "Chiswick",
+     "slug": "chiswick",
+     "cls": "Major",
+     "img": "centres/chiswick",
+     "mean": "73"
+    },
+    {
+     "name": "Brentford",
+     "slug": "brentford",
+     "cls": "District",
+     "img": "centres/brentford",
+     "mean": "74"
+    },
+    {
+     "name": "Feltham High Street",
+     "slug": "feltham-high-street",
+     "cls": "District",
+     "img": "centres/feltham-high-street",
+     "mean": "76"
+    }
+   ]
+  },
+  {
+   "slug": "islington",
+   "name": "Islington",
+   "centres": [
+    {
+     "name": "Angel",
+     "slug": "angel",
+     "cls": "Major",
+     "img": "centres/angel",
+     "mean": "56"
+    },
+    {
+     "name": "Nags Head",
+     "slug": "nags-head",
+     "cls": "Major",
+     "img": "centres/nags-head",
+     "mean": "58"
+    },
+    {
+     "name": "Archway",
+     "slug": "archway",
+     "cls": "District",
+     "img": "centres/archway",
+     "mean": "62"
+    },
+    {
+     "name": "Finsbury Park",
+     "slug": "finsbury-park",
+     "cls": "District",
+     "img": "centres/finsbury-park",
+     "mean": "56"
+    }
+   ]
+  },
+  {
+   "slug": "kensington-and-chelsea",
+   "name": "Kensington and Chelsea",
+   "centres": [
+    {
+     "name": "Knightsbridge",
+     "slug": "knightsbridge",
+     "cls": "International",
+     "img": "centres/knightsbridge",
+     "mean": "57"
+    },
+    {
+     "name": "Kensington High Street",
+     "slug": "kensington-high-street",
+     "cls": "Major",
+     "img": "centres/kensington-high-street",
+     "mean": "61"
+    },
+    {
+     "name": "King's Road (east)",
+     "slug": "kings-road-east",
+     "cls": "Major",
+     "img": "centres/kings-road-east",
+     "mean": "54"
+    },
+    {
+     "name": "Queensway/Westbourne Grove",
+     "slug": "queensway-westbourne-grove",
+     "cls": "Major",
+     "img": "centres/queensway-westbourne-grove",
+     "mean": "55"
+    },
+    {
+     "name": "Brompton Cross",
+     "slug": "brompton-cross",
+     "cls": "District",
+     "img": "centres/brompton-cross",
+     "mean": "63"
+    },
+    {
+     "name": "Earls Court Road",
+     "slug": "earls-court-road",
+     "cls": "District",
+     "img": "centres/earls-court-road",
+     "mean": "56"
+    },
+    {
+     "name": "Fulham Road",
+     "slug": "fulham-road",
+     "cls": "District",
+     "img": "centres/fulham-road",
+     "mean": "63"
+    },
+    {
+     "name": "King's Road (west)",
+     "slug": "kings-road-west",
+     "cls": "District",
+     "img": "centres/kings-road-west",
+     "mean": "66"
+    },
+    {
+     "name": "Notting Hill Gate",
+     "slug": "notting-hill-gate",
+     "cls": "District",
+     "img": "centres/notting-hill-gate",
+     "mean": "57"
+    },
+    {
+     "name": "Portobello",
+     "slug": "portobello",
+     "cls": "District",
+     "img": "centres/portobello",
+     "mean": "65"
+    },
+    {
+     "name": "South Kensington",
+     "slug": "south-kensington",
+     "cls": "District",
+     "img": "centres/south-kensington",
+     "mean": "55"
+    }
+   ]
+  },
+  {
+   "slug": "kingston-upon-thames",
+   "name": "Kingston upon Thames",
+   "centres": [
+    {
+     "name": "Kingston",
+     "slug": "kingston",
+     "cls": "Metropolitan",
+     "img": "centres/kingston",
+     "mean": "76"
+    },
+    {
+     "name": "New Malden",
+     "slug": "new-malden",
+     "cls": "District",
+     "img": "centres/new-malden",
+     "mean": "71"
+    },
+    {
+     "name": "Surbiton",
+     "slug": "surbiton",
+     "cls": "District",
+     "img": "centres/surbiton",
+     "mean": "70"
+    },
+    {
+     "name": "Tolworth",
+     "slug": "tolworth",
+     "cls": "District",
+     "img": "centres/tolworth",
+     "mean": "86"
+    }
+   ]
+  },
+  {
+   "slug": "lambeth",
+   "name": "Lambeth",
+   "centres": [
+    {
+     "name": "Brixton",
+     "slug": "brixton",
+     "cls": "Major",
+     "img": "centres/brixton",
+     "mean": "57"
+    },
+    {
+     "name": "Streatham",
+     "slug": "streatham",
+     "cls": "Major",
+     "img": "centres/streatham",
+     "mean": "69"
+    },
+    {
+     "name": "Camberwell",
+     "slug": "camberwell",
+     "cls": "District",
+     "img": "centres/camberwell",
+     "mean": "64"
+    },
+    {
+     "name": "Clapham High Street",
+     "slug": "clapham-high-street",
+     "cls": "District",
+     "img": "centres/clapham-high-street",
+     "mean": "60"
+    },
+    {
+     "name": "Herne Hill",
+     "slug": "herne-hill",
+     "cls": "District",
+     "img": "centres/herne-hill",
+     "mean": "61"
+    },
+    {
+     "name": "Lavender Hill/Queenstown Road",
+     "slug": "lavender-hill-queenstown-road",
+     "cls": "District",
+     "img": "centres/lavender-hill-queenstown-road",
+     "mean": "67"
+    },
+    {
+     "name": "Stockwell",
+     "slug": "stockwell",
+     "cls": "District",
+     "img": "centres/stockwell",
+     "mean": "55"
+    },
+    {
+     "name": "Upper Norwood/Crystal Palace",
+     "slug": "upper-norwood-crystal-palace",
+     "cls": "District",
+     "img": "centres/upper-norwood-crystal-palace",
+     "mean": "68"
+    },
+    {
+     "name": "West Norwood/Tulse Hill",
+     "slug": "west-norwood-tulse-hill",
+     "cls": "District",
+     "img": "centres/west-norwood-tulse-hill",
+     "mean": "69"
+    }
+   ]
+  },
+  {
+   "slug": "lewisham",
+   "name": "Lewisham",
+   "centres": [
+    {
+     "name": "Catford",
+     "slug": "catford",
+     "cls": "Major",
+     "img": "centres/catford",
+     "mean": "68"
+    },
+    {
+     "name": "Lewisham",
+     "slug": "lewisham",
+     "cls": "Major",
+     "img": "centres/lewisham",
+     "mean": "64"
+    },
+    {
+     "name": "Blackheath",
+     "slug": "blackheath",
+     "cls": "District",
+     "img": "centres/blackheath",
+     "mean": "68"
+    },
+    {
+     "name": "Deptford",
+     "slug": "deptford",
+     "cls": "District",
+     "img": "centres/deptford",
+     "mean": "69"
+    },
+    {
+     "name": "Downham",
+     "slug": "downham",
+     "cls": "District",
+     "img": "centres/downham",
+     "mean": "77"
+    },
+    {
+     "name": "Forest Hill",
+     "slug": "forest-hill",
+     "cls": "District",
+     "img": "centres/forest-hill",
+     "mean": "67"
+    },
+    {
+     "name": "Lee Green",
+     "slug": "lee-green",
+     "cls": "District",
+     "img": "centres/lee-green",
+     "mean": "74"
+    },
+    {
+     "name": "New Cross and New Cross Gate",
+     "slug": "new-cross-and-new-cross-gate",
+     "cls": "District",
+     "img": "centres/new-cross-and-new-cross-gate",
+     "mean": "60"
+    },
+    {
+     "name": "Sydenham",
+     "slug": "sydenham",
+     "cls": "District",
+     "img": "centres/sydenham",
+     "mean": "69"
+    }
+   ]
+  },
+  {
+   "slug": "merton",
+   "name": "Merton",
+   "centres": [
+    {
+     "name": "Wimbledon",
+     "slug": "wimbledon",
+     "cls": "Major",
+     "img": "centres/wimbledon",
+     "mean": "62"
+    },
+    {
+     "name": "Mitcham",
+     "slug": "mitcham",
+     "cls": "District",
+     "img": "centres/mitcham",
+     "mean": "76"
+    },
+    {
+     "name": "Morden",
+     "slug": "morden",
+     "cls": "District",
+     "img": "centres/morden",
+     "mean": "70"
+    }
+   ]
+  },
+  {
+   "slug": "newham",
+   "name": "Newham",
+   "centres": [
+    {
+     "name": "Stratford",
+     "slug": "stratford",
+     "cls": "Metropolitan",
+     "img": "centres/stratford",
+     "mean": "56"
+    },
+    {
+     "name": "East Ham",
+     "slug": "east-ham",
+     "cls": "Major",
+     "img": "centres/east-ham",
+     "mean": "68"
+    },
+    {
+     "name": "Canning Town",
+     "slug": "canning-town",
+     "cls": "District",
+     "img": "centres/canning-town",
+     "mean": "58"
+    },
+    {
+     "name": "East Beckton",
+     "slug": "east-beckton",
+     "cls": "District",
+     "img": "centres/east-beckton",
+     "mean": "75"
+    },
+    {
+     "name": "Forest Gate",
+     "slug": "forest-gate",
+     "cls": "District",
+     "img": "centres/forest-gate",
+     "mean": "62"
+    },
+    {
+     "name": "Green Street",
+     "slug": "green-street",
+     "cls": "District",
+     "img": "centres/green-street",
+     "mean": "72"
+    }
+   ]
+  },
+  {
+   "slug": "redbridge",
+   "name": "Redbridge",
+   "centres": [
+    {
+     "name": "Ilford",
+     "slug": "ilford",
+     "cls": "Metropolitan",
+     "img": "centres/ilford",
+     "mean": "67"
+    },
+    {
+     "name": "Barkingside",
+     "slug": "barkingside",
+     "cls": "District",
+     "img": "centres/barkingside",
+     "mean": "76"
+    },
+    {
+     "name": "Chadwell Heath",
+     "slug": "chadwell-heath",
+     "cls": "District",
+     "img": "centres/chadwell-heath",
+     "mean": "72"
+    },
+    {
+     "name": "Gants Hill",
+     "slug": "gants-hill",
+     "cls": "District",
+     "img": "centres/gants-hill",
+     "mean": "70"
+    },
+    {
+     "name": "Green Lane",
+     "slug": "green-lane",
+     "cls": "District",
+     "img": "centres/green-lane",
+     "mean": "71"
+    },
+    {
+     "name": "South Woodford",
+     "slug": "south-woodford",
+     "cls": "District",
+     "img": "centres/south-woodford",
+     "mean": "70"
+    },
+    {
+     "name": "Wanstead",
+     "slug": "wanstead",
+     "cls": "District",
+     "img": "centres/wanstead",
+     "mean": "68"
+    }
+   ]
+  },
+  {
+   "slug": "richmond-upon-thames",
+   "name": "Richmond upon Thames",
+   "centres": [
+    {
+     "name": "Richmond",
+     "slug": "richmond",
+     "cls": "Major",
+     "img": "centres/richmond",
+     "mean": "64"
+    },
+    {
+     "name": "East Sheen",
+     "slug": "east-sheen",
+     "cls": "District",
+     "img": "centres/east-sheen",
+     "mean": "76"
+    },
+    {
+     "name": "Teddington",
+     "slug": "teddington",
+     "cls": "District",
+     "img": "centres/teddington",
+     "mean": "80"
+    },
+    {
+     "name": "Twickenham",
+     "slug": "twickenham",
+     "cls": "District",
+     "img": "centres/twickenham",
+     "mean": "71"
+    },
+    {
+     "name": "Whitton",
+     "slug": "whitton",
+     "cls": "District",
+     "img": "centres/whitton",
+     "mean": "77"
+    }
+   ]
+  },
+  {
+   "slug": "southwark",
+   "name": "Southwark",
+   "centres": [
+    {
+     "name": "Canada Water",
+     "slug": "canada-water",
+     "cls": "Major",
+     "img": "centres/canada-water",
+     "mean": "59"
+    },
+    {
+     "name": "Elephant and Castle/Walworth Road",
+     "slug": "elephant-and-castle-walworth-road",
+     "cls": "Major",
+     "img": "centres/elephant-and-castle-walworth-road",
+     "mean": "53"
+    },
+    {
+     "name": "Peckham",
+     "slug": "peckham",
+     "cls": "Major",
+     "img": "centres/peckham",
+     "mean": "61"
+    },
+    {
+     "name": "Camberwell",
+     "slug": "camberwell",
+     "cls": "District",
+     "img": "centres/camberwell",
+     "mean": "64"
+    },
+    {
+     "name": "Dulwich - Lordship Lane",
+     "slug": "dulwich-lordship-lane",
+     "cls": "District",
+     "img": "centres/dulwich-lordship-lane",
+     "mean": "77"
+    },
+    {
+     "name": "Herne Hill",
+     "slug": "herne-hill",
+     "cls": "District",
+     "img": "centres/herne-hill",
+     "mean": "61"
+    }
+   ]
+  },
+  {
+   "slug": "sutton",
+   "name": "Sutton",
+   "centres": [
+    {
+     "name": "Sutton",
+     "slug": "sutton",
+     "cls": "Metropolitan",
+     "img": "centres/sutton",
+     "mean": "77"
+    },
+    {
+     "name": "Carshalton Village",
+     "slug": "carshalton-village",
+     "cls": "District",
+     "img": "centres/carshalton-village",
+     "mean": "78"
+    },
+    {
+     "name": "Cheam Village",
+     "slug": "cheam-village",
+     "cls": "District",
+     "img": "centres/cheam-village",
+     "mean": "82"
+    },
+    {
+     "name": "North Cheam",
+     "slug": "north-cheam",
+     "cls": "District",
+     "img": "centres/north-cheam",
+     "mean": "88"
+    },
+    {
+     "name": "Rosehill",
+     "slug": "rosehill",
+     "cls": "District",
+     "img": "centres/rosehill",
+     "mean": "85"
+    },
+    {
+     "name": "Wallington",
+     "slug": "wallington",
+     "cls": "District",
+     "img": "centres/wallington",
+     "mean": "78"
+    },
+    {
+     "name": "Worcester Park",
+     "slug": "worcester-park",
+     "cls": "District",
+     "img": "centres/worcester-park",
+     "mean": "77"
+    }
+   ]
+  },
+  {
+   "slug": "tower-hamlets",
+   "name": "Tower Hamlets",
+   "centres": [
+    {
+     "name": "Canary Wharf",
+     "slug": "canary-wharf",
+     "cls": "Metropolitan",
+     "img": "centres/canary-wharf",
+     "mean": "55"
+    },
+    {
+     "name": "Bethnal Green",
+     "slug": "bethnal-green",
+     "cls": "District",
+     "img": "centres/bethnal-green",
+     "mean": "54"
+    },
+    {
+     "name": "Brick Lane",
+     "slug": "brick-lane",
+     "cls": "District",
+     "img": "centres/brick-lane",
+     "mean": "58"
+    },
+    {
+     "name": "Chrisp Street",
+     "slug": "chrisp-street",
+     "cls": "District",
+     "img": "centres/chrisp-street",
+     "mean": "65"
+    },
+    {
+     "name": "Roman Road (east)",
+     "slug": "roman-road-east",
+     "cls": "District",
+     "img": "centres/roman-road-east",
+     "mean": "63"
+    },
+    {
+     "name": "Roman Road (west)",
+     "slug": "roman-road-west",
+     "cls": "District",
+     "img": "centres/roman-road-west",
+     "mean": "61"
+    },
+    {
+     "name": "Watney Market",
+     "slug": "watney-market",
+     "cls": "District",
+     "img": "centres/watney-market",
+     "mean": "57"
+    },
+    {
+     "name": "Whitechapel",
+     "slug": "whitechapel",
+     "cls": "District",
+     "img": "centres/whitechapel",
+     "mean": "52"
+    }
+   ]
+  },
+  {
+   "slug": "waltham-forest",
+   "name": "Waltham Forest",
+   "centres": [
+    {
+     "name": "Walthamstow",
+     "slug": "walthamstow",
+     "cls": "Major",
+     "img": "centres/walthamstow",
+     "mean": "64"
+    },
+    {
+     "name": "Bakers Arms",
+     "slug": "bakers-arms",
+     "cls": "District",
+     "img": "centres/bakers-arms",
+     "mean": "75"
+    },
+    {
+     "name": "Highams Park",
+     "slug": "highams-park",
+     "cls": "District",
+     "img": "centres/highams-park",
+     "mean": "76"
+    },
+    {
+     "name": "Leyton",
+     "slug": "leyton",
+     "cls": "District",
+     "img": "centres/leyton",
+     "mean": "63"
+    },
+    {
+     "name": "Leytonstone",
+     "slug": "leytonstone",
+     "cls": "District",
+     "img": "centres/leytonstone",
+     "mean": "63"
+    },
+    {
+     "name": "North Chingford",
+     "slug": "north-chingford",
+     "cls": "District",
+     "img": "centres/north-chingford",
+     "mean": "80"
+    },
+    {
+     "name": "South Chingford",
+     "slug": "south-chingford",
+     "cls": "District",
+     "img": "centres/south-chingford",
+     "mean": "84"
+    },
+    {
+     "name": "Wood Street",
+     "slug": "wood-street",
+     "cls": "District",
+     "img": "centres/wood-street",
+     "mean": "74"
+    }
+   ]
+  },
+  {
+   "slug": "wandsworth",
+   "name": "Wandsworth",
+   "centres": [
+    {
+     "name": "Clapham Junction",
+     "slug": "clapham-junction",
+     "cls": "Major",
+     "img": "centres/clapham-junction",
+     "mean": "56"
+    },
+    {
+     "name": "Putney",
+     "slug": "putney",
+     "cls": "Major",
+     "img": "centres/putney",
+     "mean": "63"
+    },
+    {
+     "name": "Tooting",
+     "slug": "tooting",
+     "cls": "Major",
+     "img": "centres/tooting",
+     "mean": "73"
+    },
+    {
+     "name": "Wandsworth",
+     "slug": "wandsworth",
+     "cls": "Major",
+     "img": "centres/wandsworth",
+     "mean": "64"
+    },
+    {
+     "name": "Balham",
+     "slug": "balham",
+     "cls": "District",
+     "img": "centres/balham",
+     "mean": "60"
+    },
+    {
+     "name": "Earlsfield",
+     "slug": "earlsfield",
+     "cls": "District",
+     "img": "centres/earlsfield",
+     "mean": "61"
+    },
+    {
+     "name": "Lavender Hill/Queenstown Road",
+     "slug": "lavender-hill-queenstown-road",
+     "cls": "District",
+     "img": "centres/lavender-hill-queenstown-road",
+     "mean": "67"
+    }
+   ]
+  },
+  {
+   "slug": "westminster",
+   "name": "Westminster",
+   "centres": [
+    {
+     "name": "Knightsbridge",
+     "slug": "knightsbridge",
+     "cls": "International",
+     "img": "centres/knightsbridge",
+     "mean": "57"
+    },
+    {
+     "name": "West End",
+     "slug": "west-end",
+     "cls": "International",
+     "img": "centres/west-end",
+     "mean": "49"
+    },
+    {
+     "name": "Queensway/Westbourne Grove",
+     "slug": "queensway-westbourne-grove",
+     "cls": "Major",
+     "img": "centres/queensway-westbourne-grove",
+     "mean": "55"
+    },
+    {
+     "name": "Edgware Road/Church Street",
+     "slug": "edgware-road-church-street",
+     "cls": "District",
+     "img": "centres/edgware-road-church-street",
+     "mean": "55"
+    },
+    {
+     "name": "Harrow Road",
+     "slug": "harrow-road",
+     "cls": "District",
+     "img": "centres/harrow-road",
+     "mean": "66"
+    },
+    {
+     "name": "Praed Street/Paddington",
+     "slug": "praed-street-paddington",
+     "cls": "District",
+     "img": "centres/praed-street-paddington",
+     "mean": "54"
+    },
+    {
+     "name": "St John's Wood",
+     "slug": "st-johns-wood",
+     "cls": "District",
+     "img": "centres/st-johns-wood",
+     "mean": "58"
+    }
+   ]
+  },
+  {
+   "slug": "city-of-london",
+   "name": "City of London",
+   "centres": [
+    {
+     "name": "City of London",
+     "slug": "city-of-london",
+     "cls": "International",
+     "img": "centres/city-of-london",
+     "mean": "48"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,83 @@
+{{- /*
+  OLAT Explorer v2 (PROTOTYPE) — borough map + district-centre chips.
+  Usage: shortcode "olat-explorer-v2", optional param default="croydon" (borough slug).
+  Data:  data/olat.json (borough shapes) + data/olat_centres.json (London Plan centres).
+  Images: currently stand-ins — each centre points at its primary borough's heatmap.
+          For the real build, set each centre's "img" to its own slug and drop
+          images at static/images/olat/<centre-slug>.webp.
+  Script: static/js/olat-explorer-v2.js
+*/ -}}
+{{- $olat := site.Data.olat -}}
+{{- $centres := site.Data.olat_centres -}}
+{{- $default := .Get "default" | default "croydon" -}}
+{{- $selB := index (where $centres.boroughs "slug" $default) 0 -}}
+{{- $selC := index $selB.centres 0 -}}
+<div class="olat-explorer olat-v2" id="olat-explorer" data-default="{{ $default }}">
+  <div class="olat-head">
+    <div class="olat-head-text">
+      <h3 class="olat-name" id="olat-name">{{ $selC.name }}</h3>
+      <p class="olat-meta" id="olat-meta">{{ $selC.cls }} centre in {{ $selB.name }}{{ with $selC.mean }} &middot; Mean {{ . }} min{{ end }}</p>
+    </div>
+    <label class="olat-select-wrap">
+      <span class="olat-select-label">Centre</span>
+      <select id="olat-select" aria-label="Choose a town centre">
+        {{- range $centres.boroughs }}
+        <optgroup label="{{ .name }}">
+          {{- $bslug := .slug }}
+          {{- range .centres }}
+          <option value="{{ $bslug }}:{{ .slug }}"{{ if and (eq $bslug $default) (eq .slug $selC.slug) }} selected{{ end }}>{{ .name }}</option>
+          {{- end }}
+        </optgroup>
+        {{- end }}
+      </select>
+    </label>
+  </div>
+
+  <div class="olat-chips" id="olat-chips">
+    {{- range $centres.boroughs }}
+    <div class="olat-chip-row" data-borough="{{ .slug }}"{{ if ne .slug $default }} hidden{{ end }}>
+      {{- $bslug := .slug }}{{ $bname := .name }}
+      {{- range $i, $c := .centres }}
+      <button type="button"
+              class="olat-chip{{ if and (eq $bslug $default) (eq $i 0) }} active{{ end }}"
+              data-slug="{{ $c.slug }}" data-name="{{ $c.name }}" data-cls="{{ $c.cls }}"
+              data-img="{{ $c.img }}" data-borough="{{ $bslug }}" data-borough-name="{{ $bname }}"
+              {{- with $c.mean }} data-mean="{{ . }}"{{ end }}>{{ $c.name }}</button>
+      {{- end }}
+    </div>
+    {{- end }}
+  </div>
+
+  <div class="olat-map">
+    <img id="olat-img" src="/images/olat/{{ $selC.img }}.webp"
+         alt="Heatmap of public transport journey times from {{ $selC.name }}"
+         width="1200" height="926">
+    <svg viewBox="{{ delimit $olat.viewBox " " }}" preserveAspectRatio="none"
+         xmlns="http://www.w3.org/2000/svg" aria-hidden="false" role="group"
+         aria-label="Map of London boroughs. Select a borough, then choose one of its town centres.">
+      {{- $centreBoroughs := slice }}
+      {{- range $centres.boroughs }}{{ $centreBoroughs = $centreBoroughs | append .slug }}{{ end }}
+      {{- range $olat.boroughs }}
+      {{- $clickable := in $centreBoroughs .slug }}
+      <path class="olat-borough{{ if not $clickable }} olat-nodata{{ end }}{{ if eq .slug $default }} selected{{ end }}"
+            d="{{ .d }}" fill-rule="evenodd"
+            data-slug="{{ .slug }}" data-name="{{ .name }}"
+            {{- if $clickable }} tabindex="0" role="button"
+            aria-label="{{ .name }}: show town centres"{{ end }}/>
+      {{- end }}
+    </svg>
+    <div class="olat-tooltip" id="olat-tooltip" role="presentation"></div>
+  </div>
+
+  <div class="olat-legend">
+    <span class="olat-legend-title">Journey time (minutes)</span>
+    <span class="olat-legend-item"><i style="background:#2166AC"></i>&lt;&thinsp;15</span>
+    <span class="olat-legend-item"><i style="background:#66BD63"></i>15&ndash;30</span>
+    <span class="olat-legend-item"><i style="background:#D9EF8B"></i>30&ndash;45</span>
+    <span class="olat-legend-item"><i style="background:#FEE08B"></i>45&ndash;60</span>
+    <span class="olat-legend-item"><i style="background:#F46D43"></i>60&ndash;90</span>
+    <span class="olat-legend-item"><i style="background:#A50026"></i>90+</span>
+  </div>
+  <p class="olat-caption">Mean public transport journey times across London from the selected town centre, departing on a Tuesday morning between 7.30am and 8.30am. Click or tap a borough on the map, then pick one of its town centres from the buttons above the map.</p>
+</div>
+<script src="/js/olat-explorer-v2.js" defer></script>

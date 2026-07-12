@@ -1184,6 +1184,59 @@ section {
   margin: 0.75rem 0 0 !important;
 }
 
+/* v2 prototype: district-centre chips */
+.olat-chips {
+  margin-bottom: 1rem;
+}
+
+.olat-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.olat-chip-row[hidden] {
+  display: none;
+}
+
+.olat-chip {
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--warm-grey);
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  min-height: 32px;
+}
+
+.olat-chip:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.olat-chip.active {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: var(--white);
+}
+
+.olat-proto-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--white);
+  background: var(--mid-grey);
+  padding: 0.15rem 0.5rem;
+  border-radius: 2px;
+  margin-right: 0.4rem;
+}
+
 @media (max-width: 640px) {
   .olat-explorer { padding: 1rem; }
+  .olat-chip { min-height: 40px; padding: 0.45rem 0.9rem; }
 }

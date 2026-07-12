@@ -17,12 +17,12 @@ Although it's true that London has one of the best public transport networks in 
 
 ## Interactive Journey Time Map
 
-{{< olat-explorer default="croydon" >}}
+{{< olat-explorer-v2 default="croydon" >}}
 
-Using the R5R transport routing engine, I've built OLAT: the Outer London Access Time map, a colour-coded map of travel times between all parts of London. Blue and green areas show places that are easily reachable by public transport within 45 mins, these are the places that are "in range" for someone looking for work, for example.
+Using the R5R transport routing engine, I've built OLAT: the Outer London Access Time map, a colour-coded map of travel times between all parts of London. Blue and green areas show places that are easily reachable by public transport within 45 mins, these are the places that are "in range" for someone looking for work, for example. Feel free to use it to find potential places to live!
 
 The interactive OLAT map allows you to explore how large those easy-travel zones are for well-connected boroughs, and how limited they are for others. In particular, notice that for many outer London boroughs getting to relatively nearby outer boroughs is slow and difficult. These are the orbital journeys that are often 2 to 3 times faster by car, even in busy traffic.
 
-Note that I've computed journeys from the main town or population centre for each borough, indicated by the position of the star. In some ways, this flatters outer London journey times as, by definition, those areas with worse public transport are not just slower at getting across the city, but also slower at getting around within the borough. A future version will add more district centres in each borough.
+Within each borough, you can select from a range of named centres which is where, especially in outer London, you'll find places that are surprisingly poorly connected to the rest of London. For instance, Harold Hill in Havering, or Selsdon in Croydon. In Hillingdon, Northwood has good radial links towards London but poor links to the south of its own borough. The 202 centres shown are those listed by the GLA as part of the London Plan, plus Bank in the City of London.
 
-Journey time calculation is based on all London public transport including Tube, DLR, Tram, Overground, Elizabeth Line, London buses including Superloop, national rail services, and walking. Cycling and driving are not considered. Journey times are the median travel time between 7.30am and 8.30am on a Tuesday morning, and take into account connection and waiting times.
+Journey time calculation is based on all London public transport including Tube, DLR, Tram, Overground, Elizabeth Line, London buses including Superloop, national rail services, and walking. Cycling and driving are not included. Journey times are the mean travel time between 7.30am and 8.30am on a Tuesday morning, and take into account connection and waiting times so a more frequent service is captured as a lower mean journey time across the hour.
