@@ -13,13 +13,13 @@ summary: "Mapping journey times across London, why travel in outer London looks 
 
 I believe that transport planning in London needs to be based on reality not ideology, and although it's true that London has one of the best public transport networks in the world, it's not true in every part of London. In fact, there is a stark divide in the level of public transport in central and inner London versus the outer boroughs, which I think it poorly understood especially by London's transport experts who, by and large, tend to live in the better-connected parts of the city.
 
-Using the R5R transport routing engine, I've built OLAT: the Outer London Access Time map, a colour-coded map of travel times between all parts of London. Blue and green areas show places that are easily reachable by public transport within 45 mins, these are the places that are "in range" for someone looking for work, for example.
-
-The interactive OLAT map allows you to explore how large those easy-travel zones are for well-connected boroughs, and how limited they are for others. In particular, notice that for many outer London boroughs getting to relatively nearby outer boroughs is slow and difficult. These are the orbital journeys that are often 2 to 3 times faster by car, even in busy traffic.
-
 ## Interactive Journey Time Map
 
 {{< olat-explorer default="croydon" >}}
+
+Using the R5R transport routing engine, I've built OLAT: the Outer London Access Time map, a colour-coded map of travel times between all parts of London. Blue and green areas show places that are easily reachable by public transport within 45 mins, these are the places that are "in range" for someone looking for work, for example.
+
+The interactive OLAT map allows you to explore how large those easy-travel zones are for well-connected boroughs, and how limited they are for others. In particular, notice that for many outer London boroughs getting to relatively nearby outer boroughs is slow and difficult. These are the orbital journeys that are often 2 to 3 times faster by car, even in busy traffic.
 
 Note that I've computed journeys from the main town or population centre for each borough, indicated by the position of the star. In some ways, this flatters outer London journey times as, by definition, those areas with worse public transport are not just slower at getting across the city, but also slower at getting around within the borough. A future version will add more district centres in each borough.
 
