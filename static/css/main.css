@@ -1039,10 +1039,9 @@ section {
 
 .olat-head {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
   margin-bottom: 1rem;
 }
 
@@ -1187,5 +1186,4 @@ section {
 
 @media (max-width: 640px) {
   .olat-explorer { padding: 1rem; }
-  .olat-head { align-items: flex-start; flex-direction: column; }
 }
