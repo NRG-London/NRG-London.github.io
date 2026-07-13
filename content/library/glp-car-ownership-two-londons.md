@@ -16,6 +16,8 @@ aliases: ["/media/glp-car-ownership-two-londons/"]
 
 TfL's own data reveals London as two distinct transport cities. In inner London, 62% of households are car-free; in outer London, where the majority of Londoners live, only a third manage without a car. Nearly 80% of couples with children own at least one vehicle. Despite more than a decade of campaigns, road traffic has been broadly stable for two decades. Transport policy crafted for a non-existent average Londoner is doomed.
 
+*Originally published on the [Greater London Project](https://www.greaterlondon.co/p/a-tale-of-two-sub-regional-urban), where you can also see all the lovely charts and graphs.*
+
 In the clamour for a greener, car-free London, planners and politicians have long pushed a 'one-size-fits-all' approach to travel. Yet beneath the London-wide averages lies a far more nuanced reality – one that reveals London as not one city, but two distinct halves living different transport lives.
 
 Transport for London's latest report on car ownership trends tells a compelling story that challenges the prevailing assumptions about how Londoners move around their city.
