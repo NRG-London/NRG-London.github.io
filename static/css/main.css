@@ -1236,7 +1236,135 @@ section {
   margin-right: 0.4rem;
 }
 
+/* mode toggles */
+.olat-modes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.olat-modes-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mid-grey);
+  margin-right: 0.35rem;
+}
+
+.olat-mode-toggle {
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--white);
+  border: 1px solid var(--mid-grey);
+  border-radius: 4px;
+  padding: 0.35rem 0.8rem;
+  cursor: pointer;
+  min-height: 32px;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.olat-mode-toggle:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.olat-mode-toggle.active {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: var(--white);
+}
+
+.olat-compare-toggle {
+  margin-left: auto;
+  border-style: dashed;
+}
+
+/* compare slider */
+#olat-img-base {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+#olat-img {
+  position: relative;
+  z-index: 1;
+}
+
+.olat-map svg { z-index: 2; }
+
+.olat-compare-divider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  background: var(--ink);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.7);
+  z-index: 3;
+  pointer-events: none;
+}
+
+.olat-compare-divider::after {
+  content: "\25C2\2009\25B8";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--ink);
+  color: var(--white);
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 0.55rem 0.5rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+#olat-compare-grab {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 44px;
+  transform: translateX(-50%);
+  cursor: ew-resize;
+  touch-action: none;
+  z-index: 4;
+  background: transparent;
+}
+
+#olat-compare-grab:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: -2px;
+}
+
+.olat-compare-tag {
+  position: absolute;
+  top: 8px;
+  z-index: 3;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--white);
+  background: var(--deep);
+  padding: 0.2rem 0.5rem;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.olat-compare-tag-left { left: 8px; }
+.olat-compare-tag-right { right: 8px; }
+
 @media (max-width: 640px) {
   .olat-explorer { padding: 1rem; }
   .olat-chip { min-height: 40px; padding: 0.45rem 0.9rem; }
+  .olat-mode-toggle { min-height: 40px; }
 }

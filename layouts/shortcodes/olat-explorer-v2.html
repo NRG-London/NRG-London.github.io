@@ -1,10 +1,9 @@
 {{- /*
-  OLAT Explorer v2 (PROTOTYPE) — borough map + district-centre chips.
+  OLAT Explorer v2 — borough map, district-centre chips, transport-mode toggles.
   Usage: shortcode "olat-explorer-v2", optional param default="croydon" (borough slug).
-  Data:  data/olat.json (borough shapes) + data/olat_centres.json (London Plan centres).
-  Images: currently stand-ins — each centre points at its primary borough's heatmap.
-          For the real build, set each centre's "img" to its own slug and drop
-          images at static/images/olat/<centre-slug>.webp.
+  Data:  data/olat.json (borough shapes) + data/olat_centres.json (centres, modes).
+  Images: static/images/olat/[mode]/[slug].webp - mode folders listed in
+          availableModes; toggles appear automatically when extra modes exist.
   Script: static/js/olat-explorer-v2.js
 */ -}}
 {{- $olat := site.Data.olat -}}
@@ -12,11 +11,14 @@
 {{- $default := .Get "default" | default "croydon" -}}
 {{- $selB := index (where $centres.boroughs "slug" $default) 0 -}}
 {{- $selC := index $selB.centres 0 -}}
-<div class="olat-explorer olat-v2" id="olat-explorer" data-default="{{ $default }}">
+{{- $modes := $centres.availableModes -}}
+{{- $multiMode := gt (len $modes) 1 -}}
+<div class="olat-explorer olat-v2" id="olat-explorer" data-default="{{ $default }}"
+     data-modes="{{ delimit $modes "," }}">
   <div class="olat-head">
     <div class="olat-head-text">
       <h3 class="olat-name" id="olat-name">{{ $selC.name }}</h3>
-      <p class="olat-meta" id="olat-meta">{{ $selC.cls }} centre in {{ $selB.name }}{{ with $selC.mean }} &middot; Mean {{ . }} min{{ end }}</p>
+      <p class="olat-meta" id="olat-meta">{{ $selC.cls }} centre in {{ $selB.name }}{{ with index $selC.means "pt" }} &middot; Mean {{ . }} min{{ end }}</p>
     </div>
     <label class="olat-select-wrap">
       <span class="olat-select-label">Centre</span>
@@ -42,14 +44,29 @@
               class="olat-chip{{ if and (eq $bslug $default) (eq $i 0) }} active{{ end }}"
               data-slug="{{ $c.slug }}" data-name="{{ $c.name }}" data-cls="{{ $c.cls }}"
               data-img="{{ $c.img }}" data-borough="{{ $bslug }}" data-borough-name="{{ $bname }}"
-              {{- with $c.mean }} data-mean="{{ . }}"{{ end }}>{{ $c.name }}</button>
+              data-means="{{ $c.means | jsonify }}">{{ $c.name }}</button>
       {{- end }}
     </div>
     {{- end }}
   </div>
 
-  <div class="olat-map">
-    <img id="olat-img" src="/images/olat/{{ $selC.img }}.webp"
+  {{- if $multiMode }}
+  <div class="olat-modes" id="olat-modes" role="group" aria-label="Transport modes included">
+    <span class="olat-modes-label">Modes: public transport &amp; walking</span>
+    {{- if in $modes "pt-ebike" }}
+    <button type="button" class="olat-mode-toggle" id="olat-toggle-ebike" aria-pressed="false">+ e-bike</button>
+    {{- end }}
+    {{- if in $modes "pt-car" }}
+    <button type="button" class="olat-mode-toggle" id="olat-toggle-car" aria-pressed="false">+ car</button>
+    {{- end }}
+    <button type="button" class="olat-mode-toggle olat-compare-toggle" id="olat-compare" aria-pressed="false" hidden>Compare with PT-only</button>
+  </div>
+  {{- end }}
+
+  <div class="olat-map" id="olat-map">
+    <img id="olat-img-base" src="/images/olat/pt/{{ $selC.img }}.webp" alt="" aria-hidden="true" hidden
+         width="1200" height="926">
+    <img id="olat-img" src="/images/olat/pt/{{ $selC.img }}.webp"
          alt="Heatmap of public transport journey times from {{ $selC.name }}"
          width="1200" height="926">
     <svg viewBox="{{ delimit $olat.viewBox " " }}" preserveAspectRatio="none"
@@ -66,6 +83,14 @@
             aria-label="{{ .name }}: show town centres"{{ end }}/>
       {{- end }}
     </svg>
+    <div class="olat-compare-ui" id="olat-compare-ui" hidden>
+      <div class="olat-compare-divider" id="olat-compare-divider"></div>
+      <div id="olat-compare-grab" tabindex="0" role="slider"
+           aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"
+           aria-label="Comparison divider: public transport only on the left, selected modes on the right"></div>
+      <span class="olat-compare-tag olat-compare-tag-left">PT only</span>
+      <span class="olat-compare-tag olat-compare-tag-right" id="olat-compare-tag-right"></span>
+    </div>
     <div class="olat-tooltip" id="olat-tooltip" role="presentation"></div>
   </div>
 

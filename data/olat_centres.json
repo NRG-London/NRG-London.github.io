@@ -8,29 +8,49 @@
      "name": "Barking",
      "slug": "barking",
      "cls": "Major",
-     "img": "centres/barking",
-     "mean": "66"
+     "img": "barking",
+     "means": {
+      "pt": "66",
+      "pt-ebike": "62",
+      "pt-car": "47",
+      "pt-ebike-car": "47"
+     }
     },
     {
      "name": "Chadwell Heath",
      "slug": "chadwell-heath",
      "cls": "District",
-     "img": "centres/chadwell-heath",
-     "mean": "72"
+     "img": "chadwell-heath",
+     "means": {
+      "pt": "72",
+      "pt-ebike": "60",
+      "pt-car": "51",
+      "pt-ebike-car": "50"
+     }
     },
     {
      "name": "Dagenham Heathway",
      "slug": "dagenham-heathway",
      "cls": "District",
-     "img": "centres/dagenham-heathway",
-     "mean": "80"
+     "img": "dagenham-heathway",
+     "means": {
+      "pt": "80",
+      "pt-ebike": "67",
+      "pt-car": "50",
+      "pt-ebike-car": "50"
+     }
     },
     {
      "name": "Green Lane",
      "slug": "green-lane",
      "cls": "District",
-     "img": "centres/green-lane",
-     "mean": "71"
+     "img": "green-lane",
+     "means": {
+      "pt": "71",
+      "pt-ebike": "65",
+      "pt-car": "53",
+      "pt-ebike-car": "52"
+     }
     }
    ]
   },
@@ -42,106 +62,181 @@
      "name": "Edgware",
      "slug": "edgware",
      "cls": "Major",
-     "img": "centres/edgware",
-     "mean": "81"
+     "img": "edgware",
+     "means": {
+      "pt": "81",
+      "pt-ebike": "67",
+      "pt-car": "51",
+      "pt-ebike-car": "51"
+     }
     },
     {
      "name": "Brent Street",
      "slug": "brent-street",
      "cls": "District",
-     "img": "centres/brent-street",
-     "mean": "77"
+     "img": "brent-street",
+     "means": {
+      "pt": "77",
+      "pt-ebike": "61",
+      "pt-car": "46",
+      "pt-ebike-car": "45"
+     }
     },
     {
      "name": "Burnt Oak",
      "slug": "burnt-oak",
      "cls": "District",
-     "img": "centres/burnt-oak",
-     "mean": "79"
+     "img": "burnt-oak",
+     "means": {
+      "pt": "79",
+      "pt-ebike": "64",
+      "pt-car": "49",
+      "pt-ebike-car": "49"
+     }
     },
     {
      "name": "Chipping Barnet",
      "slug": "chipping-barnet",
      "cls": "District",
-     "img": "centres/chipping-barnet",
-     "mean": "83"
+     "img": "chipping-barnet",
+     "means": {
+      "pt": "83",
+      "pt-ebike": "70",
+      "pt-car": "53",
+      "pt-ebike-car": "53"
+     }
     },
     {
      "name": "Church End, Finchley",
      "slug": "church-end-finchley",
      "cls": "District",
-     "img": "centres/church-end-finchley",
-     "mean": "70"
+     "img": "church-end-finchley",
+     "means": {
+      "pt": "70",
+      "pt-ebike": "58",
+      "pt-car": "45",
+      "pt-ebike-car": "44"
+     }
     },
     {
      "name": "Colindale/The Hyde",
      "slug": "colindale-the-hyde",
      "cls": "District",
-     "img": "centres/colindale-the-hyde",
-     "mean": "72"
+     "img": "colindale-the-hyde",
+     "means": {
+      "pt": "72",
+      "pt-ebike": "60",
+      "pt-car": "47",
+      "pt-ebike-car": "46"
+     }
     },
     {
      "name": "Cricklewood",
      "slug": "cricklewood",
      "cls": "District",
-     "img": "centres/cricklewood",
-     "mean": "67"
+     "img": "cricklewood",
+     "means": {
+      "pt": "67",
+      "pt-ebike": "53",
+      "pt-car": "45",
+      "pt-ebike-car": "43"
+     }
     },
     {
      "name": "East Finchley",
      "slug": "east-finchley",
      "cls": "District",
-     "img": "centres/east-finchley",
-     "mean": "67"
+     "img": "east-finchley",
+     "means": {
+      "pt": "67",
+      "pt-ebike": "55",
+      "pt-car": "46",
+      "pt-ebike-car": "44"
+     }
     },
     {
      "name": "Golders Green",
      "slug": "golders-green",
      "cls": "District",
-     "img": "centres/golders-green",
-     "mean": "66"
+     "img": "golders-green",
+     "means": {
+      "pt": "66",
+      "pt-ebike": "55",
+      "pt-car": "46",
+      "pt-ebike-car": "43"
+     }
     },
     {
      "name": "Hendon Central",
      "slug": "hendon-central",
      "cls": "District",
-     "img": "centres/hendon-central",
-     "mean": "71"
+     "img": "hendon-central",
+     "means": {
+      "pt": "71",
+      "pt-ebike": "57",
+      "pt-car": "45",
+      "pt-ebike-car": "43"
+     }
     },
     {
      "name": "Mill Hill",
      "slug": "mill-hill",
      "cls": "District",
-     "img": "centres/mill-hill",
-     "mean": "72"
+     "img": "mill-hill",
+     "means": {
+      "pt": "72",
+      "pt-ebike": "60",
+      "pt-car": "48",
+      "pt-ebike-car": "46"
+     }
     },
     {
      "name": "New Barnet",
      "slug": "new-barnet",
      "cls": "District",
-     "img": "centres/new-barnet",
-     "mean": "75"
+     "img": "new-barnet",
+     "means": {
+      "pt": "75",
+      "pt-ebike": "66",
+      "pt-car": "52",
+      "pt-ebike-car": "50"
+     }
     },
     {
      "name": "North Finchley",
      "slug": "north-finchley",
      "cls": "District",
-     "img": "centres/north-finchley",
-     "mean": "82"
+     "img": "north-finchley",
+     "means": {
+      "pt": "82",
+      "pt-ebike": "68",
+      "pt-car": "47",
+      "pt-ebike-car": "47"
+     }
     },
     {
      "name": "Temple Fortune",
      "slug": "temple-fortune",
      "cls": "District",
-     "img": "centres/temple-fortune",
-     "mean": "76"
+     "img": "temple-fortune",
+     "means": {
+      "pt": "76",
+      "pt-ebike": "62",
+      "pt-car": "44",
+      "pt-ebike-car": "44"
+     }
     },
     {
      "name": "Whetstone",
      "slug": "whetstone",
      "cls": "District",
-     "img": "centres/whetstone",
-     "mean": "76"
+     "img": "whetstone",
+     "means": {
+      "pt": "76",
+      "pt-ebike": "64",
+      "pt-car": "48",
+      "pt-ebike-car": "47"
+     }
     }
    ]
   },
@@ -153,36 +248,61 @@
      "name": "Bexleyheath",
      "slug": "bexleyheath",
      "cls": "Major",
-     "img": "centres/bexleyheath",
-     "mean": "79"
+     "img": "bexleyheath",
+     "means": {
+      "pt": "79",
+      "pt-ebike": "65",
+      "pt-car": "56",
+      "pt-ebike-car": "55"
+     }
     },
     {
      "name": "Crayford",
      "slug": "crayford",
      "cls": "District",
-     "img": "centres/crayford",
-     "mean": "90"
+     "img": "crayford",
+     "means": {
+      "pt": "90",
+      "pt-ebike": "75",
+      "pt-car": "57",
+      "pt-ebike-car": "57"
+     }
     },
     {
      "name": "Erith",
      "slug": "erith",
      "cls": "District",
-     "img": "centres/erith",
-     "mean": "88"
+     "img": "erith",
+     "means": {
+      "pt": "88",
+      "pt-ebike": "73",
+      "pt-car": "63",
+      "pt-ebike-car": "63"
+     }
     },
     {
      "name": "Sidcup",
      "slug": "sidcup",
      "cls": "District",
-     "img": "centres/sidcup",
-     "mean": "77"
+     "img": "sidcup",
+     "means": {
+      "pt": "77",
+      "pt-ebike": "64",
+      "pt-car": "55",
+      "pt-ebike-car": "53"
+     }
     },
     {
      "name": "Welling",
      "slug": "welling",
      "cls": "District",
-     "img": "centres/welling",
-     "mean": "79"
+     "img": "welling",
+     "means": {
+      "pt": "79",
+      "pt-ebike": "65",
+      "pt-car": "54",
+      "pt-ebike-car": "53"
+     }
     }
    ]
   },
@@ -194,92 +314,157 @@
      "name": "Kilburn",
      "slug": "kilburn",
      "cls": "Major",
-     "img": "centres/kilburn",
-     "mean": "59"
+     "img": "kilburn",
+     "means": {
+      "pt": "59",
+      "pt-ebike": "49",
+      "pt-car": "47",
+      "pt-ebike-car": "43"
+     }
     },
     {
      "name": "Wembley",
      "slug": "wembley",
      "cls": "Major",
-     "img": "centres/wembley",
-     "mean": "70"
+     "img": "wembley",
+     "means": {
+      "pt": "70",
+      "pt-ebike": "56",
+      "pt-car": "49",
+      "pt-ebike-car": "47"
+     }
     },
     {
      "name": "Burnt Oak",
      "slug": "burnt-oak",
      "cls": "District",
-     "img": "centres/burnt-oak",
-     "mean": "79"
+     "img": "burnt-oak",
+     "means": {
+      "pt": "79",
+      "pt-ebike": "64",
+      "pt-car": "49",
+      "pt-ebike-car": "49"
+     }
     },
     {
      "name": "Colindale/The Hyde",
      "slug": "colindale-the-hyde",
      "cls": "District",
-     "img": "centres/colindale-the-hyde",
-     "mean": "72"
+     "img": "colindale-the-hyde",
+     "means": {
+      "pt": "72",
+      "pt-ebike": "60",
+      "pt-car": "47",
+      "pt-ebike-car": "46"
+     }
     },
     {
      "name": "Cricklewood",
      "slug": "cricklewood",
      "cls": "District",
-     "img": "centres/cricklewood",
-     "mean": "67"
+     "img": "cricklewood",
+     "means": {
+      "pt": "67",
+      "pt-ebike": "53",
+      "pt-car": "45",
+      "pt-ebike-car": "43"
+     }
     },
     {
      "name": "Ealing Road",
      "slug": "ealing-road",
      "cls": "District",
-     "img": "centres/ealing-road",
-     "mean": "78"
+     "img": "ealing-road",
+     "means": {
+      "pt": "78",
+      "pt-ebike": "60",
+      "pt-car": "49",
+      "pt-ebike-car": "48"
+     }
     },
     {
      "name": "Harlesden",
      "slug": "harlesden",
      "cls": "District",
-     "img": "centres/harlesden",
-     "mean": "65"
+     "img": "harlesden",
+     "means": {
+      "pt": "65",
+      "pt-ebike": "53",
+      "pt-car": "46",
+      "pt-ebike-car": "44"
+     }
     },
     {
      "name": "Kenton",
      "slug": "kenton",
      "cls": "District",
-     "img": "centres/kenton",
-     "mean": "76"
+     "img": "kenton",
+     "means": {
+      "pt": "76",
+      "pt-ebike": "63",
+      "pt-car": "54",
+      "pt-ebike-car": "52"
+     }
     },
     {
      "name": "Kingsbury",
      "slug": "kingsbury",
      "cls": "District",
-     "img": "centres/kingsbury",
-     "mean": "73"
+     "img": "kingsbury",
+     "means": {
+      "pt": "73",
+      "pt-ebike": "60",
+      "pt-car": "49",
+      "pt-ebike-car": "48"
+     }
     },
     {
      "name": "Neasden",
      "slug": "neasden",
      "cls": "District",
-     "img": "centres/neasden",
-     "mean": "67"
+     "img": "neasden",
+     "means": {
+      "pt": "67",
+      "pt-ebike": "53",
+      "pt-car": "44",
+      "pt-ebike-car": "42"
+     }
     },
     {
      "name": "Preston Road",
      "slug": "preston-road",
      "cls": "District",
-     "img": "centres/preston-road",
-     "mean": "70"
+     "img": "preston-road",
+     "means": {
+      "pt": "70",
+      "pt-ebike": "57",
+      "pt-car": "49",
+      "pt-ebike-car": "47"
+     }
     },
     {
      "name": "Wembley Park",
      "slug": "wembley-park",
      "cls": "District",
-     "img": "centres/wembley-park",
-     "mean": "66"
+     "img": "wembley-park",
+     "means": {
+      "pt": "66",
+      "pt-ebike": "54",
+      "pt-car": "47",
+      "pt-ebike-car": "44"
+     }
     },
     {
      "name": "Willesden Green",
      "slug": "willesden-green",
      "cls": "District",
-     "img": "centres/willesden-green",
-     "mean": "63"
+     "img": "willesden-green",
+     "means": {
+      "pt": "63",
+      "pt-ebike": "51",
+      "pt-car": "47",
+      "pt-ebike-car": "43"
+     }
     }
    ]
   },
@@ -291,50 +476,85 @@
      "name": "Bromley",
      "slug": "bromley",
      "cls": "Metropolitan",
-     "img": "centres/bromley",
-     "mean": "70"
+     "img": "bromley",
+     "means": {
+      "pt": "70",
+      "pt-ebike": "59",
+      "pt-car": "54",
+      "pt-ebike-car": "51"
+     }
     },
     {
      "name": "Orpington",
      "slug": "orpington",
      "cls": "Major",
-     "img": "centres/orpington",
-     "mean": "77"
+     "img": "orpington",
+     "means": {
+      "pt": "77",
+      "pt-ebike": "65",
+      "pt-car": "59",
+      "pt-ebike-car": "56"
+     }
     },
     {
      "name": "Beckenham",
      "slug": "beckenham",
      "cls": "District",
-     "img": "centres/beckenham",
-     "mean": "74"
+     "img": "beckenham",
+     "means": {
+      "pt": "74",
+      "pt-ebike": "60",
+      "pt-car": "52",
+      "pt-ebike-car": "51"
+     }
     },
     {
      "name": "Penge",
      "slug": "penge",
      "cls": "District",
-     "img": "centres/penge",
-     "mean": "69"
+     "img": "penge",
+     "means": {
+      "pt": "69",
+      "pt-ebike": "53",
+      "pt-car": "51",
+      "pt-ebike-car": "48"
+     }
     },
     {
      "name": "Petts Wood",
      "slug": "petts-wood",
      "cls": "District",
-     "img": "centres/petts-wood",
-     "mean": "78"
+     "img": "petts-wood",
+     "means": {
+      "pt": "78",
+      "pt-ebike": "66",
+      "pt-car": "58",
+      "pt-ebike-car": "56"
+     }
     },
     {
      "name": "Upper Norwood/Crystal Palace",
      "slug": "upper-norwood-crystal-palace",
      "cls": "District",
-     "img": "centres/upper-norwood-crystal-palace",
-     "mean": "68"
+     "img": "upper-norwood-crystal-palace",
+     "means": {
+      "pt": "68",
+      "pt-ebike": "56",
+      "pt-car": "52",
+      "pt-ebike-car": "50"
+     }
     },
     {
      "name": "West Wickham",
      "slug": "west-wickham",
      "cls": "District",
-     "img": "centres/west-wickham",
-     "mean": "81"
+     "img": "west-wickham",
+     "means": {
+      "pt": "81",
+      "pt-ebike": "71",
+      "pt-car": "57",
+      "pt-ebike-car": "56"
+     }
     }
    ]
   },
@@ -346,57 +566,97 @@
      "name": "West End",
      "slug": "west-end",
      "cls": "International",
-     "img": "centres/west-end",
-     "mean": "49"
+     "img": "west-end",
+     "means": {
+      "pt": "49",
+      "pt-ebike": "39",
+      "pt-car": "47",
+      "pt-ebike-car": "39"
+     }
     },
     {
      "name": "Camden Town",
      "slug": "camden-town",
      "cls": "Major",
-     "img": "centres/camden-town",
-     "mean": "56"
+     "img": "camden-town",
+     "means": {
+      "pt": "56",
+      "pt-ebike": "45",
+      "pt-car": "50",
+      "pt-ebike-car": "44"
+     }
     },
     {
      "name": "Kilburn",
      "slug": "kilburn",
      "cls": "Major",
-     "img": "centres/kilburn",
-     "mean": "59"
+     "img": "kilburn",
+     "means": {
+      "pt": "59",
+      "pt-ebike": "49",
+      "pt-car": "47",
+      "pt-ebike-car": "43"
+     }
     },
     {
      "name": "Cricklewood",
      "slug": "cricklewood",
      "cls": "District",
-     "img": "centres/cricklewood",
-     "mean": "67"
+     "img": "cricklewood",
+     "means": {
+      "pt": "67",
+      "pt-ebike": "53",
+      "pt-car": "45",
+      "pt-ebike-car": "43"
+     }
     },
     {
      "name": "Hampstead",
      "slug": "hampstead",
      "cls": "District",
-     "img": "centres/hampstead",
-     "mean": "63"
+     "img": "hampstead",
+     "means": {
+      "pt": "63",
+      "pt-ebike": "50",
+      "pt-car": "49",
+      "pt-ebike-car": "45"
+     }
     },
     {
      "name": "Kentish Town",
      "slug": "kentish-town",
      "cls": "District",
-     "img": "centres/kentish-town",
-     "mean": "60"
+     "img": "kentish-town",
+     "means": {
+      "pt": "60",
+      "pt-ebike": "47",
+      "pt-car": "52",
+      "pt-ebike-car": "46"
+     }
     },
     {
      "name": "Swiss Cottage/Finchley Road",
      "slug": "swiss-cottage-finchley-road",
      "cls": "District",
-     "img": "centres/swiss-cottage-finchley-road",
-     "mean": "57"
+     "img": "swiss-cottage-finchley-road",
+     "means": {
+      "pt": "57",
+      "pt-ebike": "46",
+      "pt-car": "49",
+      "pt-ebike-car": "44"
+     }
     },
     {
      "name": "West Hampstead",
      "slug": "west-hampstead",
      "cls": "District",
-     "img": "centres/west-hampstead",
-     "mean": "58"
+     "img": "west-hampstead",
+     "means": {
+      "pt": "58",
+      "pt-ebike": "46",
+      "pt-car": "47",
+      "pt-ebike-car": "43"
+     }
     }
    ]
   },
@@ -408,71 +668,121 @@
      "name": "Croydon",
      "slug": "croydon",
      "cls": "Metropolitan",
-     "img": "centres/croydon",
-     "mean": "63"
+     "img": "croydon",
+     "means": {
+      "pt": "63",
+      "pt-ebike": "51",
+      "pt-car": "55",
+      "pt-ebike-car": "49"
+     }
     },
     {
      "name": "Addiscombe",
      "slug": "addiscombe",
      "cls": "District",
-     "img": "centres/addiscombe",
-     "mean": "73"
+     "img": "addiscombe",
+     "means": {
+      "pt": "73",
+      "pt-ebike": "58",
+      "pt-car": "54",
+      "pt-ebike-car": "51"
+     }
     },
     {
      "name": "Coulsdon",
      "slug": "coulsdon",
      "cls": "District",
-     "img": "centres/coulsdon",
-     "mean": "83"
+     "img": "coulsdon",
+     "means": {
+      "pt": "83",
+      "pt-ebike": "66",
+      "pt-car": "63",
+      "pt-ebike-car": "60"
+     }
     },
     {
      "name": "New Addington",
      "slug": "new-addington",
      "cls": "District",
-     "img": "centres/new-addington",
-     "mean": "82"
+     "img": "new-addington",
+     "means": {
+      "pt": "82",
+      "pt-ebike": "73",
+      "pt-car": "64",
+      "pt-ebike-car": "63"
+     }
     },
     {
      "name": "Norbury",
      "slug": "norbury",
      "cls": "District",
-     "img": "centres/norbury",
-     "mean": "72"
+     "img": "norbury",
+     "means": {
+      "pt": "72",
+      "pt-ebike": "57",
+      "pt-car": "52",
+      "pt-ebike-car": "51"
+     }
     },
     {
      "name": "Purley",
      "slug": "purley",
      "cls": "District",
-     "img": "centres/purley",
-     "mean": "85"
+     "img": "purley",
+     "means": {
+      "pt": "85",
+      "pt-ebike": "68",
+      "pt-car": "63",
+      "pt-ebike-car": "61"
+     }
     },
     {
      "name": "Selsdon",
      "slug": "selsdon",
      "cls": "District",
-     "img": "centres/selsdon",
-     "mean": "87"
+     "img": "selsdon",
+     "means": {
+      "pt": "87",
+      "pt-ebike": "68",
+      "pt-car": "62",
+      "pt-ebike-car": "60"
+     }
     },
     {
      "name": "South Norwood",
      "slug": "south-norwood",
      "cls": "District",
-     "img": "centres/south-norwood",
-     "mean": "66"
+     "img": "south-norwood",
+     "means": {
+      "pt": "66",
+      "pt-ebike": "52",
+      "pt-car": "52",
+      "pt-ebike-car": "48"
+     }
     },
     {
      "name": "Thornton Heath",
      "slug": "thornton-heath",
      "cls": "District",
-     "img": "centres/thornton-heath",
-     "mean": "73"
+     "img": "thornton-heath",
+     "means": {
+      "pt": "73",
+      "pt-ebike": "57",
+      "pt-car": "52",
+      "pt-ebike-car": "50"
+     }
     },
     {
      "name": "Upper Norwood/Crystal Palace",
      "slug": "upper-norwood-crystal-palace",
      "cls": "District",
-     "img": "centres/upper-norwood-crystal-palace",
-     "mean": "68"
+     "img": "upper-norwood-crystal-palace",
+     "means": {
+      "pt": "68",
+      "pt-ebike": "56",
+      "pt-car": "52",
+      "pt-ebike-car": "50"
+     }
     }
    ]
   },
@@ -484,36 +794,61 @@
      "name": "Ealing",
      "slug": "ealing",
      "cls": "Metropolitan",
-     "img": "centres/ealing",
-     "mean": "60"
+     "img": "ealing",
+     "means": {
+      "pt": "60",
+      "pt-ebike": "49",
+      "pt-car": "46",
+      "pt-ebike-car": "43"
+     }
     },
     {
      "name": "Southall",
      "slug": "southall",
      "cls": "Major",
-     "img": "centres/southall",
-     "mean": "68"
+     "img": "southall",
+     "means": {
+      "pt": "68",
+      "pt-ebike": "57",
+      "pt-car": "52",
+      "pt-ebike-car": "49"
+     }
     },
     {
      "name": "Acton",
      "slug": "acton",
      "cls": "District",
-     "img": "centres/acton",
-     "mean": "66"
+     "img": "acton",
+     "means": {
+      "pt": "66",
+      "pt-ebike": "49",
+      "pt-car": "47",
+      "pt-ebike-car": "44"
+     }
     },
     {
      "name": "Greenford",
      "slug": "greenford",
      "cls": "District",
-     "img": "centres/greenford",
-     "mean": "73"
+     "img": "greenford",
+     "means": {
+      "pt": "73",
+      "pt-ebike": "58",
+      "pt-car": "49",
+      "pt-ebike-car": "48"
+     }
     },
     {
      "name": "Hanwell",
      "slug": "hanwell",
      "cls": "District",
-     "img": "centres/hanwell",
-     "mean": "69"
+     "img": "hanwell",
+     "means": {
+      "pt": "69",
+      "pt-ebike": "55",
+      "pt-car": "51",
+      "pt-ebike-car": "48"
+     }
     }
    ]
   },
@@ -525,36 +860,61 @@
      "name": "Enfield Town",
      "slug": "enfield-town",
      "cls": "Major",
-     "img": "centres/enfield-town",
-     "mean": "81"
+     "img": "enfield-town",
+     "means": {
+      "pt": "81",
+      "pt-ebike": "70",
+      "pt-car": "52",
+      "pt-ebike-car": "51"
+     }
     },
     {
      "name": "Angel Edmonton",
      "slug": "angel-edmonton",
      "cls": "District",
-     "img": "centres/angel-edmonton",
-     "mean": "74"
+     "img": "angel-edmonton",
+     "means": {
+      "pt": "74",
+      "pt-ebike": "59",
+      "pt-car": "43",
+      "pt-ebike-car": "42"
+     }
     },
     {
      "name": "Edmonton Green",
      "slug": "edmonton-green",
      "cls": "District",
-     "img": "centres/edmonton-green",
-     "mean": "74"
+     "img": "edmonton-green",
+     "means": {
+      "pt": "74",
+      "pt-ebike": "61",
+      "pt-car": "46",
+      "pt-ebike-car": "45"
+     }
     },
     {
      "name": "Palmers Green",
      "slug": "palmers-green",
      "cls": "District",
-     "img": "centres/palmers-green",
-     "mean": "75"
+     "img": "palmers-green",
+     "means": {
+      "pt": "75",
+      "pt-ebike": "62",
+      "pt-car": "43",
+      "pt-ebike-car": "43"
+     }
     },
     {
      "name": "Southgate",
      "slug": "southgate",
      "cls": "District",
-     "img": "centres/southgate",
-     "mean": "75"
+     "img": "southgate",
+     "means": {
+      "pt": "75",
+      "pt-ebike": "62",
+      "pt-car": "46",
+      "pt-ebike-car": "44"
+     }
     }
    ]
   },
@@ -566,57 +926,97 @@
      "name": "Eltham",
      "slug": "eltham",
      "cls": "Major",
-     "img": "centres/eltham",
-     "mean": "74"
+     "img": "eltham",
+     "means": {
+      "pt": "74",
+      "pt-ebike": "60",
+      "pt-car": "49",
+      "pt-ebike-car": "48"
+     }
     },
     {
      "name": "Woolwich",
      "slug": "woolwich",
      "cls": "Major",
-     "img": "centres/woolwich",
-     "mean": "63"
+     "img": "woolwich",
+     "means": {
+      "pt": "63",
+      "pt-ebike": "50",
+      "pt-car": "54",
+      "pt-ebike-car": "48"
+     }
     },
     {
      "name": "Blackheath",
      "slug": "blackheath",
      "cls": "District",
-     "img": "centres/blackheath",
-     "mean": "68"
+     "img": "blackheath",
+     "means": {
+      "pt": "68",
+      "pt-ebike": "53",
+      "pt-car": "49",
+      "pt-ebike-car": "47"
+     }
     },
     {
      "name": "East Greenwich",
      "slug": "east-greenwich",
      "cls": "District",
-     "img": "centres/east-greenwich",
-     "mean": "69"
+     "img": "east-greenwich",
+     "means": {
+      "pt": "69",
+      "pt-ebike": "49",
+      "pt-car": "45",
+      "pt-ebike-car": "43"
+     }
     },
     {
      "name": "Greenwich West",
      "slug": "greenwich-west",
      "cls": "District",
-     "img": "centres/greenwich-west",
-     "mean": "68"
+     "img": "greenwich-west",
+     "means": {
+      "pt": "68",
+      "pt-ebike": "50",
+      "pt-car": "49",
+      "pt-ebike-car": "45"
+     }
     },
     {
      "name": "Lee Green",
      "slug": "lee-green",
      "cls": "District",
-     "img": "centres/lee-green",
-     "mean": "74"
+     "img": "lee-green",
+     "means": {
+      "pt": "74",
+      "pt-ebike": "56",
+      "pt-car": "47",
+      "pt-ebike-car": "46"
+     }
     },
     {
      "name": "Plumstead",
      "slug": "plumstead",
      "cls": "District",
-     "img": "centres/plumstead",
-     "mean": "70"
+     "img": "plumstead",
+     "means": {
+      "pt": "70",
+      "pt-ebike": "54",
+      "pt-car": "53",
+      "pt-ebike-car": "50"
+     }
     },
     {
      "name": "Thamesmead",
      "slug": "thamesmead",
      "cls": "District",
-     "img": "centres/thamesmead",
-     "mean": "81"
+     "img": "thamesmead",
+     "means": {
+      "pt": "81",
+      "pt-ebike": "62",
+      "pt-car": "61",
+      "pt-ebike-car": "57"
+     }
     }
    ]
   },
@@ -628,36 +1028,61 @@
      "name": "Dalston",
      "slug": "dalston",
      "cls": "Major",
-     "img": "centres/dalston",
-     "mean": "59"
+     "img": "dalston",
+     "means": {
+      "pt": "59",
+      "pt-ebike": "46",
+      "pt-car": "47",
+      "pt-ebike-car": "43"
+     }
     },
     {
      "name": "Hackney Central",
      "slug": "hackney-central",
      "cls": "Major",
-     "img": "centres/hackney-central",
-     "mean": "62"
+     "img": "hackney-central",
+     "means": {
+      "pt": "62",
+      "pt-ebike": "49",
+      "pt-car": "47",
+      "pt-ebike-car": "44"
+     }
     },
     {
      "name": "Finsbury Park",
      "slug": "finsbury-park",
      "cls": "District",
-     "img": "centres/finsbury-park",
-     "mean": "56"
+     "img": "finsbury-park",
+     "means": {
+      "pt": "56",
+      "pt-ebike": "46",
+      "pt-car": "48",
+      "pt-ebike-car": "43"
+     }
     },
     {
      "name": "Stamford Hill",
      "slug": "stamford-hill",
      "cls": "District",
-     "img": "centres/stamford-hill",
-     "mean": "66"
+     "img": "stamford-hill",
+     "means": {
+      "pt": "66",
+      "pt-ebike": "51",
+      "pt-car": "49",
+      "pt-ebike-car": "46"
+     }
     },
     {
      "name": "Stoke Newington",
      "slug": "stoke-newington",
      "cls": "District",
-     "img": "centres/stoke-newington",
-     "mean": "68"
+     "img": "stoke-newington",
+     "means": {
+      "pt": "68",
+      "pt-ebike": "54",
+      "pt-car": "50",
+      "pt-ebike-car": "48"
+     }
     }
    ]
   },
@@ -669,22 +1094,37 @@
      "name": "Shepherds Bush",
      "slug": "shepherds-bush",
      "cls": "Metropolitan",
-     "img": "centres/shepherds-bush",
-     "mean": "55"
+     "img": "shepherds-bush",
+     "means": {
+      "pt": "55",
+      "pt-ebike": "44",
+      "pt-car": "48",
+      "pt-ebike-car": "42"
+     }
     },
     {
      "name": "Fulham",
      "slug": "fulham",
      "cls": "Major",
-     "img": "centres/fulham",
-     "mean": "63"
+     "img": "fulham",
+     "means": {
+      "pt": "63",
+      "pt-ebike": "50",
+      "pt-car": "48",
+      "pt-ebike-car": "46"
+     }
     },
     {
      "name": "Hammersmith",
      "slug": "hammersmith",
      "cls": "Major",
-     "img": "centres/hammersmith",
-     "mean": "61"
+     "img": "hammersmith",
+     "means": {
+      "pt": "61",
+      "pt-ebike": "48",
+      "pt-car": "49",
+      "pt-ebike-car": "44"
+     }
     }
    ]
   },
@@ -696,50 +1136,85 @@
      "name": "Wood Green",
      "slug": "wood-green",
      "cls": "Metropolitan",
-     "img": "centres/wood-green",
-     "mean": "68"
+     "img": "wood-green",
+     "means": {
+      "pt": "68",
+      "pt-ebike": "54",
+      "pt-car": "44",
+      "pt-ebike-car": "42"
+     }
     },
     {
      "name": "Bruce Grove/Tottenham High Road",
      "slug": "bruce-grove-tottenham-high-road",
      "cls": "District",
-     "img": "centres/bruce-grove-tottenham-high-road",
-     "mean": "69"
+     "img": "bruce-grove-tottenham-high-road",
+     "means": {
+      "pt": "69",
+      "pt-ebike": "53",
+      "pt-car": "46",
+      "pt-ebike-car": "44"
+     }
     },
     {
      "name": "Crouch End",
      "slug": "crouch-end",
      "cls": "District",
-     "img": "centres/crouch-end",
-     "mean": "74"
+     "img": "crouch-end",
+     "means": {
+      "pt": "74",
+      "pt-ebike": "52",
+      "pt-car": "51",
+      "pt-ebike-car": "47"
+     }
     },
     {
      "name": "Finsbury Park",
      "slug": "finsbury-park",
      "cls": "District",
-     "img": "centres/finsbury-park",
-     "mean": "56"
+     "img": "finsbury-park",
+     "means": {
+      "pt": "56",
+      "pt-ebike": "46",
+      "pt-car": "48",
+      "pt-ebike-car": "43"
+     }
     },
     {
      "name": "Green Lanes",
      "slug": "green-lanes",
      "cls": "District",
-     "img": "centres/green-lanes",
-     "mean": "67"
+     "img": "green-lanes",
+     "means": {
+      "pt": "67",
+      "pt-ebike": "50",
+      "pt-car": "48",
+      "pt-ebike-car": "44"
+     }
     },
     {
      "name": "Muswell Hill",
      "slug": "muswell-hill",
      "cls": "District",
-     "img": "centres/muswell-hill",
-     "mean": "76"
+     "img": "muswell-hill",
+     "means": {
+      "pt": "76",
+      "pt-ebike": "60",
+      "pt-car": "47",
+      "pt-ebike-car": "46"
+     }
     },
     {
      "name": "West Green Road/Seven Sisters",
      "slug": "west-green-road-seven-sisters",
      "cls": "District",
-     "img": "centres/west-green-road-seven-sisters",
-     "mean": "60"
+     "img": "west-green-road-seven-sisters",
+     "means": {
+      "pt": "60",
+      "pt-ebike": "48",
+      "pt-car": "47",
+      "pt-ebike-car": "43"
+     }
     }
    ]
   },
@@ -751,78 +1226,133 @@
      "name": "Harrow",
      "slug": "harrow",
      "cls": "Metropolitan",
-     "img": "centres/harrow",
-     "mean": "70"
+     "img": "harrow",
+     "means": {
+      "pt": "70",
+      "pt-ebike": "57",
+      "pt-car": "53",
+      "pt-ebike-car": "50"
+     }
     },
     {
      "name": "Edgware",
      "slug": "edgware",
      "cls": "Major",
-     "img": "centres/edgware",
-     "mean": "81"
+     "img": "edgware",
+     "means": {
+      "pt": "81",
+      "pt-ebike": "67",
+      "pt-car": "51",
+      "pt-ebike-car": "51"
+     }
     },
     {
      "name": "Burnt Oak",
      "slug": "burnt-oak",
      "cls": "District",
-     "img": "centres/burnt-oak",
-     "mean": "79"
+     "img": "burnt-oak",
+     "means": {
+      "pt": "79",
+      "pt-ebike": "64",
+      "pt-car": "49",
+      "pt-ebike-car": "49"
+     }
     },
     {
      "name": "Kenton",
      "slug": "kenton",
      "cls": "District",
-     "img": "centres/kenton",
-     "mean": "76"
+     "img": "kenton",
+     "means": {
+      "pt": "76",
+      "pt-ebike": "63",
+      "pt-car": "54",
+      "pt-ebike-car": "52"
+     }
     },
     {
      "name": "Kingsbury",
      "slug": "kingsbury",
      "cls": "District",
-     "img": "centres/kingsbury",
-     "mean": "73"
+     "img": "kingsbury",
+     "means": {
+      "pt": "73",
+      "pt-ebike": "60",
+      "pt-car": "49",
+      "pt-ebike-car": "48"
+     }
     },
     {
      "name": "North Harrow",
      "slug": "north-harrow",
      "cls": "District",
-     "img": "centres/north-harrow",
-     "mean": "77"
+     "img": "north-harrow",
+     "means": {
+      "pt": "77",
+      "pt-ebike": "62",
+      "pt-car": "57",
+      "pt-ebike-car": "54"
+     }
     },
     {
      "name": "Pinner",
      "slug": "pinner",
      "cls": "District",
-     "img": "centres/pinner",
-     "mean": "81"
+     "img": "pinner",
+     "means": {
+      "pt": "81",
+      "pt-ebike": "67",
+      "pt-car": "60",
+      "pt-ebike-car": "58"
+     }
     },
     {
      "name": "Rayners Lane",
      "slug": "rayners-lane",
      "cls": "District",
-     "img": "centres/rayners-lane",
-     "mean": "78"
+     "img": "rayners-lane",
+     "means": {
+      "pt": "78",
+      "pt-ebike": "61",
+      "pt-car": "58",
+      "pt-ebike-car": "55"
+     }
     },
     {
      "name": "South Harrow",
      "slug": "south-harrow",
      "cls": "District",
-     "img": "centres/south-harrow",
-     "mean": "78"
+     "img": "south-harrow",
+     "means": {
+      "pt": "78",
+      "pt-ebike": "64",
+      "pt-car": "55",
+      "pt-ebike-car": "54"
+     }
     },
     {
      "name": "Stanmore",
      "slug": "stanmore",
      "cls": "District",
-     "img": "centres/stanmore",
-     "mean": "78"
+     "img": "stanmore",
+     "means": {
+      "pt": "78",
+      "pt-ebike": "66",
+      "pt-car": "52",
+      "pt-ebike-car": "51"
+     }
     },
     {
      "name": "Wealdstone",
      "slug": "wealdstone",
      "cls": "District",
-     "img": "centres/wealdstone",
-     "mean": "71"
+     "img": "wealdstone",
+     "means": {
+      "pt": "71",
+      "pt-ebike": "58",
+      "pt-car": "55",
+      "pt-ebike-car": "51"
+     }
     }
    ]
   },
@@ -834,50 +1364,85 @@
      "name": "Romford",
      "slug": "romford",
      "cls": "Metropolitan",
-     "img": "centres/romford",
-     "mean": "75"
+     "img": "romford",
+     "means": {
+      "pt": "75",
+      "pt-ebike": "63",
+      "pt-car": "59",
+      "pt-ebike-car": "56"
+     }
     },
     {
      "name": "Collier Row",
      "slug": "collier-row",
      "cls": "District",
-     "img": "centres/collier-row",
-     "mean": "89"
+     "img": "collier-row",
+     "means": {
+      "pt": "89",
+      "pt-ebike": "82",
+      "pt-car": "58",
+      "pt-ebike-car": "58"
+     }
     },
     {
      "name": "Elm Park",
      "slug": "elm-park",
      "cls": "District",
-     "img": "centres/elm-park",
-     "mean": "84"
+     "img": "elm-park",
+     "means": {
+      "pt": "84",
+      "pt-ebike": "72",
+      "pt-car": "59",
+      "pt-ebike-car": "58"
+     }
     },
     {
      "name": "Harold Hill",
      "slug": "harold-hill",
      "cls": "District",
-     "img": "centres/harold-hill",
-     "mean": "92"
+     "img": "harold-hill",
+     "means": {
+      "pt": "92",
+      "pt-ebike": "83",
+      "pt-car": "66",
+      "pt-ebike-car": "66"
+     }
     },
     {
      "name": "Hornchurch",
      "slug": "hornchurch",
      "cls": "District",
-     "img": "centres/hornchurch",
-     "mean": "83"
+     "img": "hornchurch",
+     "means": {
+      "pt": "83",
+      "pt-ebike": "71",
+      "pt-car": "61",
+      "pt-ebike-car": "59"
+     }
     },
     {
      "name": "Rainham",
      "slug": "rainham",
      "cls": "District",
-     "img": "centres/rainham",
-     "mean": "83"
+     "img": "rainham",
+     "means": {
+      "pt": "83",
+      "pt-ebike": "71",
+      "pt-car": "55",
+      "pt-ebike-car": "55"
+     }
     },
     {
      "name": "Upminster",
      "slug": "upminster",
      "cls": "District",
-     "img": "centres/upminster",
-     "mean": "77"
+     "img": "upminster",
+     "means": {
+      "pt": "77",
+      "pt-ebike": "64",
+      "pt-car": "61",
+      "pt-ebike-car": "57"
+     }
     }
    ]
   },
@@ -889,43 +1454,73 @@
      "name": "Uxbridge",
      "slug": "uxbridge",
      "cls": "Metropolitan",
-     "img": "centres/uxbridge",
-     "mean": "85"
+     "img": "uxbridge",
+     "means": {
+      "pt": "85",
+      "pt-ebike": "77",
+      "pt-car": "58",
+      "pt-ebike-car": "58"
+     }
     },
     {
      "name": "Eastcote",
      "slug": "eastcote",
      "cls": "District",
-     "img": "centres/eastcote",
-     "mean": "77"
+     "img": "eastcote",
+     "means": {
+      "pt": "77",
+      "pt-ebike": "65",
+      "pt-car": "60",
+      "pt-ebike-car": "57"
+     }
     },
     {
      "name": "Hayes",
      "slug": "hayes",
      "cls": "District",
-     "img": "centres/hayes",
-     "mean": "70"
+     "img": "hayes",
+     "means": {
+      "pt": "70",
+      "pt-ebike": "57",
+      "pt-car": "52",
+      "pt-ebike-car": "49"
+     }
     },
     {
      "name": "Northwood",
      "slug": "northwood",
      "cls": "District",
-     "img": "centres/northwood",
-     "mean": "84"
+     "img": "northwood",
+     "means": {
+      "pt": "84",
+      "pt-ebike": "72",
+      "pt-car": "66",
+      "pt-ebike-car": "63"
+     }
     },
     {
      "name": "Ruislip",
      "slug": "ruislip",
      "cls": "District",
-     "img": "centres/ruislip",
-     "mean": "81"
+     "img": "ruislip",
+     "means": {
+      "pt": "81",
+      "pt-ebike": "69",
+      "pt-car": "59",
+      "pt-ebike-car": "58"
+     }
     },
     {
      "name": "Yiewsley/West Drayton",
      "slug": "yiewsley-west-drayton",
      "cls": "District",
-     "img": "centres/yiewsley-west-drayton",
-     "mean": "75"
+     "img": "yiewsley-west-drayton",
+     "means": {
+      "pt": "75",
+      "pt-ebike": "63",
+      "pt-car": "57",
+      "pt-ebike-car": "54"
+     }
     }
    ]
   },
@@ -937,29 +1532,49 @@
      "name": "Hounslow",
      "slug": "hounslow",
      "cls": "Metropolitan",
-     "img": "centres/hounslow",
-     "mean": "81"
+     "img": "hounslow",
+     "means": {
+      "pt": "81",
+      "pt-ebike": "66",
+      "pt-car": "56",
+      "pt-ebike-car": "54"
+     }
     },
     {
      "name": "Chiswick",
      "slug": "chiswick",
      "cls": "Major",
-     "img": "centres/chiswick",
-     "mean": "73"
+     "img": "chiswick",
+     "means": {
+      "pt": "73",
+      "pt-ebike": "55",
+      "pt-car": "46",
+      "pt-ebike-car": "45"
+     }
     },
     {
      "name": "Brentford",
      "slug": "brentford",
      "cls": "District",
-     "img": "centres/brentford",
-     "mean": "74"
+     "img": "brentford",
+     "means": {
+      "pt": "74",
+      "pt-ebike": "58",
+      "pt-car": "49",
+      "pt-ebike-car": "48"
+     }
     },
     {
      "name": "Feltham High Street",
      "slug": "feltham-high-street",
      "cls": "District",
-     "img": "centres/feltham-high-street",
-     "mean": "76"
+     "img": "feltham-high-street",
+     "means": {
+      "pt": "76",
+      "pt-ebike": "65",
+      "pt-car": "59",
+      "pt-ebike-car": "55"
+     }
     }
    ]
   },
@@ -971,29 +1586,49 @@
      "name": "Angel",
      "slug": "angel",
      "cls": "Major",
-     "img": "centres/angel",
-     "mean": "56"
+     "img": "angel",
+     "means": {
+      "pt": "56",
+      "pt-ebike": "43",
+      "pt-car": "49",
+      "pt-ebike-car": "43"
+     }
     },
     {
      "name": "Nags Head",
      "slug": "nags-head",
      "cls": "Major",
-     "img": "centres/nags-head",
-     "mean": "58"
+     "img": "nags-head",
+     "means": {
+      "pt": "58",
+      "pt-ebike": "46",
+      "pt-car": "49",
+      "pt-ebike-car": "44"
+     }
     },
     {
      "name": "Archway",
      "slug": "archway",
      "cls": "District",
-     "img": "centres/archway",
-     "mean": "62"
+     "img": "archway",
+     "means": {
+      "pt": "62",
+      "pt-ebike": "49",
+      "pt-car": "48",
+      "pt-ebike-car": "45"
+     }
     },
     {
      "name": "Finsbury Park",
      "slug": "finsbury-park",
      "cls": "District",
-     "img": "centres/finsbury-park",
-     "mean": "56"
+     "img": "finsbury-park",
+     "means": {
+      "pt": "56",
+      "pt-ebike": "46",
+      "pt-car": "48",
+      "pt-ebike-car": "43"
+     }
     }
    ]
   },
@@ -1005,78 +1640,133 @@
      "name": "Knightsbridge",
      "slug": "knightsbridge",
      "cls": "International",
-     "img": "centres/knightsbridge",
-     "mean": "57"
+     "img": "knightsbridge",
+     "means": {
+      "pt": "57",
+      "pt-ebike": "42",
+      "pt-car": "49",
+      "pt-ebike-car": "41"
+     }
     },
     {
      "name": "Kensington High Street",
      "slug": "kensington-high-street",
      "cls": "Major",
-     "img": "centres/kensington-high-street",
-     "mean": "61"
+     "img": "kensington-high-street",
+     "means": {
+      "pt": "61",
+      "pt-ebike": "46",
+      "pt-car": "49",
+      "pt-ebike-car": "43"
+     }
     },
     {
      "name": "King's Road (east)",
      "slug": "kings-road-east",
      "cls": "Major",
-     "img": "centres/kings-road-east",
-     "mean": "54"
+     "img": "kings-road-east",
+     "means": {
+      "pt": "54",
+      "pt-ebike": "42",
+      "pt-car": "49",
+      "pt-ebike-car": "41"
+     }
     },
     {
      "name": "Queensway/Westbourne Grove",
      "slug": "queensway-westbourne-grove",
      "cls": "Major",
-     "img": "centres/queensway-westbourne-grove",
-     "mean": "55"
+     "img": "queensway-westbourne-grove",
+     "means": {
+      "pt": "55",
+      "pt-ebike": "43",
+      "pt-car": "48",
+      "pt-ebike-car": "41"
+     }
     },
     {
      "name": "Brompton Cross",
      "slug": "brompton-cross",
      "cls": "District",
-     "img": "centres/brompton-cross",
-     "mean": "63"
+     "img": "brompton-cross",
+     "means": {
+      "pt": "63",
+      "pt-ebike": "44",
+      "pt-car": "49",
+      "pt-ebike-car": "43"
+     }
     },
     {
      "name": "Earls Court Road",
      "slug": "earls-court-road",
      "cls": "District",
-     "img": "centres/earls-court-road",
-     "mean": "56"
+     "img": "earls-court-road",
+     "means": {
+      "pt": "56",
+      "pt-ebike": "47",
+      "pt-car": "46",
+      "pt-ebike-car": "43"
+     }
     },
     {
      "name": "Fulham Road",
      "slug": "fulham-road",
      "cls": "District",
-     "img": "centres/fulham-road",
-     "mean": "63"
+     "img": "fulham-road",
+     "means": {
+      "pt": "63",
+      "pt-ebike": "46",
+      "pt-car": "47",
+      "pt-ebike-car": "43"
+     }
     },
     {
      "name": "King's Road (west)",
      "slug": "kings-road-west",
      "cls": "District",
-     "img": "centres/kings-road-west",
-     "mean": "66"
+     "img": "kings-road-west",
+     "means": {
+      "pt": "66",
+      "pt-ebike": "47",
+      "pt-car": "49",
+      "pt-ebike-car": "45"
+     }
     },
     {
      "name": "Notting Hill Gate",
      "slug": "notting-hill-gate",
      "cls": "District",
-     "img": "centres/notting-hill-gate",
-     "mean": "57"
+     "img": "notting-hill-gate",
+     "means": {
+      "pt": "57",
+      "pt-ebike": "44",
+      "pt-car": "48",
+      "pt-ebike-car": "42"
+     }
     },
     {
      "name": "Portobello",
      "slug": "portobello",
      "cls": "District",
-     "img": "centres/portobello",
-     "mean": "65"
+     "img": "portobello",
+     "means": {
+      "pt": "65",
+      "pt-ebike": "47",
+      "pt-car": "50",
+      "pt-ebike-car": "45"
+     }
     },
     {
      "name": "South Kensington",
      "slug": "south-kensington",
      "cls": "District",
-     "img": "centres/south-kensington",
-     "mean": "55"
+     "img": "south-kensington",
+     "means": {
+      "pt": "55",
+      "pt-ebike": "43",
+      "pt-car": "47",
+      "pt-ebike-car": "41"
+     }
     }
    ]
   },
@@ -1088,29 +1778,49 @@
      "name": "Kingston",
      "slug": "kingston",
      "cls": "Metropolitan",
-     "img": "centres/kingston",
-     "mean": "76"
+     "img": "kingston",
+     "means": {
+      "pt": "76",
+      "pt-ebike": "63",
+      "pt-car": "60",
+      "pt-ebike-car": "56"
+     }
     },
     {
      "name": "New Malden",
      "slug": "new-malden",
      "cls": "District",
-     "img": "centres/new-malden",
-     "mean": "71"
+     "img": "new-malden",
+     "means": {
+      "pt": "71",
+      "pt-ebike": "58",
+      "pt-car": "57",
+      "pt-ebike-car": "53"
+     }
     },
     {
      "name": "Surbiton",
      "slug": "surbiton",
      "cls": "District",
-     "img": "centres/surbiton",
-     "mean": "70"
+     "img": "surbiton",
+     "means": {
+      "pt": "70",
+      "pt-ebike": "57",
+      "pt-car": "60",
+      "pt-ebike-car": "54"
+     }
     },
     {
      "name": "Tolworth",
      "slug": "tolworth",
      "cls": "District",
-     "img": "centres/tolworth",
-     "mean": "86"
+     "img": "tolworth",
+     "means": {
+      "pt": "86",
+      "pt-ebike": "69",
+      "pt-car": "58",
+      "pt-ebike-car": "57"
+     }
     }
    ]
   },
@@ -1122,64 +1832,109 @@
      "name": "Brixton",
      "slug": "brixton",
      "cls": "Major",
-     "img": "centres/brixton",
-     "mean": "57"
+     "img": "brixton",
+     "means": {
+      "pt": "57",
+      "pt-ebike": "45",
+      "pt-car": "49",
+      "pt-ebike-car": "44"
+     }
     },
     {
      "name": "Streatham",
      "slug": "streatham",
      "cls": "Major",
-     "img": "centres/streatham",
-     "mean": "69"
+     "img": "streatham",
+     "means": {
+      "pt": "69",
+      "pt-ebike": "55",
+      "pt-car": "51",
+      "pt-ebike-car": "49"
+     }
     },
     {
      "name": "Camberwell",
      "slug": "camberwell",
      "cls": "District",
-     "img": "centres/camberwell",
-     "mean": "64"
+     "img": "camberwell",
+     "means": {
+      "pt": "64",
+      "pt-ebike": "48",
+      "pt-car": "50",
+      "pt-ebike-car": "46"
+     }
     },
     {
      "name": "Clapham High Street",
      "slug": "clapham-high-street",
      "cls": "District",
-     "img": "centres/clapham-high-street",
-     "mean": "60"
+     "img": "clapham-high-street",
+     "means": {
+      "pt": "60",
+      "pt-ebike": "46",
+      "pt-car": "51",
+      "pt-ebike-car": "45"
+     }
     },
     {
      "name": "Herne Hill",
      "slug": "herne-hill",
      "cls": "District",
-     "img": "centres/herne-hill",
-     "mean": "61"
+     "img": "herne-hill",
+     "means": {
+      "pt": "61",
+      "pt-ebike": "48",
+      "pt-car": "52",
+      "pt-ebike-car": "47"
+     }
     },
     {
      "name": "Lavender Hill/Queenstown Road",
      "slug": "lavender-hill-queenstown-road",
      "cls": "District",
-     "img": "centres/lavender-hill-queenstown-road",
-     "mean": "67"
+     "img": "lavender-hill-queenstown-road",
+     "means": {
+      "pt": "67",
+      "pt-ebike": "50",
+      "pt-car": "49",
+      "pt-ebike-car": "47"
+     }
     },
     {
      "name": "Stockwell",
      "slug": "stockwell",
      "cls": "District",
-     "img": "centres/stockwell",
-     "mean": "55"
+     "img": "stockwell",
+     "means": {
+      "pt": "55",
+      "pt-ebike": "43",
+      "pt-car": "48",
+      "pt-ebike-car": "42"
+     }
     },
     {
      "name": "Upper Norwood/Crystal Palace",
      "slug": "upper-norwood-crystal-palace",
      "cls": "District",
-     "img": "centres/upper-norwood-crystal-palace",
-     "mean": "68"
+     "img": "upper-norwood-crystal-palace",
+     "means": {
+      "pt": "68",
+      "pt-ebike": "56",
+      "pt-car": "52",
+      "pt-ebike-car": "50"
+     }
     },
     {
      "name": "West Norwood/Tulse Hill",
      "slug": "west-norwood-tulse-hill",
      "cls": "District",
-     "img": "centres/west-norwood-tulse-hill",
-     "mean": "69"
+     "img": "west-norwood-tulse-hill",
+     "means": {
+      "pt": "69",
+      "pt-ebike": "55",
+      "pt-car": "53",
+      "pt-ebike-car": "51"
+     }
     }
    ]
   },
@@ -1191,64 +1946,109 @@
      "name": "Catford",
      "slug": "catford",
      "cls": "Major",
-     "img": "centres/catford",
-     "mean": "68"
+     "img": "catford",
+     "means": {
+      "pt": "68",
+      "pt-ebike": "54",
+      "pt-car": "49",
+      "pt-ebike-car": "47"
+     }
     },
     {
      "name": "Lewisham",
      "slug": "lewisham",
      "cls": "Major",
-     "img": "centres/lewisham",
-     "mean": "64"
+     "img": "lewisham",
+     "means": {
+      "pt": "64",
+      "pt-ebike": "50",
+      "pt-car": "50",
+      "pt-ebike-car": "46"
+     }
     },
     {
      "name": "Blackheath",
      "slug": "blackheath",
      "cls": "District",
-     "img": "centres/blackheath",
-     "mean": "68"
+     "img": "blackheath",
+     "means": {
+      "pt": "68",
+      "pt-ebike": "53",
+      "pt-car": "49",
+      "pt-ebike-car": "47"
+     }
     },
     {
      "name": "Deptford",
      "slug": "deptford",
      "cls": "District",
-     "img": "centres/deptford",
-     "mean": "69"
+     "img": "deptford",
+     "means": {
+      "pt": "69",
+      "pt-ebike": "48",
+      "pt-car": "50",
+      "pt-ebike-car": "45"
+     }
     },
     {
      "name": "Downham",
      "slug": "downham",
      "cls": "District",
-     "img": "centres/downham",
-     "mean": "77"
+     "img": "downham",
+     "means": {
+      "pt": "77",
+      "pt-ebike": "59",
+      "pt-car": "50",
+      "pt-ebike-car": "49"
+     }
     },
     {
      "name": "Forest Hill",
      "slug": "forest-hill",
      "cls": "District",
-     "img": "centres/forest-hill",
-     "mean": "67"
+     "img": "forest-hill",
+     "means": {
+      "pt": "67",
+      "pt-ebike": "54",
+      "pt-car": "51",
+      "pt-ebike-car": "49"
+     }
     },
     {
      "name": "Lee Green",
      "slug": "lee-green",
      "cls": "District",
-     "img": "centres/lee-green",
-     "mean": "74"
+     "img": "lee-green",
+     "means": {
+      "pt": "74",
+      "pt-ebike": "56",
+      "pt-car": "47",
+      "pt-ebike-car": "46"
+     }
     },
     {
      "name": "New Cross and New Cross Gate",
      "slug": "new-cross-and-new-cross-gate",
      "cls": "District",
-     "img": "centres/new-cross-and-new-cross-gate",
-     "mean": "60"
+     "img": "new-cross-and-new-cross-gate",
+     "means": {
+      "pt": "60",
+      "pt-ebike": "47",
+      "pt-car": "49",
+      "pt-ebike-car": "45"
+     }
     },
     {
      "name": "Sydenham",
      "slug": "sydenham",
      "cls": "District",
-     "img": "centres/sydenham",
-     "mean": "69"
+     "img": "sydenham",
+     "means": {
+      "pt": "69",
+      "pt-ebike": "54",
+      "pt-car": "52",
+      "pt-ebike-car": "50"
+     }
     }
    ]
   },
@@ -1260,22 +2060,37 @@
      "name": "Wimbledon",
      "slug": "wimbledon",
      "cls": "Major",
-     "img": "centres/wimbledon",
-     "mean": "62"
+     "img": "wimbledon",
+     "means": {
+      "pt": "62",
+      "pt-ebike": "50",
+      "pt-car": "52",
+      "pt-ebike-car": "47"
+     }
     },
     {
      "name": "Mitcham",
      "slug": "mitcham",
      "cls": "District",
-     "img": "centres/mitcham",
-     "mean": "76"
+     "img": "mitcham",
+     "means": {
+      "pt": "76",
+      "pt-ebike": "61",
+      "pt-car": "56",
+      "pt-ebike-car": "55"
+     }
     },
     {
      "name": "Morden",
      "slug": "morden",
      "cls": "District",
-     "img": "centres/morden",
-     "mean": "70"
+     "img": "morden",
+     "means": {
+      "pt": "70",
+      "pt-ebike": "59",
+      "pt-car": "55",
+      "pt-ebike-car": "53"
+     }
     }
    ]
   },
@@ -1287,43 +2102,73 @@
      "name": "Stratford",
      "slug": "stratford",
      "cls": "Metropolitan",
-     "img": "centres/stratford",
-     "mean": "56"
+     "img": "stratford",
+     "means": {
+      "pt": "56",
+      "pt-ebike": "46",
+      "pt-car": "47",
+      "pt-ebike-car": "43"
+     }
     },
     {
      "name": "East Ham",
      "slug": "east-ham",
      "cls": "Major",
-     "img": "centres/east-ham",
-     "mean": "68"
+     "img": "east-ham",
+     "means": {
+      "pt": "68",
+      "pt-ebike": "54",
+      "pt-car": "47",
+      "pt-ebike-car": "45"
+     }
     },
     {
      "name": "Canning Town",
      "slug": "canning-town",
      "cls": "District",
-     "img": "centres/canning-town",
-     "mean": "58"
+     "img": "canning-town",
+     "means": {
+      "pt": "58",
+      "pt-ebike": "47",
+      "pt-car": "43",
+      "pt-ebike-car": "40"
+     }
     },
     {
      "name": "East Beckton",
      "slug": "east-beckton",
      "cls": "District",
-     "img": "centres/east-beckton",
-     "mean": "75"
+     "img": "east-beckton",
+     "means": {
+      "pt": "75",
+      "pt-ebike": "56",
+      "pt-car": "46",
+      "pt-ebike-car": "45"
+     }
     },
     {
      "name": "Forest Gate",
      "slug": "forest-gate",
      "cls": "District",
-     "img": "centres/forest-gate",
-     "mean": "62"
+     "img": "forest-gate",
+     "means": {
+      "pt": "62",
+      "pt-ebike": "49",
+      "pt-car": "47",
+      "pt-ebike-car": "44"
+     }
     },
     {
      "name": "Green Street",
      "slug": "green-street",
      "cls": "District",
-     "img": "centres/green-street",
-     "mean": "72"
+     "img": "green-street",
+     "means": {
+      "pt": "72",
+      "pt-ebike": "54",
+      "pt-car": "48",
+      "pt-ebike-car": "46"
+     }
     }
    ]
   },
@@ -1335,50 +2180,85 @@
      "name": "Ilford",
      "slug": "ilford",
      "cls": "Metropolitan",
-     "img": "centres/ilford",
-     "mean": "67"
+     "img": "ilford",
+     "means": {
+      "pt": "67",
+      "pt-ebike": "54",
+      "pt-car": "45",
+      "pt-ebike-car": "44"
+     }
     },
     {
      "name": "Barkingside",
      "slug": "barkingside",
      "cls": "District",
-     "img": "centres/barkingside",
-     "mean": "76"
+     "img": "barkingside",
+     "means": {
+      "pt": "76",
+      "pt-ebike": "63",
+      "pt-car": "51",
+      "pt-ebike-car": "49"
+     }
     },
     {
      "name": "Chadwell Heath",
      "slug": "chadwell-heath",
      "cls": "District",
-     "img": "centres/chadwell-heath",
-     "mean": "72"
+     "img": "chadwell-heath",
+     "means": {
+      "pt": "72",
+      "pt-ebike": "60",
+      "pt-car": "51",
+      "pt-ebike-car": "50"
+     }
     },
     {
      "name": "Gants Hill",
      "slug": "gants-hill",
      "cls": "District",
-     "img": "centres/gants-hill",
-     "mean": "70"
+     "img": "gants-hill",
+     "means": {
+      "pt": "70",
+      "pt-ebike": "57",
+      "pt-car": "46",
+      "pt-ebike-car": "44"
+     }
     },
     {
      "name": "Green Lane",
      "slug": "green-lane",
      "cls": "District",
-     "img": "centres/green-lane",
-     "mean": "71"
+     "img": "green-lane",
+     "means": {
+      "pt": "71",
+      "pt-ebike": "65",
+      "pt-car": "53",
+      "pt-ebike-car": "52"
+     }
     },
     {
      "name": "South Woodford",
      "slug": "south-woodford",
      "cls": "District",
-     "img": "centres/south-woodford",
-     "mean": "70"
+     "img": "south-woodford",
+     "means": {
+      "pt": "70",
+      "pt-ebike": "57",
+      "pt-car": "45",
+      "pt-ebike-car": "44"
+     }
     },
     {
      "name": "Wanstead",
      "slug": "wanstead",
      "cls": "District",
-     "img": "centres/wanstead",
-     "mean": "68"
+     "img": "wanstead",
+     "means": {
+      "pt": "68",
+      "pt-ebike": "53",
+      "pt-car": "44",
+      "pt-ebike-car": "42"
+     }
     }
    ]
   },
@@ -1390,36 +2270,61 @@
      "name": "Richmond",
      "slug": "richmond",
      "cls": "Major",
-     "img": "centres/richmond",
-     "mean": "64"
+     "img": "richmond",
+     "means": {
+      "pt": "64",
+      "pt-ebike": "51",
+      "pt-car": "50",
+      "pt-ebike-car": "45"
+     }
     },
     {
      "name": "East Sheen",
      "slug": "east-sheen",
      "cls": "District",
-     "img": "centres/east-sheen",
-     "mean": "76"
+     "img": "east-sheen",
+     "means": {
+      "pt": "76",
+      "pt-ebike": "59",
+      "pt-car": "49",
+      "pt-ebike-car": "48"
+     }
     },
     {
      "name": "Teddington",
      "slug": "teddington",
      "cls": "District",
-     "img": "centres/teddington",
-     "mean": "80"
+     "img": "teddington",
+     "means": {
+      "pt": "80",
+      "pt-ebike": "71",
+      "pt-car": "61",
+      "pt-ebike-car": "60"
+     }
     },
     {
      "name": "Twickenham",
      "slug": "twickenham",
      "cls": "District",
-     "img": "centres/twickenham",
-     "mean": "71"
+     "img": "twickenham",
+     "means": {
+      "pt": "71",
+      "pt-ebike": "57",
+      "pt-car": "54",
+      "pt-ebike-car": "50"
+     }
     },
     {
      "name": "Whitton",
      "slug": "whitton",
      "cls": "District",
-     "img": "centres/whitton",
-     "mean": "77"
+     "img": "whitton",
+     "means": {
+      "pt": "77",
+      "pt-ebike": "64",
+      "pt-car": "57",
+      "pt-ebike-car": "54"
+     }
     }
    ]
   },
@@ -1431,43 +2336,73 @@
      "name": "Canada Water",
      "slug": "canada-water",
      "cls": "Major",
-     "img": "centres/canada-water",
-     "mean": "59"
+     "img": "canada-water",
+     "means": {
+      "pt": "59",
+      "pt-ebike": "46",
+      "pt-car": "51",
+      "pt-ebike-car": "44"
+     }
     },
     {
      "name": "Elephant and Castle/Walworth Road",
      "slug": "elephant-and-castle-walworth-road",
      "cls": "Major",
-     "img": "centres/elephant-and-castle-walworth-road",
-     "mean": "53"
+     "img": "elephant-and-castle-walworth-road",
+     "means": {
+      "pt": "53",
+      "pt-ebike": "42",
+      "pt-car": "48",
+      "pt-ebike-car": "41"
+     }
     },
     {
      "name": "Peckham",
      "slug": "peckham",
      "cls": "Major",
-     "img": "centres/peckham",
-     "mean": "61"
+     "img": "peckham",
+     "means": {
+      "pt": "61",
+      "pt-ebike": "49",
+      "pt-car": "53",
+      "pt-ebike-car": "48"
+     }
     },
     {
      "name": "Camberwell",
      "slug": "camberwell",
      "cls": "District",
-     "img": "centres/camberwell",
-     "mean": "64"
+     "img": "camberwell",
+     "means": {
+      "pt": "64",
+      "pt-ebike": "48",
+      "pt-car": "50",
+      "pt-ebike-car": "46"
+     }
     },
     {
      "name": "Dulwich - Lordship Lane",
      "slug": "dulwich-lordship-lane",
      "cls": "District",
-     "img": "centres/dulwich-lordship-lane",
-     "mean": "77"
+     "img": "dulwich-lordship-lane",
+     "means": {
+      "pt": "77",
+      "pt-ebike": "53",
+      "pt-car": "54",
+      "pt-ebike-car": "50"
+     }
     },
     {
      "name": "Herne Hill",
      "slug": "herne-hill",
      "cls": "District",
-     "img": "centres/herne-hill",
-     "mean": "61"
+     "img": "herne-hill",
+     "means": {
+      "pt": "61",
+      "pt-ebike": "48",
+      "pt-car": "52",
+      "pt-ebike-car": "47"
+     }
     }
    ]
   },
@@ -1479,50 +2414,85 @@
      "name": "Sutton",
      "slug": "sutton",
      "cls": "Metropolitan",
-     "img": "centres/sutton",
-     "mean": "77"
+     "img": "sutton",
+     "means": {
+      "pt": "77",
+      "pt-ebike": "66",
+      "pt-car": "59",
+      "pt-ebike-car": "57"
+     }
     },
     {
      "name": "Carshalton Village",
      "slug": "carshalton-village",
      "cls": "District",
-     "img": "centres/carshalton-village",
-     "mean": "78"
+     "img": "carshalton-village",
+     "means": {
+      "pt": "78",
+      "pt-ebike": "65",
+      "pt-car": "59",
+      "pt-ebike-car": "58"
+     }
     },
     {
      "name": "Cheam Village",
      "slug": "cheam-village",
      "cls": "District",
-     "img": "centres/cheam-village",
-     "mean": "82"
+     "img": "cheam-village",
+     "means": {
+      "pt": "82",
+      "pt-ebike": "71",
+      "pt-car": "59",
+      "pt-ebike-car": "59"
+     }
     },
     {
      "name": "North Cheam",
      "slug": "north-cheam",
      "cls": "District",
-     "img": "centres/north-cheam",
-     "mean": "88"
+     "img": "north-cheam",
+     "means": {
+      "pt": "88",
+      "pt-ebike": "71",
+      "pt-car": "59",
+      "pt-ebike-car": "59"
+     }
     },
     {
      "name": "Rosehill",
      "slug": "rosehill",
      "cls": "District",
-     "img": "centres/rosehill",
-     "mean": "85"
+     "img": "rosehill",
+     "means": {
+      "pt": "85",
+      "pt-ebike": "66",
+      "pt-car": "60",
+      "pt-ebike-car": "59"
+     }
     },
     {
      "name": "Wallington",
      "slug": "wallington",
      "cls": "District",
-     "img": "centres/wallington",
-     "mean": "78"
+     "img": "wallington",
+     "means": {
+      "pt": "78",
+      "pt-ebike": "65",
+      "pt-car": "60",
+      "pt-ebike-car": "58"
+     }
     },
     {
      "name": "Worcester Park",
      "slug": "worcester-park",
      "cls": "District",
-     "img": "centres/worcester-park",
-     "mean": "77"
+     "img": "worcester-park",
+     "means": {
+      "pt": "77",
+      "pt-ebike": "65",
+      "pt-car": "58",
+      "pt-ebike-car": "56"
+     }
     }
    ]
   },
@@ -1534,57 +2504,97 @@
      "name": "Canary Wharf",
      "slug": "canary-wharf",
      "cls": "Metropolitan",
-     "img": "centres/canary-wharf",
-     "mean": "55"
+     "img": "canary-wharf",
+     "means": {
+      "pt": "55",
+      "pt-ebike": "43",
+      "pt-car": "45",
+      "pt-ebike-car": "39"
+     }
     },
     {
      "name": "Bethnal Green",
      "slug": "bethnal-green",
      "cls": "District",
-     "img": "centres/bethnal-green",
-     "mean": "54"
+     "img": "bethnal-green",
+     "means": {
+      "pt": "54",
+      "pt-ebike": "41",
+      "pt-car": "47",
+      "pt-ebike-car": "40"
+     }
     },
     {
      "name": "Brick Lane",
      "slug": "brick-lane",
      "cls": "District",
-     "img": "centres/brick-lane",
-     "mean": "58"
+     "img": "brick-lane",
+     "means": {
+      "pt": "58",
+      "pt-ebike": "41",
+      "pt-car": "49",
+      "pt-ebike-car": "41"
+     }
     },
     {
      "name": "Chrisp Street",
      "slug": "chrisp-street",
      "cls": "District",
-     "img": "centres/chrisp-street",
-     "mean": "65"
+     "img": "chrisp-street",
+     "means": {
+      "pt": "65",
+      "pt-ebike": "48",
+      "pt-car": "44",
+      "pt-ebike-car": "41"
+     }
     },
     {
      "name": "Roman Road (east)",
      "slug": "roman-road-east",
      "cls": "District",
-     "img": "centres/roman-road-east",
-     "mean": "63"
+     "img": "roman-road-east",
+     "means": {
+      "pt": "63",
+      "pt-ebike": "46",
+      "pt-car": "48",
+      "pt-ebike-car": "43"
+     }
     },
     {
      "name": "Roman Road (west)",
      "slug": "roman-road-west",
      "cls": "District",
-     "img": "centres/roman-road-west",
-     "mean": "61"
+     "img": "roman-road-west",
+     "means": {
+      "pt": "61",
+      "pt-ebike": "44",
+      "pt-car": "47",
+      "pt-ebike-car": "42"
+     }
     },
     {
      "name": "Watney Market",
      "slug": "watney-market",
      "cls": "District",
-     "img": "centres/watney-market",
-     "mean": "57"
+     "img": "watney-market",
+     "means": {
+      "pt": "57",
+      "pt-ebike": "41",
+      "pt-car": "49",
+      "pt-ebike-car": "40"
+     }
     },
     {
      "name": "Whitechapel",
      "slug": "whitechapel",
      "cls": "District",
-     "img": "centres/whitechapel",
-     "mean": "52"
+     "img": "whitechapel",
+     "means": {
+      "pt": "52",
+      "pt-ebike": "41",
+      "pt-car": "47",
+      "pt-ebike-car": "40"
+     }
     }
    ]
   },
@@ -1596,57 +2606,97 @@
      "name": "Walthamstow",
      "slug": "walthamstow",
      "cls": "Major",
-     "img": "centres/walthamstow",
-     "mean": "64"
+     "img": "walthamstow",
+     "means": {
+      "pt": "64",
+      "pt-ebike": "52",
+      "pt-car": "46",
+      "pt-ebike-car": "43"
+     }
     },
     {
      "name": "Bakers Arms",
      "slug": "bakers-arms",
      "cls": "District",
-     "img": "centres/bakers-arms",
-     "mean": "75"
+     "img": "bakers-arms",
+     "means": {
+      "pt": "75",
+      "pt-ebike": "54",
+      "pt-car": "49",
+      "pt-ebike-car": "47"
+     }
     },
     {
      "name": "Highams Park",
      "slug": "highams-park",
      "cls": "District",
-     "img": "centres/highams-park",
-     "mean": "76"
+     "img": "highams-park",
+     "means": {
+      "pt": "76",
+      "pt-ebike": "61",
+      "pt-car": "47",
+      "pt-ebike-car": "46"
+     }
     },
     {
      "name": "Leyton",
      "slug": "leyton",
      "cls": "District",
-     "img": "centres/leyton",
-     "mean": "63"
+     "img": "leyton",
+     "means": {
+      "pt": "63",
+      "pt-ebike": "50",
+      "pt-car": "45",
+      "pt-ebike-car": "42"
+     }
     },
     {
      "name": "Leytonstone",
      "slug": "leytonstone",
      "cls": "District",
-     "img": "centres/leytonstone",
-     "mean": "63"
+     "img": "leytonstone",
+     "means": {
+      "pt": "63",
+      "pt-ebike": "50",
+      "pt-car": "45",
+      "pt-ebike-car": "42"
+     }
     },
     {
      "name": "North Chingford",
      "slug": "north-chingford",
      "cls": "District",
-     "img": "centres/north-chingford",
-     "mean": "80"
+     "img": "north-chingford",
+     "means": {
+      "pt": "80",
+      "pt-ebike": "67",
+      "pt-car": "52",
+      "pt-ebike-car": "51"
+     }
     },
     {
      "name": "South Chingford",
      "slug": "south-chingford",
      "cls": "District",
-     "img": "centres/south-chingford",
-     "mean": "84"
+     "img": "south-chingford",
+     "means": {
+      "pt": "84",
+      "pt-ebike": "67",
+      "pt-car": "49",
+      "pt-ebike-car": "48"
+     }
     },
     {
      "name": "Wood Street",
      "slug": "wood-street",
      "cls": "District",
-     "img": "centres/wood-street",
-     "mean": "74"
+     "img": "wood-street",
+     "means": {
+      "pt": "74",
+      "pt-ebike": "56",
+      "pt-car": "45",
+      "pt-ebike-car": "43"
+     }
     }
    ]
   },
@@ -1658,50 +2708,85 @@
      "name": "Clapham Junction",
      "slug": "clapham-junction",
      "cls": "Major",
-     "img": "centres/clapham-junction",
-     "mean": "56"
+     "img": "clapham-junction",
+     "means": {
+      "pt": "56",
+      "pt-ebike": "44",
+      "pt-car": "49",
+      "pt-ebike-car": "43"
+     }
     },
     {
      "name": "Putney",
      "slug": "putney",
      "cls": "Major",
-     "img": "centres/putney",
-     "mean": "63"
+     "img": "putney",
+     "means": {
+      "pt": "63",
+      "pt-ebike": "50",
+      "pt-car": "50",
+      "pt-ebike-car": "46"
+     }
     },
     {
      "name": "Tooting",
      "slug": "tooting",
      "cls": "Major",
-     "img": "centres/tooting",
-     "mean": "73"
+     "img": "tooting",
+     "means": {
+      "pt": "73",
+      "pt-ebike": "56",
+      "pt-car": "52",
+      "pt-ebike-car": "50"
+     }
     },
     {
      "name": "Wandsworth",
      "slug": "wandsworth",
      "cls": "Major",
-     "img": "centres/wandsworth",
-     "mean": "64"
+     "img": "wandsworth",
+     "means": {
+      "pt": "64",
+      "pt-ebike": "49",
+      "pt-car": "49",
+      "pt-ebike-car": "45"
+     }
     },
     {
      "name": "Balham",
      "slug": "balham",
      "cls": "District",
-     "img": "centres/balham",
-     "mean": "60"
+     "img": "balham",
+     "means": {
+      "pt": "60",
+      "pt-ebike": "48",
+      "pt-car": "49",
+      "pt-ebike-car": "46"
+     }
     },
     {
      "name": "Earlsfield",
      "slug": "earlsfield",
      "cls": "District",
-     "img": "centres/earlsfield",
-     "mean": "61"
+     "img": "earlsfield",
+     "means": {
+      "pt": "61",
+      "pt-ebike": "48",
+      "pt-car": "51",
+      "pt-ebike-car": "46"
+     }
     },
     {
      "name": "Lavender Hill/Queenstown Road",
      "slug": "lavender-hill-queenstown-road",
      "cls": "District",
-     "img": "centres/lavender-hill-queenstown-road",
-     "mean": "67"
+     "img": "lavender-hill-queenstown-road",
+     "means": {
+      "pt": "67",
+      "pt-ebike": "50",
+      "pt-car": "49",
+      "pt-ebike-car": "47"
+     }
     }
    ]
   },
@@ -1713,50 +2798,85 @@
      "name": "Knightsbridge",
      "slug": "knightsbridge",
      "cls": "International",
-     "img": "centres/knightsbridge",
-     "mean": "57"
+     "img": "knightsbridge",
+     "means": {
+      "pt": "57",
+      "pt-ebike": "42",
+      "pt-car": "49",
+      "pt-ebike-car": "41"
+     }
     },
     {
      "name": "West End",
      "slug": "west-end",
      "cls": "International",
-     "img": "centres/west-end",
-     "mean": "49"
+     "img": "west-end",
+     "means": {
+      "pt": "49",
+      "pt-ebike": "39",
+      "pt-car": "47",
+      "pt-ebike-car": "39"
+     }
     },
     {
      "name": "Queensway/Westbourne Grove",
      "slug": "queensway-westbourne-grove",
      "cls": "Major",
-     "img": "centres/queensway-westbourne-grove",
-     "mean": "55"
+     "img": "queensway-westbourne-grove",
+     "means": {
+      "pt": "55",
+      "pt-ebike": "43",
+      "pt-car": "48",
+      "pt-ebike-car": "41"
+     }
     },
     {
      "name": "Edgware Road/Church Street",
      "slug": "edgware-road-church-street",
      "cls": "District",
-     "img": "centres/edgware-road-church-street",
-     "mean": "55"
+     "img": "edgware-road-church-street",
+     "means": {
+      "pt": "55",
+      "pt-ebike": "43",
+      "pt-car": "49",
+      "pt-ebike-car": "42"
+     }
     },
     {
      "name": "Harrow Road",
      "slug": "harrow-road",
      "cls": "District",
-     "img": "centres/harrow-road",
-     "mean": "66"
+     "img": "harrow-road",
+     "means": {
+      "pt": "66",
+      "pt-ebike": "49",
+      "pt-car": "49",
+      "pt-ebike-car": "46"
+     }
     },
     {
      "name": "Praed Street/Paddington",
      "slug": "praed-street-paddington",
      "cls": "District",
-     "img": "centres/praed-street-paddington",
-     "mean": "54"
+     "img": "praed-street-paddington",
+     "means": {
+      "pt": "54",
+      "pt-ebike": "41",
+      "pt-car": "46",
+      "pt-ebike-car": "40"
+     }
     },
     {
      "name": "St John's Wood",
      "slug": "st-johns-wood",
      "cls": "District",
-     "img": "centres/st-johns-wood",
-     "mean": "58"
+     "img": "st-johns-wood",
+     "means": {
+      "pt": "58",
+      "pt-ebike": "44",
+      "pt-car": "49",
+      "pt-ebike-car": "43"
+     }
     }
    ]
   },
@@ -1768,10 +2888,27 @@
      "name": "City of London",
      "slug": "city-of-london",
      "cls": "International",
-     "img": "centres/city-of-london",
-     "mean": "48"
+     "img": "city-of-london",
+     "means": {
+      "pt": "48",
+      "pt-ebike": "36",
+      "pt-car": "46",
+      "pt-ebike-car": "36"
+     }
     }
    ]
   }
- ]
+ ],
+ "availableModes": [
+  "pt",
+  "pt-ebike",
+  "pt-car",
+  "pt-ebike-car"
+ ],
+ "modeLabels": {
+  "pt": "Public transport + walk",
+  "pt-ebike": "+ e-bike",
+  "pt-car": "+ car",
+  "pt-ebike-car": "+ e-bike + car"
+ }
 }
