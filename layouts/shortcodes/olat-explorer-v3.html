@@ -1,0 +1,99 @@
+{{- /*
+  OLAT Explorer v3 (BETA) — client-side data renderer.
+  Same borough map / selector / chips / mode toggles as v2, but the heatmap is
+  drawn in a <canvas> from a per-origin data image (R=pt, G=pt-ebike, B=pt-car)
+  plus a shared coords.bin + overlay.png in /static/olat/. Adds difference maps,
+  an isochrone threshold and click-to-read.
+  Usage: {{< olat-explorer-v3 default="croydon" >}}
+  Data:  data/olat.json (borough shapes) + data/olat_centres.json (centres).
+  Assets: static/olat/{manifest.json,coords.bin,overlay.png,v/<slug>.png}
+  Script: static/js/olat-renderer.js + static/js/olat-explorer-v3.js
+*/ -}}
+{{- $olat := site.Data.olat -}}
+{{- $centres := site.Data.olat_centres -}}
+{{- $default := .Get "default" | default "croydon" -}}
+{{- $selB := index (where $centres.boroughs "slug" $default) 0 -}}
+{{- $selC := index $selB.centres 0 -}}
+<link rel="stylesheet" href="/css/olat-v3.css">
+<div class="olat-explorer olat-v3" id="olat-explorer-v3" data-default="{{ $default }}" data-base="/olat/">
+  <div class="olat-head">
+    <div class="olat-head-text">
+      <h3 class="olat-name" id="olat3-name"><span class="olat-proto-badge">Beta</span>{{ $selC.name }}</h3>
+      <p class="olat-meta" id="olat3-meta">{{ $selC.cls }} centre in {{ $selB.name }}</p>
+    </div>
+    <label class="olat-select-wrap">
+      <span class="olat-select-label">Centre</span>
+      <select id="olat3-select" aria-label="Choose a town centre">
+        {{- range $centres.boroughs }}
+        <optgroup label="{{ .name }}">
+          {{- $bslug := .slug }}
+          {{- range .centres }}
+          <option value="{{ $bslug }}:{{ .slug }}"{{ if and (eq $bslug $default) (eq .slug $selC.slug) }} selected{{ end }}>{{ .name }}</option>
+          {{- end }}
+        </optgroup>
+        {{- end }}
+      </select>
+    </label>
+  </div>
+
+  <div class="olat-chips" id="olat3-chips">
+    {{- range $centres.boroughs }}
+    <div class="olat-chip-row" data-borough="{{ .slug }}"{{ if ne .slug $default }} hidden{{ end }}>
+      {{- $bslug := .slug }}{{ $bname := .name }}
+      {{- range $i, $c := .centres }}
+      <button type="button"
+              class="olat-chip{{ if and (eq $bslug $default) (eq $i 0) }} active{{ end }}"
+              data-slug="{{ $c.slug }}" data-name="{{ $c.name }}" data-cls="{{ $c.cls }}"
+              data-img="{{ $c.img }}" data-borough="{{ $bslug }}" data-borough-name="{{ $bname }}"
+              >{{ $c.name }}</button>
+      {{- end }}
+    </div>
+    {{- end }}
+  </div>
+
+  <div class="olat-modes" id="olat3-modes" role="group" aria-label="Transport modes included">
+    <span class="olat-modes-label">Modes: public transport &amp; walking</span>
+    <button type="button" class="olat-mode-toggle" id="olat3-toggle-ebike" aria-pressed="false">+ e-bike</button>
+    <button type="button" class="olat-mode-toggle" id="olat3-toggle-car" aria-pressed="false">+ car</button>
+  </div>
+
+  <div class="olat3-controls">
+    <div class="olat3-views" role="group" aria-label="Map view">
+      <button type="button" class="olat3-view active" data-view="time" aria-pressed="true">Journey time</button>
+      <button type="button" class="olat3-view" data-view="diff-car" aria-pressed="false">Car premium</button>
+      <button type="button" class="olat3-view" data-view="diff-ebike" aria-pressed="false">E-bike premium</button>
+    </div>
+    <label class="olat3-iso">
+      <span class="olat3-iso-label" id="olat3-iso-label">Isochrone: off</span>
+      <input type="range" id="olat3-iso" min="0" max="120" step="5" value="0"
+             aria-label="Isochrone threshold in minutes (0 = off)">
+    </label>
+  </div>
+
+  <div class="olat-map" id="olat3-map">
+    <canvas id="olat3-canvas" width="2200" height="1695"
+            aria-label="Heatmap of journey times from {{ $selC.name }}"></canvas>
+    <svg viewBox="{{ delimit $olat.viewBox " " }}" preserveAspectRatio="none"
+         xmlns="http://www.w3.org/2000/svg" aria-hidden="false" role="group"
+         aria-label="Map of London boroughs. Select a borough, then choose one of its town centres.">
+      {{- $centreBoroughs := slice }}
+      {{- range $centres.boroughs }}{{ $centreBoroughs = $centreBoroughs | append .slug }}{{ end }}
+      {{- range $olat.boroughs }}
+      {{- $clickable := in $centreBoroughs .slug }}
+      <path class="olat-borough{{ if not $clickable }} olat-nodata{{ end }}{{ if eq .slug $default }} selected{{ end }}"
+            d="{{ .d }}" fill-rule="evenodd"
+            data-slug="{{ .slug }}" data-name="{{ .name }}"
+            {{- if $clickable }} tabindex="0" role="button"
+            aria-label="{{ .name }}: show town centres"{{ end }}/>
+      {{- end }}
+    </svg>
+    <div class="olat-tooltip" id="olat3-tooltip" role="presentation"></div>
+    <div class="olat3-readout" id="olat3-readout" hidden></div>
+  </div>
+
+  <div class="olat-legend" id="olat3-legend"></div>
+  <p class="olat3-stats" id="olat3-stats"></p>
+  <p class="olat-caption">Mean journey times across London from the selected town centre, departing on a Tuesday morning between 7.30am and 8.30am. Click or tap a borough on the map, then pick one of its town centres. This <strong>beta</strong> renders the map live in your browser from journey-time data rather than a pre-made image — hover the map to read the journey time to any point.</p>
+</div>
+<script src="/js/olat-renderer.js" defer></script>
+<script src="/js/olat-explorer-v3.js" defer></script>

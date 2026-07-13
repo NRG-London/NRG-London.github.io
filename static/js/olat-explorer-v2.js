@@ -23,20 +23,20 @@
   var ebike = false, car = false, comparing = false;
   var preloaded = {};
   var finePointer = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-
+ 
   function modeKey() {
     var k = 'pt' + (ebike ? '-ebike' : '') + (car ? '-car' : '');
     return modes.indexOf(k) !== -1 ? k : 'pt';
   }
-
+ 
   function modeText() {
     return 'PT' + (ebike ? ' + e-bike' : '') + (car ? ' + car' : '');
   }
-
+ 
   function src(mode, slug) {
     return '/images/olat/' + mode + '/' + slug + '.webp';
   }
-
+ 
   function preload(mode, slug) {
     var u = src(mode, slug);
     if (preloaded[u]) return;
@@ -44,23 +44,23 @@
     i.src = u;
     preloaded[u] = true;
   }
-
+ 
   function firstChip(bslug) {
     var row = root.querySelector('.olat-chip-row[data-borough="' + bslug + '"]');
     return row ? row.firstElementChild : null;
   }
-
+ 
   function centreCountText(bslug) {
     var row = root.querySelector('.olat-chip-row[data-borough="' + bslug + '"]');
     var n = row ? row.children.length : 0;
     return n === 1 ? '1 town centre' : n + ' town centres';
   }
-
+ 
   function moveTooltip(e) {
     tooltip.style.left = (e.clientX + 14) + 'px';
     tooltip.style.top = (e.clientY - 10) + 'px';
   }
-
+ 
   function render() {
     if (!activeChip) return;
     var d = activeChip.dataset;
@@ -85,7 +85,7 @@
     }
     tooltip.style.display = 'none';
   }
-
+ 
   function setComparing(on) {
     comparing = on;
     compareBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
@@ -99,7 +99,7 @@
       img.style.clipPath = '';
     }
   }
-
+ 
   function applyClip(pct) {
     /* base (PT-only) shows left of the divider, current mode right */
     pct = Math.max(0, Math.min(100, pct));
@@ -108,14 +108,14 @@
     compareGrab.style.left = pct + '%';
     compareGrab.setAttribute('aria-valuenow', Math.round(pct));
   }
-
+ 
   function chooseChip(chip) {
     if (activeChip) activeChip.classList.remove('active');
     chip.classList.add('active');
     activeChip = chip;
     render();
   }
-
+ 
   function chooseBorough(bslug, pickFirst) {
     chipRows.forEach(function (row) {
       row.hidden = row.dataset.borough !== bslug;
@@ -131,7 +131,7 @@
       if (fc) chooseChip(fc);
     }
   }
-
+ 
   root.querySelectorAll('.olat-borough:not(.olat-nodata)').forEach(function (p) {
     p.addEventListener('click', function () { chooseBorough(this.dataset.slug, true); });
     p.addEventListener('keydown', function (e) {
@@ -147,7 +147,7 @@
     p.addEventListener('mousemove', moveTooltip);
     p.addEventListener('mouseleave', function () { tooltip.style.display = 'none'; });
   });
-
+ 
   root.querySelectorAll('.olat-nodata').forEach(function (p) {
     p.addEventListener('mouseenter', function () {
       tooltip.innerHTML = '<strong>' + this.dataset.name + '</strong><br><em>No OLAT data</em>';
@@ -156,21 +156,21 @@
     p.addEventListener('mousemove', moveTooltip);
     p.addEventListener('mouseleave', function () { tooltip.style.display = 'none'; });
   });
-
+ 
   root.querySelectorAll('.olat-chip').forEach(function (c) {
     c.addEventListener('click', function () { chooseChip(this); });
     c.addEventListener('mouseenter', function () {
       if (finePointer) preload(modeKey(), this.dataset.img);
     });
   });
-
+ 
   select.addEventListener('change', function () {
     var parts = this.value.split(':');
     chooseBorough(parts[0], false);
     var chip = root.querySelector('.olat-chip-row[data-borough="' + parts[0] + '"] .olat-chip[data-slug="' + parts[1] + '"]');
     if (chip) chooseChip(chip);
   });
-
+ 
   function bindToggle(btn, setter) {
     if (!btn) return;
     btn.addEventListener('click', function () {
@@ -192,10 +192,10 @@
   }
   bindToggle(toggleEbike, function (v) { ebike = v; });
   bindToggle(toggleCar, function (v) { car = v; });
-
+ 
   if (compareBtn) {
     compareBtn.addEventListener('click', function () { setComparing(!comparing); });
-
+ 
     var dragging = false;
     function dragTo(clientX) {
       var rect = mapEl.getBoundingClientRect();

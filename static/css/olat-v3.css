@@ -1,0 +1,91 @@
+/* OLAT Explorer v3 (beta) — styles additive to main.css, scoped to .olat-v3.
+   v2 is unaffected. */
+
+.olat-v3 .olat-map canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: #fff;
+  cursor: crosshair;
+}
+
+/* the borough SVG sits above the canvas for clicking, as it does over the v2 img */
+.olat-v3 .olat-map svg { z-index: 2; }
+
+/* view switch + isochrone row */
+.olat3-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.olat3-views {
+  display: inline-flex;
+  border: 1px solid var(--warm-grey);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.olat3-view {
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--white);
+  border: none;
+  padding: 0.4rem 0.85rem;
+  cursor: pointer;
+  min-height: 32px;
+  transition: background 0.15s, color 0.15s;
+}
+.olat3-view + .olat3-view { border-left: 1px solid var(--warm-grey); }
+.olat3-view:hover { color: var(--blue); }
+.olat3-view.active { background: var(--blue); color: var(--white); }
+
+.olat3-iso {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--mid-grey);
+}
+.olat3-iso-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.olat3-iso input[type="range"] { width: 160px; accent-color: var(--blue); }
+.olat3-iso input[type="range"]:disabled { opacity: 0.4; }
+
+.olat-mode-toggle.olat3-dim { opacity: 0.4; cursor: not-allowed; }
+
+/* live journey-time readout that follows the pointer */
+.olat3-readout {
+  position: fixed;
+  transform: translate(-50%, -180%);
+  background: var(--deep);
+  color: var(--white);
+  padding: 0.25rem 0.55rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  pointer-events: none;
+  z-index: 250;
+  white-space: nowrap;
+}
+
+.olat3-stats {
+  font-size: 0.8rem !important;
+  color: var(--ink) !important;
+  margin: 0.75rem 0 0 !important;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .olat3-view { min-height: 40px; }
+  .olat3-iso input[type="range"] { width: 120px; }
+}
