@@ -47,36 +47,24 @@
 .olat3-iso {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
   font-size: 0.8rem;
   color: var(--mid-grey);
 }
-.olat3-iso-label {
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
 .olat3-iso input[type="range"] { width: 160px; accent-color: var(--blue); }
 .olat3-iso input[type="range"]:disabled { opacity: 0.4; }
+/* value sits to the RIGHT of the slider with a fixed, tabular width, so the
+   slider never shifts as the number changes length */
+.olat3-iso-val {
+  min-width: 3.8em;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.olat3-iso-val.off { opacity: 0.4; }
 
 .olat-mode-toggle.olat3-dim { opacity: 0.4; cursor: not-allowed; }
-
-/* live journey-time readout that follows the pointer */
-.olat3-readout {
-  position: fixed;
-  transform: translate(-50%, -180%);
-  background: var(--deep);
-  color: var(--white);
-  padding: 0.25rem 0.55rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  pointer-events: none;
-  z-index: 250;
-  white-space: nowrap;
-}
 
 .olat3-stats {
   font-size: 0.8rem !important;

@@ -5,7 +5,7 @@
   plus a shared coords.bin + overlay.png in /static/olat/. Adds difference maps,
   an isochrone threshold and click-to-read.
   Usage: {{< olat-explorer-v3 default="croydon" >}}
-  Data:  data/olat.json (borough shapes) + data/olat_centres.json (centres).
+  Data:  data/olat_v3.json (borough shapes) + data/olat_centres.json (centres).
   Assets: static/olat/{manifest.json,coords.bin,overlay.png,v/<slug>.png}
   Script: static/js/olat-renderer.js + static/js/olat-explorer-v3.js
 */ -}}
@@ -66,11 +66,13 @@
       <button type="button" class="olat3-view" data-view="diff-car" aria-pressed="false">Car premium</button>
       <button type="button" class="olat3-view" data-view="diff-ebike" aria-pressed="false">E-bike premium</button>
     </div>
-    <label class="olat3-iso">
-      <span class="olat3-iso-label" id="olat3-iso-label">Isochrone: off</span>
-      <input type="range" id="olat3-iso" min="0" max="120" step="5" value="0"
-             aria-label="Isochrone threshold in minutes (0 = off)">
-    </label>
+    <div class="olat3-iso">
+      <button type="button" class="olat-mode-toggle olat3-iso-toggle" id="olat3-iso-toggle"
+              aria-pressed="false">Isochrone</button>
+      <input type="range" id="olat3-iso" min="5" max="120" step="5" value="45" disabled
+             aria-label="Isochrone threshold in minutes">
+      <span class="olat3-iso-val off" id="olat3-iso-val">45 min</span>
+    </div>
   </div>
 
   <div class="olat-map" id="olat3-map">
@@ -91,7 +93,6 @@
       {{- end }}
     </svg>
     <div class="olat-tooltip" id="olat3-tooltip" role="presentation"></div>
-    <div class="olat3-readout" id="olat3-readout" hidden></div>
   </div>
 
   <div class="olat-legend" id="olat3-legend"></div>

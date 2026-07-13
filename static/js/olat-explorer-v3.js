@@ -2,7 +2,8 @@
  * Reuses the v2 UX — borough map, district-centre chips, mode toggles — but
  * drives a <canvas> via OlatRenderer instead of swapping pre-rendered images.
  * Adds: difference maps (car / e-bike premium), an isochrone threshold, live
- * catchment stats and click-to-read. v2 is left completely untouched.
+ * catchment stats, and the journey time to the hovered point (shown inside the
+ * borough tooltip, since the borough layer owns pointer events). v2 is untouched.
  */
 (function () {
   "use strict";
@@ -14,24 +15,22 @@
   var metaEl = document.getElementById("olat3-meta");
   var select = document.getElementById("olat3-select");
   var tooltip = document.getElementById("olat3-tooltip");
-  var readout = document.getElementById("olat3-readout");
   var legendEl = document.getElementById("olat3-legend");
   var statsEl = document.getElementById("olat3-stats");
   var toggleEbike = document.getElementById("olat3-toggle-ebike");
   var toggleCar = document.getElementById("olat3-toggle-car");
+  var isoToggle = document.getElementById("olat3-iso-toggle");
   var isoInput = document.getElementById("olat3-iso");
-  var isoLabel = document.getElementById("olat3-iso-label");
-  var mapEl = document.getElementById("olat3-map");
+  var isoVal = document.getElementById("olat3-iso-val");
   var chipRows = root.querySelectorAll(".olat-chip-row");
   var viewBtns = root.querySelectorAll(".olat3-view");
 
   var selectedPath = root.querySelector(".olat-borough.selected");
   var activeChip = root.querySelector(".olat-chip.active");
-  var ebike = false, car = false, view = "time", threshold = null;
-  var finePointer = window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  var ebike = false, car = false, view = "time", threshold = null, isoOn = false;
 
   var COLOURS = ["#2166AC", "#66BD63", "#D9EF8B", "#FEE08B", "#F46D43", "#A50026"];
-  var TIME_LABELS = ["&lt; 15", "15–30", "30–45", "45–60", "60–90", "90+"];
+  var TIME_LABELS = ["&lt; 15", "15–30", "30–45", "45–60", "60–90", "90+"];
   var DIFF_RAMP = ["#edf8e9", "#bae4b3", "#74c476", "#31a354", "#006d2c"];
   var DIFF_LABELS = ["&lt; 5", "5–10", "10–20", "20–30", "30+"];
 
@@ -64,9 +63,8 @@
   function updateLegend() {
     var html = "";
     if (view === "time") {
-      var iso = threshold != null;
       html = '<span class="olat-legend-title">Journey time (minutes)</span>';
-      if (iso) {
+      if (threshold != null) {
         html += '<span class="olat-legend-item"><i style="background:' + r._threshColour(threshold) +
           '"></i>≤ ' + threshold + ' min</span>' +
           '<span class="olat-legend-item"><i style="background:#e8eef3"></i>beyond</span>';
@@ -125,6 +123,15 @@
     return { mean: c ? s / c : 0, newly: newly };
   }
 
+  /* ---- journey time to the hovered point (folded into the tooltip) ------- */
+  function timeLabelAt(e) {
+    if (!r._ch) return "";
+    var p = r.eventToPx(e);
+    var hit = r.nearestAtPx(p[0], p[1]);
+    if (!hit) return "";
+    return hit.minutes == null ? "unreachable" : "≈" + hit.minutes + " min";
+  }
+
   /* ---- origin selection (borough map + chips + select) ------------------- */
   function moveTooltip(e) {
     tooltip.style.left = (e.clientX + 14) + "px";
@@ -139,15 +146,20 @@
     var n = row ? row.children.length : 0;
     return n === 1 ? "1 town centre" : n + " town centres";
   }
+  function showBoroughTip(el, e, noData) {
+    var t = timeLabelAt(e);
+    var line2 = noData ? "<em>No OLAT data</em>" : centreCountText(el.dataset.slug) + " — click to choose";
+    tooltip.innerHTML = "<strong>" + el.dataset.name + "</strong>" +
+      (t ? " · " + t : "") + "<br>" + line2;
+    tooltip.style.display = "block";
+  }
 
   function chooseChip(chip) {
     if (activeChip) activeChip.classList.remove("active");
     chip.classList.add("active");
     activeChip = chip;
     canvas.setAttribute("aria-label", "Heatmap of journey times from " + chip.dataset.name);
-    r.setOrigin(chip.dataset.img).then(function () {
-      updateHeader(); updateStats();
-    });
+    r.setOrigin(chip.dataset.img).then(function () { updateHeader(); updateStats(); });
   }
 
   function chooseBorough(bslug, pickFirst) {
@@ -166,21 +178,14 @@
     p.addEventListener("keydown", function (e) {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); chooseBorough(this.dataset.slug, true); }
     });
-    p.addEventListener("mouseenter", function () {
-      tooltip.innerHTML = "<strong>" + this.dataset.name + "</strong><br>" +
-        centreCountText(this.dataset.slug) + " — click to choose";
-      tooltip.style.display = "block";
-    });
-    p.addEventListener("mousemove", moveTooltip);
+    p.addEventListener("mouseenter", function (e) { showBoroughTip(this, e, false); });
+    p.addEventListener("mousemove", function (e) { moveTooltip(e); showBoroughTip(this, e, false); });
     p.addEventListener("mouseleave", function () { tooltip.style.display = "none"; });
   });
 
   root.querySelectorAll(".olat-nodata").forEach(function (p) {
-    p.addEventListener("mouseenter", function () {
-      tooltip.innerHTML = "<strong>" + this.dataset.name + "</strong><br><em>No OLAT data</em>";
-      tooltip.style.display = "block";
-    });
-    p.addEventListener("mousemove", moveTooltip);
+    p.addEventListener("mouseenter", function (e) { showBoroughTip(this, e, true); });
+    p.addEventListener("mousemove", function (e) { moveTooltip(e); showBoroughTip(this, e, true); });
     p.addEventListener("mouseleave", function () { tooltip.style.display = "none"; });
   });
 
@@ -222,37 +227,29 @@
       });
       var diff = view !== "time";
       [toggleEbike, toggleCar].forEach(function (t) { t.disabled = diff; t.classList.toggle("olat3-dim", diff); });
-      isoInput.disabled = diff;
+      isoToggle.disabled = diff;
+      isoInput.disabled = diff || !isoOn;
       r.setView(view);
       updateHeader(); updateLegend(); updateStats();
     });
   });
 
-  /* ---- isochrone threshold ---------------------------------------------- */
-  isoInput.addEventListener("input", function () {
-    var v = parseInt(this.value, 10);
-    threshold = v === 0 ? null : v;
-    isoLabel.textContent = threshold == null ? "Isochrone: off" : "Isochrone: ≤ " + threshold + " min";
-    r.setThreshold(threshold);
-    updateLegend(); updateStats();
+  /* ---- isochrone: explicit on/off toggle, slider has no 0 position ------- */
+  isoToggle.addEventListener("click", function () {
+    if (isoToggle.disabled) return;
+    isoOn = !isoOn;
+    isoToggle.setAttribute("aria-pressed", isoOn ? "true" : "false");
+    isoToggle.classList.toggle("active", isoOn);
+    isoInput.disabled = !isoOn;
+    isoVal.classList.toggle("off", !isoOn);
+    threshold = isoOn ? parseInt(isoInput.value, 10) : null;
+    r.setThreshold(threshold); updateLegend(); updateStats();
   });
-
-  /* ---- click / hover to read the journey time anywhere ------------------- */
-  function readAt(ev) {
-    if (!r._ch) return;
-    var p = r.eventToPx(ev);
-    var hit = r.nearestAtPx(p[0], p[1]);
-    if (!hit) { readout.hidden = true; return; }
-    var mins = hit.minutes == null ? "unreachable" : hit.minutes + " min";
-    readout.textContent = mins;
-    readout.style.left = (ev.clientX) + "px";
-    readout.style.top = (ev.clientY) + "px";
-    readout.hidden = false;
-  }
-  if (finePointer) {
-    canvas.addEventListener("mousemove", readAt);
-    canvas.addEventListener("mouseleave", function () { readout.hidden = true; });
-  }
-  canvas.addEventListener("click", readAt);
-  mapEl.addEventListener("mouseleave", function () { readout.hidden = true; });
+  isoInput.addEventListener("input", function () {
+    isoVal.textContent = this.value + " min";
+    if (isoOn) {
+      threshold = parseInt(this.value, 10);
+      r.setThreshold(threshold); updateLegend(); updateStats();
+    }
+  });
 })();

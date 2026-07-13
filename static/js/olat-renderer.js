@@ -37,7 +37,7 @@
     this.threshold = null;              // isochrone minutes, or null
     this.separateUnreachable = false;
     this.onReadout = opts.onReadout || null;
-    this._times = null;                 // Float/Uint8 per-destination current mode
+    this._times = null;                 // Uint8 per-destination current mode
   };
 
   /* ---- load manifest + coords + overlay (once) --------------------------- */
@@ -274,8 +274,10 @@
   };
 
   OlatRenderer.prototype._threshColour = function (thr) {
-    // colour the catchment by which band the threshold falls in
-    var b = this.binLut[Math.max(0, Math.min(this.sentinel, thr | 0))];
+    // colour the catchment by the band that ENDS at the threshold (round down):
+    // 15 -> <15 (blue), 45 -> 30-45 (pale green). Use thr-1 so an edge value
+    // lands in the band below it rather than the one above.
+    var b = this.binLut[Math.max(0, Math.min(this.sentinel, (thr | 0) - 1))];
     return rgbCss(this.colours[b]);
   };
 
@@ -283,7 +285,7 @@
     var N = this.N, px = this.px, py = this.py, R = this.R, sent = this.sentinel;
     var ptv = this._ch.R;
     var modev = this.view === "diff-car" ? this._ch.B : this._ch.G;
-    // buckets: newly-reachable, both-unreachable, and 6 savings bands (0..30+)
+    // buckets: newly-reachable, both-unreachable, and savings bands (<5..30+)
     var newly = new Path2D(), none = new Path2D();
     var bands = [new Path2D(), new Path2D(), new Path2D(), new Path2D(), new Path2D()];
     var bandEdges = [1, 5, 10, 20, 30];     // minutes saved
