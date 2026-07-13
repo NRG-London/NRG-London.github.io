@@ -1,9 +1,8 @@
 ---
 title: "OLAT Explorer v3 — Beta"
-_build:
+build:
   list: never
-  sitemap:
-    disable: true
+  render: always
 sitemap:
   disable: true
 ---

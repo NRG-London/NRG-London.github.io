@@ -9,7 +9,10 @@
   Assets: static/olat/{manifest.json,coords.bin,overlay.png,v/<slug>.png}
   Script: static/js/olat-renderer.js + static/js/olat-explorer-v3.js
 */ -}}
-{{- $olat := site.Data.olat -}}
+{{- /* v3 uses olat_v3 (borough paths in true 2200x1695 pixel space, generated
+       from london_boroughs.geojson via the same transform as overlay.png) so the
+       clickable layer sits exactly on the drawn borough lines. */ -}}
+{{- $olat := site.Data.olat_v3 -}}
 {{- $centres := site.Data.olat_centres -}}
 {{- $default := .Get "default" | default "croydon" -}}
 {{- $selB := index (where $centres.boroughs "slug" $default) 0 -}}
