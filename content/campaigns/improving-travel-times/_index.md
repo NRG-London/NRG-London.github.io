@@ -19,6 +19,8 @@ Although it's true that London has one of the best public transport networks in 
 UPDATE: I've added e-bike and car options, which you can toggle on and off. The e-bike option assumes you travel at an average of 12mph for a max of 30 mins, and it assumes an e-bike is available at both ends of a public transport journey. The car option attempts to model congestion with a 20% speed reduction in outer London, 40% in inner London, 60% in central London - it looks reasonable in outer London but may understate peak time congestion in the city centre.
 {{< olat-explorer-v2 default="croydon" >}}
 
+I'm working on some further features. You can try them on the [beta test page](https://neilgarratt.com/olat-v3-beta/).
+
 Using the R5R transport routing engine, I've built OLAT: the Outer London Access Time map, a colour-coded map of travel times between all parts of London. Blue and green areas show places that are easily reachable within 45 mins, these are the places that are "in range" for someone looking for work, for example. Feel free to use it to find potential places to live!
 
 The interactive OLAT map allows you to explore how large those easy-travel zones are for well-connected boroughs, and how limited they are for others. In particular, notice that for many outer London boroughs getting to relatively nearby outer boroughs is slow and difficult. These are the orbital journeys that are often 2 to 3 times faster by car, even in busy traffic.
