@@ -3,15 +3,12 @@
   Same borough map / selector / chips / mode toggles as v2, but the heatmap is
   drawn in a <canvas> from a per-origin data image (R=pt, G=pt-ebike, B=pt-car)
   plus a shared coords.bin + overlay.png in /static/olat/. Adds difference maps,
-  an isochrone threshold and click-to-read.
+  an isochrone threshold, click-to-read, and reference map layers.
   Usage: {{< olat-explorer-v3 default="croydon" >}}
   Data:  data/olat_v3.json (borough shapes) + data/olat_centres.json (centres).
-  Assets: static/olat/{manifest.json,coords.bin,overlay.png,v/<slug>.png}
+  Assets: static/olat/{manifest.json,coords.bin,overlay.png,v/<slug>.png,ref-*.png}
   Script: static/js/olat-renderer.js + static/js/olat-explorer-v3.js
 */ -}}
-{{- /* v3 uses olat_v3 (borough paths in true 2200x1695 pixel space, generated
-       from london_boroughs.geojson via the same transform as overlay.png) so the
-       clickable layer sits exactly on the drawn borough lines. */ -}}
 {{- $olat := site.Data.olat_v3 -}}
 {{- $centres := site.Data.olat_centres -}}
 {{- $default := .Get "default" | default "croydon" -}}
@@ -75,9 +72,28 @@
     </div>
   </div>
 
+  <details class="olat3-layers">
+    <summary>Map layers &amp; landmarks</summary>
+    <div class="olat3-layers-body">
+      <button type="button" class="olat-mode-toggle olat3-layer" data-layer="rail" aria-pressed="false">Rail &amp; Tube</button>
+      <button type="button" class="olat-mode-toggle olat3-layer" data-layer="map" aria-pressed="false">Map</button>
+      <button type="button" class="olat-mode-toggle olat3-layer" data-layer="stations" aria-pressed="false">Stations</button>
+      <label class="olat3-fade">
+        <span class="olat3-fade-label">Fade</span>
+        <input type="range" id="olat3-fade" min="15" max="100" step="5" value="70" disabled
+               aria-label="Reference layer opacity">
+      </label>
+    </div>
+  </details>
+
   <div class="olat-map" id="olat3-map">
     <canvas id="olat3-canvas" width="2200" height="1695"
             aria-label="Heatmap of journey times from {{ $selC.name }}"></canvas>
+    <div class="olat3-ref-layers" id="olat3-ref-layers" aria-hidden="true">
+      <img class="olat3-ref" id="olat3-ref-map" data-src="/olat/ref-map.png?v=5" alt="" hidden>
+      <img class="olat3-ref" id="olat3-ref-rail" data-src="/olat/ref-rail.png?v=5" alt="" hidden>
+      <img class="olat3-ref" id="olat3-ref-stations" data-src="/olat/ref-stations.png?v=5" alt="" hidden>
+    </div>
     <svg viewBox="{{ delimit $olat.viewBox " " }}" preserveAspectRatio="none"
          xmlns="http://www.w3.org/2000/svg" aria-hidden="false" role="group"
          aria-label="Map of London boroughs. Select a borough, then choose one of its town centres.">
@@ -97,7 +113,7 @@
 
   <div class="olat-legend" id="olat3-legend"></div>
   <p class="olat3-stats" id="olat3-stats"></p>
-  <p class="olat-caption">Mean journey times across London from the selected town centre, departing on a Tuesday morning between 7.30am and 8.30am. Click or tap a borough on the map, then pick one of its town centres. This <strong>beta</strong> renders the map live in your browser from journey-time data rather than a pre-made image — hover the map to read the journey time to any point.</p>
+  <p class="olat-caption">Mean journey times across London from the selected town centre, departing on a Tuesday morning between 7.30am and 8.30am. Click or tap a borough on the map, then pick one of its town centres. This <strong>beta</strong> renders the map live in your browser from journey-time data rather than a pre-made image — open <em>Map layers</em> to overlay the rail network or a street map and get your bearings.</p>
 </div>
 <script src="/js/olat-renderer.js" defer></script>
 <script src="/js/olat-explorer-v3.js" defer></script>

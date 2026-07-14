@@ -2,8 +2,9 @@
  * Reuses the v2 UX — borough map, district-centre chips, mode toggles — but
  * drives a <canvas> via OlatRenderer instead of swapping pre-rendered images.
  * Adds: difference maps (car / e-bike premium), an isochrone threshold, live
- * catchment stats, and the journey time to the hovered point (shown inside the
- * borough tooltip, since the borough layer owns pointer events). v2 is untouched.
+ * catchment stats, the journey time to the hovered point (shown inside the
+ * borough tooltip, since the borough layer owns pointer events), and toggleable
+ * reference layers (rail / roads / stations) with a fade control. v2 is untouched.
  */
 (function () {
   "use strict";
@@ -22,6 +23,9 @@
   var isoToggle = document.getElementById("olat3-iso-toggle");
   var isoInput = document.getElementById("olat3-iso");
   var isoVal = document.getElementById("olat3-iso-val");
+  var refWrap = document.getElementById("olat3-ref-layers");
+  var fadeInput = document.getElementById("olat3-fade");
+  var layerBtns = root.querySelectorAll(".olat3-layer");
   var chipRows = root.querySelectorAll(".olat-chip-row");
   var viewBtns = root.querySelectorAll(".olat3-view");
 
@@ -46,7 +50,6 @@
     if (statsEl) statsEl.textContent = "Could not load the map data (" + e.message + ").";
   });
 
-  /* ---- header / legend / stats ------------------------------------------ */
   function modeText() { return "PT" + (ebike ? " + e-bike" : "") + (car ? " + car" : ""); }
 
   function updateHeader() {
@@ -109,7 +112,6 @@
     }
   }
 
-  /* diff stats computed from the renderer's decoded channels */
   function diffStats(v) {
     var ch = r._ch, N = r.N, sent = r.sentinel;
     var ptv = ch.R, modev = v === "diff-car" ? ch.B : ch.G;
@@ -123,7 +125,6 @@
     return { mean: c ? s / c : 0, newly: newly };
   }
 
-  /* ---- journey time to the hovered point (folded into the tooltip) ------- */
   function timeLabelAt(e) {
     if (!r._ch) return "";
     var p = r.eventToPx(e);
@@ -132,7 +133,6 @@
     return hit.minutes == null ? "unreachable" : "≈" + hit.minutes + " min";
   }
 
-  /* ---- origin selection (borough map + chips + select) ------------------- */
   function moveTooltip(e) {
     tooltip.style.left = (e.clientX + 14) + "px";
     tooltip.style.top = (e.clientY - 10) + "px";
@@ -201,7 +201,6 @@
     if (chip) chooseChip(chip);
   });
 
-  /* ---- mode toggles ------------------------------------------------------ */
   function bindToggle(btn, setter) {
     btn.addEventListener("click", function () {
       if (btn.disabled) return;
@@ -216,7 +215,6 @@
   bindToggle(toggleEbike, function (v) { ebike = v; });
   bindToggle(toggleCar, function (v) { car = v; });
 
-  /* ---- view switch (journey time / difference maps) ---------------------- */
   viewBtns.forEach(function (b) {
     b.addEventListener("click", function () {
       view = b.dataset.view;
@@ -234,7 +232,6 @@
     });
   });
 
-  /* ---- isochrone: explicit on/off toggle, slider has no 0 position ------- */
   isoToggle.addEventListener("click", function () {
     if (isoToggle.disabled) return;
     isoOn = !isoOn;
@@ -251,5 +248,26 @@
       threshold = parseInt(this.value, 10);
       r.setThreshold(threshold); updateLegend(); updateStats();
     }
+  });
+
+  if (refWrap) refWrap.style.opacity = fadeInput.value / 100;
+  layerBtns.forEach(function (b) {
+    b.addEventListener("click", function () {
+      var on = b.getAttribute("aria-pressed") !== "true";
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+      b.classList.toggle("active", on);
+      var img = document.getElementById("olat3-ref-" + b.dataset.layer);
+      if (img) {
+        if (on && !img.getAttribute("src")) img.src = img.dataset.src;
+        img.hidden = !on;
+      }
+      var anyOn = Array.prototype.some.call(layerBtns, function (x) {
+        return x.getAttribute("aria-pressed") === "true";
+      });
+      fadeInput.disabled = !anyOn;
+    });
+  });
+  fadeInput.addEventListener("input", function () {
+    if (refWrap) refWrap.style.opacity = this.value / 100;
   });
 })();

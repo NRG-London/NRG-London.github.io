@@ -1,6 +1,8 @@
 /* OLAT Explorer v3 (beta) — styles additive to main.css, scoped to .olat-v3.
    v2 is unaffected. */
 
+.olat-v3 .olat-map { position: relative; }
+
 .olat-v3 .olat-map canvas {
   width: 100%;
   height: auto;
@@ -9,7 +11,24 @@
   cursor: crosshair;
 }
 
-/* the borough SVG sits above the canvas for clicking, as it does over the v2 img */
+/* reference layers (rail / roads / stations) sit above the heatmap and below the
+   clickable borough SVG; the wrapper's opacity is the "fade" control */
+.olat-v3 .olat-map .olat3-ref-layers {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.7;
+}
+.olat-v3 .olat-map .olat3-ref {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* the borough SVG sits on top for clicking, as it does over the v2 img */
 .olat-v3 .olat-map svg { z-index: 2; }
 
 /* view switch + isochrone row */
@@ -53,8 +72,6 @@
 }
 .olat3-iso input[type="range"] { width: 160px; accent-color: var(--blue); }
 .olat3-iso input[type="range"]:disabled { opacity: 0.4; }
-/* value sits to the RIGHT of the slider with a fixed, tabular width, so the
-   slider never shifts as the number changes length */
 .olat3-iso-val {
   min-width: 3.8em;
   font-variant-numeric: tabular-nums;
@@ -66,6 +83,49 @@
 
 .olat-mode-toggle.olat3-dim { opacity: 0.4; cursor: not-allowed; }
 
+/* collapsible "Map layers" panel — closed by default to keep the phone view tidy */
+.olat3-layers {
+  margin-bottom: 1rem;
+  border: 1px solid var(--warm-grey);
+  border-radius: 6px;
+}
+.olat3-layers > summary {
+  cursor: pointer;
+  padding: 0.55rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink);
+  list-style: none;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+}
+.olat3-layers > summary::-webkit-details-marker { display: none; }
+.olat3-layers > summary::before { content: "\25B8\00a0"; color: var(--mid-grey); }
+.olat3-layers[open] > summary::before { content: "\25BE\00a0"; }
+.olat3-layers-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.8rem 0.8rem;
+}
+.olat3-fade {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--mid-grey);
+}
+.olat3-fade-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.olat3-fade input[type="range"] { width: 120px; accent-color: var(--blue); }
+.olat3-fade input[type="range"]:disabled { opacity: 0.4; }
+
 .olat3-stats {
   font-size: 0.8rem !important;
   color: var(--ink) !important;
@@ -76,4 +136,10 @@
 @media (max-width: 640px) {
   .olat3-view { min-height: 40px; }
   .olat3-iso input[type="range"] { width: 120px; }
+  .olat3-layer, .olat3-layers > summary { min-height: 44px; }
 }
+
+/* FIX: main.css ".olat-map img { display:block }" (specificity 0,1,1) overrides
+   the UA [hidden] rule, so toggling a reference layer off never hid it. This
+   selector (0,4,0) wins, restoring the hidden attribute's effect. */
+.olat-v3 .olat-map .olat3-ref[hidden] { display: none; }
