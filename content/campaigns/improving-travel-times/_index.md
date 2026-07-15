@@ -9,22 +9,32 @@ summary: "Mapping journey times across London, why travel in outer London looks 
 
 ## Exploring the problem: Outer London Access Time
 
-*There's a lot of talk about getting people to switch from their car to public transport, often framed as a moral choice. It's actually a practical choice, driven by people's rational assessment of their options.*
+*One half of London can't understand why anyone would own a car, the other can't understand why anyone would bother with a bike. My unpopular opinion is that most people are making rational choices and this page will show you why.*
 
-It's often said that only half of Londoners own a car, but this hides a fundamental fact: in inner London only about 1/3 of households have a car, but in outer London it's about 2/3. Transport planning tends to ignore this, and the reasons why a car is a rational choice for so many people in outer London. See ["A tale of two sub-regional urban zones"](https://neilgarratt.com/library/glp-car-ownership-two-londons/) for more.
+In transport terms, London is a city of two halves and the two halves often don't understand each other. Worse, one half tends to make most of the decisions. I explored this in some detail in an article for the excellent Greater London project, ["A tale of two sub-regional urban zones"](https://neilgarratt.com/library/glp-car-ownership-two-londons/). This page builds on that.
 
-Although it's true that London has one of the best public transport networks in the world, it's not true in every part of London. In fact, there is a stark divide in the level of public transport in central and inner London versus the outer boroughs, which I find is poorly understood especially by London's transport experts who, by and large, tend to live in the better-connected parts of the city. I built this map to tackle that knowledge gap.
+So if you don't get why most outer-London households own a car, including a majority of even the poorest 10%, or why there's so much talk about cycling when you rarely see a bike in your part of London, read on. I built this map to tackle that knowledge gap.
 
 ## Interactive Journey Time Map
-UPDATE: I've added e-bike and car options, which you can toggle on and off. The e-bike option assumes you travel at an average of 12mph for a max of 30 mins, and it assumes an e-bike is available at both ends of a public transport journey. The car option attempts to model congestion with a 20% speed reduction in outer London, 40% in inner London, 60% in central London - it looks reasonable in outer London but may understate peak time congestion in the city centre.
-{{< olat-explorer-v2 default="croydon" >}}
 
-I'm working on some further features. You can try them on the [beta test page](https://neilgarratt.com/olat-v3-beta/).
+{{< olat-explorer-v3 default="croydon" >}}
 
-Using the R5R transport routing engine, I've built OLAT: the Outer London Access Time map, a colour-coded map of travel times between all parts of London. Blue and green areas show places that are easily reachable within 45 mins, these are the places that are "in range" for someone looking for work, for example. Feel free to use it to find potential places to live!
+## What It Does And How It Works
 
-The interactive OLAT map allows you to explore how large those easy-travel zones are for well-connected boroughs, and how limited they are for others. In particular, notice that for many outer London boroughs getting to relatively nearby outer boroughs is slow and difficult. These are the orbital journeys that are often 2 to 3 times faster by car, even in busy traffic.
+Using the [R5R transport](https://cran.r-project.org/web//packages/r5r/vignettes/r5r.html) routing engine, I've built **OLAT: the Outer London Access Time** map, a colour-coded map of travel times between all parts of London. Blue and green areas show places that are reachable within 45 mins, these are the places that are "in range" for someone looking for work, for example. Feel free to use it to find potential places to live!
 
-Within each borough, you can select from a range of named centres which is where, especially in outer London, you'll find places that are surprisingly poorly connected to the rest of London. For instance, Harold Hill in Havering, or Selsdon in Croydon. In Hillingdon, Northwood has good radial links towards London but poor links to the south of its own borough. The 202 centres shown are those listed by the GLA as part of the London Plan, plus Bank in the City of London.
+The interactive OLAT map allows you to explore how large those easy-travel zones are for well-connected boroughs, and how limited they are for others. Within each borough, you can select from a range of named places, these are the 202 centres in the Mayor's London Plan, plus Bank in the City of London.
 
-Public transport journey time calculation is based on all London public transport including Tube, DLR, Tram, Overground, Elizabeth Line, London buses including Superloop, national rail services, and walking. Cycling and driving are not included. Journey times are the mean travel time between 7.30am and 8.30am on a Tuesday morning, and take into account connection and waiting times so a more frequent service is captured as a lower mean journey time across the hour.
+In particular, notice that for many outer London boroughs getting to relatively nearby boroughs is slow and difficult: these are the **orbital journeys that are often 2 to 3 times faster by car**, even in busy traffic. For example, try Harold Hill in Havering, Selsdon in Croydon, or Northwood in Hillingdon.
+
+Public transport journey time calculation is based on all London public transport including Tube, DLR, Tram, Overground, Elizabeth Line, London buses including Superloop, national rail services, and walking. Cycling and driving are not included (see below). Journey times are the mean travel time between 7.30am and 8.30am on a Tuesday morning, and take into account connection and waiting times, so this will be slower than the fastest possible journey especially where services are less frequent.
+
+To see the impact of personal travel, the **+E-Bike** and **+Car** buttons redraw the map assuming you have one or both.
+
+**The e-bike option** assumes you travel at an average of 12mph for a max of 30 mins, and it assumes an e-bike is available at both ends of a public transport journey, which in practice it might not be.
+
+**The car option** attempts to model congestion by taking the Open Street Map journey time and adding a 20% speed reduction in outer London, 40% in inner London, and 60% in central London. It looks reasonable in outer London, but may understate peak time congestion in the city centre.
+
+I've done my best to model London's enormously complex transport system in this one small map, but I am just one man. Please do check against authoritative sources such as TfL before you do anything important with this information.
+
+**Special thank you** to the people at [Conveyal who built R5](https://github.com/conveyal/r5), the [people who built R5R](https://cran.r-project.org/web//packages/r5r/vignettes/r5r.html) to make it easily programmable, and the people who built [Open Street Map](https://www.openstreetmap.org/) which R5 uses for walking, cycling, and driving. 
