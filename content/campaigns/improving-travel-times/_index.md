@@ -29,7 +29,7 @@ In particular, notice that for many outer London boroughs getting to relatively 
 
 Public transport journey time calculation is based on all London public transport including Tube, DLR, Tram, Overground, Elizabeth Line, London buses including Superloop, national rail services, and walking. Cycling and driving are not included (see below). Journey times are the mean travel time between 7.30am and 8.30am on a Tuesday morning, and take into account connection and waiting times, so this will be slower than the fastest possible journey especially where services are less frequent.
 
-To see the impact of personal travel, the **+E-Bike** and **+Car** buttons redraw the map assuming you have one or both.
+To see the impact of personal travel, the **+E-Bike** and **+Car** buttons redraw the map assuming you have one or both. It's striking how big an area a car opens up in outer London, and how much a bike opens up especially across central and inner London. This is my "rational transport choices" theory in visual form.
 
 **The e-bike option** assumes you travel at an average of 12mph for a max of 30 mins, and it assumes an e-bike is available at both ends of a public transport journey, which in practice it might not be.
 
