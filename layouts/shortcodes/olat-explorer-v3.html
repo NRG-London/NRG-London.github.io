@@ -8,17 +8,18 @@
   Data:  data/olat_v3.json (borough shapes) + data/olat_centres.json (centres).
   Assets: static/olat/{manifest.json,coords.bin,overlay.png,v/<slug>.png,ref-*.png}
   Script: static/js/olat-renderer.js + static/js/olat-explorer-v3.js
+  NB: ?v=N on assets is a manual cache-buster; bump it whenever an asset changes.
 */ -}}
 {{- $olat := site.Data.olat_v3 -}}
 {{- $centres := site.Data.olat_centres -}}
 {{- $default := .Get "default" | default "croydon" -}}
 {{- $selB := index (where $centres.boroughs "slug" $default) 0 -}}
 {{- $selC := index $selB.centres 0 -}}
-<link rel="stylesheet" href="/css/olat-v3.css">
+<link rel="stylesheet" href="/css/olat-v3.css?v=6">
 <div class="olat-explorer olat-v3" id="olat-explorer-v3" data-default="{{ $default }}" data-base="/olat/">
   <div class="olat-head">
     <div class="olat-head-text">
-      <h3 class="olat-name" id="olat3-name"><span class="olat-proto-badge">Beta</span>{{ $selC.name }}</h3>
+      <h3 class="olat-name" id="olat3-name">{{ $selC.name }}</h3>
       <p class="olat-meta" id="olat3-meta">{{ $selC.cls }} centre in {{ $selB.name }}</p>
     </div>
     <label class="olat-select-wrap">
@@ -57,24 +58,26 @@
     <button type="button" class="olat-mode-toggle" id="olat3-toggle-car" aria-pressed="false">+ car</button>
   </div>
 
-  <div class="olat3-controls">
-    <div class="olat3-views" role="group" aria-label="Map view">
-      <button type="button" class="olat3-view active" data-view="time" aria-pressed="true">Journey time</button>
-      <button type="button" class="olat3-view" data-view="diff-car" aria-pressed="false">Car premium</button>
-      <button type="button" class="olat3-view" data-view="diff-ebike" aria-pressed="false">E-bike premium</button>
+  <details class="olat3-panel olat3-mapopts" open>
+    <summary>Mapping options</summary>
+    <div class="olat3-panel-body">
+      <div class="olat3-views" role="radiogroup" aria-label="What to map">
+        <button type="button" class="olat3-view active" data-view="time" role="radio" aria-checked="true">Journey time</button>
+        <button type="button" class="olat3-view" data-view="diff-ebike" role="radio" aria-checked="false">E-bike saving</button>
+        <button type="button" class="olat3-view" data-view="diff-car" role="radio" aria-checked="false">Car saving</button>
+        <button type="button" class="olat3-view" data-view="iso" role="radio" aria-checked="false">Isochrone</button>
+      </div>
+      <div class="olat3-iso" id="olat3-iso-wrap" hidden>
+        <input type="range" id="olat3-iso" min="5" max="120" step="5" value="45"
+               aria-label="Isochrone threshold in minutes">
+        <span class="olat3-iso-val" id="olat3-iso-val">45 min</span>
+      </div>
     </div>
-    <div class="olat3-iso">
-      <button type="button" class="olat-mode-toggle olat3-iso-toggle" id="olat3-iso-toggle"
-              aria-pressed="false">Isochrone</button>
-      <input type="range" id="olat3-iso" min="5" max="120" step="5" value="45" disabled
-             aria-label="Isochrone threshold in minutes">
-      <span class="olat3-iso-val off" id="olat3-iso-val">45 min</span>
-    </div>
-  </div>
+  </details>
 
-  <details class="olat3-layers">
+  <details class="olat3-panel olat3-layers" open>
     <summary>Map layers &amp; landmarks</summary>
-    <div class="olat3-layers-body">
+    <div class="olat3-panel-body olat3-layers-body">
       <button type="button" class="olat-mode-toggle olat3-layer" data-layer="rail" aria-pressed="false">Rail &amp; Tube</button>
       <button type="button" class="olat-mode-toggle olat3-layer" data-layer="map" aria-pressed="false">Map</button>
       <button type="button" class="olat-mode-toggle olat3-layer" data-layer="stations" aria-pressed="false">Stations</button>
@@ -85,6 +88,8 @@
       </label>
     </div>
   </details>
+
+  <script>(function(){if(window.matchMedia&&window.matchMedia("(max-width:640px)").matches){var d=document.querySelectorAll("#olat-explorer-v3 details.olat3-panel");for(var i=0;i<d.length;i++)d[i].removeAttribute("open");}})();</script>
 
   <div class="olat-map" id="olat3-map">
     <canvas id="olat3-canvas" width="2200" height="1695"
@@ -113,7 +118,7 @@
 
   <div class="olat-legend" id="olat3-legend"></div>
   <p class="olat3-stats" id="olat3-stats"></p>
-  <p class="olat-caption">Mean journey times across London from the selected town centre, departing on a Tuesday morning between 7.30am and 8.30am. Click or tap a borough on the map, then pick one of its town centres. This <strong>beta</strong> renders the map live in your browser from journey-time data rather than a pre-made image — open <em>Map layers</em> to overlay the rail network or a street map and get your bearings.</p>
+  <p class="olat-caption">Mean journey times across London from the selected town centre, departing on a Tuesday morning between 7.30am and 8.30am. Click or tap a borough on the map, then pick one of its town centres. This map is rendered live in your browser from journey-time data rather than a pre-made image — open <em>Mapping options</em> to compare modes or draw an isochrone, and <em>Map layers</em> to overlay the rail network or a street map.</p>
 </div>
-<script src="/js/olat-renderer.js" defer></script>
-<script src="/js/olat-explorer-v3.js" defer></script>
+<script src="/js/olat-renderer.js?v=6" defer></script>
+<script src="/js/olat-explorer-v3.js?v=7" defer></script>

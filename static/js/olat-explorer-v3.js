@@ -1,10 +1,9 @@
 /* OLAT Explorer v3 controller (BETA).
  * Reuses the v2 UX — borough map, district-centre chips, mode toggles — but
  * drives a <canvas> via OlatRenderer instead of swapping pre-rendered images.
- * Adds: difference maps (car / e-bike premium), an isochrone threshold, live
- * catchment stats, the journey time to the hovered point (shown inside the
- * borough tooltip, since the borough layer owns pointer events), and toggleable
- * reference layers (rail / roads / stations) with a fade control. v2 is untouched.
+ * "Mapping options" is one exclusive set of four displays: Journey time,
+ * E-bike saving, Car saving, Isochrone (with a threshold slider). "Map layers"
+ * overlays rail / street map / stations with a fade. v2 is untouched.
  */
 (function () {
   "use strict";
@@ -20,7 +19,7 @@
   var statsEl = document.getElementById("olat3-stats");
   var toggleEbike = document.getElementById("olat3-toggle-ebike");
   var toggleCar = document.getElementById("olat3-toggle-car");
-  var isoToggle = document.getElementById("olat3-iso-toggle");
+  var isoWrap = document.getElementById("olat3-iso-wrap");
   var isoInput = document.getElementById("olat3-iso");
   var isoVal = document.getElementById("olat3-iso-val");
   var refWrap = document.getElementById("olat3-ref-layers");
@@ -31,7 +30,8 @@
 
   var selectedPath = root.querySelector(".olat-borough.selected");
   var activeChip = root.querySelector(".olat-chip.active");
-  var ebike = false, car = false, view = "time", threshold = null, isoOn = false;
+  // view: "time" | "diff-ebike" | "diff-car" | "iso"
+  var ebike = false, car = false, view = "time", threshold = null;
 
   var COLOURS = ["#2166AC", "#66BD63", "#D9EF8B", "#FEE08B", "#F46D43", "#A50026"];
   var TIME_LABELS = ["&lt; 15", "15–30", "30–45", "45–60", "60–90", "90+"];
@@ -51,31 +51,31 @@
   });
 
   function modeText() { return "PT" + (ebike ? " + e-bike" : "") + (car ? " + car" : ""); }
+  function isTime() { return view === "time" || view === "iso"; }
 
   function updateHeader() {
     if (!activeChip) return;
     var d = activeChip.dataset;
-    nameEl.innerHTML = '<span class="olat-proto-badge">Beta</span>' + d.name;
+    nameEl.textContent = d.name;
     var mean = r.mean();
     metaEl.textContent = d.cls + " centre in " + d.boroughName +
       (mean != null ? " · Mean " + mean + " min" : "") +
-      (view === "time" && (ebike || car) ? " · " + modeText() : "");
+      (isTime() && (ebike || car) ? " · " + modeText() : "");
     select.value = d.borough + ":" + d.slug;
   }
 
   function updateLegend() {
     var html = "";
-    if (view === "time") {
+    if (view === "iso") {
+      html = '<span class="olat-legend-title">Reachable within threshold</span>' +
+        '<span class="olat-legend-item"><i style="background:' + r._threshColour(threshold) +
+        '"></i>≤ ' + threshold + ' min</span>' +
+        '<span class="olat-legend-item"><i style="background:#e8eef3"></i>beyond</span>';
+    } else if (view === "time") {
       html = '<span class="olat-legend-title">Journey time (minutes)</span>';
-      if (threshold != null) {
-        html += '<span class="olat-legend-item"><i style="background:' + r._threshColour(threshold) +
-          '"></i>≤ ' + threshold + ' min</span>' +
-          '<span class="olat-legend-item"><i style="background:#e8eef3"></i>beyond</span>';
-      } else {
-        for (var i = 0; i < 6; i++) {
-          html += '<span class="olat-legend-item"><i style="background:' + COLOURS[i] +
-            '"></i>' + TIME_LABELS[i] + "</span>";
-        }
+      for (var i = 0; i < 6; i++) {
+        html += '<span class="olat-legend-item"><i style="background:' + COLOURS[i] +
+          '"></i>' + TIME_LABELS[i] + "</span>";
       }
     } else {
       var what = view === "diff-car" ? "car" : "e-bike";
@@ -94,11 +94,11 @@
 
   function updateStats() {
     if (!r._ch) return;
-    if (view === "time") {
+    if (isTime()) {
       var reach = r.reachableCount();
       var s = fmt(reach) + " of " + fmt(r.N) + " postcodes reachable (" +
         (reach / r.N * 100).toFixed(1) + "%)";
-      if (threshold != null) {
+      if (view === "iso") {
         var c = r.catchmentWithin(threshold);
         s += " · " + c.pct.toFixed(1) + "% reachable within " + threshold + " min";
       }
@@ -201,6 +201,7 @@
     if (chip) chooseChip(chip);
   });
 
+  /* ---- mode toggles (+ e-bike / + car) ----------------------------------- */
   function bindToggle(btn, setter) {
     btn.addEventListener("click", function () {
       if (btn.disabled) return;
@@ -215,41 +216,34 @@
   bindToggle(toggleEbike, function (v) { ebike = v; });
   bindToggle(toggleCar, function (v) { car = v; });
 
+  /* ---- Mapping options: one exclusive set of four displays --------------- */
   viewBtns.forEach(function (b) {
     b.addEventListener("click", function () {
       view = b.dataset.view;
       viewBtns.forEach(function (x) {
         var on = x === b;
         x.classList.toggle("active", on);
-        x.setAttribute("aria-pressed", on ? "true" : "false");
+        x.setAttribute("aria-checked", on ? "true" : "false");
       });
-      var diff = view !== "time";
+      var diff = (view === "diff-car" || view === "diff-ebike");
       [toggleEbike, toggleCar].forEach(function (t) { t.disabled = diff; t.classList.toggle("olat3-dim", diff); });
-      isoToggle.disabled = diff;
-      isoInput.disabled = diff || !isoOn;
-      r.setView(view);
+      isoWrap.hidden = (view !== "iso");
+      if (view === "iso") { r.setView("time"); threshold = parseInt(isoInput.value, 10); }
+      else if (view === "time") { r.setView("time"); threshold = null; }
+      else { r.setView(view); threshold = null; }
+      r.setThreshold(threshold);
       updateHeader(); updateLegend(); updateStats();
     });
   });
-
-  isoToggle.addEventListener("click", function () {
-    if (isoToggle.disabled) return;
-    isoOn = !isoOn;
-    isoToggle.setAttribute("aria-pressed", isoOn ? "true" : "false");
-    isoToggle.classList.toggle("active", isoOn);
-    isoInput.disabled = !isoOn;
-    isoVal.classList.toggle("off", !isoOn);
-    threshold = isoOn ? parseInt(isoInput.value, 10) : null;
-    r.setThreshold(threshold); updateLegend(); updateStats();
-  });
   isoInput.addEventListener("input", function () {
     isoVal.textContent = this.value + " min";
-    if (isoOn) {
+    if (view === "iso") {
       threshold = parseInt(this.value, 10);
       r.setThreshold(threshold); updateLegend(); updateStats();
     }
   });
 
+  /* ---- Map layers (rail / map / stations) + fade ------------------------- */
   if (refWrap) refWrap.style.opacity = fadeInput.value / 100;
   layerBtns.forEach(function (b) {
     b.addEventListener("click", function () {

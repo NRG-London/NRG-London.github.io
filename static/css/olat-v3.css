@@ -11,8 +11,8 @@
   cursor: crosshair;
 }
 
-/* reference layers (rail / roads / stations) sit above the heatmap and below the
-   clickable borough SVG; the wrapper's opacity is the "fade" control */
+/* reference layers (rail / map / stations) above the heatmap, below the borough
+   SVG; the wrapper's opacity is the "fade" control */
 .olat-v3 .olat-map .olat3-ref-layers {
   position: absolute;
   inset: 0;
@@ -27,69 +27,17 @@
   height: 100%;
   pointer-events: none;
 }
+.olat-v3 .olat-map .olat3-ref[hidden] { display: none; }   /* beat main.css .olat-map img{display:block} */
 
-/* the borough SVG sits on top for clicking, as it does over the v2 img */
 .olat-v3 .olat-map svg { z-index: 2; }
 
-/* view switch + isochrone row */
-.olat3-controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.75rem 1.25rem;
-  margin-bottom: 1rem;
-}
-
-.olat3-views {
-  display: inline-flex;
-  border: 1px solid var(--warm-grey);
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.olat3-view {
-  font-family: var(--sans);
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--ink);
-  background: var(--white);
-  border: none;
-  padding: 0.4rem 0.85rem;
-  cursor: pointer;
-  min-height: 32px;
-  transition: background 0.15s, color 0.15s;
-}
-.olat3-view + .olat3-view { border-left: 1px solid var(--warm-grey); }
-.olat3-view:hover { color: var(--blue); }
-.olat3-view.active { background: var(--blue); color: var(--white); }
-
-.olat3-iso {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-size: 0.8rem;
-  color: var(--mid-grey);
-}
-.olat3-iso input[type="range"] { width: 160px; accent-color: var(--blue); }
-.olat3-iso input[type="range"]:disabled { opacity: 0.4; }
-.olat3-iso-val {
-  min-width: 3.8em;
-  font-variant-numeric: tabular-nums;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--ink);
-}
-.olat3-iso-val.off { opacity: 0.4; }
-
-.olat-mode-toggle.olat3-dim { opacity: 0.4; cursor: not-allowed; }
-
-/* collapsible "Map layers" panel — closed by default to keep the phone view tidy */
-.olat3-layers {
+/* collapsible panels (Mapping options, Map layers & landmarks) */
+.olat3-panel {
   margin-bottom: 1rem;
   border: 1px solid var(--warm-grey);
   border-radius: 6px;
 }
-.olat3-layers > summary {
+.olat3-panel > summary {
   cursor: pointer;
   padding: 0.55rem 0.8rem;
   font-size: 0.8rem;
@@ -100,16 +48,55 @@
   display: flex;
   align-items: center;
 }
-.olat3-layers > summary::-webkit-details-marker { display: none; }
-.olat3-layers > summary::before { content: "\25B8\00a0"; color: var(--mid-grey); }
-.olat3-layers[open] > summary::before { content: "\25BE\00a0"; }
-.olat3-layers-body {
+.olat3-panel > summary::-webkit-details-marker { display: none; }
+.olat3-panel > summary::before { content: "\25B8\00a0"; color: var(--mid-grey); }
+.olat3-panel[open] > summary::before { content: "\25BE\00a0"; }
+.olat3-panel-body {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.5rem 0.75rem;
   padding: 0 0.8rem 0.8rem;
 }
+
+/* the four exclusive display options behave as radio buttons */
+.olat3-views { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.olat3-view {
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--white);
+  border: 1px solid var(--warm-grey);
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  min-height: 32px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.olat3-view:hover { border-color: var(--blue); color: var(--blue); }
+.olat3-view.active { background: var(--blue); color: var(--white); border-color: var(--blue); }
+
+/* isochrone slider — only shown when the Isochrone option is active */
+.olat3-iso {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.8rem;
+  color: var(--mid-grey);
+}
+.olat3-iso[hidden] { display: none; }
+.olat3-iso input[type="range"] { width: 160px; accent-color: var(--blue); }
+.olat3-iso-val {
+  min-width: 3.8em;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* map-layer toggles + fade */
+.olat-mode-toggle.olat3-dim { opacity: 0.4; cursor: not-allowed; }
 .olat3-fade {
   display: inline-flex;
   align-items: center;
@@ -136,10 +123,5 @@
 @media (max-width: 640px) {
   .olat3-view { min-height: 40px; }
   .olat3-iso input[type="range"] { width: 120px; }
-  .olat3-layer, .olat3-layers > summary { min-height: 44px; }
+  .olat3-layer, .olat3-panel > summary { min-height: 44px; }
 }
-
-/* FIX: main.css ".olat-map img { display:block }" (specificity 0,1,1) overrides
-   the UA [hidden] rule, so toggling a reference layer off never hid it. This
-   selector (0,4,0) wins, restoring the hidden attribute's effect. */
-.olat-v3 .olat-map .olat3-ref[hidden] { display: none; }
