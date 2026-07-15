@@ -235,11 +235,14 @@
       updateHeader(); updateLegend(); updateStats();
     });
   });
+  var isoRaf = null;
+  function isoApply() { isoRaf = null; r.setThreshold(threshold); updateLegend(); updateStats(); }
   isoInput.addEventListener("input", function () {
     isoVal.textContent = this.value + " min";
     if (view === "iso") {
       threshold = parseInt(this.value, 10);
-      r.setThreshold(threshold); updateLegend(); updateStats();
+      // coalesce rapid slider input to at most one redraw per frame
+      if (!isoRaf) isoRaf = (window.requestAnimationFrame || function (f) { return setTimeout(f, 16); })(isoApply);
     }
   });
 

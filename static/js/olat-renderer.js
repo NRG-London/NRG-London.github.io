@@ -57,10 +57,15 @@
         self.originBySlug = {};
         m.origins.forEach(function (o) { self.originBySlug[o.slug] = o; });
         self._buildBinLut();
-        // canvas backing store matches the production canvas exactly -> the
-        // spec transform is 1:1, the overlay composites 1:1, radius = ref.
+        // adaptive backing resolution: match the on-screen size x device pixel
+        // ratio, capped at the production width, so lower-powered phones don't
+        // fill a needlessly huge canvas. Everything scales off self.W / self.H.
+        var cssW = self.canvas.getBoundingClientRect().width || (window.innerWidth || 800);
+        var dpr = window.devicePixelRatio || 1;
+        var backW = Math.max(760, Math.min(m.canvas.width, Math.round(cssW * dpr)));
+        self.W = backW; self.H = Math.round(backW * m.canvas.height / m.canvas.width);
         self.canvas.width = self.W; self.canvas.height = self.H;
-        self.R = m.dotRadiusRef;                  // 3.84 px at 2200 wide
+        self.R = m.dotRadiusRef * (self.W / m.canvas.width);
         return Promise.all([self._loadCoords(), self._loadOverlay()]);
       })
       .then(function () { self._project(); return self; });
@@ -247,24 +252,23 @@
   OlatRenderer.prototype._renderTime = function (ctx) {
     var N = this.N, t = this._times, px = this.px, py = this.py, R = this.R;
     var sent = this.sentinel, lut = this.binLut, thr = this.threshold;
-    var paths = [new Path2D(), new Path2D(), new Path2D(), new Path2D(), new Path2D(), new Path2D()];
     var unreach = this.separateUnreachable ? new Path2D() : null;
-    for (var i = 0; i < N; i++) {
-      var v = t[i];
-      var b;
-      if (v >= sent) { if (unreach) { addDot(unreach, px[i], py[i], R); continue; } b = 5; }
-      else b = lut[v];
-      addDot(paths[b], px[i], py[i], R);
-    }
     if (thr == null) {
-      // categorical 6-bin map, drawn 90+ first so near beats far (spec 4.2)
+      // categorical 6-bin map: build 6 paths, draw 90+ first so near beats far
+      var paths = [new Path2D(), new Path2D(), new Path2D(), new Path2D(), new Path2D(), new Path2D()];
+      for (var i = 0; i < N; i++) {
+        var v = t[i], b;
+        if (v >= sent) { if (unreach) { addDot(unreach, px[i], py[i], R); continue; } b = 5; }
+        else b = lut[v];
+        addDot(paths[b], px[i], py[i], R);
+      }
       for (var k = 5; k >= 0; k--) { ctx.fillStyle = rgbCss(this.colours[k]); ctx.fill(paths[k]); }
     } else {
-      // isochrone: within threshold vs beyond, two fills
+      // isochrone: ONE pass, within-threshold vs beyond (2 fills, not 6)
       var inP = new Path2D(), outP = new Path2D();
       for (var j = 0; j < N; j++) {
         var vv = t[j];
-        if (vv >= sent) { if (!unreach) addDot(outP, px[j], py[j], R); continue; }
+        if (vv >= sent) { if (unreach) addDot(unreach, px[j], py[j], R); else addDot(outP, px[j], py[j], R); continue; }
         addDot(vv <= thr ? inP : outP, px[j], py[j], R);
       }
       ctx.fillStyle = "#e8eef3"; ctx.fill(outP);
