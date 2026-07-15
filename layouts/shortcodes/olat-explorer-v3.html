@@ -15,7 +15,7 @@
 {{- $default := .Get "default" | default "croydon" -}}
 {{- $selB := index (where $centres.boroughs "slug" $default) 0 -}}
 {{- $selC := index $selB.centres 0 -}}
-<link rel="stylesheet" href="/css/olat-v3.css?v=6">
+<link rel="stylesheet" href="/css/olat-v3.css?v=10">
 <div class="olat-explorer olat-v3" id="olat-explorer-v3" data-default="{{ $default }}" data-base="/olat/">
   <div class="olat-head">
     <div class="olat-head-text">
@@ -112,6 +112,7 @@
             {{- if $clickable }} tabindex="0" role="button"
             aria-label="{{ .name }}: show town centres"{{ end }}/>
       {{- end }}
+      <path class="olat-boundary" d="{{ $olat.boundary }}" fill="none" aria-hidden="true"/>
     </svg>
     <div class="olat-tooltip" id="olat3-tooltip" role="presentation"></div>
   </div>
