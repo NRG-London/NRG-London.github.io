@@ -23,7 +23,7 @@ So if you don't get why most outer-London households own a car, including a majo
 
 Using the [R5R transport](https://cran.r-project.org/web//packages/r5r/vignettes/r5r.html) routing engine, I've built **OLAT: the Outer London Access Time** map, a colour-coded map of travel times between all parts of London. Blue and green areas show places that are reachable within 45 mins, these are the places that are "in range" for someone looking for work, for example. Feel free to use it to find potential places to live!
 
-The interactive OLAT map allows you to explore how large those easy-travel zones are for well-connected boroughs, and how limited they are for others. Within each borough, you can select from a range of named places, these are the 202 centres in the Mayor's London Plan, plus Bank in the City of London.
+The interactive OLAT map allows you to explore how large those easy-travel zones are for well-connected boroughs, and how limited they are for others. Within each borough, you can select from a range of named places, these are the 201 centres in the Mayor's London Plan, plus Bank in the City of London.
 
 In particular, notice that for many outer London boroughs getting to relatively nearby boroughs is slow and difficult: these are the **orbital journeys that are often 2 to 3 times faster by car**, even in busy traffic. For example, try Harold Hill in Havering, Selsdon in Croydon, or Northwood in Hillingdon.
 
