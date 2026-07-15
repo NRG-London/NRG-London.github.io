@@ -234,47 +234,82 @@
   };
 
   /* ---- render ------------------------------------------------------------ */
+  // Pixel-buffer renderer: plot dots straight into an RGBA buffer and blit once
+  // with putImageData, bypassing the canvas Path2D fill (which some Android
+  // browsers software-rasterise pathologically slowly). ~100x faster there.
   OlatRenderer.prototype.render = function () {
     if (!this._ch) return;
     var t0 = (performance && performance.now) ? performance.now() : 0;
-    var ctx = this.ctx, W = this.W, H = this.H;
-    ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, W, H);
-
-    if (this.view === "time") this._renderTime(ctx);
-    else this._renderDiff(ctx);
-
-    ctx.drawImage(this.overlay, 0, 0, W, H);
+    var ctx = this.ctx, W = this.W, H = this.H, N = this.N, px = this.px, py = this.py;
+    this._ensureBuf();
+    var data = this._buf.data, offs = this._offs, no = offs.length;
+    data.fill(255);                               // opaque white background
+    var res = (this.view === "time") ? this._groupsTime() : this._groupsDiff();
+    var grp = res.grp, cols = res.colours, order = res.order;
+    for (var oi = 0; oi < order.length; oi++) {
+      var g = order[oi], col = cols[g];
+      if (!col) continue;
+      var cr = col[0], cg = col[1], cb = col[2];
+      for (var i = 0; i < N; i++) {
+        if (grp[i] !== g) continue;
+        var x = px[i] | 0, y = py[i] | 0;
+        for (var o = 0; o < no; o++) {
+          var xx = x + offs[o][0], yy = y + offs[o][1];
+          if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue;
+          var kk = (yy * W + xx) * 4;
+          data[kk] = cr; data[kk + 1] = cg; data[kk + 2] = cb;
+        }
+      }
+    }
+    ctx.putImageData(this._buf, 0, 0);
+    ctx.drawImage(this.overlay, 0, 0, W, H);       // borough/boundary lines on top
     this._drawStar(ctx);
     this._lastRenderMs = ((performance && performance.now) ? performance.now() : 0) - t0;
   };
 
-  OlatRenderer.prototype._renderTime = function (ctx) {
-    var N = this.N, t = this._times, px = this.px, py = this.py, R = this.R;
-    var sent = this.sentinel, lut = this.binLut, thr = this.threshold;
-    var unreach = this.separateUnreachable ? new Path2D() : null;
+  OlatRenderer.prototype._ensureBuf = function () {
+    if (this._buf && this._buf.width === this.W && this._buf.height === this.H) return;
+    this._buf = this.ctx.createImageData(this.W, this.H);
+    this._grp = new Uint8Array(this.N);
+    var r = Math.max(1, Math.round(this.R)), offs = [];
+    for (var dy = -r; dy <= r; dy++)
+      for (var dx = -r; dx <= r; dx++)
+        if (dx * dx + dy * dy <= r * r + r) offs.push([dx, dy]);   // filled disc
+    this._offs = offs;
+  };
+
+  // group each destination + give a colour table and a far->near draw order
+  OlatRenderer.prototype._groupsTime = function () {
+    var N = this.N, t = this._times, sent = this.sentinel, lut = this.binLut, thr = this.threshold;
+    var grp = this._grp, sep = this.separateUnreachable, i;
     if (thr == null) {
-      // categorical 6-bin map: build 6 paths, draw 90+ first so near beats far
-      var paths = [new Path2D(), new Path2D(), new Path2D(), new Path2D(), new Path2D(), new Path2D()];
-      for (var i = 0; i < N; i++) {
-        var v = t[i], b;
-        if (v >= sent) { if (unreach) { addDot(unreach, px[i], py[i], R); continue; } b = 5; }
-        else b = lut[v];
-        addDot(paths[b], px[i], py[i], R);
-      }
-      for (var k = 5; k >= 0; k--) { ctx.fillStyle = rgbCss(this.colours[k]); ctx.fill(paths[k]); }
-    } else {
-      // isochrone: ONE pass, within-threshold vs beyond (2 fills, not 6)
-      var inP = new Path2D(), outP = new Path2D();
-      for (var j = 0; j < N; j++) {
-        var vv = t[j];
-        if (vv >= sent) { if (unreach) addDot(unreach, px[j], py[j], R); else addDot(outP, px[j], py[j], R); continue; }
-        addDot(vv <= thr ? inP : outP, px[j], py[j], R);
-      }
-      ctx.fillStyle = "#e8eef3"; ctx.fill(outP);
-      ctx.fillStyle = this._threshColour(thr); ctx.fill(inP);
+      for (i = 0; i < N; i++) { var v = t[i]; grp[i] = (v >= sent) ? (sep ? 6 : 5) : lut[v]; }
+      var cols = this.colours.slice(); cols[6] = [201, 184, 214];         // #c9b8d6
+      return { grp: grp, colours: cols, order: sep ? [6, 5, 4, 3, 2, 1, 0] : [5, 4, 3, 2, 1, 0] };
     }
-    if (unreach) { ctx.fillStyle = "#c9b8d6"; ctx.fill(unreach); }
+    for (i = 0; i < N; i++) { var vv = t[i]; grp[i] = (vv >= sent) ? (sep ? 2 : 0) : (vv <= thr ? 1 : 0); }
+    var bi = lut[Math.max(0, Math.min(sent, (thr | 0) - 1))];
+    var c2 = [[232, 238, 243], this.colours[bi]];                         // 0 beyond, 1 within
+    if (sep) c2[2] = [201, 184, 214];
+    return { grp: grp, colours: c2, order: sep ? [2, 0, 1] : [0, 1] };
+  };
+
+  OlatRenderer.prototype._groupsDiff = function () {
+    var N = this.N, sent = this.sentinel, ptv = this._ch.R;
+    var modev = this.view === "diff-car" ? this._ch.B : this._ch.G;
+    var grp = this._grp, edges = [1, 5, 10, 20, 30];
+    for (var i = 0; i < N; i++) {
+      var m = modev[i], p = ptv[i];
+      if (m >= sent) { grp[i] = 6; continue; }          // both unreachable
+      if (p >= sent) { grp[i] = 5; continue; }          // newly reachable
+      var save = p - m, bi = 0;
+      for (var e = edges.length - 1; e >= 0; e--) { if (save >= edges[e]) { bi = e; break; } }
+      grp[i] = bi;
+    }
+    var cols = [[237, 248, 233], [186, 228, 179], [116, 196, 118], [49, 163, 84], [0, 109, 44]];
+    cols[5] = [106, 81, 163];                            // #6a51a3 newly reachable
+    cols[6] = [238, 241, 244];                           // #eef1f4 unreachable
+    return { grp: grp, colours: cols, order: [6, 0, 1, 2, 3, 4, 5] };
   };
 
   OlatRenderer.prototype._threshColour = function (thr) {
@@ -283,30 +318,6 @@
     // lands in the band below it rather than the one above.
     var b = this.binLut[Math.max(0, Math.min(this.sentinel, (thr | 0) - 1))];
     return rgbCss(this.colours[b]);
-  };
-
-  OlatRenderer.prototype._renderDiff = function (ctx) {
-    var N = this.N, px = this.px, py = this.py, R = this.R, sent = this.sentinel;
-    var ptv = this._ch.R;
-    var modev = this.view === "diff-car" ? this._ch.B : this._ch.G;
-    // buckets: newly-reachable, both-unreachable, and savings bands (<5..30+)
-    var newly = new Path2D(), none = new Path2D();
-    var bands = [new Path2D(), new Path2D(), new Path2D(), new Path2D(), new Path2D()];
-    var bandEdges = [1, 5, 10, 20, 30];     // minutes saved
-    for (var i = 0; i < N; i++) {
-      var m = modev[i], p = ptv[i];
-      if (m >= sent) { addDot(none, px[i], py[i], R); continue; }       // unreachable both ways
-      if (p >= sent) { addDot(newly, px[i], py[i], R); continue; }      // add-on makes it reachable
-      var save = p - m;
-      var bi = 0;
-      for (var e = bandEdges.length - 1; e >= 0; e--) { if (save >= bandEdges[e]) { bi = e; break; } }
-      addDot(bands[bi], px[i], py[i], R);
-    }
-    // sequential "minutes saved" ramp (light -> dark green), then specials
-    var ramp = ["#edf8e9", "#bae4b3", "#74c476", "#31a354", "#006d2c"];
-    ctx.fillStyle = "#eef1f4"; ctx.fill(none);
-    for (var k = 0; k < bands.length; k++) { ctx.fillStyle = ramp[k]; ctx.fill(bands[k]); }
-    ctx.fillStyle = "#6a51a3"; ctx.fill(newly);     // newly reachable stands out
   };
 
   OlatRenderer.prototype._drawStar = function (ctx) {
