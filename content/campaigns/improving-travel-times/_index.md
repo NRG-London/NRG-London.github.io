@@ -17,7 +17,7 @@ So if you don't get why most outer-London households own a car, including a majo
 
 ## Interactive Journey Time Map
 
-{{< olat-explorer-v3 default="croydon" >}}
+{{< olat-explorer-v3z default="croydon" >}}
 
 ## What It Does And How It Works
 
