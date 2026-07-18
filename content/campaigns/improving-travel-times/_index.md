@@ -19,6 +19,8 @@ So if you don't get why most outer-London households own a car, including a majo
 
 {{< olat-explorer-v3z default="croydon" >}}
 
+UPDATE: several new features including map overlays and a map zoom. This has revealed some curious anomalies where a few points wrongly show as completely unreachable, I assume because of something in the OSM used for walking routing. I'm investigating.
+
 ## What It Does And How It Works
 
 Using the [R5R transport](https://cran.r-project.org/web//packages/r5r/vignettes/r5r.html) routing engine, I've built **OLAT: the Outer London Access Time** map, a colour-coded map of travel times between all parts of London. Blue and green areas show places that are reachable within 45 mins, these are the places that are "in range" for someone looking for work, for example. Feel free to use it to find potential places to live!
