@@ -271,7 +271,8 @@
     var t0 = (performance && performance.now) ? performance.now() : 0;
     var ctx = this.ctx, W = this.W, H = this.H, N = this.N, px = this.px, py = this.py;
     this._ensureBuf();
-    var data = this._buf.data, offs = this._offs, no = offs.length;
+    this._ensureStamp();
+    var data = this._buf.data, offs = this._offs, no = offs.length, m = this._offsR;
     data.fill(255);                               // opaque white background
     var res = (this.view === "time") ? this._groupsTime() : this._groupsDiff();
     var grp = res.grp, cols = res.colours, order = res.order;
@@ -282,7 +283,7 @@
       for (var i = 0; i < N; i++) {
         if (grp[i] !== g) continue;
         var x = px[i] | 0, y = py[i] | 0;
-        if (x < -8 || y < -8 || x > W + 8 || y > H + 8) continue;   // cull off-screen (zoom)
+        if (x < -m || y < -m || x > W + m || y > H + m) continue;   // cull off-screen (zoom)
         for (var o = 0; o < no; o++) {
           var xx = x + offs[o][0], yy = y + offs[o][1];
           if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue;
@@ -292,7 +293,13 @@
       }
     }
     ctx.putImageData(this._buf, 0, 0);
-    ctx.drawImage(this.overlay, 0, 0, W, H);       // borough/boundary lines on top
+    // Draw the baked borough/boundary overlay through the SAME viewport as the dots:
+    // a source sub-rectangle -> full canvas, so it zooms and pans with everything
+    // else instead of staying frozen at full extent. At z=1 this is the full image.
+    var oW = this.overlay.naturalWidth || W, oH = this.overlay.naturalHeight || H, oh = 0.5 / this.z;
+    ctx.drawImage(this.overlay,
+      (this.uc - oh) * oW, (this.vc - oh) * oH, oW / this.z, oH / this.z,
+      0, 0, W, H);                                 // borough/boundary lines on top
     this._drawStar(ctx);
     this._lastRenderMs = ((performance && performance.now) ? performance.now() : 0) - t0;
   };
@@ -301,11 +308,23 @@
     if (this._buf && this._buf.width === this.W && this._buf.height === this.H) return;
     this._buf = this.ctx.createImageData(this.W, this.H);
     this._grp = new Uint8Array(this.N);
-    var r = Math.max(1, Math.round(this.R)), offs = [];
+  };
+
+  // The dot "stamp" (a filled disc of pixel offsets) grows with the zoom level so the
+  // dots fatten as you zoom in, countering the way they spread apart. z=1 is the
+  // touching baseline; the 0.83 exponent lets them spread a little (a sense of
+  // zooming) while max zoom (8x) still covers ~half the area rather than going sparse.
+  OlatRenderer.prototype.DOT_GROWTH = 0.83;
+  OlatRenderer.prototype._ensureStamp = function () {
+    if (this._offs && this._offsForZ === this.z) return;
+    var r = Math.max(1, Math.round(this.R * Math.pow(this.z, this.DOT_GROWTH)));
+    var offs = [];
     for (var dy = -r; dy <= r; dy++)
       for (var dx = -r; dx <= r; dx++)
         if (dx * dx + dy * dy <= r * r + r) offs.push([dx, dy]);   // filled disc
     this._offs = offs;
+    this._offsR = r;
+    this._offsForZ = this.z;
   };
 
   // group each destination + give a colour table and a far->near draw order

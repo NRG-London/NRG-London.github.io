@@ -288,13 +288,21 @@
     vpRaf = null;
     if (!pendingVP) return;
     var vp = r.setViewport(pendingVP[0], pendingVP[1], pendingVP[2]);   // clamps + re-renders canvas
-    svgEl.setAttribute("viewBox",
-      ((vp.uc - vp.half) * 2200).toFixed(2) + " " + ((vp.vc - vp.half) * 1695).toFixed(2) + " " +
-      (2200 / vp.z).toFixed(2) + " " + (1695 / vp.z).toFixed(2));
+    // Drive the borough SVG with the SAME CSS transform as the reference rasters.
+    // Updating the SVG viewBox instead leaves the outlines frozen on GPU-composited
+    // browsers (the layer isn't invalidated); a CSS transform always repaints. The
+    // viewBox stays static and --olat-z lets the CSS divide the stroke widths back
+    // down so the lines stay crisp and ~constant rather than thickening (see CSS).
+    var tf = "translate(" + ((0.5 - vp.z * vp.uc) * 100).toFixed(3) + "%," +
+      ((0.5 - vp.z * vp.vc) * 100).toFixed(3) + "%) scale(" + vp.z + ")";
+    if (svgEl) {
+      svgEl.style.transformOrigin = "0 0";
+      svgEl.style.transform = tf;
+      svgEl.style.setProperty("--olat-z", vp.z);
+    }
     if (refWrap) {
       refWrap.style.transformOrigin = "0 0";
-      refWrap.style.transform = "translate(" + ((0.5 - vp.z * vp.uc) * 100).toFixed(3) + "%," +
-        ((0.5 - vp.z * vp.vc) * 100).toFixed(3) + "%) scale(" + vp.z + ")";
+      refWrap.style.transform = tf;
     }
     var atHome = vp.z <= 1.001;
     if (zoomResetBtn) zoomResetBtn.disabled = atHome;
@@ -314,20 +322,31 @@
     zoomAt(rect.left + rect.width / 2, rect.top + rect.height / 2, factor);
   }
 
+  // Ignore gestures that originate on the zoom controls, so a quick double-click on
+  // the zoom-OUT button doesn't also fire the map's double-click-to-zoom-IN (which
+  // looked like zoom-out occasionally zooming in). Zoom-in never showed it because
+  // the stray zoom-in pushed the same direction.
+  function onZoomCtl(e) { return !!(e.target && e.target.closest && e.target.closest(".olat3-zoom")); }
+
   mapEl.addEventListener("wheel", function (e) {
+    if (onZoomCtl(e)) return;
     e.preventDefault(); zoomAt(e.clientX, e.clientY, e.deltaY < 0 ? 1.2 : 1 / 1.2);
   }, { passive: false });
-  mapEl.addEventListener("dblclick", function (e) { e.preventDefault(); zoomAt(e.clientX, e.clientY, 1.8); });
+  mapEl.addEventListener("dblclick", function (e) { if (onZoomCtl(e)) return; e.preventDefault(); zoomAt(e.clientX, e.clientY, 1.8); });
 
   var pointers = {}, panStart = null, pinchStart = null, moved = 0;
   mapEl.addEventListener("pointerdown", function (e) {
+    if (onZoomCtl(e)) return;
     pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
     var ids = Object.keys(pointers);
     moved = 0; didPan = false;
     if (ids.length === 1) {
       var vp = r.getViewport();
-      panStart = { x: e.clientX, y: e.clientY, uc: vp.uc, vc: vp.vc, z: vp.z };
-      try { mapEl.setPointerCapture(e.pointerId); } catch (err) {}
+      // Do NOT capture the pointer here. Capturing on pointerdown retargets the
+      // following click to #olat3-map, which is why clicking a borough (to change
+      // origin) and the zoom buttons stopped working. Capture only once a real
+      // drag begins (see pointermove), so plain clicks reach their target.
+      panStart = { x: e.clientX, y: e.clientY, uc: vp.uc, vc: vp.vc, z: vp.z, id: e.pointerId, captured: false };
     } else if (ids.length === 2) {
       panStart = null;
       var a = pointers[ids[0]], b = pointers[ids[1]], vp2 = r.getViewport(), rect = canvas.getBoundingClientRect();
@@ -349,6 +368,10 @@
       var dx = e.clientX - panStart.x, dy = e.clientY - panStart.y;
       moved += Math.abs(dx) + Math.abs(dy);
       if (moved > 5) {
+        if (!panStart.captured) {                                      // a real drag started:
+          try { mapEl.setPointerCapture(panStart.id); } catch (err) {} // now grab the pointer so
+          panStart.captured = true;                                    // it keeps tracking outside
+        }                                                              // the box
         didPan = true;
         applyViewport(panStart.z, panStart.uc - (dx / rect.width) / panStart.z, panStart.vc - (dy / rect.height) / panStart.z);
       }

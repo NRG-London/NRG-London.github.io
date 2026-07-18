@@ -1,9 +1,21 @@
 /* OLAT Explorer v3z (zoom beta) — additive, scoped to .olat-v3. */
 
-/* the map captures touch gestures for pan/pinch rather than scrolling the page */
-.olat-v3 #olat3-map { touch-action: none; }
+/* the map captures touch gestures for pan/pinch rather than scrolling the page;
+   overflow:hidden clips the zoomed/panned reference rasters to the map box so a
+   scaled layer can't spill out across the page */
+.olat-v3 #olat3-map { touch-action: none; overflow: hidden; }
 /* the reference-layer wrapper is transformed to follow the viewport */
 .olat-v3 #olat3-ref-layers { will-change: transform; }
+
+/* The borough SVG is scaled by the same CSS transform (set inline in JS, with the
+   live zoom factor exposed as --olat-z). Divide the stroke widths back down by that
+   factor so the outlines stay ~constant width and crisp instead of thickening as
+   you zoom in. --olat-z defaults to 1, so the un-zoomed view is unchanged. */
+.olat-v3 .olat-borough { stroke-width: calc(1px / var(--olat-z, 1)); }
+.olat-v3 .olat-boundary { stroke-width: calc(2px / var(--olat-z, 1)); }
+.olat-v3 .olat-borough.selected,
+.olat-v3 .olat-borough:hover,
+.olat-v3 .olat-borough:focus-visible { stroke-width: calc(2.5px / var(--olat-z, 1)); }
 
 .olat-v3 .olat3-zoom {
   position: absolute;
