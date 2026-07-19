@@ -381,6 +381,34 @@
     if (refWrap) refWrap.style.opacity = this.value / 100;
   });
 
+  /* ---- expand the explorer to full browser width ------------------------ */
+  var expandBtn = document.getElementById("olat3-expand");
+  function setExpanded(on) {
+    root.classList.toggle("olat3-expanded", on);
+    document.body.style.overflow = on ? "hidden" : "";
+    if (expandBtn) {
+      expandBtn.setAttribute("aria-pressed", on ? "true" : "false");
+      expandBtn.setAttribute("title", on ? "Exit full width" : "Expand to full width");
+      expandBtn.setAttribute("aria-label", on ? "Exit full width" : "Expand to full width");
+      expandBtn.textContent = on ? "×" : "⤢";       // "x" when expanded, expand-arrows otherwise
+    }
+    // re-fit the canvas to the new width once the layout has reflowed
+    (window.requestAnimationFrame || setTimeout)(function () { r.resize(); });
+  }
+  if (expandBtn) expandBtn.addEventListener("click", function () {
+    setExpanded(!root.classList.contains("olat3-expanded"));
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && root.classList.contains("olat3-expanded")) setExpanded(false);
+  });
+  var rszRaf = null;
+  window.addEventListener("resize", function () {               // keep the canvas crisp on resize
+    if (rszRaf) return;
+    rszRaf = (window.requestAnimationFrame || function (f) { return setTimeout(f, 100); })(function () {
+      rszRaf = null; r.resize();
+    });
+  });
+
   /* ===== zoom / pan (beta) ================================================
      Re-projects the heatmap to a viewport (scale z, centre uc/vc), keeps the
      borough SVG (viewBox) and reference rasters (CSS transform) in sync, and

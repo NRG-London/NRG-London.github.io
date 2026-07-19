@@ -137,6 +137,24 @@
     }
   };
 
+  // Re-fit the canvas backing to its current on-screen width (e.g. after the explorer
+  // expands to full width, or the window resizes) and re-render crisply. Everything
+  // scales off this.W / this.H, so recompute px/py and rebuild the buffers.
+  OlatRenderer.prototype.resize = function () {
+    if (!this.manifest || !this.u) return;               // coords not projected yet
+    var m = this.manifest;
+    var cssW = this.canvas.getBoundingClientRect().width || (window.innerWidth || 800);
+    var dpr = window.devicePixelRatio || 1;
+    var backW = Math.max(760, Math.min(m.canvas.width, Math.round(cssW * dpr)));
+    if (backW === this.W) return;                        // width unchanged -> nothing to do
+    this.W = backW; this.H = Math.round(backW * m.canvas.height / m.canvas.width);
+    this.canvas.width = this.W; this.canvas.height = this.H;
+    this.R = m.dotRadiusRef * (this.W / m.canvas.width);
+    this._buf = null; this._offs = null; this._offsForZ = null;   // rebuild for the new size
+    this._reproject();
+    if (this._ch) this.render();
+  };
+
   // set the viewport (clamped so the window stays within the frame); re-render
   OlatRenderer.prototype.setViewport = function (z, uc, vc) {
     z = Math.max(1, Math.min(8, z));

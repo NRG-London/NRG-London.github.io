@@ -18,8 +18,11 @@
 {{- $selB := index (where $centres.boroughs "slug" $default) 0 -}}
 {{- $selC := index $selB.centres 0 -}}
 <link rel="stylesheet" href="/css/olat-v3.css?v=10">
-<link rel="stylesheet" href="/css/olat-v3-zoom.css?v=7">
+<link rel="stylesheet" href="/css/olat-v3-zoom.css?v=9">
 <div class="olat-explorer olat-v3" id="olat-explorer-v3" data-default="{{ $default }}" data-base="/olat/"{{ if $scenarios }} data-scenarios="on"{{ end }}>
+  {{- /* two columns are display:contents normally (no layout change); the
+       full-width "expand" mode turns them into a controls sidebar + map pane */}}
+  <div class="olat3-col-controls">
   <div class="olat-head">
     <div class="olat-head-text">
       <h3 class="olat-name" id="olat3-name">{{ $selC.name }}</h3>
@@ -102,7 +105,9 @@
   </details>
 
   <script>(function(){if(window.matchMedia&&window.matchMedia("(max-width:640px)").matches){var d=document.querySelectorAll("#olat-explorer-v3 details.olat3-panel");for(var i=0;i<d.length;i++)d[i].removeAttribute("open");}})();</script>
+  </div><!-- /olat3-col-controls -->
 
+  <div class="olat3-col-map">
   <div class="olat-map" id="olat3-map">
     <canvas id="olat3-canvas" width="2200" height="1695"
             aria-label="Heatmap of journey times from {{ $selC.name }}"></canvas>
@@ -127,6 +132,8 @@
       <path class="olat-boundary" d="{{ $olat.boundary }}" fill="none" aria-hidden="true"/>
     </svg>
     <div class="olat-tooltip" id="olat3-tooltip" role="presentation"></div>
+    <button type="button" class="olat3-expand" id="olat3-expand" aria-pressed="false"
+            title="Expand to full width" aria-label="Expand to full width">⤢</button>
     <div class="olat3-zoom" role="group" aria-label="Zoom">
       <button type="button" id="olat3-zoom-in" aria-label="Zoom in">+</button>
       <button type="button" id="olat3-zoom-out" aria-label="Zoom out" disabled>−</button>
@@ -137,6 +144,7 @@
   <div class="olat-legend" id="olat3-legend"></div>
   <p class="olat3-stats" id="olat3-stats"></p>
   <p class="olat-caption">Mean journey times across London from the selected town centre, departing on a Tuesday morning between 7.30am and 8.30am. Click or tap a borough on the map, then pick one of its town centres. Open <em>Mapping options</em> to compare modes or draw an isochrone, and <em>Map layers</em> to overlay the rail network or a street map.</p>
+  </div><!-- /olat3-col-map -->
 </div>
-<script src="/js/olat-renderer.js?v=11" defer></script>
-<script src="/js/olat-explorer-v3.js?v=14" defer></script>
+<script src="/js/olat-renderer.js?v=12" defer></script>
+<script src="/js/olat-explorer-v3.js?v=15" defer></script>
