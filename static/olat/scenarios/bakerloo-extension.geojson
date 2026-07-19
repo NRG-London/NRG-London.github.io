@@ -1,0 +1,132 @@
+{
+ "type": "FeatureCollection",
+ "name": "bakerloo-extension",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -0.01402,
+      51.46569
+     ],
+     [
+      -0.0404,
+      51.47513
+     ],
+     [
+      -0.068,
+      51.477
+     ],
+     [
+      -0.087,
+      51.4825
+     ],
+     [
+      -0.10099,
+      51.49581
+     ]
+    ]
+   },
+   "properties": {
+    "scheme": "bakerloo-extension",
+    "label": "Bakerloo line extension (Elephant & Castle - Lewisham)",
+    "kind": "line",
+    "mode": "tube",
+    "headway_min": 5,
+    "end_to_end_min": 13.4
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.01402,
+     51.46569
+    ]
+   },
+   "properties": {
+    "scheme": "bakerloo-extension",
+    "kind": "station",
+    "sequence": 1,
+    "name": "Lewisham Rail Station",
+    "stop_id": "LEWISHM",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.0404,
+     51.47513
+    ]
+   },
+   "properties": {
+    "scheme": "bakerloo-extension",
+    "kind": "station",
+    "sequence": 2,
+    "name": "New Cross Gate Rail Station",
+    "stop_id": "NEWXGTE",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.068,
+     51.477
+    ]
+   },
+   "properties": {
+    "scheme": "bakerloo-extension",
+    "kind": "station",
+    "sequence": 3,
+    "name": "Old Kent Road (proposed)",
+    "stop_id": "BAKOKR_NEW",
+    "new": true
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.087,
+     51.4825
+    ]
+   },
+   "properties": {
+    "scheme": "bakerloo-extension",
+    "kind": "station",
+    "sequence": 4,
+    "name": "Burgess Park (proposed)",
+    "stop_id": "BAKBURGESS_NEW",
+    "new": true
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.10099,
+     51.49581
+    ]
+   },
+   "properties": {
+    "scheme": "bakerloo-extension",
+    "kind": "station",
+    "sequence": 5,
+    "name": "Elephant & Castle Underground Station",
+    "stop_id": "9400ZZLUEAC1",
+    "new": false
+   }
+  }
+ ]
+}

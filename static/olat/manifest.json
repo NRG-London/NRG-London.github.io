@@ -1679,6 +1679,24 @@
     "pt"
    ],
    "geojson": "scenarios/wlo.geojson"
+  },
+  {
+   "id": "bakerloo-extension",
+   "label": "Bakerloo line extension",
+   "dir": "scenarios/bakerloo-extension",
+   "modes": [
+    "pt"
+   ],
+   "geojson": "scenarios/bakerloo-extension.geojson"
+  },
+  {
+   "id": "dlr-thamesmead",
+   "label": "DLR to Thamesmead",
+   "dir": "scenarios/dlr-thamesmead",
+   "modes": [
+    "pt"
+   ],
+   "geojson": "scenarios/dlr-thamesmead.geojson"
   }
  ]
 }

@@ -1,0 +1,88 @@
+{
+ "type": "FeatureCollection",
+ "name": "dlr-thamesmead",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      0.109,
+      51.5015
+     ],
+     [
+      0.064,
+      51.5078
+     ],
+     [
+      0.07204,
+      51.50913
+     ]
+    ]
+   },
+   "properties": {
+    "scheme": "dlr-thamesmead",
+    "label": "DLR extension (Gallions Reach - Thamesmead)",
+    "kind": "line",
+    "mode": "dlr",
+    "headway_min": 5,
+    "end_to_end_min": 6.6
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     0.109,
+     51.5015
+    ]
+   },
+   "properties": {
+    "scheme": "dlr-thamesmead",
+    "kind": "station",
+    "sequence": 1,
+    "name": "Thamesmead (proposed)",
+    "stop_id": "THAMESMEAD_NEW",
+    "new": true
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     0.064,
+     51.5078
+    ]
+   },
+   "properties": {
+    "scheme": "dlr-thamesmead",
+    "kind": "station",
+    "sequence": 2,
+    "name": "Beckton Riverside (proposed)",
+    "stop_id": "BECKTONRIV_NEW",
+    "new": true
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     0.07204,
+     51.50913
+    ]
+   },
+   "properties": {
+    "scheme": "dlr-thamesmead",
+    "kind": "station",
+    "sequence": 3,
+    "name": "Gallions Reach DLR Station",
+    "stop_id": "9400ZZDLGAL1",
+    "new": false
+   }
+  }
+ ]
+}
