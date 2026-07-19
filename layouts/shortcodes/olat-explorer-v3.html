@@ -1,5 +1,6 @@
 {{- /*
-  OLAT Explorer v3 (BETA) — client-side data renderer.
+  OLAT Explorer v3 — client-side data renderer with viewport pan/zoom (v3.2).
+  Renders the heatmap into a <canvas>; loads olat-renderer.js + olat-explorer-v3.js + zoom CSS.
   Same borough map / selector / chips / mode toggles as v2, but the heatmap is
   drawn in a <canvas> from a per-origin data image (R=pt, G=pt-ebike, B=pt-car)
   plus a shared coords.bin + overlay.png in /static/olat/. Adds difference maps,
@@ -13,10 +14,12 @@
 {{- $olat := site.Data.olat_v3 -}}
 {{- $centres := site.Data.olat_centres -}}
 {{- $default := .Get "default" | default "croydon" -}}
+{{- $scenarios := eq (.Get "scenarios") "on" -}}
 {{- $selB := index (where $centres.boroughs "slug" $default) 0 -}}
 {{- $selC := index $selB.centres 0 -}}
 <link rel="stylesheet" href="/css/olat-v3.css?v=10">
-<div class="olat-explorer olat-v3" id="olat-explorer-v3" data-default="{{ $default }}" data-base="/olat/">
+<link rel="stylesheet" href="/css/olat-v3-zoom.css?v=7">
+<div class="olat-explorer olat-v3" id="olat-explorer-v3" data-default="{{ $default }}" data-base="/olat/"{{ if $scenarios }} data-scenarios="on"{{ end }}>
   <div class="olat-head">
     <div class="olat-head-text">
       <h3 class="olat-name" id="olat3-name">{{ $selC.name }}</h3>
@@ -57,6 +60,15 @@
     <button type="button" class="olat-mode-toggle" id="olat3-toggle-ebike" aria-pressed="false">+ e-bike</button>
     <button type="button" class="olat-mode-toggle" id="olat3-toggle-car" aria-pressed="false">+ car</button>
   </div>
+
+  {{- if $scenarios }}
+  <details class="olat3-panel olat3-scenpanel" id="olat3-scenpanel" open hidden>
+    <summary>Proposed lines</summary>
+    <div class="olat3-panel-body">
+      <div class="olat3-scenarios" id="olat3-scenarios" role="radiogroup" aria-label="Network scenario"></div>
+    </div>
+  </details>
+  {{- end }}
 
   <details class="olat3-panel olat3-mapopts" open>
     <summary>Mapping options</summary>
@@ -115,11 +127,16 @@
       <path class="olat-boundary" d="{{ $olat.boundary }}" fill="none" aria-hidden="true"/>
     </svg>
     <div class="olat-tooltip" id="olat3-tooltip" role="presentation"></div>
+    <div class="olat3-zoom" role="group" aria-label="Zoom">
+      <button type="button" id="olat3-zoom-in" aria-label="Zoom in">+</button>
+      <button type="button" id="olat3-zoom-out" aria-label="Zoom out" disabled>−</button>
+      <button type="button" id="olat3-zoom-reset" aria-label="Reset zoom" title="Reset zoom" disabled>↺</button>
+    </div>
   </div>
 
   <div class="olat-legend" id="olat3-legend"></div>
   <p class="olat3-stats" id="olat3-stats"></p>
   <p class="olat-caption">Mean journey times across London from the selected town centre, departing on a Tuesday morning between 7.30am and 8.30am. Click or tap a borough on the map, then pick one of its town centres. Open <em>Mapping options</em> to compare modes or draw an isochrone, and <em>Map layers</em> to overlay the rail network or a street map.</p>
 </div>
-<script src="/js/olat-renderer.js?v=9" defer></script>
-<script src="/js/olat-explorer-v3.js?v=8" defer></script>
+<script src="/js/olat-renderer.js?v=11" defer></script>
+<script src="/js/olat-explorer-v3.js?v=14" defer></script>

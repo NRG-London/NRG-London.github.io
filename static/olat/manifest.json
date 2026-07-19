@@ -1669,5 +1669,16 @@
    "lon": -0.0886,
    "lat": 51.5133
   }
+ ],
+ "scenarios": [
+  {
+   "id": "wlo",
+   "label": "West London Orbital",
+   "dir": "scenarios/wlo",
+   "modes": [
+    "pt"
+   ],
+   "geojson": "scenarios/wlo.geojson"
+  }
  ]
 }

@@ -48,3 +48,55 @@
 @media (max-width: 640px) {
   .olat-v3 .olat3-zoom button { width: 42px; height: 42px; }
 }
+
+/* ---- Proposed-lines (network scenario) selector ------------------------- */
+/* Same look as the Mapping-options view buttons. The panel is populated and
+   revealed by JS only when the manifest advertises scenarios. */
+.olat-v3 .olat3-scenarios { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.olat-v3 .olat3-scen {
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--white);
+  border: 1px solid var(--warm-grey);
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  min-height: 32px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.olat-v3 .olat3-scen:hover { border-color: var(--blue); color: var(--blue); }
+.olat-v3 .olat3-scen.active { background: var(--blue); color: var(--white); border-color: var(--blue); }
+.olat-v3 .olat3-scen-note {
+  width: 100%;
+  margin: 0.45rem 0 0;
+  font-size: 0.75rem;
+  color: var(--mid-grey);
+}
+.olat-v3 .olat3-scen-note:empty { display: none; }
+
+/* A display (view) that the active network can't draw yet: greyed, not clickable.
+   The + e-bike / + car mode toggles already dim via .olat3-dim in main.css. */
+.olat-v3 .olat3-view:disabled,
+.olat-v3 .olat3-view.olat3-dim { opacity: 0.4; cursor: not-allowed; }
+.olat-v3 .olat3-view:disabled:hover,
+.olat-v3 .olat3-view.olat3-dim:hover { border-color: var(--warm-grey); color: var(--ink); }
+
+@media (max-width: 640px) { .olat-v3 .olat3-scen { min-height: 40px; } }
+
+/* ---- Proposed-line overlay (the selected scheme's route + stations) ------- */
+/* Drawn inside the borough SVG, so it pans/zooms with the map and shows above the
+   map layers regardless of their toggles. A dashed line (black casing + white core)
+   is the map convention for a planned/future line. Widths are in SVG user units
+   (0..2200 space), so the weight tracks the rail overlay at any size and zoom. */
+.olat-v3 .olat3-scenario-geo { pointer-events: none; opacity: 0.75; }   /* let some dots show through */
+.olat-v3 .olat3-scen-line-casing {
+  fill: none; stroke: #111; stroke-width: 16;
+  stroke-dasharray: 7 5; stroke-linecap: butt; stroke-linejoin: round;
+}
+.olat-v3 .olat3-scen-line-core {
+  fill: none; stroke: #fff; stroke-width: 8;
+  stroke-dasharray: 7 5; stroke-linecap: butt; stroke-linejoin: round;
+}
+.olat-v3 .olat3-scen-stn { fill: #fff; stroke: #111; stroke-width: 5; }

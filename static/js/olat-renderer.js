@@ -9,7 +9,7 @@
  * Public modes unlocked beyond v2: live difference maps, a continuous isochrone
  * threshold, live catchment %, and click-to-read journey times.
  *
- * No dependencies. Exposes window.OlatRenderer.
+ * No dependencies. Exposes window.OlatRenderer. Includes viewport zoom/pan (v3.2).
  */
 (function () {
   "use strict";
@@ -29,8 +29,9 @@
     this.coords = null;                 // {lon:Float32Array, lat:Float32Array}
     this.px = null; this.py = null;     // pixel coords at canvas resolution
     this.overlay = null;                // HTMLImageElement
-    this.cache = {};                    // slug -> {R,G,B} Uint8Array(N)
-    this.pending = {};                  // slug -> Promise
+    this.cache = {};                    // image URL -> {R,G,B} Uint8Array(N)
+    this.pending = {};                  // image URL -> Promise
+    this._imgTpl = null;                // null = baseline (manifest.images); else scenario dir
     this.origin = null;                 // current origin record
     this.ebike = false; this.car = false;
     this.view = "time";                 // 'time' | 'diff-car' | 'diff-ebike'
@@ -38,6 +39,8 @@
     this.separateUnreachable = false;
     this.onReadout = opts.onReadout || null;
     this._times = null;                 // Uint8 per-destination current mode
+    this.z = 1; this.uc = 0.5; this.vc = 0.5;   // viewport: scale + centre (0..1)
+    this.u = null; this.v = null;               // normalised frame coords (0..1)
   };
 
   /* ---- load manifest + coords + overlay (once) --------------------------- */
@@ -112,32 +115,68 @@
   /* ---- the verified transform (spec 4.1): lon/lat -> pixel --------------- */
   OlatRenderer.prototype._project = function () {
     var n = this.N, lon = this.coords.lon, lat = this.coords.lat;
-    var px = new Float32Array(n), py = new Float32Array(n);
+    var u = new Float32Array(n), v = new Float32Array(n);
     var x0 = this.xlim[0], xr = this.xlim[1] - this.xlim[0];
     var y0 = this.ylim[0], yr = this.ylim[1] - this.ylim[0];
-    var W = this.W, H = this.H;
     for (var i = 0; i < n; i++) {
-      px[i] = (lon[i] - x0) / xr * W;
-      py[i] = (1 - (lat[i] - y0) / yr) * H;
+      u[i] = (lon[i] - x0) / xr;          // 0..1 across the frame
+      v[i] = 1 - (lat[i] - y0) / yr;
     }
-    this.px = px; this.py = py;
+    this.u = u; this.v = v;
+    this.px = new Float32Array(n); this.py = new Float32Array(n);
+    this._reproject();
   };
 
+  // recompute pixel positions for the current viewport (scale z, centre uc/vc)
+  OlatRenderer.prototype._reproject = function () {
+    var n = this.N, u = this.u, v = this.v, px = this.px, py = this.py;
+    var z = this.z, uc = this.uc, vc = this.vc, W = this.W, H = this.H, hw = W / 2, hh = H / 2;
+    for (var i = 0; i < n; i++) {
+      px[i] = (u[i] - uc) * z * W + hw;
+      py[i] = (v[i] - vc) * z * H + hh;
+    }
+  };
+
+  // set the viewport (clamped so the window stays within the frame); re-render
+  OlatRenderer.prototype.setViewport = function (z, uc, vc) {
+    z = Math.max(1, Math.min(8, z));
+    var half = 0.5 / z;
+    uc = Math.max(half, Math.min(1 - half, uc));
+    vc = Math.max(half, Math.min(1 - half, vc));
+    this.z = z; this.uc = uc; this.vc = vc;
+    if (this._ch) { this._reproject(); this.render(); }
+    return { z: z, uc: uc, vc: vc, half: half };
+  };
+  OlatRenderer.prototype.getViewport = function () { return { z: this.z, uc: this.uc, vc: this.vc, half: 0.5 / this.z }; };
+
   OlatRenderer.prototype.lonLatToPx = function (lon, lat) {
-    return [(lon - this.xlim[0]) / (this.xlim[1] - this.xlim[0]) * this.W,
-            (1 - (lat - this.ylim[0]) / (this.ylim[1] - this.ylim[0])) * this.H];
+    var u = (lon - this.xlim[0]) / (this.xlim[1] - this.xlim[0]);
+    var v = 1 - (lat - this.ylim[0]) / (this.ylim[1] - this.ylim[0]);
+    return [(u - this.uc) * this.z * this.W + this.W / 2,
+            (v - this.vc) * this.z * this.H + this.H / 2];
   };
   OlatRenderer.prototype.pxToLonLat = function (x, y) {
-    return [this.xlim[0] + x / this.W * (this.xlim[1] - this.xlim[0]),
-            this.ylim[0] + (1 - y / this.H) * (this.ylim[1] - this.ylim[0])];
+    var u = (x - this.W / 2) / (this.z * this.W) + this.uc;
+    var v = (y - this.H / 2) / (this.z * this.H) + this.vc;
+    return [this.xlim[0] + u * (this.xlim[1] - this.xlim[0]),
+            this.ylim[0] + (1 - v) * (this.ylim[1] - this.ylim[0])];
   };
 
   /* ---- per-origin data image -------------------------------------------- */
+  OlatRenderer.prototype._imgUrl = function (slug) {
+    return this.base + (this._imgTpl || this.manifest.images).replace("{slug}", slug);
+  };
+  // Point value-image loads at a scenario directory ("scenarios/<combo>") or back at
+  // the baseline (null). Cache is keyed by full URL, so baseline and each scenario
+  // coexist without collision.
+  OlatRenderer.prototype.setImageDir = function (dir) {
+    this._imgTpl = dir ? dir.replace(/\/?$/, "/") + "{slug}.png" : null;
+  };
   OlatRenderer.prototype._loadImage = function (slug) {
     var self = this;
-    if (this.cache[slug]) return Promise.resolve(this.cache[slug]);
-    if (this.pending[slug]) return this.pending[slug];
-    var url = this.base + this.manifest.images.replace("{slug}", slug);
+    var url = this._imgUrl(slug);
+    if (this.cache[url]) return Promise.resolve(this.cache[url]);
+    if (this.pending[url]) return this.pending[url];
     var p = fetch(url)
       .then(function (r) { return r.blob(); })
       .then(function (blob) {
@@ -151,8 +190,8 @@
         }
         return self._decodeViaImg(url);
       })
-      .then(function (ch) { self.cache[slug] = ch; delete self.pending[slug]; return ch; });
-    this.pending[slug] = p;
+      .then(function (ch) { self.cache[url] = ch; delete self.pending[url]; return ch; });
+    this.pending[url] = p;
     return p;
   };
 
@@ -242,7 +281,8 @@
     var t0 = (performance && performance.now) ? performance.now() : 0;
     var ctx = this.ctx, W = this.W, H = this.H, N = this.N, px = this.px, py = this.py;
     this._ensureBuf();
-    var data = this._buf.data, offs = this._offs, no = offs.length;
+    this._ensureStamp();
+    var data = this._buf.data, offs = this._offs, no = offs.length, m = this._offsR;
     data.fill(255);                               // opaque white background
     var res = (this.view === "time") ? this._groupsTime() : this._groupsDiff();
     var grp = res.grp, cols = res.colours, order = res.order;
@@ -253,6 +293,7 @@
       for (var i = 0; i < N; i++) {
         if (grp[i] !== g) continue;
         var x = px[i] | 0, y = py[i] | 0;
+        if (x < -m || y < -m || x > W + m || y > H + m) continue;   // cull off-screen (zoom)
         for (var o = 0; o < no; o++) {
           var xx = x + offs[o][0], yy = y + offs[o][1];
           if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue;
@@ -262,7 +303,13 @@
       }
     }
     ctx.putImageData(this._buf, 0, 0);
-    ctx.drawImage(this.overlay, 0, 0, W, H);       // borough/boundary lines on top
+    // Draw the baked borough/boundary overlay through the SAME viewport as the dots:
+    // a source sub-rectangle -> full canvas, so it zooms and pans with everything
+    // else instead of staying frozen at full extent. At z=1 this is the full image.
+    var oW = this.overlay.naturalWidth || W, oH = this.overlay.naturalHeight || H, oh = 0.5 / this.z;
+    ctx.drawImage(this.overlay,
+      (this.uc - oh) * oW, (this.vc - oh) * oH, oW / this.z, oH / this.z,
+      0, 0, W, H);                                 // borough/boundary lines on top
     this._drawStar(ctx);
     this._lastRenderMs = ((performance && performance.now) ? performance.now() : 0) - t0;
   };
@@ -271,11 +318,23 @@
     if (this._buf && this._buf.width === this.W && this._buf.height === this.H) return;
     this._buf = this.ctx.createImageData(this.W, this.H);
     this._grp = new Uint8Array(this.N);
-    var r = Math.max(1, Math.round(this.R)), offs = [];
+  };
+
+  // The dot "stamp" (a filled disc of pixel offsets) grows with the zoom level so the
+  // dots fatten as you zoom in, countering the way they spread apart. z=1 is the
+  // touching baseline; the 0.83 exponent lets them spread a little (a sense of
+  // zooming) while max zoom (8x) still covers ~half the area rather than going sparse.
+  OlatRenderer.prototype.DOT_GROWTH = 0.83;
+  OlatRenderer.prototype._ensureStamp = function () {
+    if (this._offs && this._offsForZ === this.z) return;
+    var r = Math.max(1, Math.round(this.R * Math.pow(this.z, this.DOT_GROWTH)));
+    var offs = [];
     for (var dy = -r; dy <= r; dy++)
       for (var dx = -r; dx <= r; dx++)
         if (dx * dx + dy * dy <= r * r + r) offs.push([dx, dy]);   // filled disc
     this._offs = offs;
+    this._offsR = r;
+    this._offsForZ = this.z;
   };
 
   // group each destination + give a colour table and a far->near draw order
@@ -385,7 +444,7 @@
     (function next() {
       if (i >= slugs.length) return;
       var s = slugs[i++];
-      (self.cache[s] ? Promise.resolve() : self._loadImage(s)).then(function () {
+      (self.cache[self._imgUrl(s)] ? Promise.resolve() : self._loadImage(s)).then(function () {
         (window.requestIdleCallback || window.setTimeout)(next, window.requestIdleCallback ? undefined : 60);
       }).catch(function () { setTimeout(next, 120); });
     })();

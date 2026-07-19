@@ -20,7 +20,7 @@ point in London.
 Everything else — the borough map, the town-centre picker, the e-bike and car
 toggles — works exactly as before.
 
-{{< olat-explorer-v3z default="croydon" >}}
+{{< olat-explorer-v3 default="croydon" scenarios="on" >}}
 
 *Beta notes: the star marking the selected centre is now drawn live on top of the
 map rather than baked into the image. The "car premium" and "e-bike premium"
