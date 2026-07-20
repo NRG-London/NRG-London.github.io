@@ -1676,7 +1676,9 @@
    "label": "West London Orbital",
    "dir": "scenarios/wlo",
    "modes": [
-    "pt"
+    "pt",
+    "pt-ebike",
+    "pt-car"
    ],
    "geojson": "scenarios/wlo.geojson"
   },
@@ -1685,7 +1687,9 @@
    "label": "Bakerloo line extension",
    "dir": "scenarios/bakerloo-extension",
    "modes": [
-    "pt"
+    "pt",
+    "pt-ebike",
+    "pt-car"
    ],
    "geojson": "scenarios/bakerloo-extension.geojson"
   },
@@ -1694,7 +1698,9 @@
    "label": "DLR to Thamesmead",
    "dir": "scenarios/dlr-thamesmead",
    "modes": [
-    "pt"
+    "pt",
+    "pt-ebike",
+    "pt-car"
    ],
    "geojson": "scenarios/dlr-thamesmead.geojson"
   },
@@ -1703,7 +1709,9 @@
    "label": "Heathdon Line (hypothetical)",
    "dir": "scenarios/heathdon",
    "modes": [
-    "pt"
+    "pt",
+    "pt-ebike",
+    "pt-car"
    ],
    "geojson": "scenarios/heathdon.geojson"
   }
