@@ -1697,6 +1697,15 @@
     "pt"
    ],
    "geojson": "scenarios/dlr-thamesmead.geojson"
+  },
+  {
+   "id": "heathdon",
+   "label": "Heathdon Line (hypothetical)",
+   "dir": "scenarios/heathdon",
+   "modes": [
+    "pt"
+   ],
+   "geojson": "scenarios/heathdon.geojson"
   }
  ]
 }

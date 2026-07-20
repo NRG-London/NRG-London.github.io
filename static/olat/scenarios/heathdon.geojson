@@ -1,0 +1,352 @@
+{
+ "type": "FeatureCollection",
+ "name": "heathdon",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -0.09278,
+      51.37545
+     ],
+     [
+      -0.10259,
+      51.37843
+     ],
+     [
+      -0.15083,
+      51.36038
+     ],
+     [
+      -0.16637,
+      51.36845
+     ],
+     [
+      -0.19121,
+      51.35953
+     ],
+     [
+      -0.21417,
+      51.35548
+     ],
+     [
+      -0.2287,
+      51.37152
+     ],
+     [
+      -0.24517,
+      51.38125
+     ],
+     [
+      -0.25594,
+      51.40407
+     ],
+     [
+      -0.30117,
+      51.41275
+     ],
+     [
+      -0.33271,
+      51.42448
+     ],
+     [
+      -0.33039,
+      51.45003
+     ],
+     [
+      -0.36228,
+      51.46194
+     ],
+     [
+      -0.42361,
+      51.46639
+     ],
+     [
+      -0.45233,
+      51.47132
+     ]
+    ]
+   },
+   "properties": {
+    "scheme": "heathdon",
+    "label": "Heathdon Line (Heathrow T2&3 - East Croydon, via West Croydon)",
+    "kind": "line",
+    "mode": "tube",
+    "headway_min": 5,
+    "end_to_end_min": 56.1
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.09278,
+     51.37545
+    ]
+   },
+   "properties": {
+    "scheme": "heathdon",
+    "kind": "station",
+    "sequence": 1,
+    "name": "East Croydon Rail Station",
+    "stop_id": "ECROYDN",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.10259,
+     51.37843
+    ]
+   },
+   "properties": {
+    "scheme": "heathdon",
+    "kind": "station",
+    "sequence": 2,
+    "name": "West Croydon Rail Station",
+    "stop_id": "WCROYDN",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.15083,
+     51.36038
+    ]
+   },
+   "properties": {
+    "scheme": "heathdon",
+    "kind": "station",
+    "sequence": 3,
+    "name": "Wallington Rail Station",
+    "stop_id": "WALNGTN",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.16637,
+     51.36845
+    ]
+   },
+   "properties": {
+    "scheme": "heathdon",
+    "kind": "station",
+    "sequence": 4,
+    "name": "Carshalton Rail Station",
+    "stop_id": "CRSHLTN",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.19121,
+     51.35953
+    ]
+   },
+   "properties": {
+    "scheme": "heathdon",
+    "kind": "station",
+    "sequence": 5,
+    "name": "Sutton (London) Rail Station",
+    "stop_id": "SUTTON",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.21417,
+     51.35548
+    ]
+   },
+   "properties": {
+    "scheme": "heathdon",
+    "kind": "station",
+    "sequence": 6,
+    "name": "Cheam Rail Station",
+    "stop_id": "CHEAM",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.2287,
+     51.37152
+    ]
+   },
+   "properties": {
+    "scheme": "heathdon",
+    "kind": "station",
+    "sequence": 7,
+    "name": "North Cheam (Heathdon Line)",
+    "stop_id": "HEATHDON_NCHEAM",
+    "new": true
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.24517,
+     51.38125
+    ]
+   },
+   "properties": {
+    "scheme": "heathdon",
+    "kind": "station",
+    "sequence": 8,
+    "name": "Worcester Park Rail Station",
+    "stop_id": "WRCSTRP",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.25594,
+     51.40407
+    ]
+   },
+   "properties": {
+    "scheme": "heathdon",
+    "kind": "station",
+    "sequence": 9,
+    "name": "New Malden Rail Station",
+    "stop_id": "NEWMLDN",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.30117,
+     51.41275
+    ]
+   },
+   "properties": {
+    "scheme": "heathdon",
+    "kind": "station",
+    "sequence": 10,
+    "name": "Kingston Rail Station",
+    "stop_id": "KGSTON",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.33271,
+     51.42448
+    ]
+   },
+   "properties": {
+    "scheme": "heathdon",
+    "kind": "station",
+    "sequence": 11,
+    "name": "Teddington Rail Station",
+    "stop_id": "TEDNGTN",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.33039,
+     51.45003
+    ]
+   },
+   "properties": {
+    "scheme": "heathdon",
+    "kind": "station",
+    "sequence": 12,
+    "name": "Twickenham Rail Station",
+    "stop_id": "TWI",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.36228,
+     51.46194
+    ]
+   },
+   "properties": {
+    "scheme": "heathdon",
+    "kind": "station",
+    "sequence": 13,
+    "name": "Hounslow Rail Station",
+    "stop_id": "HOU",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.42361,
+     51.46639
+    ]
+   },
+   "properties": {
+    "scheme": "heathdon",
+    "kind": "station",
+    "sequence": 14,
+    "name": "Hatton Cross Underground Station",
+    "stop_id": "9400ZZLUHNX1",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.45233,
+     51.47132
+    ]
+   },
+   "properties": {
+    "scheme": "heathdon",
+    "kind": "station",
+    "sequence": 15,
+    "name": "Heathrow Terminals 2 & 3 Underground Stn",
+    "stop_id": "9400ZZLUHRC1",
+    "new": false
+   }
+  }
+ ]
+}
