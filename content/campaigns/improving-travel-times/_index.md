@@ -17,9 +17,9 @@ So if you don't get why most outer-London households own a car, including a majo
 
 ## Interactive Journey Time Map
 
-{{< olat-explorer-v3 default="croydon" >}}
+{{< olat-explorer-v3 default="croydon" scenarios="on" >}}
 
-UPDATE: several new features including map overlays and a map zoom. This has revealed some curious anomalies where a few points wrongly show as completely unreachable, I assume because of something in the OSM used for walking routing. I'm investigating.
+UPDATE: several new features including "What if?" models with proposed lines, map overlays to get your bearings, map zoom, and a "landscape big mode" that works especially well on a computer or rotated tablet. The zoom has revealed some curious anomalies where a few points wrongly show as completely unreachable, I assume because of something in the OSM used for walking routing. I'm investigating.
 
 ## What It Does And How It Works
 
