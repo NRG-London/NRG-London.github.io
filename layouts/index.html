@@ -15,111 +15,17 @@
   </div>
 </header>
 
-<!-- FEATURED -->
-{{ with .Params.featured }}
-<div class="feature-band" id="featured">
-  <div class="feature-vis">
-    <img src="{{ .image }}" alt="Colour-coded OLAT map of journey times across London">
-  </div>
-  <div class="feature-inner">
-    <div class="feature-text">
-      <div class="feature-tag">{{ .tag }}</div>
-      <h2>{{ .headline }}</h2>
-      <p>{{ .text }}</p>
-      <a href="{{ .link }}" class="feature-btn">{{ .cta }} <span>&rarr;</span></a>
-    </div>
-  </div>
-</div>
+{{/* Middle sections render in the order given by `sections:` in the homepage
+     front matter (managed via site_manager.py). Hero above and Contact below
+     stay fixed. Unknown names are ignored so a front-matter typo can't break
+     the build. */}}
+{{ $known := slice "featured" "campaigns" "activity" "newsletter" "about" }}
+{{ $order := .Params.sections | default $known }}
+{{ range $order }}
+  {{ if in $known . }}
+    {{ partial (printf "home/%s.html" .) $ }}
+  {{ end }}
 {{ end }}
-
-<!-- CAMPAIGNS -->
-<section id="campaigns">
-  <div class="container">
-    <div class="section-header">
-      <h2>Current Campaigns</h2>
-      <a href="/campaigns/" class="view-all">View all &rarr;</a>
-    </div>
-    <div class="campaigns-grid">
-      {{ with site.GetPage "/campaigns" }}
-        {{ range first 3 .Pages.ByWeight }}
-          {{ partial "campaign-card.html" . }}
-        {{ end }}
-      {{ end }}
-    </div>
-  </div>
-</section>
-
-<!-- RECENT ACTIVITY -->
-<div class="band" id="activity">
-  <div class="band-inner">
-    <div class="section-header">
-      <h2>Recent Activity</h2>
-      <a href="/activity/" class="view-all">Full archive &rarr;</a>
-    </div>
-    <div class="media-grid">
-      {{ range first 4 (partial "activity-entries.html" .) }}
-        {{ partial "entry-card.html" . }}
-      {{ end }}
-    </div>
-  </div>
-</div>
-
-<!-- NEWSLETTER -->
-<section id="newsletter">
-  <div class="container">
-    <div class="section-header">
-      <h2>Newsletter</h2>
-      <a href="{{ .Site.Params.substackURL }}" class="view-all" target="_blank" rel="noopener">Subscribe on Substack &rarr;</a>
-    </div>
-    <div class="newsletter-section">
-      <div class="newsletter-about">
-        <h3>{{ .Params.newsletter_title }}</h3>
-        <p>{{ .Params.newsletter_description }}</p>
-        <p class="subscriber-count">More than 2,000 people subscribe.</p>
-        <a href="{{ .Site.Params.substackURL }}" class="substack-btn" target="_blank" rel="noopener">
-          <span>Subscribe free</span>
-          <span>&rarr;</span>
-        </a>
-      </div>
-      <div class="recent-posts">
-        {{ range first 4 (partialCached "substack-feed.html" .) }}
-        <a href="{{ .url }}" class="post-item" target="_blank" rel="noopener">
-          <div class="post-title">{{ .title }}</div>
-          {{ with .summary }}<div class="post-desc">{{ . }}</div>{{ end }}
-        </a>
-        {{ else }}
-        <p><a href="{{ .Site.Params.substackURL }}">Read the newsletter on Substack &rarr;</a></p>
-        {{ end }}
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ABOUT -->
-<section id="about">
-  <div class="container">
-    <div class="section-header">
-      <h2>About</h2>
-    </div>
-    <div class="bio-layout">
-      <div class="bio-text">
-        {{ .Content }}
-      </div>
-      <div class="bio-sidebar">
-        <h4>At a Glance</h4>
-        <ul>
-          {{ range .Params.sidebar_facts }}
-          <li>{{ . }}</li>
-          {{ end }}
-        </ul>
-        <div class="party-badge">
-          <img class="tree-logo" src="/images/conservative-tree.png" alt="">
-          <span class="party-badge-text">Conservative Party</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
 
 <!-- CONTACT -->
 <div class="contact-band" id="contact">

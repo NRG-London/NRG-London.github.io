@@ -2,6 +2,7 @@
 title: "Neil Garratt"
 hero_intro: "<strong>Representing Croydon and Sutton</strong>,<br>Chair of the Budget &amp; Performance Committee. Holding the Mayor and City Hall to account through forensic scrutiny, data-driven analysis, and a relentless focus on what matters to London."
 photo_caption: "At the London Assembly, City Hall"
+sections: ["featured", "campaigns", "activity", "newsletter", "about"]
 featured:
   tag: "Featured · Interactive Map"
   headline: "One map that explains London transport"

@@ -1,0 +1,14 @@
+<!-- RECENT ACTIVITY -->
+<div class="band" id="activity">
+  <div class="band-inner">
+    <div class="section-header">
+      <h2>Recent Activity</h2>
+      <a href="/activity/" class="view-all">Full archive &rarr;</a>
+    </div>
+    <div class="media-grid">
+      {{ range first 4 (partial "activity-entries.html" .) }}
+        {{ partial "entry-card.html" . }}
+      {{ end }}
+    </div>
+  </div>
+</div>

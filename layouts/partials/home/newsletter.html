@@ -1,0 +1,30 @@
+<!-- NEWSLETTER -->
+<section id="newsletter">
+  <div class="container">
+    <div class="section-header">
+      <h2>Newsletter</h2>
+      <a href="{{ .Site.Params.substackURL }}" class="view-all" target="_blank" rel="noopener">Subscribe on Substack &rarr;</a>
+    </div>
+    <div class="newsletter-section">
+      <div class="newsletter-about">
+        <h3>{{ .Params.newsletter_title }}</h3>
+        <p>{{ .Params.newsletter_description }}</p>
+        <p class="subscriber-count">More than 2,000 people subscribe.</p>
+        <a href="{{ .Site.Params.substackURL }}" class="substack-btn" target="_blank" rel="noopener">
+          <span>Subscribe free</span>
+          <span>&rarr;</span>
+        </a>
+      </div>
+      <div class="recent-posts">
+        {{ range first 4 (partialCached "substack-feed.html" .) }}
+        <a href="{{ .url }}" class="post-item" target="_blank" rel="noopener">
+          <div class="post-title">{{ .title }}</div>
+          {{ with .summary }}<div class="post-desc">{{ . }}</div>{{ end }}
+        </a>
+        {{ else }}
+        <p><a href="{{ .Site.Params.substackURL }}">Read the newsletter on Substack &rarr;</a></p>
+        {{ end }}
+      </div>
+    </div>
+  </div>
+</section>
