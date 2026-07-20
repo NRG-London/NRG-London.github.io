@@ -270,6 +270,90 @@ section {
   font-family: var(--serif);
 }
 
+/* ── FEATURED BAND ── */
+.feature-band {
+  position: relative;
+  background: var(--ink);
+  overflow: hidden;
+}
+
+.feature-vis {
+  position: absolute;
+  inset: 0 0 0 40%;
+}
+
+.feature-vis img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.feature-vis::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg,
+    #1a2332 0%,
+    rgba(26,35,50,0.72) 18%,
+    rgba(26,35,50,0.18) 50%,
+    rgba(26,35,50,0) 80%);
+}
+
+.feature-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 4.5rem 2rem;
+  position: relative;
+}
+
+.feature-text {
+  max-width: 46%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.feature-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--blue-muted);
+}
+
+.feature-band h2 {
+  font-family: var(--serif);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #f3f6f4;
+  letter-spacing: -0.01em;
+}
+
+.feature-band p {
+  color: #b9c4cf;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  max-width: 44ch;
+}
+
+.feature-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--blue);
+  color: #fff;
+  padding: 0.7rem 1.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  margin-top: 0.25rem;
+  transition: background 0.2s;
+}
+
+.feature-btn:hover { background: var(--blue-dark); color: #fff; }
+
 /* ── DARK BAND ── */
 .band {
   background: var(--deep);
@@ -958,6 +1042,13 @@ section {
     gap: 2rem;
   }
   .hero-photo { max-width: 280px; }
+  .feature-band { display: flex; flex-direction: column-reverse; }
+  .feature-vis { position: relative; inset: auto; height: 240px; }
+  .feature-vis::after {
+    background: linear-gradient(180deg, #1a2332 0%, rgba(26,35,50,0) 40%);
+  }
+  .feature-inner { padding: 3rem 2rem 1rem; width: 100%; }
+  .feature-text { max-width: 100%; }
   .campaigns-grid { grid-template-columns: 1fr; }
   .media-grid { grid-template-columns: 1fr; }
   .media-item { grid-template-columns: 120px 1fr; }

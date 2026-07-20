@@ -15,6 +15,23 @@
   </div>
 </header>
 
+<!-- FEATURED -->
+{{ with .Params.featured }}
+<div class="feature-band" id="featured">
+  <div class="feature-vis">
+    <img src="{{ .image }}" alt="Colour-coded OLAT map of journey times across London">
+  </div>
+  <div class="feature-inner">
+    <div class="feature-text">
+      <div class="feature-tag">{{ .tag }}</div>
+      <h2>{{ .headline }}</h2>
+      <p>{{ .text }}</p>
+      <a href="{{ .link }}" class="feature-btn">{{ .cta }} <span>&rarr;</span></a>
+    </div>
+  </div>
+</div>
+{{ end }}
+
 <!-- CAMPAIGNS -->
 <section id="campaigns">
   <div class="container">

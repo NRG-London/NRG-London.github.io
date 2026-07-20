@@ -2,6 +2,13 @@
 title: "Neil Garratt"
 hero_intro: "<strong>Representing Croydon and Sutton</strong>,<br>Chair of the Budget &amp; Performance Committee. Holding the Mayor and City Hall to account through forensic scrutiny, data-driven analysis, and a relentless focus on what matters to London."
 photo_caption: "At the London Assembly, City Hall"
+featured:
+  tag: "Featured · Interactive Map"
+  headline: "One map that explains London transport"
+  text: "Journey times from every corner of London — and why the two halves of the city travel so differently. Pick your own borough and explore."
+  cta: "Try the OLAT map"
+  link: "/campaigns/improving-travel-times/"
+  image: "/images/olat-feature.jpg"
 newsletter_title: "The View from City Hall"
 newsletter_description: "A regular look at what's really happening in London government — the stories the Mayor would rather you didn't read. Data, detail, and the occasional dry observation."
 sidebar_facts:
