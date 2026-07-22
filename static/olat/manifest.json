@@ -1674,13 +1674,13 @@
   {
    "id": "wlo",
    "label": "West London Orbital",
-   "dir": "scenarios/wlo",
+   "dir": "scenarios/wlo-ooc",
    "modes": [
     "pt",
     "pt-ebike",
     "pt-car"
    ],
-   "geojson": "scenarios/wlo.geojson"
+   "geojson": "scenarios/wlo-ooc.geojson"
   },
   {
    "id": "bakerloo-extension",

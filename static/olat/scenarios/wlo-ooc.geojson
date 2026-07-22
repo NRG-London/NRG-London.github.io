@@ -1,0 +1,286 @@
+{
+ "type": "FeatureCollection",
+ "name": "wlo-ooc",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -0.23867,
+      51.58007
+     ],
+     [
+      -0.22671,
+      51.56847
+     ],
+     [
+      -0.25032,
+      51.55424
+     ],
+     [
+      -0.25771,
+      51.53625
+     ],
+     [
+      -0.2497,
+      51.5305
+     ],
+     [
+      -0.26297,
+      51.50871
+     ],
+     [
+      -0.27016,
+      51.49969
+     ],
+     [
+      -0.28711,
+      51.48951
+     ],
+     [
+      -0.30965,
+      51.48755
+     ],
+     [
+      -0.32484,
+      51.48178
+     ],
+     [
+      -0.33691,
+      51.47476
+     ],
+     [
+      -0.36228,
+      51.46194
+     ]
+    ]
+   },
+   "properties": {
+    "scheme": "wlo-ooc",
+    "label": "West London Orbital (Hendon - Hounslow, Old Oak Common EL interchange)",
+    "kind": "line",
+    "mode": "overground",
+    "headway_min": 7.5,
+    "end_to_end_min": 37.9
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.23867,
+     51.58007
+    ]
+   },
+   "properties": {
+    "scheme": "wlo-ooc",
+    "kind": "station",
+    "sequence": 1,
+    "name": "Hendon Rail Station",
+    "stop_id": "HDON",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.22671,
+     51.56847
+    ]
+   },
+   "properties": {
+    "scheme": "wlo-ooc",
+    "kind": "station",
+    "sequence": 2,
+    "name": "Brent Cross West Rail Station",
+    "stop_id": "BRENTX",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.25032,
+     51.55424
+    ]
+   },
+   "properties": {
+    "scheme": "wlo-ooc",
+    "kind": "station",
+    "sequence": 3,
+    "name": "Neasden (WLO / tube interchange)",
+    "stop_id": "9400ZZLUNDN1",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.25771,
+     51.53625
+    ]
+   },
+   "properties": {
+    "scheme": "wlo-ooc",
+    "kind": "station",
+    "sequence": 4,
+    "name": "Harlesden Rail Station",
+    "stop_id": "HARLSDN",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.2497,
+     51.5305
+    ]
+   },
+   "properties": {
+    "scheme": "wlo-ooc",
+    "kind": "station",
+    "sequence": 5,
+    "name": "Old Oak Common",
+    "stop_id": "OOC_ELIZ",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.26297,
+     51.50871
+    ]
+   },
+   "properties": {
+    "scheme": "wlo-ooc",
+    "kind": "station",
+    "sequence": 6,
+    "name": "Acton Central Rail Station",
+    "stop_id": "ACTNCTL",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.27016,
+     51.49969
+    ]
+   },
+   "properties": {
+    "scheme": "wlo-ooc",
+    "kind": "station",
+    "sequence": 7,
+    "name": "South Acton Rail Station",
+    "stop_id": "SACTON",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.28711,
+     51.48951
+    ]
+   },
+   "properties": {
+    "scheme": "wlo-ooc",
+    "kind": "station",
+    "sequence": 8,
+    "name": "Lionel Road / Kew Bridge",
+    "stop_id": "KEWBDGE",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.30965,
+     51.48755
+    ]
+   },
+   "properties": {
+    "scheme": "wlo-ooc",
+    "kind": "station",
+    "sequence": 9,
+    "name": "Brentford Rail Station",
+    "stop_id": "BNTFORD",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.32484,
+     51.48178
+    ]
+   },
+   "properties": {
+    "scheme": "wlo-ooc",
+    "kind": "station",
+    "sequence": 10,
+    "name": "Syon Lane Rail Station",
+    "stop_id": "SYONLA",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.33691,
+     51.47476
+    ]
+   },
+   "properties": {
+    "scheme": "wlo-ooc",
+    "kind": "station",
+    "sequence": 11,
+    "name": "Isleworth Rail Station",
+    "stop_id": "ISLEWTH",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.36228,
+     51.46194
+    ]
+   },
+   "properties": {
+    "scheme": "wlo-ooc",
+    "kind": "station",
+    "sequence": 12,
+    "name": "Hounslow Rail Station",
+    "stop_id": "HOUNSLW",
+    "new": false
+   }
+  }
+ ]
+}
