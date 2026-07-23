@@ -1,0 +1,80 @@
+{{- /*
+  Crime Skyline — embeds the deck.gl 3D crime-concentration map (8 switchable
+  crime types) via an isolated <iframe>, with a static hero-image fallback for
+  browsers without WebGL2 or JavaScript.
+    - Breaks WIDE out of the 800px article column by default (~80vw on desktop,
+      full-bleed on mobile): the 3D scene needs the width, or the viz's own overlay
+      card dominates and the towers shrink. Height tracks the viz's native 1.865:1
+      ratio. Page-scoped `overflow-x:clip` stops the break-out making a h-scrollbar.
+    - Adds a "Full screen" big mode: a CSS fixed-overlay covering the viewport
+      (reliable on tablet/iPad where iframe fullscreen is flaky) PLUS a best-effort
+      native Fullscreen request. Toggling does NOT reload the iframe, so the
+      reader's chosen crime type + camera are preserved. Esc or ✕ exits.
+    - Controls live in a toolbar BELOW the frame — the viz already uses all four
+      corners (card TL, hint TR, switcher BL, reset BR), so on-frame chrome would
+      collide. Only the unavoidable ✕ Close floats over the frame, in big mode.
+  Interactive: static/interactive/crime-skyline/index.html  (deck.gl 9.3.7, WebGL2)
+  Needs:       static/js/deck.min.js, static/fonts/{DMSans,LibreBaskerville}.ttf
+  Fallback:    static/images/charts/crime-concentration/phone-theft-skyline-hero.png
+  Usage: {{< crime-skyline >}}
+  NB: ?v=N is a manual cache-buster; bump it whenever the interactive changes.
+*/ -}}
+<style>
+  html{overflow-x:hidden;overflow-x:clip}
+  .crime-skyline{width:80vw;margin:2rem 0;margin-left:calc(50% - 40vw)}
+  .crime-skyline .cs-box{position:relative;width:100%;height:min(42.9vw,82vh);background:#1A2332;overflow:hidden}
+  .crime-skyline .cs-box>iframe,.crime-skyline .cs-box>img{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
+  .crime-skyline .cs-box>img{object-fit:contain}
+  .crime-skyline .cs-bar{display:flex;justify-content:space-between;align-items:center;gap:10px 16px;flex-wrap:wrap;max-width:800px;margin:.6rem auto 0;padding:0 2rem;font-size:.85rem;color:#5a6472}
+  .crime-skyline .cs-btn{font:600 .8rem var(--sans,sans-serif);color:#243142;background:#fff;border:1px solid #c9d2cc;border-radius:999px;padding:8px 16px;cursor:pointer;white-space:nowrap;line-height:1}
+  .crime-skyline .cs-btn:hover{background:#f3f6f4;border-color:#243142}
+  .crime-skyline .cs-close{position:absolute;top:12px;right:12px;z-index:5;display:none;align-items:center;color:#F3F6F4;background:rgba(36,49,66,.9);border-color:#3B4A5E}
+  .crime-skyline .cs-close:hover{background:#34455C;border-color:#5A9FD4}
+  .crime-skyline.cs-big{position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;margin:0;z-index:9999;background:#1A2332}
+  .crime-skyline.cs-big .cs-box{height:100%}
+  .crime-skyline.cs-big .cs-bar{display:none}
+  .crime-skyline.cs-big .cs-close{display:inline-flex}
+  @media (max-width:700px){.crime-skyline{width:100vw;margin-left:calc(50% - 50vw)}.crime-skyline .cs-box{height:min(125vw,72vh)}}
+</style>
+<figure class="crime-skyline" id="crime-skyline">
+  <div class="cs-box">
+    <img src="/images/charts/crime-concentration/phone-theft-skyline-hero.png?v=1"
+         alt="3D skyline map of London showing phone theft concentrated in a handful of central wards — two tall towers over the West End and St James's above an otherwise flat city."
+         loading="lazy">
+    <button type="button" class="cs-btn cs-close">&#10005;&nbsp;Close</button>
+  </div>
+  <div class="cs-bar">
+    <span>London crime by ward, 2021&ndash;2025 &mdash; drag to rotate and tilt, switch crime type with the buttons.</span>
+    <button type="button" class="cs-btn cs-expand" hidden>&#10530;&nbsp;Full screen</button>
+  </div>
+</figure>
+<script>
+(function(){
+  var fig=document.getElementById('crime-skyline'); if(!fig) return;
+  var box=fig.querySelector('.cs-box'),
+      expand=fig.querySelector('.cs-expand'),
+      close=fig.querySelector('.cs-close');
+  var ok=false; try{ ok=!!(window.WebGL2RenderingContext && document.createElement('canvas').getContext('webgl2')); }catch(e){}
+  if(ok){
+    var f=document.createElement('iframe');
+    f.src='/interactive/crime-skyline/?v=1';
+    f.title='Interactive 3D map of London crime concentration';
+    f.setAttribute('scrolling','no'); f.setAttribute('allow','fullscreen'); f.setAttribute('allowfullscreen','');
+    box.insertBefore(f, box.firstChild);
+    box.querySelector('img').style.display='none';
+    expand.hidden=false; // full-screen control only makes sense with the live viz
+  }
+  function enter(){
+    fig.classList.add('cs-big'); document.body.style.overflow='hidden';
+    if(fig.requestFullscreen){ fig.requestFullscreen().catch(function(){}); }
+  }
+  function exit(){
+    fig.classList.remove('cs-big'); document.body.style.overflow='';
+    if(document.fullscreenElement){ document.exitFullscreen().catch(function(){}); }
+  }
+  expand.addEventListener('click',enter);
+  close.addEventListener('click',exit);
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&fig.classList.contains('cs-big')) exit(); });
+  document.addEventListener('fullscreenchange',function(){ if(!document.fullscreenElement&&fig.classList.contains('cs-big')) exit(); });
+})();
+</script>
