@@ -2,10 +2,10 @@
 title: "Improving Travel Times"
 weight: 5
 category: "Transport"
+summary: "Mapping journey times across London, why travel in outer London looks different, and why the car is not going away any time soon."
 image: "/images/campaigns/olat-card.jpg"
 stat: "2–3×"
 stat_label: "faster by car for outer-London orbital journeys"
-summary: "Mapping journey times across London, why travel in outer London looks different, and why the car is not going away any time."
 ---
 
 *Why do journeys across outer London take so long, and why does it matter for jobs, opportunity, and quality of life?*
