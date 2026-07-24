@@ -1,0 +1,80 @@
+{{- /*
+  Crime Hotspots — embeds the deck.gl 3D "70-metre hex" hotspots map (8 switchable
+  crime types, plus a Boroughs/Street basemap toggle) via an isolated <iframe>, with
+  a static hero-image fallback for browsers without WebGL2 or JavaScript. Sibling of
+  crime-skyline.html — same frame / fallback / full-screen machinery, different viz.
+    - Breaks WIDE out of the 800px article column by default (~80vw on desktop,
+      full-bleed on mobile); height tracks the viz's native ~1.865:1 box.
+    - "Full screen" big mode: CSS fixed-overlay + best-effort native Fullscreen;
+      toggling does NOT reload the iframe (preserves crime type, mode, camera).
+    - Controls live in a toolbar BELOW the frame — the viz uses all four corners.
+    - The iframe is loading="lazy": the embed is ~10 MB (data inlined) and sits
+      below the skyline, so it only fetches once the reader scrolls to it.
+  Interactive: static/interactive/crime-hotspots/index.html  (deck.gl 9.3.7, WebGL2)
+  Needs:       static/js/deck.min.js, static/fonts/{DMSans,LibreBaskerville}.ttf (shared with crime-skyline)
+  Fallback:    static/images/charts/crime-concentration/crime-hotspots-hero.png
+  Note:        default Boroughs mode makes zero external calls; the opt-in Street
+               basemap fetches CARTO tiles (basemaps.cartocdn.com), attributed in-page.
+  Usage: {{< crime-hotspots >}}
+  NB: ?v=N is a manual cache-buster; bump it whenever the interactive changes.
+*/ -}}
+<style>
+  html{overflow-x:hidden;overflow-x:clip}
+  .crime-hotspots{width:80vw;margin:2rem 0;margin-left:calc(50% - 40vw)}
+  .crime-hotspots .cs-box{position:relative;width:100%;height:min(42.9vw,82vh);background:#1A2332;overflow:hidden}
+  .crime-hotspots .cs-box>iframe,.crime-hotspots .cs-box>img{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
+  .crime-hotspots .cs-box>img{object-fit:contain}
+  .crime-hotspots .cs-bar{display:flex;justify-content:space-between;align-items:center;gap:10px 16px;flex-wrap:wrap;max-width:800px;margin:.6rem auto 0;padding:0 2rem;font-size:.85rem;color:#5a6472}
+  .crime-hotspots .cs-btn{font:600 .8rem var(--sans,sans-serif);color:#243142;background:#fff;border:1px solid #c9d2cc;border-radius:999px;padding:8px 16px;cursor:pointer;white-space:nowrap;line-height:1}
+  .crime-hotspots .cs-btn:hover{background:#f3f6f4;border-color:#243142}
+  .crime-hotspots .cs-close{position:absolute;top:12px;right:12px;z-index:5;display:none;align-items:center;color:#F3F6F4;background:rgba(36,49,66,.9);border-color:#3B4A5E}
+  .crime-hotspots .cs-close:hover{background:#34455C;border-color:#5A9FD4}
+  .crime-hotspots.cs-big{position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;margin:0;z-index:9999;background:#1A2332}
+  .crime-hotspots.cs-big .cs-box{height:100%}
+  .crime-hotspots.cs-big .cs-bar{display:none}
+  .crime-hotspots.cs-big .cs-close{display:inline-flex}
+  @media (max-width:700px){.crime-hotspots{width:100vw;margin-left:calc(50% - 50vw)}.crime-hotspots .cs-box{height:min(125vw,72vh)}}
+</style>
+<figure class="crime-hotspots" id="crime-hotspots">
+  <div class="cs-box">
+    <img src="/images/charts/crime-concentration/crime-hotspots-hero.png?v=1"
+         alt="3D hex map of London theft-from-the-person hotspots — crime concentrates on a handful of streets even inside the hottest wards."
+         loading="lazy">
+    <button type="button" class="cs-btn cs-close">&#10005;&nbsp;Close</button>
+  </div>
+  <div class="cs-bar">
+    <span>London crime hotspots &mdash; 70&nbsp;m hexes, 2021&ndash;2025 &mdash; drag to rotate and tilt; switch crime type, and toggle the Boroughs/Street basemap, with the buttons.</span>
+    <button type="button" class="cs-btn cs-expand" hidden>&#10530;&nbsp;Full screen</button>
+  </div>
+</figure>
+<script>
+(function(){
+  var fig=document.getElementById('crime-hotspots'); if(!fig) return;
+  var box=fig.querySelector('.cs-box'),
+      expand=fig.querySelector('.cs-expand'),
+      close=fig.querySelector('.cs-close');
+  var ok=false; try{ ok=!!(window.WebGL2RenderingContext && document.createElement('canvas').getContext('webgl2')); }catch(e){}
+  if(ok){
+    var f=document.createElement('iframe');
+    f.loading='lazy';                       // ~10 MB embed below the fold — defer until scrolled to
+    f.src='/interactive/crime-hotspots/?v=1';
+    f.title='Interactive 3D hex map of London crime hotspots';
+    f.setAttribute('scrolling','no'); f.setAttribute('allow','fullscreen'); f.setAttribute('allowfullscreen','');
+    box.insertBefore(f, box.firstChild);
+    box.querySelector('img').style.display='none';
+    expand.hidden=false; // full-screen control only makes sense with the live viz
+  }
+  function enter(){
+    fig.classList.add('cs-big'); document.body.style.overflow='hidden';
+    if(fig.requestFullscreen){ fig.requestFullscreen().catch(function(){}); }
+  }
+  function exit(){
+    fig.classList.remove('cs-big'); document.body.style.overflow='';
+    if(document.fullscreenElement){ document.exitFullscreen().catch(function(){}); }
+  }
+  expand.addEventListener('click',enter);
+  close.addEventListener('click',exit);
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&fig.classList.contains('cs-big')) exit(); });
+  document.addEventListener('fullscreenchange',function(){ if(!document.fullscreenElement&&fig.classList.contains('cs-big')) exit(); });
+})();
+</script>
