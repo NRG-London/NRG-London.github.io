@@ -1,16 +1,68 @@
 <!-- FEATURED -->
-{{ with .Params.featured }}
-<div class="feature-band" id="featured">
-  <div class="feature-vis">
-    <img src="{{ .image }}" alt="Colour-coded OLAT map of journey times across London">
+{{/* `featured` is a list of 1-3 items (tag/tab/headline/text/cta/link/image/tone).
+     A legacy single-dict value is accepted and treated as one item.
+     Each slide is one big <a> - the whole band is the click target; the "button"
+     is decorative. With 2+ items, tabs below switch slides on hover (desktop) or
+     tap (mobile); the band auto-rotates until the visitor interacts, and never
+     auto-rotates for prefers-reduced-motion visitors. `tone: "dark"` marks an
+     image whose ground merges with the navy band (no fade needed). */}}
+{{ $items := .Params.featured }}
+{{ if $items }}
+{{ if reflect.IsMap $items }}{{ $items = slice $items }}{{ end }}
+{{ $many := gt (len $items) 1 }}
+<div class="feature-band{{ if $many }} feature-carousel{{ end }}" id="featured">
+  <div class="feature-slides">
+    {{ range $i, $f := $items }}
+    <a class="feature-slide{{ if eq $i 0 }} on{{ end }}{{ if eq $f.tone "dark" }} feature-slide--dark{{ end }}"
+       href="{{ $f.link }}"{{ if ne $i 0 }} tabindex="-1" aria-hidden="true"{{ end }}>
+      <div class="feature-vis">
+        <img src="{{ $f.image }}" alt="" {{ if eq $i 0 }}fetchpriority="high"{{ else }}loading="lazy"{{ end }}>
+      </div>
+      <div class="feature-inner">
+        <div class="feature-text">
+          <div class="feature-tag">{{ $f.tag }}</div>
+          <h2>{{ $f.headline }}</h2>
+          <p>{{ $f.text }}</p>
+          <span class="feature-btn">{{ $f.cta }} <span>&rarr;</span></span>
+        </div>
+      </div>
+    </a>
+    {{ end }}
   </div>
-  <div class="feature-inner">
-    <div class="feature-text">
-      <div class="feature-tag">{{ .tag }}</div>
-      <h2>{{ .headline }}</h2>
-      <p>{{ .text }}</p>
-      <a href="{{ .link }}" class="feature-btn">{{ .cta }} <span>&rarr;</span></a>
-    </div>
+  {{ if $many }}
+  <div class="feature-tabs" aria-label="Featured items">
+    {{ range $i, $f := $items }}
+    <button type="button" class="feature-tab{{ if eq $i 0 }} on{{ end }}">{{ or $f.tab $f.tag }}</button>
+    {{ end }}
   </div>
+  <script>
+  (function(){
+    var band = document.getElementById('featured');
+    var slides = band.querySelectorAll('.feature-slide');
+    var tabs = band.querySelectorAll('.feature-tab');
+    var cur = 0, timer = null, engaged = false;
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function show(i){
+      cur = (i + slides.length) % slides.length;
+      slides.forEach(function(s, j){
+        s.classList.toggle('on', j === cur);
+        s.setAttribute('aria-hidden', j === cur ? 'false' : 'true');
+        if (j === cur) { s.removeAttribute('tabindex'); } else { s.setAttribute('tabindex', '-1'); }
+      });
+      tabs.forEach(function(t, j){ t.classList.toggle('on', j === cur); });
+    }
+    function stop(){ clearInterval(timer); timer = null; }
+    function start(){ if (!reduced && !engaged && !timer) timer = setInterval(function(){ show(cur + 1); }, 5000); }
+    tabs.forEach(function(t, i){
+      ['mouseenter', 'click', 'focus'].forEach(function(ev){
+        t.addEventListener(ev, function(){ engaged = true; stop(); show(i); });
+      });
+    });
+    band.addEventListener('mouseenter', stop);
+    band.addEventListener('mouseleave', start);
+    start();
+  })();
+  </script>
+  {{ end }}
 </div>
 {{ end }}

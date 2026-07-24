@@ -1,5 +1,17 @@
+{{- /* Data-postcard campaign card. All extras degrade gracefully:
+     no image -> patterned placeholder with the category; no stat -> plain card. */ -}}
 <a href="{{ .Permalink }}" class="campaign-card">
-  <div class="campaign-tag">{{ .Params.category }}</div>
-  <h3>{{ .Title }}</h3>
-  <p>{{ .Params.summary }}</p>
+  {{ with .Params.image }}
+  <div class="campaign-im"><img src="{{ . }}" alt="" loading="lazy"></div>
+  {{ else }}
+  <div class="campaign-im campaign-im--fallback"><span>{{ .Params.category }}</span></div>
+  {{ end }}
+  {{ with .Params.stat }}
+  <div class="campaign-stat"><b>{{ . }}</b><span>{{ $.Params.stat_label }}</span></div>
+  {{ end }}
+  <div class="campaign-tx">
+    <div class="campaign-tag">{{ .Params.category }}</div>
+    <h3>{{ .Title }}</h3>
+    <p>{{ .Params.summary }}</p>
+  </div>
 </a>

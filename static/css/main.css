@@ -270,23 +270,47 @@ section {
   font-family: var(--serif);
 }
 
-/* ── FEATURED BAND ── */
+/* ── FEATURED BAND (carousel; each slide is one big link) ── */
 .feature-band {
   position: relative;
   background: var(--ink);
   overflow: hidden;
 }
 
+.feature-slides { display: grid; }
+
+.feature-slide {
+  grid-area: 1 / 1;
+  position: relative;
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  opacity: 1;
+  transition: opacity 0.6s ease;
+}
+
+.feature-carousel .feature-slide { opacity: 0; pointer-events: none; }
+.feature-carousel .feature-slide.on { opacity: 1; pointer-events: auto; }
+
+.feature-slide:focus-visible {
+  outline: 3px solid var(--blue-muted);
+  outline-offset: -3px;
+}
+
 .feature-vis {
   position: absolute;
   inset: 0 0 0 40%;
+  overflow: hidden;  /* keep the hover-scaled image inside the gradient's reach */
 }
 
 .feature-vis img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.5s ease;
 }
+
+.feature-slide:hover .feature-vis img { transform: scale(1.03); }
 
 .feature-vis::after {
   content: '';
@@ -299,12 +323,21 @@ section {
     rgba(26,35,50,0) 80%);
 }
 
+/* dark-ground images (e.g. the crime skyline) merge into the band — wider
+   pane, minimal fade */
+.feature-slide--dark .feature-vis { inset: 0 0 0 30%; }
+.feature-slide--dark .feature-vis::after {
+  background: linear-gradient(90deg, #1a2332 0%, rgba(26,35,50,0) 45%);
+}
+
 .feature-inner {
   max-width: 1200px;
   margin: 0 auto;
   padding: 4.5rem 2rem;
   position: relative;
 }
+
+.feature-carousel .feature-inner { padding-bottom: 3.5rem; }
 
 .feature-text {
   max-width: 46%;
@@ -347,12 +380,45 @@ section {
   padding: 0.7rem 1.4rem;
   font-size: 0.85rem;
   font-weight: 600;
-  text-decoration: none;
   margin-top: 0.25rem;
   transition: background 0.2s;
 }
 
-.feature-btn:hover { background: var(--blue-dark); color: #fff; }
+.feature-slide:hover .feature-btn { background: var(--blue-dark); }
+
+.feature-tabs {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem 1.4rem;
+  display: flex;
+  gap: 2.5rem;
+  position: relative;
+  z-index: 3;
+}
+
+.feature-tab {
+  background: none;
+  border: 0;
+  border-top: 2px solid rgba(255,255,255,0.25);
+  color: #8ea1b5;
+  font-family: var(--sans);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.55rem 1rem 0 0;
+  min-width: 130px;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.feature-tab:hover, .feature-tab.on { border-top-color: #fff; color: #fff; }
+.feature-tab:focus-visible { outline: 2px solid var(--blue-muted); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .feature-slide, .feature-vis img { transition: none; }
+}
 
 /* ── DARK BAND ── */
 .band {
@@ -383,14 +449,69 @@ section {
 .campaign-card {
   background: var(--white);
   border: 1px solid var(--warm-grey);
-  padding: 2rem;
   transition: all 0.25s ease;
   text-decoration: none;
   color: inherit;
-  display: block;
+  display: flex;
+  flex-direction: column;
   position: relative;
   overflow: hidden;
 }
+
+.campaign-im {
+  aspect-ratio: 16 / 8;
+  overflow: hidden;
+  position: relative;
+}
+
+.campaign-im img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.campaign-card:hover .campaign-im img { transform: scale(1.05); }
+
+.campaign-im--fallback {
+  background: repeating-linear-gradient(-45deg, #eaf0ec 0 10px, var(--paper) 10px 20px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.campaign-im--fallback span {
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  color: #b9c4bf;
+}
+
+.campaign-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  padding: 0.9rem 1.5rem 0;
+}
+
+.campaign-stat b {
+  font-family: var(--serif);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--blue);
+  white-space: nowrap;  /* "2–3×" must never break at the dash */
+  transition: color 0.25s;
+}
+
+.campaign-card:hover .campaign-stat b { color: var(--blue-dark); }
+
+.campaign-stat span {
+  font-size: 0.74rem;
+  color: var(--mid-grey);
+  line-height: 1.35;
+}
+
+.campaign-tx { padding: 0.8rem 1.5rem 1.5rem; }
 
 .campaign-card::after {
   content: '';
@@ -1042,13 +1163,18 @@ section {
     gap: 2rem;
   }
   .hero-photo { max-width: 280px; }
-  .feature-band { display: flex; flex-direction: column-reverse; }
-  .feature-vis { position: relative; inset: auto; height: 240px; }
+  .feature-slide { display: flex; flex-direction: column-reverse; }
+  .feature-vis, .feature-slide--dark .feature-vis { position: relative; inset: auto; height: 240px; }
   .feature-vis::after {
     background: linear-gradient(180deg, #1a2332 0%, rgba(26,35,50,0) 40%);
   }
-  .feature-inner { padding: 3rem 2rem 1rem; width: 100%; }
+  .feature-slide--dark .feature-vis::after {
+    background: linear-gradient(180deg, #1a2332 0%, rgba(26,35,50,0) 25%);
+  }
+  .feature-inner, .feature-carousel .feature-inner { padding: 2.5rem 2rem 1.25rem; width: 100%; }
   .feature-text { max-width: 100%; }
+  .feature-tabs { gap: 1.25rem; padding-bottom: 1.1rem; }
+  .feature-tab { min-width: 0; flex: 1; }
   .campaigns-grid { grid-template-columns: 1fr; }
   .media-grid { grid-template-columns: 1fr; }
   .media-item { grid-template-columns: 120px 1fr; }

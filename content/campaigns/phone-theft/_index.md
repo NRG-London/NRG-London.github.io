@@ -2,6 +2,9 @@
 title: "Tackling London's Phone-Theft Epidemic"
 weight: 10
 category: "Policing & Crime"
+image: "/images/campaigns/phone-theft-card.jpg"
+stat: "26%"
+stat_label: "of London's phone thefts in just two wards"
 summary: "London's phone-theft epidemic was extraordinarily concentrated — my report showed a handful of central wards drove it, and that targeted enforcement there could break it. The police followed that playbook, and phone theft fell for the first time on record."
 ---
 

@@ -44,7 +44,7 @@
     <button type="button" class="cs-btn cs-close">&#10005;&nbsp;Close</button>
   </div>
   <div class="cs-bar">
-    <span>London crime by ward, 2021&ndash;2025 &mdash; drag to rotate and tilt, switch crime type with the buttons.</span>
+    <span>London crime by ward, 2021&ndash;2025 &mdash; drag to rotate and tilt; pick crime type and year with the buttons.</span>
     <button type="button" class="cs-btn cs-expand" hidden>&#10530;&nbsp;Full screen</button>
   </div>
 </figure>
@@ -57,7 +57,7 @@
   var ok=false; try{ ok=!!(window.WebGL2RenderingContext && document.createElement('canvas').getContext('webgl2')); }catch(e){}
   if(ok){
     var f=document.createElement('iframe');
-    f.src='/interactive/crime-skyline/?v=1';
+    f.src='/interactive/crime-skyline/?v=2';
     f.title='Interactive 3D map of London crime concentration';
     f.setAttribute('scrolling','no'); f.setAttribute('allow','fullscreen'); f.setAttribute('allowfullscreen','');
     box.insertBefore(f, box.firstChild);
