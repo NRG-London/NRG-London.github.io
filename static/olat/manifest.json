@@ -1672,6 +1672,17 @@
  ],
  "scenarios": [
   {
+   "id": "cr2",
+   "label": "Crossrail 2",
+   "dir": "scenarios/cr2",
+   "modes": [
+    "pt",
+    "pt-ebike",
+    "pt-car"
+   ],
+   "geojson": "scenarios/cr2.geojson"
+  },
+  {
    "id": "wlo",
    "label": "West London Orbital",
    "dir": "scenarios/wlo-ooc",

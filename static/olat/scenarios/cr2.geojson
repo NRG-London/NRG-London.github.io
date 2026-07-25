@@ -1,0 +1,1266 @@
+{
+ "type": "FeatureCollection",
+ "name": "cr2",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -0.26878,
+      51.33439
+     ],
+     [
+      -0.25699,
+      51.35004
+     ],
+     [
+      -0.24867,
+      51.3634
+     ],
+     [
+      -0.24517,
+      51.38125
+     ],
+     [
+      -0.23953,
+      51.39519
+     ],
+     [
+      -0.23015,
+      51.40917
+     ],
+     [
+      -0.20598,
+      51.42122
+     ],
+     [
+      -0.16818,
+      51.42784
+     ],
+     [
+      -0.17007,
+      51.46422
+     ],
+     [
+      -0.171,
+      51.4872
+     ],
+     [
+      -0.14456,
+      51.49526
+     ],
+     [
+      -0.13155,
+      51.51641
+     ],
+     [
+      -0.13496,
+      51.52846
+     ],
+     [
+      -0.10593,
+      51.53186
+     ],
+     [
+      -0.07514,
+      51.54611
+     ],
+     [
+      -0.07527,
+      51.58227
+     ],
+     [
+      -0.05993,
+      51.58831
+     ],
+     [
+      -0.05393,
+      51.60197
+     ],
+     [
+      -0.05031,
+      51.61063
+     ],
+     [
+      -0.03508,
+      51.64225
+     ],
+     [
+      -0.03082,
+      51.65558
+     ],
+     [
+      -0.02853,
+      51.67092
+     ],
+     [
+      -0.02656,
+      51.68506
+     ],
+     [
+      -0.02396,
+      51.70287
+     ]
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "label": "Crossrail 2 (Epsom - Cheshunt, via central tunnel)",
+    "kind": "line",
+    "mode": "elizabeth",
+    "headway_min": 8.0,
+    "end_to_end_min": 77.5
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -0.30816,
+      51.35655
+     ],
+     [
+      -0.3007,
+      51.36404
+     ],
+     [
+      -0.27946,
+      51.37686
+     ],
+     [
+      -0.26127,
+      51.38473
+     ],
+     [
+      -0.23953,
+      51.39519
+     ],
+     [
+      -0.23015,
+      51.40917
+     ],
+     [
+      -0.20598,
+      51.42122
+     ],
+     [
+      -0.16818,
+      51.42784
+     ],
+     [
+      -0.17007,
+      51.46422
+     ],
+     [
+      -0.171,
+      51.4872
+     ],
+     [
+      -0.14456,
+      51.49526
+     ],
+     [
+      -0.13155,
+      51.51641
+     ],
+     [
+      -0.13496,
+      51.52846
+     ],
+     [
+      -0.10593,
+      51.53186
+     ],
+     [
+      -0.07514,
+      51.54611
+     ],
+     [
+      -0.07527,
+      51.58227
+     ],
+     [
+      -0.10289,
+      51.59005
+     ],
+     [
+      -0.11009,
+      51.59744
+     ],
+     [
+      -0.14304,
+      51.61411
+     ]
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "label": "Crossrail 2 (Chessington South - New Southgate, via central tunnel)",
+    "kind": "line",
+    "mode": "elizabeth",
+    "headway_min": 8.0,
+    "end_to_end_min": 62.1
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -0.34275,
+      51.40255
+     ],
+     [
+      -0.33915,
+      51.3891
+     ],
+     [
+      -0.30396,
+      51.39246
+     ],
+     [
+      -0.28071,
+      51.39904
+     ],
+     [
+      -0.25594,
+      51.40407
+     ],
+     [
+      -0.23015,
+      51.40917
+     ],
+     [
+      -0.20598,
+      51.42122
+     ],
+     [
+      -0.16818,
+      51.42784
+     ],
+     [
+      -0.17007,
+      51.46422
+     ],
+     [
+      -0.171,
+      51.4872
+     ],
+     [
+      -0.14456,
+      51.49526
+     ],
+     [
+      -0.13155,
+      51.51641
+     ],
+     [
+      -0.13496,
+      51.52846
+     ],
+     [
+      -0.10593,
+      51.53186
+     ],
+     [
+      -0.07514,
+      51.54611
+     ],
+     [
+      -0.07527,
+      51.58227
+     ],
+     [
+      -0.05993,
+      51.58831
+     ],
+     [
+      -0.05393,
+      51.60197
+     ],
+     [
+      -0.05031,
+      51.61063
+     ],
+     [
+      -0.03508,
+      51.64225
+     ],
+     [
+      -0.03082,
+      51.65558
+     ],
+     [
+      -0.02853,
+      51.67092
+     ],
+     [
+      -0.02656,
+      51.68506
+     ],
+     [
+      -0.02396,
+      51.70287
+     ]
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "label": "Crossrail 2 (Hampton Court - Cheshunt, via central tunnel)",
+    "kind": "line",
+    "mode": "elizabeth",
+    "headway_min": 8.0,
+    "end_to_end_min": 78.1
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      -0.44679,
+      51.3968
+     ],
+     [
+      -0.43091,
+      51.41307
+     ],
+     [
+      -0.41778,
+      51.41831
+     ],
+     [
+      -0.40975,
+      51.42098
+     ],
+     [
+      -0.37212,
+      51.41593
+     ],
+     [
+      -0.34947,
+      51.43393
+     ],
+     [
+      -0.33271,
+      51.42448
+     ],
+     [
+      -0.31251,
+      51.4144
+     ],
+     [
+      -0.30117,
+      51.41275
+     ],
+     [
+      -0.28402,
+      51.41236
+     ],
+     [
+      -0.25594,
+      51.40407
+     ],
+     [
+      -0.23015,
+      51.40917
+     ],
+     [
+      -0.20598,
+      51.42122
+     ],
+     [
+      -0.16818,
+      51.42784
+     ],
+     [
+      -0.17007,
+      51.46422
+     ],
+     [
+      -0.171,
+      51.4872
+     ],
+     [
+      -0.14456,
+      51.49526
+     ],
+     [
+      -0.13155,
+      51.51641
+     ],
+     [
+      -0.13496,
+      51.52846
+     ],
+     [
+      -0.10593,
+      51.53186
+     ],
+     [
+      -0.07514,
+      51.54611
+     ],
+     [
+      -0.07527,
+      51.58227
+     ],
+     [
+      -0.10289,
+      51.59005
+     ],
+     [
+      -0.11009,
+      51.59744
+     ],
+     [
+      -0.14304,
+      51.61411
+     ]
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "label": "Crossrail 2 (Shepperton - New Southgate, via central tunnel)",
+    "kind": "line",
+    "mode": "elizabeth",
+    "headway_min": 8.0,
+    "end_to_end_min": 80.1
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.26878,
+     51.33439
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 1,
+    "name": "Epsom Rail Station",
+    "stop_id": "EPSM",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.25699,
+     51.35004
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 2,
+    "name": "Ewell West Rail Station",
+    "stop_id": "EWELW",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.24867,
+     51.3634
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 3,
+    "name": "Stoneleigh Rail Station",
+    "stop_id": "STLEIGH",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.24517,
+     51.38125
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 4,
+    "name": "Worcester Park Rail Station",
+    "stop_id": "WRCSTRP",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.23953,
+     51.39519
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 5,
+    "name": "Motspur Park Rail Station",
+    "stop_id": "MOTSPRP",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.23015,
+     51.40917
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 6,
+    "name": "Raynes Park Rail Station",
+    "stop_id": "RAYNSPK",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.20598,
+     51.42122
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 7,
+    "name": "Wimbledon Rail Station",
+    "stop_id": "WIMBLDN",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.16818,
+     51.42784
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 8,
+    "name": "Tooting Broadway Underground Station",
+    "stop_id": "9400ZZLUTBY1",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.17007,
+     51.46422
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 9,
+    "name": "Clapham Junction Rail Station",
+    "stop_id": "CLPHMJ1",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.171,
+     51.4872
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 10,
+    "name": "King's Road Chelsea (Crossrail 2)",
+    "stop_id": "CR2_KINGSRD_NEW",
+    "new": true
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.14456,
+     51.49526
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 11,
+    "name": "London Victoria Rail Station",
+    "stop_id": "VICTRIC",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.13155,
+     51.51641
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 12,
+    "name": "Tottenham Court Road Underground Station",
+    "stop_id": "9400ZZLUTCR1",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.13496,
+     51.52846
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 13,
+    "name": "London Euston Rail Station",
+    "stop_id": "EUSTON",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.10593,
+     51.53186
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 14,
+    "name": "Angel Underground Station",
+    "stop_id": "9400ZZLUAGL1",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.07514,
+     51.54611
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 15,
+    "name": "Dalston Junction Rail Station",
+    "stop_id": "DALS",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.07527,
+     51.58227
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 16,
+    "name": "Seven Sisters Rail Station",
+    "stop_id": "SEVNSIS",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.05993,
+     51.58831
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 17,
+    "name": "Tottenham Hale Rail Station",
+    "stop_id": "TTNHMHL",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.05393,
+     51.60197
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 18,
+    "name": "Northumberland Park Rail Station",
+    "stop_id": "NMBRLPK",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.05031,
+     51.61063
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 19,
+    "name": "Meridian Water Rail Station",
+    "stop_id": "MWRWSTN",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.03508,
+     51.64225
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 20,
+    "name": "Ponders End Rail Station",
+    "stop_id": "PNDRSEN",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.03082,
+     51.65558
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 21,
+    "name": "Brimsdown Rail Station",
+    "stop_id": "BRIMSDN",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.02853,
+     51.67092
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 22,
+    "name": "Enfield Lock Rail Station",
+    "stop_id": "ENFLDLK",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.02656,
+     51.68506
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 23,
+    "name": "Waltham Cross Rail Station",
+    "stop_id": "WALHAMX",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.02396,
+     51.70287
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 24,
+    "name": "Cheshunt Rail Station",
+    "stop_id": "CHESHNT",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.30816,
+     51.35655
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 1,
+    "name": "Chessington South Rail Station",
+    "stop_id": "CHSSS",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.3007,
+     51.36404
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 2,
+    "name": "Chessington North Rail Station",
+    "stop_id": "CHSSN",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.27946,
+     51.37686
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 3,
+    "name": "Tolworth Rail Station",
+    "stop_id": "TOLWTH",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.26127,
+     51.38473
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 4,
+    "name": "Malden Manor Rail Station",
+    "stop_id": "MALDENM",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.10289,
+     51.59005
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 17,
+    "name": "Turnpike Lane Underground Station",
+    "stop_id": "9400ZZLUTPN1",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.11009,
+     51.59744
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 18,
+    "name": "Wood Green Underground Station",
+    "stop_id": "9400ZZLUWOG1",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.14304,
+     51.61411
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 19,
+    "name": "New Southgate Rail Station",
+    "stop_id": "NEWSGAT",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.34275,
+     51.40255
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 1,
+    "name": "Hampton Court Rail Station",
+    "stop_id": "HCRT",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.33915,
+     51.3891
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 2,
+    "name": "Thames Ditton Rail Station",
+    "stop_id": "TDITTON",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.30396,
+     51.39246
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 3,
+    "name": "Surbiton Rail Station",
+    "stop_id": "SURBITN",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.28071,
+     51.39904
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 4,
+    "name": "Berrylands Rail Station",
+    "stop_id": "BRLANDS",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.25594,
+     51.40407
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 5,
+    "name": "New Malden Rail Station",
+    "stop_id": "NEWMLDN",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.44679,
+     51.3968
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 1,
+    "name": "Shepperton Rail Station",
+    "stop_id": "SHEPRTN",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.43091,
+     51.41307
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 2,
+    "name": "Upper Halliford Rail Station",
+    "stop_id": "UHALIFD",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.41778,
+     51.41831
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 3,
+    "name": "Sunbury Rail Station",
+    "stop_id": "SUNBURY",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.40975,
+     51.42098
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 4,
+    "name": "Kempton Park Rail Station",
+    "stop_id": "KMPTNPK",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.37212,
+     51.41593
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 5,
+    "name": "Hampton (London) Rail Station",
+    "stop_id": "HAMPTON",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.34947,
+     51.43393
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 6,
+    "name": "Fulwell Rail Station",
+    "stop_id": "FULWELL",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.33271,
+     51.42448
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 7,
+    "name": "Teddington Rail Station",
+    "stop_id": "TEDNGTN",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.31251,
+     51.4144
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 8,
+    "name": "Hampton Wick Rail Station",
+    "stop_id": "HAMWICK",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.30117,
+     51.41275
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 9,
+    "name": "Kingston Rail Station",
+    "stop_id": "KGSTON",
+    "new": false
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -0.28402,
+     51.41236
+    ]
+   },
+   "properties": {
+    "scheme": "cr2",
+    "kind": "station",
+    "sequence": 10,
+    "name": "Norbiton Rail Station",
+    "stop_id": "NRBITON",
+    "new": false
+   }
+  }
+ ]
+}
