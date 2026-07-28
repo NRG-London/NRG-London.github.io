@@ -160,12 +160,21 @@
        - coverage.material   a force didn't file; the bar is genuinely low
        - provisionalFrom     the population denominator is carried forward
        - complete === false  a part-period being shown under --partial flag   */
+  /* Coverage is read from THIS series, never merged across the group. A London
+     bar must not go grey because Lincolnshire failed to file — there is no
+     Lincolnshire data on screen — and in a grouped chart only the affected
+     series should be flagged. */
+  function coverageAt(dataset, si, ci) {
+    var series = dataset.series[si];
+    return series && series.coverage ? series.coverage[ci] : null;
+  }
+
   function seriesColor(theme, si, dataset, ci, view) {
     var base = theme.series[si % theme.series.length];
 
     // A missing force means the bar's HEIGHT is wrong — drop the hue entirely,
     // because the value itself should not be read.
-    var cov = (dataset.coverage || [])[ci];
+    var cov = coverageAt(dataset, si, ci);
     if (cov && cov.material) return theme.mutedStrong;
     if (dataset.complete && dataset.complete[ci] === false) return theme.muted;
 
@@ -392,22 +401,39 @@
 
     function subtitleFor(target) {
       var ds = target.dataset;
-      var span = ds.categories.length
-        ? ds.categories[0] + ' to ' + ds.categories[ds.categories.length - 1] : '';
+      var n = ds.categories.length;
+      if (!n) return '';
+      var long = ds.categoriesLong || ds.categories;
+
+      // The abbreviated ticks are for the axis. Spelling the span out of them
+      // gives "Jun 18 to Jun 26", which reads as a range inside one month.
+      var basis, span;
+      if (view.period === 'r12') {
+        basis = 'rolling 12-month periods ending';
+        span = strip12m(long[0]) + ' to ' + strip12m(long[n - 1]);
+      } else {
+        basis = view.period === 'fy' ? 'financial years' : 'calendar years';
+        span = ds.categories[0] + ' to ' + ds.categories[n - 1];
+      }
       var what = view.encoding === 'rate' ? 'Recorded offences per 1,000 residents'
         : view.encoding === 'index' ? 'Recorded offences, indexed to ' + ds.categories[0] + ' = 100'
         : 'Recorded offences';
-      var basis = view.period === 'cy' ? 'calendar years'
-        : view.period === 'fy' ? 'financial years' : 'rolling 12-month periods';
-      return what + ', ' + basis + ', ' + span + '.';
+      return what + ', ' + basis + ' ' + span + '.';
     }
+
+    function strip12m(s) { return String(s).replace(/^12 months to /, ''); }
 
     function notesFor(target) {
       var out = [];
       if (view.compare === 'rew' && target.grouped && spec.notes.rew) out.push(spec.notes.rew);
       if (view.encoding === 'rate' && target.dataset.provisionalFrom != null
           && spec.notes.rate) out.push(spec.notes.rate);
-      var flagged = (target.dataset.coverage || []).filter(function (c) { return c.material; });
+      var shown = target.grouped ? target.dataset.series
+                                 : target.dataset.series.slice(0, 1);
+      var flagged = [];
+      shown.forEach(function (s) {
+        (s.coverage || []).forEach(function (c) { if (c.material) flagged.push(c); });
+      });
       if (flagged.length) {
         out.push('Paler bars are periods where at least one force did not file; '
                  + 'hover or focus a bar for detail.');
@@ -600,7 +626,12 @@
 
     /* ---------- node factories ---------- */
     function createBar(b) {
-      var g = svgEl('g', { 'class': 'ngl-bar', tabindex: '0', role: 'img' });
+      // data-key mirrors the internal key ("<period>|<seriesIndex>"). The DOM
+      // order of a keyed structure is creation order, not visual order, so
+      // tests and debugging need the key rather than an index.
+      var g = svgEl('g', {
+        'class': 'ngl-bar', tabindex: '0', role: 'img', 'data-key': b.key
+      });
       g.appendChild(svgEl('rect', { rx: C.GEOM.vbar.rx, fill: b.fill }));
       var label = svgEl('text', {
         'class': 'ngc-t ngc-val ngl-vallabel', 'text-anchor': 'middle',
@@ -664,10 +695,13 @@
       layout.bars.forEach(function (b) { if (b.key === key) bar = b; });
       if (!bar) return;
       var ds = layout.dataset;
-      var cov = (ds.coverage || [])[bar.catIndex];
+      var cov = coverageAt(ds, bar.seriesIndex, bar.catIndex);
       var name = layout.seriesNames[bar.seriesIndex] || '';
+      // The axis tick is abbreviated to fit; the tooltip has room for the full
+      // period, which is where "Jun 26" gets spelled out.
+      var when = (ds.categoriesLong || ds.categories)[bar.catIndex];
 
-      var html = '<span class="ngl-tooltip__key">' + C.esc(bar.cat) + '</span><br>';
+      var html = '<span class="ngl-tooltip__key">' + C.esc(when) + '</span><br>';
       if (layout.grouped) html += C.esc(name) + ': ';
       html += '<span class="ngl-tooltip__val">'
             + (bar.value == null ? 'no data' : formatValue(bar.value, view.encoding))
