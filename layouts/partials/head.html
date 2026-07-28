@@ -7,6 +7,10 @@
 <meta name="description" content="{{ with .Params.summary }}{{ . }}{{ else }}{{ .Site.Params.description }}{{ end }}">
 <meta name="author" content="{{ .Site.Params.author }}">
 <link rel="stylesheet" href="/css/main.css">
+<!-- Chart component styles (.ng-chart card, .ngc-* plot text, .ngl-* live
+     controls). Declares no :root — main.css above already defines the palette.
+     Source of truth: platform/branding/reference/assets/ng-chart.css -->
+<link rel="stylesheet" href="/css/ng-chart.css">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <!-- Open Graph -->

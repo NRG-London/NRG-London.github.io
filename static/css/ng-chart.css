@@ -1,0 +1,185 @@
+/* ================================================================
+   NeilGarratt.com — Chart component
+   The publishable half of the style guide's CSS: the .ng-chart card,
+   the .ngc-* SVG text scale, the legends, and the .ngl-* controls
+   that charts-live.js reveals on an interactive chart.
+
+   Deliberately declares NO :root block — the host page owns the
+   palette (main.css on the site, guide.css standalone), and
+   redeclaring it here would give the tokens two sources of truth.
+
+   Every var() does carry a fallback, though. main.css was missing
+   --amber, so the active chip's background resolved to `transparent`
+   and its border to currentColor: an invalid var() does not fall back
+   to the previous declaration, it makes the property invalid. A
+   component that silently loses a colour when dropped into a page is
+   worse than one that repeats a hex. Fallbacks are from palette.py.
+
+   Ships to the site as /css/ng-chart.css.
+   ================================================================ */
+
+/* ── chart figure (the deliverable component) ── */
+.ng-chart {
+  background: var(--white, #fff);
+  border: 1px solid var(--warm-grey, #dde3df);
+  padding: 1.75rem 1.75rem 1.5rem;
+  position: relative;
+}
+.ng-chart__eyebrow {
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--blue, #0070BA);
+  display: inline-flex; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem;
+}
+.ng-chart__eyebrow::before { content: ''; width: 20px; height: 2px; background: var(--blue, #0070BA); flex: none; }
+.ng-chart__title { font-family: var(--serif, 'Libre Baskerville', Georgia, serif); font-size: 1.2rem; font-weight: 700; line-height: 1.3; letter-spacing: -0.01em; color: var(--ink, #1a2332); }
+.ng-chart__subtitle { font-size: 0.9rem; color: var(--mid-grey, #8a9490); margin-top: 0.35rem; line-height: 1.5; }
+.ng-chart__plot { margin: 1.4rem 0 0.5rem; }
+.ng-chart__foot {
+  margin-top: 0.9rem; padding-top: 0.8rem; border-top: 1px solid var(--warm-grey, #dde3df);
+  font-size: 0.72rem; color: var(--mid-grey, #8a9490); display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+}
+.ng-chart__source { font-style: italic; }
+.ng-chart__tag { letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600; font-style: normal; }
+
+/* dark / bold tone */
+.ng-chart[data-tone="bold"] {
+  background: var(--deep, #243142);
+  border-color: var(--deep, #243142);
+}
+.ng-chart[data-tone="bold"] .ng-chart__title { color: var(--paper, #f3f6f4); font-family: var(--sans, 'DM Sans', system-ui, sans-serif); font-weight: 700; font-size: 1.35rem; }
+.ng-chart[data-tone="bold"] .ng-chart__eyebrow { color: var(--blue-muted, #5a9fd4); }
+.ng-chart[data-tone="bold"] .ng-chart__eyebrow::before { background: var(--blue-muted, #5a9fd4); }
+.ng-chart[data-tone="bold"] .ng-chart__subtitle { color: rgba(243,246,244,0.6); }
+.ng-chart[data-tone="bold"] .ng-chart__foot { border-top-color: rgba(243,246,244,0.15); color: rgba(243,246,244,0.45); }
+/* minimal tone: sans title */
+.ng-chart[data-tone="minimal"] .ng-chart__title { font-family: var(--sans, 'DM Sans', system-ui, sans-serif); font-weight: 600; }
+.ng-chart[data-tone="minimal"] .ng-chart__eyebrow::before { display: none; }
+.ng-chart[data-tone="minimal"] .ng-chart__eyebrow { color: var(--mid-grey, #8a9490); }
+
+/* ── chart svg text ── */
+.ngc-svg { display: block; }
+.ngc-t { font-family: var(--sans, 'DM Sans', system-ui, sans-serif); }
+.ngc-axis { font-size: 13px; font-variant-numeric: tabular-nums; }
+.ngc-cat  { font-size: 13.5px; font-weight: 500; }
+.ngc-val  { font-size: 14px; font-variant-numeric: tabular-nums; }
+.ngc-end  { font-size: 13.5px; }
+.ng-chart[data-tone="bold"] .ngc-val { font-size: 16px; }
+.ng-chart[data-tone="bold"] .ngc-cat { font-size: 14.5px; }
+.ngc-tile-code { font-size: 13px; letter-spacing: 0.03em; }
+.ngc-tile-val { font-size: 12px; font-variant-numeric: tabular-nums; }
+
+/* legends */
+.ngc-legend { display: flex; flex-wrap: wrap; gap: 1.1rem; margin-top: 0.9rem; }
+/* `display:flex` beats the hidden attribute's UA `display:none`, so a hidden
+   legend would still hold its margin and leave a gap above the controls. */
+.ngc-legend[hidden] { display: none; }
+.ngc-legend__item { font-size: 0.8rem; font-weight: 500; display: inline-flex; align-items: center; gap: 0.45rem; }
+.ngc-legend__swatch { width: 12px; height: 12px; border-radius: 1px; display: inline-block; flex: none; }
+.ngc-seqlegend { display: flex; align-items: center; gap: 0.6rem; margin-top: 1rem; }
+.ngc-seqlegend__bar { height: 10px; flex: 1; max-width: 240px; border-radius: 1px; }
+.ngc-seqlegend__lab { font-size: 0.72rem; font-variant-numeric: tabular-nums; }
+
+/* ================================================================
+   LIVE CONTROLS (.ngl-*)
+   Two tiers, mirroring the 3D viz: an amber pill for the primary
+   "what am I looking at" choice, quieter blue-tinted pills for the
+   modifiers. Adapted from the 3D pages' dark ground to the light card.
+
+   The controls are hidden until charts-live.js mounts, so a reader
+   with JS off never sees dead buttons under a static chart.
+   ================================================================ */
+.ngl-controls[hidden] { display: none; }
+.ngl-controls {
+  display: flex; flex-direction: column; gap: 0.55rem;
+  margin: 1.1rem 0 0.2rem;
+}
+
+.ngl-chiprow { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.45rem 0.5rem; }
+.ngl-chiprow__label {
+  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--mid-grey, #8a9490);
+  flex: none; margin-right: 0.35rem; min-width: 4.6rem;
+}
+
+.ngl-chip {
+  appearance: none; cursor: pointer;
+  font-family: var(--sans, 'DM Sans', system-ui, sans-serif); font-size: 0.78rem; font-weight: 600; line-height: 1;
+  color: var(--mid-grey, #8a9490);
+  background: transparent;
+  border: 1px solid var(--warm-grey, #dde3df);
+  border-radius: 999px;
+  padding: 0.5rem 0.9rem;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+.ngl-chip:hover:not(:disabled) { color: var(--ink, #1a2332); background: var(--paper, #f3f6f4); }
+.ngl-chip[aria-pressed="true"] {
+  color: var(--ink, #1a2332); background: var(--amber, #E0A24E); border-color: var(--amber, #E0A24E);
+}
+.ngl-chip:disabled { opacity: 0.35; cursor: default; }
+.ngl-chip:focus-visible {
+  outline: 2px solid var(--blue, #0070BA);
+  outline-offset: 2px;
+}
+
+/* modifier rows — quieter, smaller, blue rather than amber when active */
+.ngl-chiprow--sub .ngl-chip { font-size: 0.72rem; padding: 0.38rem 0.75rem; }
+.ngl-chiprow--sub .ngl-chip[aria-pressed="true"] {
+  color: var(--blue-dark, #004d80); background: var(--blue-light, #E2EEF7); border-color: var(--blue-muted, #5a9fd4);
+}
+
+/* bold tone: the card is deep navy, so invert the resting state */
+.ng-chart[data-tone="bold"] .ngl-chiprow__label { color: rgba(243,246,244,0.5); }
+.ng-chart[data-tone="bold"] .ngl-chip {
+  color: rgba(243,246,244,0.72); border-color: rgba(243,246,244,0.22);
+}
+.ng-chart[data-tone="bold"] .ngl-chip:hover:not(:disabled) {
+  color: var(--paper, #f3f6f4); background: rgba(243,246,244,0.10);
+}
+.ng-chart[data-tone="bold"] .ngl-chip[aria-pressed="true"] {
+  color: var(--ink, #1a2332); background: var(--amber, #E0A24E); border-color: var(--amber, #E0A24E);
+}
+.ng-chart[data-tone="bold"] .ngl-chiprow--sub .ngl-chip[aria-pressed="true"] {
+  color: var(--paper, #f3f6f4); background: rgba(24,119,184,0.35); border-color: var(--blue-muted, #5a9fd4);
+}
+
+/* ── tooltip ── */
+.ngl-tooltip {
+  position: absolute; z-index: 20; pointer-events: none;
+  max-width: 17rem;
+  background: var(--deep, #243142); color: var(--paper, #f3f6f4);
+  border: 1px solid #3B4A5E; border-radius: 3px;
+  padding: 0.5rem 0.65rem;
+  font-family: var(--sans, 'DM Sans', system-ui, sans-serif); font-size: 0.76rem; line-height: 1.45;
+  box-shadow: 0 4px 14px rgba(26,35,50,0.18);
+  opacity: 0; transition: opacity 0.12s;
+}
+.ngl-tooltip[data-show="1"] { opacity: 1; }
+.ngl-tooltip__key { font-weight: 700; color: var(--amber, #E0A24E); }
+.ngl-tooltip__val { font-variant-numeric: tabular-nums; }
+.ngl-tooltip__note { color: rgba(243,246,244,0.62); font-style: italic; margin-top: 0.25rem; }
+
+/* bar focus ring — SVG, so outline is unreliable; use a stroke instead */
+.ngl-bar:focus { outline: none; }
+.ngl-bar:focus-visible rect { stroke: var(--blue, #0070BA); stroke-width: 2; }
+
+/* the note line under the plot (recency / provisional caveats) */
+.ngl-note {
+  font-size: 0.72rem; color: var(--mid-grey, #8a9490); line-height: 1.5;
+  margin-top: 0.7rem; font-style: italic;
+}
+.ng-chart[data-tone="bold"] .ngl-note { color: rgba(243,246,244,0.5); }
+
+/* screen-reader-only live region */
+.ngl-sr {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ngl-chip, .ngl-tooltip { transition: none; }
+}
+
+@media (max-width: 560px) {
+  .ngl-chiprow__label { min-width: 100%; margin-bottom: 0.1rem; }
+  .ng-chart { padding: 1.25rem 1.1rem 1.1rem; }
+}

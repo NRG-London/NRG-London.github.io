@@ -1,0 +1,91 @@
+{{- /*
+  ng-chart — an interactive NeilGarratt.com chart, INLINE (no iframe).
+
+  The 3D vizzes use an iframe because WebGL needs isolation. 2D SVG does not,
+  and inline buys a lot: the chart is responsive for free, inherits the fonts
+  and CSS variables main.css has already loaded, keeps its text selectable and
+  keyboard-reachable, needs no click-shield or fixed aspect ratio, and costs
+  almost nothing for several charts in one article.
+
+  Progressive enhancement, not a fallback:
+    - The spec carries `bakedSvg`, the default view pre-rendered by the STATIC
+      engine (charts.js) at build time. That is written straight into the page,
+      so a reader with JavaScript off — or a crawler, or a feed reader — gets a
+      complete, correct, house-styled chart rather than an empty box.
+    - charts-live.js then replaces it at IDENTICAL geometry (both engines read
+      GEOM from chart-core.js) and reveals the controls. No flash, no layout
+      shift, no dead buttons if the script never arrives.
+
+  Data lives in data/charts/<slug>.json and is inlined at BUILD time, so a data
+  refresh is a page change — no ?v= cache-buster to remember to bump, unlike the
+  3D embeds.
+
+  Stays inside the 800px .page-content column. The 80vw break-out exists because
+  a 3D scene needs the width; a bar chart does not.
+
+  Usage:
+    {{< ng-chart "london-crime-charts" >}}
+    {{< ng-chart slug="london-crime-charts" >}}
+
+  Built by: platform/branding/interactive.py  (publish())
+  Needs:    /js/chart-core.js, /js/charts.js, /js/charts-live.js,
+            /css/ng-chart.css  (linked from partials/head.html)
+*/ -}}
+
+{{- $slug := .Get "slug" | default (.Get 0) -}}
+{{- if not $slug -}}
+  {{- errorf "ng-chart: no slug given (page %s)" .Page.File.Path -}}
+{{- end -}}
+
+{{- $spec := index (index site.Data "charts") $slug -}}
+{{- if not $spec -}}
+  {{- errorf "ng-chart: no data/charts/%s.json (page %s). Run publish.py." $slug .Page.File.Path -}}
+{{- end -}}
+
+{{- $id := printf "ngchart-%s" $slug -}}
+{{- $initial := $spec.initial -}}
+{{- $copy := index $spec.copy $initial.crime -}}
+{{- $frame := $spec.frame -}}
+
+<figure class="ng-chart" data-tone="{{ $spec.tone | default "editorial" }}">
+  {{- with $frame.eyebrow }}
+  <span class="ng-chart__eyebrow">{{ . }}</span>
+  {{- end }}
+  <h3 class="ng-chart__title">{{ $copy.title }}</h3>
+  <p class="ng-chart__subtitle"></p>
+  <div class="ng-chart__plot" id="{{ $id }}">
+    {{- with $spec.bakedSvg }}{{ . | safeHTML }}{{ end -}}
+  </div>
+  <div class="ng-chart__foot">
+    <span class="ng-chart__source">Source: {{ $copy.source | default $frame.source }}</span>
+    <span class="ng-chart__tag">{{ $frame.tag | default "NeilGarratt.com" }}</span>
+  </div>
+</figure>
+
+{{- /* jsonify escapes < > & to \u00xx, so the payload can never close this tag.
+       safeJS is required: inside a <script> element Go's contextual escaper
+       treats the value as JS and would re-encode the JSON as a JS *string*,
+       leaving JSON.parse() with a string instead of an object. */ -}}
+<script type="application/json" id="{{ $id }}-data">{{ $spec | jsonify | safeJS }}</script>
+
+{{- /* Load the engines once per page, however many charts it holds. */ -}}
+{{- if not (.Page.Scratch.Get "ngChartAssets") -}}
+  {{- .Page.Scratch.Set "ngChartAssets" true }}
+<script src="/js/chart-core.js"></script>
+<script src="/js/charts.js"></script>
+<script src="/js/charts-live.js"></script>
+{{- end }}
+
+<script>
+(function () {
+  // Quotes written here, not by jsonify — jsonify supplies its own and would
+  // double them into a literal '"..."'.
+  var el = document.getElementById('{{ $id }}-data');
+  if (!el || !window.NGLive) return;   // JS present but engine missing: keep the baked SVG
+  try {
+    NGLive.mount('{{ $id }}', JSON.parse(el.textContent));
+  } catch (err) {
+    if (window.console) console.error('ng-chart mount failed', err);
+  }
+})();
+</script>

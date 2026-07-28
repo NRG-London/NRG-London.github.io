@@ -44,6 +44,11 @@
   --blue-muted: #5a9fd4;
   --deep: #243142;
   --white: #ffffff;
+  /* Extended hues from the chart palette (platform/branding/palette.py).
+     --amber is the single warm accent: the one number that matters, and the
+     active state on interactive chart controls. */
+  --amber: #E0A24E;
+  --teal: #3F8E7E;
   --serif: 'Libre Baskerville', Georgia, serif;
   --sans: 'DM Sans', system-ui, sans-serif;
 }
