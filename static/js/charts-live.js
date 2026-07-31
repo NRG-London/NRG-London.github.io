@@ -620,7 +620,13 @@
       var v = lerp(from.value == null ? 0 : from.value, to.value, e);
       label.textContent = formatValue(v, view.encoding);
       label.setAttribute('x', x + w / 2);
-      label.setAttribute('y', y + C.GEOM.vbar.valDy);
+      // Placement follows the animated geometry, so a bar that grows past the
+      // point where its label fits above the cap moves it inside as it goes.
+      var place = C.valueLabelPlacement(y, h, C.GEOM.vbar);
+      label.setAttribute('y', place.y);
+      label.setAttribute('fill', place.inside
+        ? C.readableOn(lerpColor(from.fill, to.fill, e))
+        : theme.text);
       label.setAttribute('opacity', e);
     }
 

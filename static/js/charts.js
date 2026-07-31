@@ -104,8 +104,14 @@
       svg += el('rect', { x: bx, y: by, width: bw, height: Math.max(0, bh), fill: fill, rx: G.rx });
       if (opts.valueLabels !== false && (hasVal || isNote)) {
         var lab = isNote ? d.note : fmtCompact(v, opts.unit);
-        svg += txt(cx, by + G.valDy, lab, 'ngc-val', {
-          fill: isNote ? th.sub : (d.highlight ? fill : th.text), 'text-anchor': 'middle',
+        // A bar near the axis maximum has no room above its cap, and the
+        // label's ascenders would be clipped by the top of the viewBox
+        // (e.g. 99.0k against a 100k axis). Drop it inside the bar instead.
+        var place = C.valueLabelPlacement(by, bh, G);
+        var labFill = place.inside ? C.readableOn(fill)
+          : (isNote ? th.sub : (d.highlight ? fill : th.text));
+        svg += txt(cx, place.y, lab, 'ngc-val', {
+          fill: labFill, 'text-anchor': 'middle',
           'font-weight': isNote ? 500 : (d.highlight ? 700 : 600)
         });
       }

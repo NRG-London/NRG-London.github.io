@@ -17,6 +17,8 @@
      NGCore.lin(d0,d1,r0,r1)         -> linear scale fn
      NGCore.niceScale(min,max,n)     -> { min, max, step, ticks }
      NGCore.fmtCompact(v, unit) / fmtNum(v) / esc(s)
+     NGCore.valueLabelPlacement(barTop, barHeight, geom)
+     NGCore.readableOn(bgHex)
      NGCore.mix(a,b,t) / hexToRgb / rgbToHex
      NGCore.GEOM                     -> per-chart-type geometry
      NGCore.PALETTES / TONES / SEQ / DIV / INK / PAPER / DEEP
@@ -76,7 +78,9 @@
       rx: 1,
       ticks: 5,
       gridW: 1, baseW: 1.5,
-      valDy: -9,       // value label, relative to bar cap
+      valDy: -9,       // value label baseline, relative to bar cap
+      valAscent: 13,   // space the label's ascenders need above that baseline
+      valInsideDy: 19, // ...or this far BELOW the cap, when it won't fit above
       catDy: 22,       // category label, below the baseline
       tickDx: -10, tickDy: 4
     },
@@ -198,12 +202,38 @@
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
+  /* ---------- value-label placement ----------
+     A bar whose value is close to the axis maximum leaves no room above its cap
+     for the number, and the label's ascenders get clipped by the top of the
+     viewBox (e.g. 99.0k against a 100k axis). When that happens, put the label
+     INSIDE the bar just below the cap instead, in a colour that reads against
+     the fill. Only ever inside a bar tall enough to hold it; otherwise clamp
+     down to the first row that fits.
+
+     Shared so the static and live engines place labels identically — the baked
+     no-JS SVG has to match what the engine draws over it. */
+  function valueLabelPlacement(barTop, barHeight, geom) {
+    var above = barTop + geom.valDy;
+    if (above - geom.valAscent >= 0) return { y: above, inside: false };
+    var inside = barTop + geom.valInsideDy;
+    if (inside <= barTop + barHeight) return { y: inside, inside: true };
+    return { y: geom.valAscent, inside: false };
+  }
+
+  /* Ink or white, whichever reads on `bg`. */
+  function readableOn(bg) {
+    var r = hexToRgb(bg);
+    var lum = (0.299 * r[0] + 0.587 * r[1] + 0.114 * r[2]) / 255;
+    return lum > 0.6 ? INK : '#ffffff';
+  }
+
   global.NGCore = {
     INK: INK, PAPER: PAPER, DEEP: DEEP, SEQ: SEQ, DIV: DIV,
     PALETTES: PALETTES, TONES: TONES, state: state, GEOM: GEOM,
     hexToRgb: hexToRgb, rgbToHex: rgbToHex, mix: mix,
     theme: theme, resolveTheme: resolveTheme,
     lin: lin, niceNum: niceNum, niceScale: niceScale,
-    fmtCompact: fmtCompact, fmtNum: fmtNum, esc: esc
+    fmtCompact: fmtCompact, fmtNum: fmtNum, esc: esc,
+    valueLabelPlacement: valueLabelPlacement, readableOn: readableOn
   };
 })(window);
