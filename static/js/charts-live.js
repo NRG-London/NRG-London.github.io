@@ -69,14 +69,18 @@
     return raw.slice();
   }
 
-  function formatValue(v, encoding) {
+  /* A rate series can be any order of magnitude: London's robbery rate is ~3.9
+     per 1,000, its homicide rate ~0.012. Fixing one decimal renders the second
+     as "0.0" on every bar and an axis of five zeroes, so the precision comes
+     from the axis step - exactly enough to tell adjacent ticks apart. */
+  function formatValue(v, encoding, step) {
     if (v == null) return '';
     if (encoding === 'index') return Math.round(v).toString();
-    if (encoding === 'rate') return (Math.round(v * 10) / 10).toFixed(1);
+    if (encoding === 'rate') return v.toFixed(C.decimalsFor(step));
     return C.fmtCompact(Math.round(v), '');
   }
-  function formatTick(v, encoding) {
-    if (encoding === 'rate') return (Math.round(v * 10) / 10).toString();
+  function formatTick(v, encoding, step) {
+    if (encoding === 'rate') return v.toFixed(C.decimalsFor(step));
     return C.fmtCompact(v, '');
   }
 
@@ -108,6 +112,14 @@
     var n = cats.length;
     var bars = [], catLabels = [];
 
+    // How much horizontal room each tick actually has, and therefore which
+    // label form fits. Computed identically in charts.js, so the baked SVG and
+    // the live render agree.
+    var slot = iw / n;
+    var catFont = theme.dark ? 14.5 : 13.5;
+    var fit = C.fitCategoryLabels(cats, slot, catFont);
+    H += fit.extraBottom;
+
     if (grouped) {
       var gstep = iw / n, gpad = gstep * G.gpadFrac;
       var inner = gstep - gpad, bw = inner / nS;
@@ -119,7 +131,8 @@
                             v, y, baseline, seriesColor(theme, si, dataset, ci, view),
                             ci, si, cat, dataset));
         }
-        catLabels.push({ key: cat, x: gx + inner / 2, y: m.t + ih + G.catDy, label: cat });
+        catLabels.push({ key: cat, x: gx + inner / 2, y: m.t + ih + G.catDy,
+                         label: fit.labels[ci], rotate: fit.rotate });
       });
     } else {
       var step = iw / n, bwv = Math.min(step * G.barFrac, G.barCap);
@@ -127,14 +140,17 @@
         var cx = m.l + step * ci + step / 2;
         bars.push(makeBar(cat + '|0', cx - bwv / 2, bwv, values[0][ci], y, baseline,
                           seriesColor(theme, 0, dataset, ci, view), ci, 0, cat, dataset));
-        catLabels.push({ key: cat, x: cx, y: m.t + ih + G.catDy, label: cat });
+        catLabels.push({ key: cat, x: cx, y: m.t + ih + G.catDy,
+                         label: fit.labels[ci], rotate: fit.rotate });
       });
     }
 
     return {
       W: W, H: H, m: m, iw: iw, ih: ih, grouped: grouped, baseline: baseline,
+      step: sc.step,
       ticks: sc.ticks.map(function (t) {
-        return { key: String(t), value: t, y: y(t), label: formatTick(t, view.encoding) };
+        return { key: String(t), value: t, y: y(t),
+                 label: formatTick(t, view.encoding, sc.step) };
       }),
       bars: bars, cats: catLabels, dataset: dataset, values: values,
       showValueLabels: !grouped && n <= 14,
@@ -501,11 +517,16 @@
       });
 
       var tickFrames = diffAxis(target.ticks, layout ? layout.ticks : [], nodes.ticks,
-                                createTick, 'y');
+                                createTick, ['y']);
       var gridFrames = diffAxis(target.ticks, layout ? layout.ticks : [], nodes.grid,
-                                createGrid, 'y');
+                                createGrid, ['y']);
+      // Category labels move in BOTH axes. vbar puts them at y=398 and gbar at
+      // y=406, so a label created in one mode and reused in the other kept its
+      // old baseline while newly created ones took the new one - half a line
+      // out, and only visible when a transition changed the chart type AND the
+      // category set at once, which is why it would not reproduce on demand.
       var catFrames = diffAxis(target.cats, layout ? layout.cats : [], nodes.cats,
-                               createCat, 'x');
+                               createCat, ['x', 'y']);
 
       var done = false;
       function finish() {
@@ -515,9 +536,9 @@
         pendingFinish = null;
 
         frames.forEach(function (f) { applyBar(f, 1, target); });
-        tickFrames.forEach(function (f) { applyAxis(f, 1, 'y'); });
-        gridFrames.forEach(function (f) { applyAxis(f, 1, 'y'); });
-        catFrames.forEach(function (f) { applyAxis(f, 1, 'x'); });
+        tickFrames.forEach(function (f) { applyAxis(f, 1); });
+        gridFrames.forEach(function (f) { applyAxis(f, 1); });
+        catFrames.forEach(function (f) { applyAxis(f, 1); });
 
         frames.forEach(function (f) {
           if (f.exiting && f.node.parentNode) {
@@ -545,9 +566,9 @@
         var e = easeCubicInOut(t);
 
         frames.forEach(function (f) { applyBar(f, e, target); });
-        tickFrames.forEach(function (f) { applyAxis(f, e, 'y'); });
-        gridFrames.forEach(function (f) { applyAxis(f, e, 'y'); });
-        catFrames.forEach(function (f) { applyAxis(f, e, 'x'); });
+        tickFrames.forEach(function (f) { applyAxis(f, e); });
+        gridFrames.forEach(function (f) { applyAxis(f, e); });
+        catFrames.forEach(function (f) { applyAxis(f, e); });
 
         if (t < 1) { raf = requestAnimationFrame(step); return; }
         raf = null;
@@ -559,19 +580,30 @@
     /* Axis pieces are keyed by VALUE, not position. An entering tick fades in
        already at its final y — sliding it in from nowhere would read as data
        moving when only the scale changed. */
-    function diffAxis(targetItems, prevItems, store, create, axis) {
+    function diffAxis(targetItems, prevItems, store, create, attrs) {
       var prevByKey = {};
       prevItems.forEach(function (p) { prevByKey[p.key] = p; });
       var seen = {}, out = [];
+
+      function pick(source) {
+        var o = {};
+        attrs.forEach(function (a) { o[a] = source[a]; });
+        return o;
+      }
 
       targetItems.forEach(function (item) {
         seen[item.key] = 1;
         var prev = prevByKey[item.key];
         var node = store[item.key] || create(item);
+        // A surviving node keeps its key but may need new text: the same period
+        // reads "2023/24" on a roomy axis and "23/24" on a crowded one.
+        if (item.label != null && node.textContent !== item.label) {
+          node.textContent = item.label;
+        }
         out.push({
-          node: node, key: item.key, exiting: false, item: item,
-          from: prev ? prev[axis] : item[axis],
-          fromOpacity: prev ? 1 : 0, toOpacity: 1, to: item[axis]
+          node: node, key: item.key, exiting: false, item: item, attrs: attrs,
+          from: pick(prev || item), to: pick(item),
+          fromOpacity: prev ? 1 : 0, toOpacity: 1
         });
       });
 
@@ -580,20 +612,31 @@
         var node = store[p.key];
         if (!node) return;
         out.push({
-          node: node, key: p.key, exiting: true, item: p,
-          from: p[axis], to: p[axis], fromOpacity: 1, toOpacity: 0
+          node: node, key: p.key, exiting: true, item: p, attrs: attrs,
+          from: pick(p), to: pick(p), fromOpacity: 1, toOpacity: 0
         });
       });
       return out;
     }
 
-    function applyAxis(f, e, axis) {
-      var v = lerp(f.from, f.to, e);
+    function applyAxis(f, e) {
       var n = f.node;
+      var pos = {};
+      f.attrs.forEach(function (a) { pos[a] = lerp(f.from[a], f.to[a], e); });
+
       if (n.tagName === 'line') {
-        if (axis === 'y') { n.setAttribute('y1', v); n.setAttribute('y2', v); }
+        if (pos.y != null) { n.setAttribute('y1', pos.y); n.setAttribute('y2', pos.y); }
       } else {
-        n.setAttribute(axis, v);
+        f.attrs.forEach(function (a) { n.setAttribute(a, pos[a]); });
+        // The rotation pivot is the label's own anchor, which moves with it.
+        if (f.item.rotate) {
+          n.setAttribute('transform',
+            'rotate(' + f.item.rotate + ' ' + pos.x + ' ' + pos.y + ')');
+          n.setAttribute('text-anchor', 'end');
+        } else if (n.hasAttribute('transform')) {
+          n.removeAttribute('transform');
+          n.setAttribute('text-anchor', 'middle');
+        }
       }
       n.setAttribute('opacity', lerp(f.fromOpacity, f.toOpacity, e));
     }
@@ -618,7 +661,7 @@
       // Tween the number itself, reformatting each frame — a bar that grows
       // while its label sits at the old figure looks broken.
       var v = lerp(from.value == null ? 0 : from.value, to.value, e);
-      label.textContent = formatValue(v, view.encoding);
+      label.textContent = formatValue(v, view.encoding, target.step);
       label.setAttribute('x', x + w / 2);
       // Placement follows the animated geometry, so a bar that grows past the
       // point where its label fits above the cap moves it inside as it goes.

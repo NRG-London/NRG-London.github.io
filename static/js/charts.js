@@ -77,6 +77,12 @@
     var y = lin(sc.min, sc.max, m.t + ih, m.t);
     var n = data.length;
     var step = iw / n, bw = Math.min(step * G.barFrac, G.barCap);
+    // Same ladder as charts-live.js: full label, shortened, then rotated. Both
+    // engines compute it from the same inputs, so the baked SVG and the live
+    // render always choose the same form.
+    var fit = C.fitCategoryLabels(data.map(function (d) { return d.label; }),
+                                  step, th.dark ? 14.5 : 13.5);
+    H += fit.extraBottom;
     var svg = '';
 
     // gridlines + y axis labels
@@ -116,8 +122,11 @@
         });
       }
       var tgYear = targetYears[i];
-      svg += txt(cx, m.t + ih + G.catDy, d.label, 'ngc-cat', {
-        fill: tgYear ? th.text : th.sub, 'text-anchor': 'middle',
+      var catY = m.t + ih + G.catDy;
+      svg += txt(cx, catY, fit.labels[i], 'ngc-cat', {
+        fill: tgYear ? th.text : th.sub,
+        'text-anchor': fit.rotate ? 'end' : 'middle',
+        transform: fit.rotate ? 'rotate(' + fit.rotate + ' ' + cx + ' ' + catY + ')' : null,
         'font-weight': tgYear ? 700 : null
       });
     });
@@ -154,6 +163,8 @@
     var nC = data.categories.length, nS = data.series.length;
     var gstep = iw / nC, gpad = gstep * G.gpadFrac;
     var inner = gstep - gpad, bw = inner / nS;
+    var fit = C.fitCategoryLabels(data.categories, gstep, th.dark ? 14.5 : 13.5);
+    H += fit.extraBottom;
     var svg = '';
 
     sc.ticks.forEach(function (tk) {
@@ -169,7 +180,12 @@
         var bx = gx + bw * si, by = y(s.values[ci]), bh = y(0) - by;
         svg += el('rect', { x: bx + G.gutter, y: by, width: bw - G.gutter * 2, height: Math.max(0, bh), fill: th.series[si % th.series.length], rx: G.rx });
       });
-      svg += txt(gx + inner / 2, m.t + ih + G.catDy, cat, 'ngc-cat', { fill: th.sub, 'text-anchor': 'middle' });
+      var catX = gx + inner / 2, catY = m.t + ih + G.catDy;
+      svg += txt(catX, catY, fit.labels[ci], 'ngc-cat', {
+        fill: th.sub,
+        'text-anchor': fit.rotate ? 'end' : 'middle',
+        transform: fit.rotate ? 'rotate(' + fit.rotate + ' ' + catX + ' ' + catY + ')' : null
+      });
     });
     return wrapSVG(W, H, svg) + legend(data.series.map(function (s, i) {
       return { name: s.name, color: th.series[i % th.series.length] };
