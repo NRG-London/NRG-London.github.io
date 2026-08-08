@@ -6,6 +6,10 @@
 <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} — Neil Garratt{{ end }}</title>
 <meta name="description" content="{{ with .Params.summary }}{{ . }}{{ else }}{{ .Site.Params.description }}{{ end }}">
 <meta name="author" content="{{ .Site.Params.author }}">
+{{/* Opt-in per page: `noindex: true` in front matter keeps a page out of search
+     results. Pair it with `build.list: never` + `sitemap.disable: true` for an
+     unlisted page. No-op for every page that does not set it. */}}
+{{ if .Params.noindex }}<meta name="robots" content="noindex, nofollow">{{ end }}
 <link rel="stylesheet" href="/css/main.css">
 <!-- Chart component styles (.ng-chart card, .ngc-* plot text, .ngl-* live
      controls). Declares no :root — main.css above already defines the palette.
