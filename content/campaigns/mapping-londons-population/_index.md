@@ -26,7 +26,7 @@ The 2021 census is both a snapshot in time and a treasure trove of data. It publ
 
 **Zoom in and the map refines itself.** It opens on London's 4,994 neighbourhoods (LSOAs, roughly 1,700 people each). Zoom past a borough's worth of screen and it swaps to the full 26,369 output areas. Every neighbourhood figure is exactly the sum of the output areas inside it.
 
-**Almost everything is a share, not a count.** Because output areas are drawn to hold about the same number of people, a map of raw counts would be a map of how the boundaries were drawn rather than of London. The one deliberate exception is density, which is people per hectare, and because population is held roughly constant, that becomes an unusually direct read-out of built form.
+**Almost everything is a share, not a count.** Of households, of people, or of a subset of people. The one deliberate exception is density, which is people per hectare, and because population is roughly equal across OAs and LSOAs, that becomes an unusually direct read-out of built form.
 
 **One measure diverges from a meaningful zero.** The age-adjusted health measure in Health & care is centred on 100, which is the London average for a place with that age profile, and rises in *both* directions. Height is how far an area sits from what its age structure predicts; colour is which way, amber for worse and blue for better.
 
@@ -40,7 +40,7 @@ The 2021 census is both a snapshot in time and a treasure trove of data. It publ
 
 **It counts where people sleep, not where they are.** The City of London has about 8,600 residents and roughly 600,000 weekday workers. Residential measures there describe almost nobody who is actually in the Square Mile on an average Tuesday. The same is true in a milder way across the centre.
 
-**Age drives more than you would think.** Self-reported bad health looks dramatically worse in retirement suburbs than in student areas, for reasons that have nothing to do with the place itself. That is why the health section carries both the raw figure and an age-adjusted figure that asks a better question: is this area's health better or worse than its age profile alone would predict? The answer looks very different, and much more like a map of deprivation than a map of age.
+**Age drives more than you would think.** Self-reported bad health looks dramatically worse in older suburbs than in student areas, for reasons that have nothing to do with the place itself. That is why the health section carries both the raw figure and an age-adjusted figure that asks a better question: is this area's health better or worse than its age profile alone would predict? The answer looks very different, and much more like a map of deprivation than a map of age.
 
 ## Sources
 
