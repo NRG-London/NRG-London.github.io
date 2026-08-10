@@ -1,0 +1,93 @@
+{{- /*
+  London Population — embeds the deck.gl 3D census map: 54 measures from the
+  2021 census across 8 thematic groups, extruded over London's 4,994
+  neighbourhoods, refining to 26,369 output areas as you zoom in.
+
+  Sibling of crime-skyline / crime-hotspots / yorkshire-hotspots — same frame,
+  fallback and full-screen machinery. One important difference:
+
+    THIS EMBED FETCHES ITS DATA. The other three inline everything into one
+    HTML (crime-hotspots is ~10 MB); this page is ~150 KB and pulls binary
+    payloads from /interactive/london-population/d/ as you use it. So it is
+    NOT loading="lazy" — at this size there is nothing to defer, and eager
+    loading means the map is ready by the time the reader scrolls to it.
+
+    - Breaks WIDE out of the 800px article column by default (~80vw on desktop,
+      full-bleed on mobile); height tracks the viz's native ~1.865:1 box.
+    - "Full screen" big mode: CSS fixed-overlay + best-effort native Fullscreen;
+      toggling does NOT reload the iframe (preserves measure, tier, camera).
+    - Controls live in a toolbar BELOW the frame — the viz uses all four corners.
+  Interactive: static/interactive/london-population/  (deck.gl 9.3.7, WebGL2)
+  Needs:       static/js/deck.min.js, static/fonts/{DMSans,LibreBaskerville}.ttf
+               (already deployed — shared with the three crime interactives)
+  Fallback:    static/images/charts/london-population/london-population-hero.png
+  Note:        the default Boroughs mode makes NO external calls — the Thames
+               and borough outlines are baked in. The opt-in Street basemap
+               fetches CARTO tiles (basemaps.cartocdn.com), attributed in-page,
+               same as the crime maps.
+  Usage: {{< london-population >}}
+  NB: ?v=N is a manual cache-buster; bump it whenever the interactive changes.
+      The data files carry their own ?b=<build> stamp from the manifest.
+*/ -}}
+<style>
+  html{overflow-x:hidden;overflow-x:clip}
+  .london-population{width:80vw;margin:2rem 0;margin-left:calc(50% - 40vw)}
+  .london-population .cs-box{position:relative;width:100%;height:min(42.9vw,82vh);background:#1A2332;overflow:hidden}
+  .london-population .cs-box>iframe,.london-population .cs-box>img{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
+  .london-population .cs-box>img{object-fit:contain}
+  .london-population .cs-bar{display:flex;justify-content:space-between;align-items:center;gap:10px 16px;flex-wrap:wrap;max-width:800px;margin:.6rem auto 0;padding:0 2rem;font-size:.85rem;color:#5a6472}
+  .london-population .cs-btn{font:600 .8rem var(--sans,sans-serif);color:#243142;background:#fff;border:1px solid #c9d2cc;border-radius:999px;padding:8px 16px;cursor:pointer;white-space:nowrap;line-height:1}
+  .london-population .cs-btn:hover{background:#f3f6f4;border-color:#243142}
+  .london-population .cs-close{position:absolute;top:12px;right:12px;z-index:5;display:none;align-items:center;color:#F3F6F4;background:rgba(36,49,66,.9);border-color:#3B4A5E}
+  .london-population .cs-close:hover{background:#34455C;border-color:#5A9FD4}
+  .london-population.cs-big{position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;margin:0;z-index:9999;background:#1A2332}
+  .london-population.cs-big .cs-box{height:100%}
+  .london-population.cs-big .cs-bar{display:none}
+  .london-population.cs-big .cs-close{display:inline-flex}
+  @media (max-width:700px){.london-population{width:100vw;margin-left:calc(50% - 50vw)}.london-population .cs-box{height:min(125vw,72vh)}}
+</style>
+<figure class="london-population" id="london-population">
+  <div class="cs-box">
+    <img src="/images/charts/london-population/london-population-hero.png?v=1"
+         alt="3D map of London's population density from the 2021 census — the extruded neighbourhoods rise into a pale ridge across the inner boroughs and fall away towards the suburbs."
+         loading="lazy">
+    <button type="button" class="cs-btn cs-close">&#10005;&nbsp;Close</button>
+  </div>
+  <div class="cs-bar">
+    <span>Mapping London's population &mdash; Census 2021 across 4,994 neighbourhoods, refining to 26,369 output areas of a few hundred people each as you zoom in &mdash; drag to rotate and tilt; pick a theme, then a measure, and hover any area for its figures. Switch the base to a street map, or hide the areas, to get your bearings.</span>
+    <button type="button" class="cs-btn cs-expand" hidden>&#10530;&nbsp;Full screen</button>
+  </div>
+</figure>
+<script>
+(function(){
+  var fig=document.getElementById('london-population'); if(!fig) return;
+  var box=fig.querySelector('.cs-box'),
+      expand=fig.querySelector('.cs-expand'),
+      close=fig.querySelector('.cs-close');
+  var ok=false; try{ ok=!!(window.WebGL2RenderingContext && document.createElement('canvas').getContext('webgl2')); }catch(e){}
+  if(ok){
+    var f=document.createElement('iframe');
+    // No loading="lazy": the page itself is ~150 KB and fetches its data on
+    // demand, so there is no heavy embed to defer — and loading it eagerly
+    // means the geometry is resident before the reader arrives.
+    f.src='/interactive/london-population/?v=1';
+    f.title="Interactive 3D map of London's population from the 2021 census";
+    f.setAttribute('scrolling','no'); f.setAttribute('allow','fullscreen'); f.setAttribute('allowfullscreen','');
+    box.insertBefore(f, box.firstChild);
+    box.querySelector('img').style.display='none';
+    expand.hidden=false; // full-screen control only makes sense with the live viz
+  }
+  function enter(){
+    fig.classList.add('cs-big'); document.body.style.overflow='hidden';
+    if(fig.requestFullscreen){ fig.requestFullscreen().catch(function(){}); }
+  }
+  function exit(){
+    fig.classList.remove('cs-big'); document.body.style.overflow='';
+    if(document.fullscreenElement){ document.exitFullscreen().catch(function(){}); }
+  }
+  expand.addEventListener('click',enter);
+  close.addEventListener('click',exit);
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&fig.classList.contains('cs-big')) exit(); });
+  document.addEventListener('fullscreenchange',function(){ if(!document.fullscreenElement&&fig.classList.contains('cs-big')) exit(); });
+})();
+</script>
