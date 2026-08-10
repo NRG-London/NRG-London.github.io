@@ -17,8 +17,53 @@
 <link rel="stylesheet" href="/css/ng-chart.css">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+{{/* ---- Social sharing image ------------------------------------------------
+     Resolved in the SAME precedence the site already uses on screen, so what a
+     link preview shows is what the card on /campaigns/ or /activity/ shows:
+
+       1. `image`            campaign hubs, and anything that sets one
+       2. stub-<slug>.jpg    a committed thumbnail for a library stub, which
+                             beats front matter — see partials/page-to-entry.html,
+                             the source of truth for this rule
+       3. `thumbnail`        library items with a local picture
+       4. og-default.png     the fallback, for the pages with no picture of
+                             their own: home, About, Privacy, section indexes
+
+     `thumbnail_url` is deliberately NOT in the chain. It is the off-site URL
+     that scripts/fetch-thumbnails.ps1 pulls FROM (usually X's syndication CDN),
+     not something to hotlink at scrape time — the fetched local copy is the one
+     that displays, and it is what step 2 or 3 picks up.
+
+     Absolute URLs throughout: Open Graph requires them, and a root-relative
+     path silently yields no preview at all. */}}
+{{- $og := "" -}}
+{{- with .Params.image }}{{ $og = . }}{{ end -}}
+{{- if not $og -}}
+  {{- with .File -}}
+    {{- $stub := printf "images/thumbs/stub-%s.jpg" .ContentBaseName -}}
+    {{- if os.FileExists (printf "static/%s" $stub) }}{{ $og = printf "/%s" $stub }}{{ end -}}
+  {{- end -}}
+{{- end -}}
+{{- if not $og }}{{ with .Params.thumbnail }}{{ $og = . }}{{ end }}{{ end -}}
+{{- if not $og }}{{ $og = "/images/og-default.png" }}{{ end -}}
+{{- $ogAbs := cond (hasPrefix $og "http") $og (absURL $og) -}}
+{{- $ogTitle := cond .IsHome .Site.Title .Title -}}
+{{- $ogDesc := cond (ne (default "" .Params.summary) "") (default "" .Params.summary) .Site.Params.description -}}
 <!-- Open Graph -->
-<meta property="og:title" content="{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }}{{ end }}">
-<meta property="og:description" content="{{ with .Params.summary }}{{ . }}{{ else }}{{ .Site.Params.description }}{{ end }}">
+<meta property="og:title" content="{{ $ogTitle }}">
+<meta property="og:description" content="{{ $ogDesc }}">
 <meta property="og:type" content="{{ if .IsHome }}website{{ else }}article{{ end }}">
 <meta property="og:url" content="{{ .Permalink }}">
+<meta property="og:site_name" content="{{ .Site.Title }}">
+<meta property="og:locale" content="en_GB">
+<meta property="og:image" content="{{ $ogAbs }}">
+{{- $ogAlt := cond (eq $ogTitle .Site.Params.author) $ogTitle (printf "%s — %s" $ogTitle .Site.Params.author) }}
+<meta property="og:image:alt" content="{{ $ogAlt }}">
+<!-- X / Twitter reads og:* for everything but the card type, so only the
+     card and the accounts need restating here. -->
+<meta name="twitter:card" content="summary_large_image">
+{{- with .Site.Params.social.twitter }}
+{{- $handle := printf "@%s" (path.Base .) }}
+<meta name="twitter:site" content="{{ $handle }}">
+<meta name="twitter:creator" content="{{ $handle }}">
+{{- end }}

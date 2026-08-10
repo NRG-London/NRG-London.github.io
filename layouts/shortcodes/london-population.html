@@ -20,7 +20,8 @@
   Interactive: static/interactive/london-population/  (deck.gl 9.3.7, WebGL2)
   Needs:       static/js/deck.min.js, static/fonts/{DMSans,LibreBaskerville}.ttf
                (already deployed — shared with the three crime interactives)
-  Fallback:    static/images/charts/london-population/london-population-hero.png
+  Fallback:    static/images/charts/london-population/london-population-hero.jpg
+               (JPEG, not PNG: it is a photographic render, 690 KB vs 1.9 MB)
   Note:        the default Boroughs mode makes NO external calls — the Thames
                and borough outlines are baked in. The opt-in Street basemap
                fetches CARTO tiles (basemaps.cartocdn.com), attributed in-page,
@@ -48,7 +49,7 @@
 </style>
 <figure class="london-population" id="london-population">
   <div class="cs-box">
-    <img src="/images/charts/london-population/london-population-hero.png?v=1"
+    <img src="/images/charts/london-population/london-population-hero.jpg?v=1"
          alt="3D map of London's population density from the 2021 census — the extruded neighbourhoods rise into a pale ridge across the inner boroughs and fall away towards the suburbs."
          loading="lazy">
     <button type="button" class="cs-btn cs-close">&#10005;&nbsp;Close</button>
