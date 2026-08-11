@@ -1,0 +1,110 @@
+{{- /*
+  ng-chart2 — an interactive NeilGarratt.com chart, INLINE (no iframe).
+
+  A fork of ng-chart for the rail performance project, namespaced apart from it.
+  BOTH engines publish to fixed filenames in this site, so they must not share
+  any: this one ships /js/ngc2-*.js and /css/ngc2.css, the crime charts ship
+  /js/chart-core.js, /js/charts.js, /js/charts-live.js and /css/ng-chart.css.
+  Changing a name here without changing SITE_ASSETS in the rail project's
+  chartkit/interactive.py will silently serve a stale engine.
+
+  What the fork adds over ng-chart:
+    - a LINE chart type in the live engine, for series too long to be bars
+      (rail punctuality is ~160 four-week periods, not 13 years)
+    - dimension names read from the spec rather than hardcoded, so the reducer
+      no longer has to know what a dimension means
+    - all display English moved into the spec's `strings` block
+
+  Why inline rather than an iframe: the 3D vizzes need isolation because WebGL
+  does. 2D SVG does not, and inline buys a lot — responsive for free, inherits
+  the fonts and CSS variables main.css has already loaded, text stays selectable
+  and keyboard-reachable, no click-shield, no fixed aspect ratio.
+
+  Progressive enhancement, not a fallback:
+    - The spec carries `bakedSvg`, the initial view pre-rendered by the STATIC
+      engine at build time. That goes straight into the page, so a reader with
+      JavaScript off — or a crawler, or a feed reader — gets a complete,
+      correct, house-styled chart rather than an empty box.
+    - ngc2-live.js then replaces it at IDENTICAL geometry (both engines read
+      GEOM from ngc2-core.js) and reveals the controls. No flash, no layout
+      shift, no dead buttons if the script never arrives.
+
+  Data lives in data/charts/<slug>.json and is inlined at BUILD time, so a data
+  refresh is a page change — no ?v= cache-buster to bump, unlike the 3D embeds.
+
+  Usage:
+    {{< ng-chart2 "rail-punctuality" >}}
+    {{< ng-chart2 slug="rail-punctuality" >}}
+
+  Built by: platform/charts/publish.py in the Rail Performance project.
+  Needs:    /js/ngc2-core.js, /js/ngc2-static.js, /js/ngc2-live.js, /css/ngc2.css
+*/ -}}
+
+{{- $slug := .Get "slug" | default (.Get 0) -}}
+{{- if not $slug -}}
+  {{- errorf "ng-chart2: no slug given (page %s)" .Page.File.Path -}}
+{{- end -}}
+
+{{- $spec := index (index site.Data "charts") $slug -}}
+{{- if not $spec -}}
+  {{- errorf "ng-chart2: no data/charts/%s.json (page %s). Run charts/publish.py." $slug .Page.File.Path -}}
+{{- end -}}
+
+{{- $id := printf "ngc2-%s" $slug -}}
+
+{{- /* The dim `copy` is keyed by is the one marked primary, or the first.
+       Computed here rather than assumed, so this template does not need to know
+       what the chart's dimensions are called — the same generalisation the JS
+       and interactive.py made. */ -}}
+{{- $primary := (index $spec.dims 0).key -}}
+{{- range $spec.dims }}{{ if .primary }}{{ $primary = .key }}{{ end }}{{ end -}}
+{{- $copy := index $spec.copy (index $spec.initial $primary) -}}
+{{- $frame := $spec.frame -}}
+
+<figure class="ngc2 ngc2-chart" data-tone="{{ $spec.tone | default "editorial" }}">
+  {{- with $frame.eyebrow }}
+  <span class="ngc2-chart__eyebrow">{{ . }}</span>
+  {{- end }}
+  <h3 class="ngc2-chart__title">{{ $copy.title }}</h3>
+  <p class="ngc2-chart__subtitle"></p>
+  <div class="ngc2-chart__plot" id="{{ $id }}">
+    {{- with $spec.bakedSvg }}{{ . | safeHTML }}{{ end -}}
+  </div>
+  {{- /* The legend slot is rendered empty here and filled by ngc2-live.js.
+         It has to EXIST in the baked markup: creating it on mount appended a
+         row inside the plot box and moved everything below it down by 34px the
+         moment JavaScript loaded — the layout shift the baked SVG exists to
+         prevent. CSS reserves its height. */ -}}
+  <div class="ngc2-legend"></div>
+  <div class="ngc2-chart__foot">
+    <span class="ngc2-chart__source">Source: {{ $copy.source | default $frame.source }}</span>
+    <span class="ngc2-chart__tag">{{ $frame.tag | default "NeilGarratt.com" }}</span>
+  </div>
+</figure>
+
+{{- /* jsonify escapes < > & to \u00xx, so the payload can never close this tag.
+       safeJS is required: inside a <script> element Go's contextual escaper
+       treats the value as JS and would re-encode the JSON as a JS *string*,
+       leaving JSON.parse() with a string instead of an object. */ -}}
+<script type="application/json" id="{{ $id }}-data">{{ $spec | jsonify | safeJS }}</script>
+
+{{- /* Load the engines once per page, however many charts it holds. */ -}}
+{{- if not (.Page.Scratch.Get "ngc2Assets") -}}
+  {{- .Page.Scratch.Set "ngc2Assets" true }}
+<link rel="stylesheet" href="/css/ngc2.css">
+<script src="/js/ngc2-core.js"></script>
+<script src="/js/ngc2-static.js"></script>
+<script src="/js/ngc2-live.js"></script>
+{{- end }}
+
+<script>
+(function () {
+  var el = document.getElementById('{{ $id }}-data');
+  if (!el || !window.NGC2Live) return;   // JS present but engine missing: keep the baked SVG
+  try {
+    NGC2Live.mount('{{ $id }}', JSON.parse(el.textContent));
+  } catch (err) {
+    if (window.console) console.error('ng-chart2 mount failed', err);
+  }
+})();
+</script>
