@@ -451,6 +451,17 @@ section {
   gap: 1.5rem;
 }
 
+/* Stacked blocks on a campaign hub. .section-header supplies the 3rem below
+   itself, but .media-grid has no bottom margin — so a hub with several format
+   groups ("The research" / "In the media" / "Articles") stacks them flush, and
+   the theme cross-links land flush under the last card. Whatever FOLLOWS a grid
+   supplies the gap. Deliberately not a blanket `> * + *`: .pagination on
+   /activity/ already pads itself, and _default/list.html puts bare .post-item
+   links in .archive-content. Nothing here fires when a block is first. */
+.archive-content > .media-grid + .section-header,
+.archive-content > .media-grid + .related-campaigns,
+.archive-content > .related-campaigns + .related-campaigns { margin-top: 3rem; }
+
 .campaign-card {
   background: var(--white);
   border: 1px solid var(--warm-grey);

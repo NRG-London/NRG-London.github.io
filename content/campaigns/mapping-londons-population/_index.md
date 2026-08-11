@@ -2,6 +2,7 @@
 title: "Mapping London's Population"
 weight: 8
 category: "London & Data"
+themes: ["Mapping London"]
 image: "/images/campaigns/population-card.jpg"
 stat: "26,369"
 stat_label: "output areas, averaging 330 people each"

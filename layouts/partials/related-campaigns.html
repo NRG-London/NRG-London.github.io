@@ -1,0 +1,31 @@
+{{- /* Automatic campaign hub → campaign hub cross-links, derived from the
+       `themes` front-matter list on each hub's _index.md. One block per theme,
+       rendered with the same card partial as the /campaigns/ index so the
+       design stays in one place. Renders nothing for an untagged hub, or for a
+       theme this hub is the only member of.
+
+       Matching is on the urlized label ("Mapping London" -> "mapping-london")
+       so a stray capital or apostrophe can't silently split a theme in two. */ -}}
+{{- $self := .RelPermalink }}
+{{- $terms := where (where site.Pages "Kind" "term") "Type" "campaigns" }}
+{{- range $label := .Params.themes }}
+  {{- $slug := urlize $label }}
+  {{- $related := slice }}
+  {{- range $p := $terms }}
+    {{- if ne $p.RelPermalink $self }}
+      {{- range $p.Params.themes }}
+        {{- if and (eq (urlize .) $slug) (not (in $related $p)) }}
+          {{- $related = $related | append $p }}
+        {{- end }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+  {{- with $related }}
+  <div class="related-campaigns">
+    <div class="section-header"><h2>More on {{ $label }}</h2></div>
+    <div class="campaigns-grid">
+      {{- range .ByWeight }}{{ partial "campaign-card.html" . }}{{ end }}
+    </div>
+  </div>
+  {{- end }}
+{{- end }}

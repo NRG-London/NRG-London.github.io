@@ -2,10 +2,11 @@
 title: "Crime Concentration"
 weight: 10
 category: "Policing & Crime"
-summary: "Explore London's 3D crime map. Crime fighting might seem like random whack-a-mole, but the moles pop up in the same few holes year after year. Targeting those hotspots can really drive down crime."
+themes: ["Mapping London"]
 image: "/images/campaigns/crime-card.jpg"
 stat: "50%"
 stat_label: "of crime happens in roughly 5% of places"
+summary: "Explore London's 3D crime map. Crime fighting might seem like random whack-a-mole, but the moles pop up in the same few holes year after year. Targeting those hotspots can really drive down crime."
 ---
 
 > Explore London's crime map in 3D: scroll down. On a computer? Try the full screen button below each map.

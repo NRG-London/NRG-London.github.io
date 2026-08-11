@@ -35,6 +35,9 @@
     </div>
     {{ end }}
   {{ end }}
+
+  {{/* Other campaign hubs sharing a `themes` tag with this one. */}}
+  {{ partial "related-campaigns.html" . }}
 </div>
 
 {{ else }}
