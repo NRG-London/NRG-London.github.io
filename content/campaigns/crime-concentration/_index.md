@@ -2,7 +2,7 @@
 title: "Crime Concentration"
 weight: 10
 category: "Policing & Crime"
-themes: ["Mapping London"]
+themes: ["Mapping London", "Tackling Crime"]
 image: "/images/campaigns/crime-card.jpg"
 stat: "50%"
 stat_label: "of crime happens in roughly 5% of places"

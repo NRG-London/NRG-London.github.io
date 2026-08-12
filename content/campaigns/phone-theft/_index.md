@@ -2,6 +2,7 @@
 title: "Tackling London's Phone-Theft Epidemic"
 weight: 10
 category: "Policing & Crime"
+themes: ["Tackling Crime"]
 image: "/images/thumbs/stub-phone-theft-report.jpg"
 stat: "26%"
 stat_label: "of London's phone thefts in just two wards"
