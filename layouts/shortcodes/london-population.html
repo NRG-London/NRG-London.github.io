@@ -1,7 +1,8 @@
 {{- /*
   London Population — embeds the deck.gl 3D census map: 54 measures from the
-  2021 census across 8 thematic groups, extruded over London's 4,994
-  neighbourhoods, refining to 26,369 output areas as you zoom in.
+  2021 census across 8 thematic groups, over six selectable area types —
+  Assembly seats, boroughs, constituencies, wards, and census neighbourhoods
+  refining to 26,369 output areas as you zoom in.
 
   Sibling of crime-skyline / crime-hotspots / yorkshire-hotspots — same frame,
   fallback and full-screen machinery. One important difference:
@@ -49,13 +50,13 @@
 </style>
 <figure class="london-population" id="london-population">
   <div class="cs-box">
-    <img src="/images/charts/london-population/london-population-hero.jpg?v=1"
-         alt="3D map of London's population density from the 2021 census — the extruded neighbourhoods rise into a pale ridge across the inner boroughs and fall away towards the suburbs."
+    <img src="/images/charts/london-population/london-population-hero.jpg?v=8"
+         alt="3D map of degree-level qualifications across London's 75 parliamentary constituencies from the 2021 census — pale, taller seats in the south-west and inner west, darker and lower ones towards the outer east."
          loading="lazy">
     <button type="button" class="cs-btn cs-close">&#10005;&nbsp;Close</button>
   </div>
   <div class="cs-bar">
-    <span>Mapping London's population &mdash; Census 2021 across 4,994 neighbourhoods, refining to 26,369 output areas of a few hundred people each as you zoom in &mdash; drag to rotate and tilt; pick a theme, then a measure, and hover any area for its figures. Switch the base to a street map, or hide the areas, to get your bearings.</span>
+    <span>Mapping London's population &mdash; Census 2021, shown by constituency, borough, Assembly seat, ward, or census areas that refine to 26,369 output areas as you zoom in &mdash; drag to rotate and tilt; pick an area type, then a theme and a measure, and hover anywhere for its figures &mdash; including where it ranks. The highest areas ping when you pick a measure; click the same measure again to replay it. Switch the base to a street map, or hide the data, to get your bearings.</span>
     <button type="button" class="cs-btn cs-expand" hidden>&#10530;&nbsp;Full screen</button>
   </div>
 </figure>
@@ -71,7 +72,7 @@
     // No loading="lazy": the page itself is ~150 KB and fetches its data on
     // demand, so there is no heavy embed to defer — and loading it eagerly
     // means the geometry is resident before the reader arrives.
-    f.src='/interactive/london-population/?v=1';
+    f.src='/interactive/london-population/?v=8';
     f.title="Interactive 3D map of London's population from the 2021 census";
     f.setAttribute('scrolling','no'); f.setAttribute('allow','fullscreen'); f.setAttribute('allowfullscreen','');
     box.insertBefore(f, box.firstChild);

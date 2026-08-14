@@ -75,9 +75,28 @@
      outline, blue when active) and the measure row is the SUBJECT (larger,
      filled amber when active). Same grammar as the ward map's year/metric rows,
      so the four maps read as one family. */
-  /* Map mode / layer toggles. Smallest and topmost of the three rows: these
-     change the frame, not the subject, so they must not compete with the
-     measure pills for attention. */
+  /* Area type. A radio set, not a toggle row: exactly one is always true, and
+     it changes WHAT IS COUNTED rather than how it is drawn — so it reads as a
+     filter (blue when active, like the group row) and sits above the mode
+     toggles, which only change the frame. */
+  .areabar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .areabar .lbl {
+    font: 700 10px 'DM Sans', sans-serif; letter-spacing: 0.12em;
+    text-transform: uppercase; color: #6E7A88; padding-right: 2px;
+  }
+  .areabar button {
+    font: 600 11px 'DM Sans', sans-serif; color: #B9C2CE;
+    background: rgba(36, 49, 66, 0.85); border: 1px solid #3B4A5E;
+    border-radius: 999px; padding: 4px 10px; cursor: pointer; white-space: nowrap;
+    transition: opacity 0.2s ease;
+  }
+  .areabar button:hover { color: #F3F6F4; background: #34455C; }
+  .areabar button.active {
+    color: #F3F6F4; background: #1B5480; border-color: #5A9FD4;
+  }
+  .areabar button.pending { opacity: 0.55; animation: pulse 1.2s ease-in-out infinite; }
+  /* Map mode / layer toggles. These change the frame, not the subject, so they
+     must not compete with the area or measure pills for attention. */
   .modebar { display: flex; flex-wrap: wrap; gap: 6px; }
   .modebar button {
     font: 600 11px 'DM Sans', sans-serif; color: #8A9490;
@@ -123,9 +142,19 @@
     position: absolute; top: -2px; bottom: -2px; left: 50%; width: 1px;
     background: #F3F6F4; opacity: 0.85;
   }
+  /* The range the current area type occupies, bracketed on the scale rather
+     than rescaling it. Drawn as a lifted rule with end stops so it reads as a
+     measurement of the gradient, not as another band of colour on it. */
+  .legend .lg-bar .mark {
+    position: absolute; top: -5px; height: 4px; box-sizing: border-box;
+    border: 1px solid #F3F6F4; border-bottom: none; opacity: 0.9;
+  }
   .legend .lg-ticks {
     display: flex; justify-content: space-between; font-size: 10px;
     margin-top: 4px; font-variant-numeric: tabular-nums;
+  }
+  .legend .lg-span {
+    font-size: 10px; color: #8A9490; margin-top: 3px; line-height: 1.35;
   }
   .legend .lg-dirs {
     display: flex; justify-content: space-between; font-size: 10px;
@@ -165,6 +194,11 @@
   .tt { font-size: 12.5px; line-height: 1.45; }
   .tt b { color: #E0A24E; }
   .tt .tt-where { color: #B9C2CE; font-size: 11px; letter-spacing: 0.03em; }
+  .tt .tt-rank {
+    color: #B9C2CE; font-size: 11px; margin-top: 4px; padding-top: 4px;
+    border-top: 1px solid #3B4A5E;
+  }
+  .tt .tt-rank b { color: #F3F6F4; }
   .tt .tt-note { color: #8A9490; font-size: 10.5px; font-style: italic; }
 
   #shield {
@@ -197,14 +231,17 @@
   @media (max-width: 700px) {
     .card { max-width: calc(100vw - 32px); left: 16px; top: 16px; }
     .controls { left: 16px; right: 16px; bottom: 46px; max-width: calc(100vw - 32px); }
-    /* The group row scrolls sideways rather than collapsing to a <select>:
-       eight taps stay one tap each, and the house style has no select. */
-    .groupbar {
+    /* The group and area rows scroll sideways rather than collapsing to a
+       <select>: every option stays one tap, and the house style has no select. */
+    .groupbar, .areabar {
       flex-wrap: nowrap; overflow-x: auto; scroll-snap-type: x proximity;
       -webkit-overflow-scrolling: touch; padding-bottom: 2px;
     }
-    .groupbar::-webkit-scrollbar { height: 0; }
-    .groupbar button { scroll-snap-align: start; }
+    .groupbar::-webkit-scrollbar, .areabar::-webkit-scrollbar { height: 0; }
+    .groupbar button, .areabar button { scroll-snap-align: start; }
+    /* The row is self-evident once the pills are visible, and 60 px of
+       "AREAS" is 60 px of pill the reader cannot reach on a phone. */
+    .areabar .lbl { display: none; }
     .legend { display: none; }
     .hint { display: none; }
   }
@@ -225,6 +262,7 @@
   <button id="reset">Reset view</button>
 
   <div class="controls">
+    <div class="areabar" id="areabar"></div>
     <div class="modebar" id="modebar"></div>
     <div class="groupbar" id="groupbar"></div>
     <div class="switcher" id="switcher"></div>
@@ -232,8 +270,9 @@
 
   <div class="legend" id="legend" style="visibility:hidden">
     <div class="lg-title" id="lgTitle"></div>
-    <div class="lg-bar" id="lgBar"><span class="zero" id="lgZero" style="display:none"></span></div>
+    <div class="lg-bar" id="lgBar"><span class="zero" id="lgZero" style="display:none"></span><span class="mark" id="lgMark" style="display:none"></span></div>
     <div class="lg-ticks" id="lgTicks"></div>
+    <div class="lg-span" id="lgSpan" style="display:none"></div>
     <div class="lg-dirs" id="lgDirs" style="display:none"></div>
     <div class="lg-nd"><i id="lgNd"></i><span id="lgNdText">too few people to show</span></div>
   </div>
@@ -249,8 +288,8 @@
   <script src="/js/deck.min.js"></script>
   <script>
   "use strict";
-  var CFG = {"camera":{"longitude":-0.118,"latitude":51.472,"zoom":10.05,"pitch":50,"bearing":0},"baseWidth":1600,"shield":true,"polyOpacity":{"boroughs":1.0,"street":0.3},"attribution":"","basemap":{"url":"https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png","attribution":"street map \u00a9 OpenStreetMap contributors, \u00a9 CARTO","extent":[-0.9324,51.0842,0.7562,51.8944]},"build":"62604eba42"};
-  var MANIFEST = {"v":1,"generated":"2026-08-10T01:33:46+00:00","licence":"Source: Office for National Statistics licensed under the Open Government Licence v3.0. Contains OS data (c) Crown copyright and database right 2024.","nodata":65535,"tiers":{"lsoa":{"n":4994,"geom":"lsoa.geom.bin","base":"lsoa.base.bin","labels":"lsoa.labels.json","prefix":"lsoa.","label":"neighbourhood","labelPlural":"LSOAs"},"oa":{"n":26369,"geom":"oa.geom.bin","base":"oa.base.bin","labels":"oa.labels.json","prefix":"oa.","label":"output area","labelPlural":"output areas"}},"zoom":{"switch":12.6,"prefetch":11.6,"hysteresis":0.15},"denominators":[{"key":"residents","label":"usual residents","minBase":50,"type":"u16"},{"key":"households","label":"households","minBase":20,"type":"u16"},{"key":"res3plus","label":"residents aged 3 and over","minBase":45,"type":"u16"},{"key":"res5plus","label":"residents aged 5 and over","minBase":45,"type":"u16"},{"key":"res16plus","label":"residents aged 16 and over","minBase":40,"type":"u16"},{"key":"emp16plus","label":"residents aged 16+ in employment","minBase":30,"type":"u16"},{"key":"nonukborn","label":"residents born outside the UK","minBase":30,"type":"u16"},{"key":"landha","label":"land area, hectares","minBase":0,"type":"f32"},{"key":"ceres","label":"residents in communal establishments","minBase":0,"type":"u16","context":true}],"groups":[{"key":"people","label":"People","blurb":"How many, how densely, and how many to a home.","file":"g_people"},{"key":"age","label":"Age","blurb":"Where London's children, students and pensioners live.","file":"g_age"},{"key":"homes","label":"Households","blurb":"Who shares a front door.","file":"g_homes"},{"key":"origins","label":"Origins","blurb":"Ethnic group, birthplace, passports and identity.","file":"g_origins"},{"key":"language","label":"Migration & language","blurb":"When people arrived, and what is spoken at home.","file":"g_language"},{"key":"health","label":"Health & care","blurb":"Self-reported health, disability and unpaid care.","file":"g_health"},{"key":"work","label":"Work & study","blurb":"Occupation, social class, activity and qualifications.","file":"g_work"},{"key":"housing","label":"Housing","blurb":"Tenure and the kind of building people live in.","file":"g_housing"}],"measures":[{"key":"pop_density","group":"people","label":"Population density","short":"Density","unit":"residents per hectare","fmt":"n1","kind":"value","denom":"residents","domain":[11.5024,483.7398],"breaks":[11.502,105.95,200.397,294.845,389.292,483.74],"elevMax":5100,"table":"TS001","scale":2,"offset":0.0,"note":"Residents per hectare of LAND. Inland water and tidal foreshore are excluded, so riverside areas are not diluted by the Thames. Output areas are drawn to hold about the same number of people, so at this grain density is essentially a read-out of built form."},{"key":"hh_density","group":"people","label":"Household density","short":"Homes per hectare","unit":"households per hectare","fmt":"n1","kind":"value","denom":"households","domain":[4.357,234.3284],"breaks":[4.357,50.351,96.346,142.34,188.334,234.328],"elevMax":5100,"table":"TS003","scale":2,"offset":0.0},{"key":"mean_hh_size","group":"people","label":"People per household","short":"Household size","unit":"residents per household","fmt":"n2","kind":"value","denom":"households","domain":[1.6644,3.7069],"breaks":[1.664,2.073,2.481,2.89,3.298,3.707],"elevMax":3300,"table":"TS001 / TS003","scale":1000,"offset":0.0,"note":"Residents living in households divided by households. Residents of communal establishments are excluded from the numerator, as they have no household to belong to."},{"key":"ce_share","group":"people","label":"Living in communal establishments","short":"Communal living","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[0.0,15.7088],"breaks":[0.0,3.142,6.284,9.425,12.567,15.709],"elevMax":3300,"table":"ts001","note":"Halls of residence, care homes, barracks, prisons and hotels. A handful of output areas are almost entirely communal."},{"key":"age_under15","group":"age","label":"Children (under 15)","short":"Children","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[5.5249,30.8357],"breaks":[5.525,10.587,15.649,20.711,25.774,30.836],"elevMax":4200,"table":"ts007a"},{"key":"age_15_24","group":"age","label":"Young adults (15\u201324)","short":"15\u201324","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[4.6205,25.0],"breaks":[4.62,8.696,12.772,16.848,20.924,25.0],"elevMax":4200,"table":"ts007a"},{"key":"age_25_44","group":"age","label":"Adults 25\u201344","short":"25\u201344","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[17.3633,63.285],"breaks":[17.363,26.548,35.732,44.916,54.101,63.285],"elevMax":4200,"table":"ts007a"},{"key":"age_45_64","group":"age","label":"Adults 45\u201364","short":"45\u201364","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[9.5238,33.9623],"breaks":[9.524,14.412,19.299,24.187,29.075,33.962],"elevMax":4200,"table":"ts007a"},{"key":"age_65plus","group":"age","label":"Pensioners (65 and over)","short":"65+","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[1.105,29.6296],"breaks":[1.105,6.81,12.515,18.22,23.925,29.63],"elevMax":4200,"table":"ts007a"},{"key":"age_85plus","group":"age","label":"Aged 85 and over","short":"85+","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[0.0,6.6667],"breaks":[0.0,1.333,2.667,4.0,5.333,6.667],"elevMax":3600,"table":"ts007a"},{"key":"age_median","group":"age","label":"Median age","short":"Median age","unit":"years","fmt":"n1","kind":"value","denom":"residents","domain":[26.9231,50.7353],"breaks":[26.923,31.686,36.448,41.21,45.973,50.735],"elevMax":3900,"table":"TS007A","scale":500,"offset":0.0,"note":"Interpolated within five-year bands, which is the finest age detail ONS publishes at output area level."},{"key":"age_dependency","group":"age","label":"Dependency ratio","short":"Dependency","unit":"dependants per 100 aged 15\u201364","fmt":"n0","kind":"value","denom":"residents","domain":[11.4504,84.0909],"breaks":[11.45,25.978,40.507,55.035,69.563,84.091],"elevMax":3900,"table":"TS007A","scale":10,"offset":0.0,"note":"Children under 15 plus residents 65 and over, per 100 residents aged 15 to 64. The standard demographic definition."},{"key":"hh_one_person","group":"homes","label":"One-person households","short":"Living alone","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[11.1111,56.9364],"breaks":[11.111,20.276,29.441,38.606,47.771,56.936],"elevMax":4200,"table":"ts003"},{"key":"hh_one_person_66","group":"homes","label":"One person aged 66 or over","short":"Alone, 66+","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[0.0,27.6119],"breaks":[0.0,5.522,11.045,16.567,22.09,27.612],"elevMax":3600,"table":"ts003"},{"key":"hh_dep_children","group":"homes","label":"Households with dependent children","short":"With children","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[7.6923,54.6763],"breaks":[7.692,17.089,26.486,35.883,45.279,54.676],"elevMax":4200,"table":"ts003","note":"Married or civil partnership couples, cohabiting couples, lone parents and other household types, in each case with dependent children."},{"key":"hh_lone_parent","group":"homes","label":"Lone parent families","short":"Lone parent","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[1.7241,33.3333],"breaks":[1.724,8.046,14.368,20.69,27.011,33.333],"elevMax":3900,"table":"ts003"},{"key":"hh_5plus","group":"homes","label":"Households of five or more","short":"5+ people","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[0.0,31.1258],"breaks":[0.0,6.225,12.45,18.675,24.901,31.126],"elevMax":3900,"table":"ts017"},{"key":"hh_overcrowded","group":"homes","label":"Overcrowded households","short":"Overcrowded","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[0.6897,31.4685],"breaks":[0.69,6.845,13.001,19.157,25.313,31.469],"elevMax":4200,"table":"ts052","note":"Occupancy rating for bedrooms of \u22121 or less: the household has fewer bedrooms than the standard implies it needs."},{"key":"eth_white","group":"origins","label":"White","short":"White","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[12.4088,88.2562],"breaks":[12.409,27.578,42.748,57.917,73.087,88.256],"elevMax":4200,"table":"ts021"},{"key":"eth_asian","group":"origins","label":"Asian or Asian British","short":"Asian","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[2.4457,70.8934],"breaks":[2.446,16.135,29.825,43.514,57.204,70.893],"elevMax":4200,"table":"ts021"},{"key":"eth_black","group":"origins","label":"Black, Black British, Caribbean or African","short":"Black","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[0.0,46.6231],"breaks":[0.0,9.325,18.649,27.974,37.298,46.623],"elevMax":4200,"table":"ts021"},{"key":"eth_mixed","group":"origins","label":"Mixed or multiple ethnic groups","short":"Mixed","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[1.0118,12.4088],"breaks":[1.012,3.291,5.571,7.85,10.129,12.409],"elevMax":3600,"table":"ts021"},{"key":"eth_other","group":"origins","label":"Other ethnic group","short":"Other","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[0.0,19.3878],"breaks":[0.0,3.878,7.755,11.633,15.51,19.388],"elevMax":3600,"table":"ts021"},{"key":"cob_nonuk","group":"origins","label":"Born outside the UK","short":"Born abroad","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[11.838,70.283],"breaks":[11.838,23.527,35.216,46.905,58.594,70.283],"elevMax":4200,"table":"ts004"},{"key":"passport_none","group":"origins","label":"No passport held","short":"No passport","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[0.7299,15.534],"breaks":[0.73,3.691,6.652,9.612,12.573,15.534],"elevMax":3900,"table":"ts005","note":"A real answer, not missing data. It tracks age and income as much as nationality."},{"key":"natid_british","group":"origins","label":"British-only national identity","short":"British identity","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[34.8936,74.5826],"breaks":[34.894,42.831,50.769,58.707,66.645,74.583],"elevMax":4200,"table":"ts027","note":"National identity is a multi-response question, so its categories do not sum to 100%. Only the single unambiguous 'British only' category is mapped here."},{"key":"arrived_since_2011","group":"language","label":"Arrived since 2011","short":"Recent arrivals","unit":"% of residents born abroad","fmt":"pc1","kind":"count","denom":"nonukborn","domain":[13.2911,76.6082],"breaks":[13.291,25.955,38.618,51.281,63.945,76.608],"elevMax":4200,"table":"ts015","note":"Measured against residents born outside the UK, not all residents. Over all residents this would simply redraw the born-abroad map."},{"key":"resident_under5y","group":"language","label":"In the UK less than five years","short":"Here under 5 years","unit":"% of residents born abroad","fmt":"pc1","kind":"count","denom":"nonukborn","domain":[5.0,57.1429],"breaks":[5.0,15.429,25.857,36.286,46.714,57.143],"elevMax":4200,"table":"ts016","note":"Measured at the census, 21 March 2021 \u2014 so these are residents who arrived from 2016 onwards. As a share of residents born outside the UK, not of everyone."},{"key":"lang_not_english","group":"language","label":"Main language is not English","short":"Other main language","unit":"% of residents aged 3+","fmt":"pc1","kind":"count","denom":"res3plus","domain":[3.6,47.5578],"breaks":[3.6,12.392,21.183,29.975,38.766,47.558],"elevMax":4200,"table":"ts029"},{"key":"eng_not_well","group":"language","label":"Cannot speak English well","short":"Limited English","unit":"% of residents aged 3+","fmt":"pc1","kind":"count","denom":"res3plus","domain":[0.0,13.4503],"breaks":[0.0,2.69,5.38,8.07,10.76,13.45],"elevMax":3900,"table":"ts029","note":"Combines 'cannot speak English well' and 'cannot speak English'. The denominator is all residents aged 3 and over, matching ONS's own headline."},{"key":"hh_no_english","group":"language","label":"No one speaks English as a main language","short":"No English at home","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[0.8264,32.6667],"breaks":[0.826,7.194,13.563,19.931,26.299,32.667],"elevMax":3900,"table":"ts025"},{"key":"hh_some_english","group":"language","label":"Some but not all adults speak English","short":"Mixed-language home","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[2.0408,28.0992],"breaks":[2.041,7.252,12.464,17.676,22.888,28.099],"elevMax":3900,"table":"ts025"},{"key":"health_bad","group":"health","label":"Bad or very bad health","short":"Bad health","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[0.4202,10.5802],"breaks":[0.42,2.452,4.484,6.516,8.548,10.58],"elevMax":3900,"table":"ts037","note":"Self-reported. STRONGLY confounded by age \u2014 a retirement suburb reports far more bad health than a student area for reasons that have nothing to do with the place. Use the age-adjusted measure to compare places."},{"key":"health_bad_isr","group":"health","label":"Bad health, age-adjusted","short":"Health vs age expectation","unit":"London = 100","fmt":"idx0","kind":"value","denom":"residents","domain":[45.6409,154.3591],"breaks":[45.641,72.82,100.0,127.18,154.359],"elevMax":3900,"table":"TS037 / TS007A","scale":200,"offset":0.0,"diverging":true,"center":100.0,"divLow":"better than its age predicts","divHigh":"worse than its age predicts","note":"Observed bad health against what this area's age profile predicts. London-wide age-specific rates are fitted from the output area data itself by non-negative least squares, and the ratio is shrunk toward 100 so that small areas, where a handful of cases would otherwise swing it wildly, are not over-read. Amber = worse health than its age mix predicts; blue = better."},{"key":"health_very_good","group":"health","label":"Very good health","short":"Very good health","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[39.5722,70.2128],"breaks":[39.572,45.7,51.828,57.957,64.085,70.213],"elevMax":3900,"table":"ts037"},{"key":"disab_lot","group":"health","label":"Disabled, activities limited a lot","short":"Limited a lot","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[0.9524,14.0436],"breaks":[0.952,3.571,6.189,8.807,11.425,14.044],"elevMax":3900,"table":"ts038"},{"key":"disab_any","group":"health","label":"Disabled under the Equality Act","short":"Disabled","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[5.3459,25.0746],"breaks":[5.346,9.292,13.237,17.183,21.129,25.075],"elevMax":3900,"table":"ts038"},{"key":"care_any","group":"health","label":"Provides any unpaid care","short":"Unpaid carers","unit":"% of residents aged 5+","fmt":"pc1","kind":"count","denom":"res5plus","domain":[2.3305,12.7341],"breaks":[2.331,4.411,6.492,8.573,10.653,12.734],"elevMax":3900,"table":"ts039"},{"key":"care_20plus","group":"health","label":"Provides 20+ hours unpaid care a week","short":"Heavy carers","unit":"% of residents aged 5+","fmt":"pc1","kind":"count","denom":"res5plus","domain":[0.4608,7.8067],"breaks":[0.461,1.93,3.399,4.868,6.338,7.807],"elevMax":3900,"table":"ts039","note":"Columns 20-49 hours and 50+ hours. The 20-34 and 35-49 columns are subdivisions of the first and must not be added as well."},{"key":"qual_level4","group":"work","label":"Degree-level qualifications","short":"Degree level","unit":"% of residents aged 16+","fmt":"pc1","kind":"count","denom":"res16plus","domain":[22.7528,79.6813],"breaks":[22.753,34.139,45.524,56.91,68.296,79.681],"elevMax":4200,"table":"ts067"},{"key":"qual_none","group":"work","label":"No qualifications","short":"No qualifications","unit":"% of residents aged 16+","fmt":"pc1","kind":"count","denom":"res16plus","domain":[2.8455,32.3944],"breaks":[2.846,8.755,14.665,20.575,26.485,32.394],"elevMax":4200,"table":"ts067"},{"key":"nssec_higher","group":"work","label":"Higher managerial and professional","short":"Higher managerial","unit":"% of residents aged 16+","fmt":"pc1","kind":"count","denom":"res16plus","domain":[3.5503,43.2203],"breaks":[3.55,11.484,19.418,27.352,35.286,43.22],"elevMax":4200,"table":"ts062"},{"key":"nssec_routine","group":"work","label":"Routine and semi-routine occupations","short":"Routine","unit":"% of residents aged 16+","fmt":"pc1","kind":"count","denom":"res16plus","domain":[3.5789,32.4841],"breaks":[3.579,9.36,15.141,20.922,26.703,32.484],"elevMax":4200,"table":"ts062"},{"key":"econ_unemployed","group":"work","label":"Unemployed","short":"Unemployed","unit":"% of residents aged 16+","fmt":"pc1","kind":"count","denom":"res16plus","domain":[0.9404,10.7066],"breaks":[0.94,2.894,4.847,6.8,8.753,10.707],"elevMax":3600,"table":"ts066","note":"Includes unemployed full-time students, who are counted separately by ONS."},{"key":"econ_retired","group":"work","label":"Retired","short":"Retired","unit":"% of residents aged 16+","fmt":"pc1","kind":"count","denom":"res16plus","domain":[1.1527,32.3741],"breaks":[1.153,7.397,13.641,19.886,26.13,32.374],"elevMax":4200,"table":"ts066"},{"key":"econ_student","group":"work","label":"Full-time students","short":"Students","unit":"% of residents aged 16+","fmt":"pc1","kind":"count","denom":"res16plus","domain":[2.7211,25.1082],"breaks":[2.721,7.199,11.676,16.153,20.631,25.108],"elevMax":4200,"table":"ts066","note":"Economically active full-time students plus economically inactive students."},{"key":"occ_professional","group":"work","label":"Managerial and professional occupations","short":"Professional","unit":"% of those in employment","fmt":"pc1","kind":"count","denom":"emp16plus","domain":[24.8366,87.9464],"breaks":[24.837,37.459,50.081,62.702,75.324,87.946],"elevMax":4200,"table":"ts063","note":"Denominator is residents aged 16 and over who were in employment the week before the census \u2014 not all residents, which would draw the working-age map instead."},{"key":"ten_outright","group":"housing","label":"Owned outright","short":"Owned outright","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[0.9174,53.4247],"breaks":[0.917,11.419,21.92,32.422,42.923,53.425],"elevMax":4200,"table":"ts054"},{"key":"ten_mortgage","group":"housing","label":"Owned with a mortgage","short":"Mortgaged","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[2.521,51.2821],"breaks":[2.521,12.273,22.025,31.778,41.53,51.282],"elevMax":4200,"table":"ts054"},{"key":"ten_social","group":"housing","label":"Social rented","short":"Social rented","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[0.0,80.1802],"breaks":[0.0,16.036,32.072,48.108,64.144,80.18],"elevMax":4200,"table":"ts054"},{"key":"ten_private","group":"housing","label":"Private rented","short":"Private rented","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[4.2735,72.3577],"breaks":[4.274,17.89,31.507,45.124,58.741,72.358],"elevMax":4200,"table":"ts054"},{"key":"acc_flat","group":"housing","label":"Flats","short":"Flats","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[0.0,100.0],"breaks":[0.0,20.0,40.0,60.0,80.0,100.0],"elevMax":4200,"table":"ts044","note":"Purpose-built blocks, converted or shared houses, other converted buildings, and flats in commercial buildings."},{"key":"acc_detsemi","group":"housing","label":"Detached and semi-detached houses","short":"Detached / semi","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[0.0,97.561],"breaks":[0.0,19.512,39.024,58.537,78.049,97.561],"elevMax":4200,"table":"ts044"},{"key":"acc_terraced","group":"housing","label":"Terraced houses","short":"Terraced","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[0.0,75.0],"breaks":[0.0,15.0,30.0,45.0,60.0,75.0],"elevMax":4200,"table":"ts044"}],"initial":"pop_density","initialGroup":"people","ramp":["#004D80","#1877B8","#4A92CC","#80B4DD","#B4D4EB","#E2EEF7"],"rampDiverging":["#B4D4EB","#4A92CC","#1877B8","#1B5480","#39485A","#7A5326","#B5701E","#E0A24E","#F0CB96"],"colorGamma":0.72,"nodataColor":[35,44,56,255],"domainMethod":"population-weighted p2-p98 of the output-area distribution, shared by both tiers"};
+  var CFG = {"camera":{"longitude":-0.118,"latitude":51.472,"zoom":10.05,"pitch":50,"bearing":0},"baseWidth":1600,"shield":true,"polyOpacity":{"boroughs":1.0,"street":0.3},"attribution":"","basemap":{"url":"https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png","attribution":"street map \u00a9 OpenStreetMap contributors, \u00a9 CARTO","extent":[-0.9324,51.0842,0.7562,51.8944]},"build":"138f391b3e"};
+  var MANIFEST = {"v":1,"generated":"2026-08-13T13:22:58+00:00","licence":"Source: Office for National Statistics licensed under the Open Government Licence v3.0. Contains OS data (c) Crown copyright and database right 2024.","nodata":65535,"tiers":{"gla":{"n":14,"geom":"gla.geom.bin","base":"gla.base.bin","labels":"gla.labels.json","prefix":"gla.","label":"Assembly constituency","labelPlural":"Assembly constituencies","auto":false,"fit":"exact","blurb":"London Assembly constituencies \u2014 each one is a whole group of two to four boroughs.","single":"g_all"},"borough":{"n":33,"geom":"borough.geom.bin","base":"borough.base.bin","labels":"borough.labels.json","prefix":"borough.","label":"borough","labelPlural":"boroughs","auto":false,"fit":"exact","blurb":"The 32 London boroughs and the City of London.","single":"g_all"},"pcon":{"n":75,"geom":"pcon.geom.bin","base":"pcon.base.bin","labels":"pcon.labels.json","prefix":"pcon.","label":"constituency","labelPlural":"constituencies","auto":false,"fit":"bestfit","blurb":"UK Parliament constituencies on the 2024 boundaries.","single":"g_all"},"ward":{"n":689,"geom":"ward.geom.bin","base":"ward.base.bin","labels":"ward.labels.json","prefix":"ward.","label":"ward","labelPlural":"wards","auto":false,"fit":"bestfit","blurb":"Council wards.","single":"g_all"},"lsoa":{"n":4994,"geom":"lsoa.geom.bin","base":"lsoa.base.bin","labels":"lsoa.labels.json","prefix":"lsoa.","label":"neighbourhood","labelPlural":"LSOAs","auto":true,"fit":"exact","blurb":"Census neighbourhoods of about 1,700 people."},"oa":{"n":26369,"geom":"oa.geom.bin","base":"oa.base.bin","labels":"oa.labels.json","prefix":"oa.","label":"output area","labelPlural":"output areas","auto":true,"fit":"exact","blurb":"Census output areas of about 330 people."}},"areaPills":[{"label":"Census Areas","tier":null},{"label":"Constituencies","tier":"pcon"},{"label":"Assembly Seats","tier":"gla"},{"label":"Boroughs","tier":"borough"},{"label":"Wards","tier":"ward"}],"autoTiers":["lsoa","oa"],"zoom":{"switch":12.6,"prefetch":11.6,"hysteresis":0.15},"denominators":[{"key":"residents","label":"usual residents","minBase":50},{"key":"households","label":"households","minBase":20},{"key":"res3plus","label":"residents aged 3 and over","minBase":45},{"key":"res5plus","label":"residents aged 5 and over","minBase":45},{"key":"res16plus","label":"residents aged 16 and over","minBase":40},{"key":"emp16plus","label":"residents aged 16+ in employment","minBase":30},{"key":"nonukborn","label":"residents born outside the UK","minBase":30},{"key":"landha","label":"land area, hectares","minBase":0},{"key":"ceres","label":"residents in communal establishments","minBase":0,"context":true}],"groups":[{"key":"people","label":"People","blurb":"How many, how densely, and how many to a home.","file":"g_people"},{"key":"age","label":"Age","blurb":"Where London's children, students and pensioners live.","file":"g_age"},{"key":"homes","label":"Households","blurb":"Who shares a front door.","file":"g_homes"},{"key":"origins","label":"Origins","blurb":"Ethnic group, birthplace, passports and identity.","file":"g_origins"},{"key":"language","label":"Migration & language","blurb":"When people arrived, and what is spoken at home.","file":"g_language"},{"key":"health","label":"Health & care","blurb":"Self-reported health, disability and unpaid care.","file":"g_health"},{"key":"work","label":"Work & study","blurb":"Occupation, social class, activity and qualifications.","file":"g_work"},{"key":"housing","label":"Housing","blurb":"Tenure and the kind of building people live in.","file":"g_housing"}],"measures":[{"key":"pop_density","group":"people","label":"Population density","short":"Density","unit":"residents per hectare","fmt":"n1","kind":"value","denom":"residents","domain":[11.5024,483.7398],"breaks":[11.502,105.95,200.397,294.845,389.292,483.74],"elevMax":5100,"table":"TS001","scale":2,"offset":0.0,"note":"Residents per hectare of LAND. Inland water and tidal foreshore are excluded, so riverside areas are not diluted by the Thames. Output areas are drawn to hold about the same number of people, so at this grain density is essentially a read-out of built form.","tierRange":{"oa":[0.2861,19800.0],"gla":[27.36,112.2711],"borough":[21.9766,157.0272],"pcon":[14.4542,184.6158],"ward":[1.7643,262.7954],"lsoa":[1.1996,1155.6701]}},{"key":"hh_density","group":"people","label":"Household density","short":"Homes per hectare","unit":"households per hectare","fmt":"n1","kind":"value","denom":"households","domain":[4.357,234.3284],"breaks":[4.357,50.351,96.346,142.34,188.334,234.328],"elevMax":5100,"table":"TS003","scale":2,"offset":0.0,"tierRange":{"oa":[0.1049,16750.0],"gla":[10.9731,48.5985],"borough":[9.0182,64.9922],"pcon":[5.7848,67.4911],"ward":[0.6994,102.5156],"lsoa":[0.4229,657.732]}},{"key":"mean_hh_size","group":"people","label":"People per household","short":"Household size","unit":"residents per household","fmt":"n2","kind":"value","denom":"households","domain":[1.6644,3.7069],"breaks":[1.664,2.073,2.481,2.89,3.298,3.707],"elevMax":3300,"table":"TS001 / TS003","scale":1000,"offset":0.0,"note":"Residents living in households divided by households. Residents of communal establishments are excluded from the numerator, as they have no household to belong to.","tierRange":{"oa":[1.0199,8.3704],"gla":[2.1461,2.8565],"borough":[1.6986,3.0146],"pcon":[1.9644,3.5116],"ward":[1.4393,3.9255],"lsoa":[1.5223,4.4707]}},{"key":"ce_share","group":"people","label":"Living in communal establishments","short":"Communal living","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[0.0,15.7088],"breaks":[0.0,3.142,6.284,9.425,12.567,15.709],"elevMax":3300,"table":"ts001","note":"Halls of residence, care homes, barracks, prisons and hotels. A handful of output areas are almost entirely communal.","tierRange":{"oa":[0.0,89.4977],"gla":[0.5195,1.8053],"borough":[0.4221,3.5351],"pcon":[0.1507,6.4734],"ward":[0.0,26.0932],"lsoa":[0.0,54.1443]}},{"key":"age_under15","group":"age","label":"Children (under 15)","short":"Children","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[5.5249,30.8357],"breaks":[5.525,10.587,15.649,20.711,25.774,30.836],"elevMax":4200,"table":"ts007a","tierRange":{"oa":[0.0,52.4229],"gla":[13.3586,20.1392],"borough":[6.4035,24.5772],"pcon":[10.5971,24.9094],"ward":[0.2899,31.3648],"lsoa":[2.9653,40.9415]}},{"key":"age_15_24","group":"age","label":"Young adults (15\u201324)","short":"15\u201324","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[4.6205,25.0],"breaks":[4.62,8.696,12.772,16.848,20.924,25.0],"elevMax":4200,"table":"ts007a","tierRange":{"oa":[0.0,86.6928],"gla":[10.33,14.6687],"borough":[9.4275,16.2222],"pcon":[8.9343,21.1615],"ward":[6.5354,38.2833],"lsoa":[3.8008,59.3691]}},{"key":"age_25_44","group":"age","label":"Adults 25\u201344","short":"25\u201344","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[17.3633,63.285],"breaks":[17.363,26.548,35.732,44.916,54.101,63.285],"elevMax":4200,"table":"ts007a","tierRange":{"oa":[0.0,90.1961],"gla":[27.3077,40.3603],"borough":[27.0058,44.3363],"pcon":[24.8435,46.4116],"ward":[19.2414,60.52],"lsoa":[12.3066,77.9817]}},{"key":"age_45_64","group":"age","label":"Adults 45\u201364","short":"45\u201364","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[9.5238,33.9623],"breaks":[9.524,14.412,19.299,24.187,29.075,33.962],"elevMax":4200,"table":"ts007a","tierRange":{"oa":[0.0,59.0],"gla":[19.5554,26.3034],"borough":[16.3556,28.452],"pcon":[15.8173,28.8009],"ward":[8.6594,30.9664],"lsoa":[4.2399,40.4138]}},{"key":"age_65plus","group":"age","label":"Pensioners (65 and over)","short":"65+","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[1.105,29.6296],"breaks":[1.105,6.81,12.515,18.22,23.925,29.63],"elevMax":4200,"table":"ts007a","tierRange":{"oa":[0.0,97.8873],"gla":[7.0701,17.1862],"borough":[5.6351,17.6453],"pcon":[4.9483,20.3182],"ward":[1.1214,25.3897],"lsoa":[0.2606,44.5725]}},{"key":"age_85plus","group":"age","label":"Aged 85 and over","short":"85+","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[0.0,6.6667],"breaks":[0.0,1.333,2.667,4.0,5.333,6.667],"elevMax":3600,"table":"ts007a","tierRange":{"oa":[0.0,38.0282],"gla":[0.8207,2.595],"borough":[0.6674,2.741],"pcon":[0.5548,3.1538],"ward":[0.0,4.4972],"lsoa":[0.0,12.3759]}},{"key":"age_median","group":"age","label":"Median age","short":"Median age","unit":"years","fmt":"n1","kind":"value","denom":"residents","domain":[26.9231,50.7353],"breaks":[26.923,31.686,36.448,41.21,45.973,50.735],"elevMax":3900,"table":"TS007A","scale":500,"offset":0.0,"note":"Interpolated within five-year bands, which is the finest age detail ONS publishes at output area level.","tierRange":{"oa":[14.25,82.5694],"gla":[31.9742,40.5584],"borough":[30.763,41.7435],"pcon":[30.065,42.5707],"ward":[26.9575,49.1223],"lsoa":[19.7633,60.431]}},{"key":"age_dependency","group":"age","label":"Dependency ratio","short":"Dependency","unit":"dependants per 100 aged 15\u201364","fmt":"n0","kind":"value","denom":"residents","domain":[11.4504,84.0909],"breaks":[11.45,25.978,40.507,55.035,69.563,84.091],"elevMax":3900,"table":"TS007A","scale":10,"offset":0.0,"note":"Children under 15 plus residents 65 and over, per 100 residents aged 15 to 64. The standard demographic definition.","tierRange":{"oa":[0.4762,3475.0],"gla":[30.7842,56.37],"borough":[25.7838,57.2556],"pcon":[25.871,62.2995],"ward":[3.6036,68.9476],"lsoa":[5.1331,108.4677]}},{"key":"hh_one_person","group":"homes","label":"One-person households","short":"Living alone","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[11.1111,56.9364],"breaks":[11.111,20.276,29.441,38.606,47.771,56.936],"elevMax":4200,"table":"ts003","tierRange":{"oa":[1.4706,98.0132],"gla":[24.3922,40.73],"borough":[22.1544,50.8413],"pcon":[18.2245,46.1733],"ward":[14.2203,62.5],"lsoa":[7.2848,68.7151]}},{"key":"hh_one_person_66","group":"homes","label":"One person aged 66 or over","short":"Alone, 66+","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[0.0,27.6119],"breaks":[0.0,5.522,11.045,16.567,22.09,27.612],"elevMax":3600,"table":"ts003","tierRange":{"oa":[0.0,79.7546],"gla":[5.9218,12.7357],"borough":[4.7894,12.8568],"pcon":[3.7896,14.0019],"ward":[0.4858,17.6767],"lsoa":[0.0,33.6296]}},{"key":"hh_dep_children","group":"homes","label":"Households with dependent children","short":"With children","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[7.6923,54.6763],"breaks":[7.692,17.089,26.486,35.883,45.279,54.676],"elevMax":4200,"table":"ts003","note":"Married or civil partnership couples, cohabiting couples, lone parents and other household types, in each case with dependent children.","tierRange":{"oa":[0.0,91.1765],"gla":[20.6956,36.991],"borough":[8.656,45.4917],"pcon":[15.641,48.0009],"ward":[2.1622,55.4235],"lsoa":[4.2093,63.9376]}},{"key":"hh_lone_parent","group":"homes","label":"Lone parent families","short":"Lone parent","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[1.7241,33.3333],"breaks":[1.724,8.046,14.368,20.69,27.011,33.333],"elevMax":3900,"table":"ts003","tierRange":{"oa":[0.0,72.4638],"gla":[10.5795,16.9461],"borough":[3.5273,19.0909],"pcon":[7.5486,21.3637],"ward":[0.8264,30.4935],"lsoa":[1.2024,40.5316]}},{"key":"hh_5plus","group":"homes","label":"Households of five or more","short":"5+ people","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[0.0,31.1258],"breaks":[0.0,6.225,12.45,18.675,24.901,31.126],"elevMax":3900,"table":"ts017","tierRange":{"oa":[0.0,68.8889],"gla":[6.4886,15.6651],"borough":[1.6217,18.9582],"pcon":[4.7301,27.8483],"ward":[0.0,34.4839],"lsoa":[0.1623,42.5197]}},{"key":"hh_overcrowded","group":"homes","label":"Overcrowded households","short":"Overcrowded","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[0.6897,31.4685],"breaks":[0.69,6.845,13.001,19.157,25.313,31.469],"elevMax":4200,"table":"ts052","note":"Occupancy rating for bedrooms of \u22121 or less: the household has fewer bedrooms than the standard implies it needs.","tierRange":{"oa":[0.0,74.0933],"gla":[5.1785,18.2191],"borough":[4.0074,21.5164],"pcon":[3.9279,26.1996],"ward":[1.794,30.4501],"lsoa":[0.0,38.27]}},{"key":"eth_white","group":"origins","label":"White","short":"White","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[12.4088,88.2562],"breaks":[12.409,27.578,42.748,57.917,73.087,88.256],"elevMax":4200,"table":"ts021","tierRange":{"oa":[0.3546,99.4152],"gla":[35.4226,74.4977],"borough":[30.7487,80.4444],"pcon":[20.2811,81.1395],"ward":[4.5639,92.9588],"lsoa":[1.9481,96.566]}},{"key":"eth_asian","group":"origins","label":"Asian or Asian British","short":"Asian","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[2.4457,70.8934],"breaks":[2.446,16.135,29.825,43.514,57.204,70.893],"elevMax":4200,"table":"ts021","tierRange":{"oa":[0.0,93.8947],"gla":[8.5728,38.7026],"borough":[7.2657,47.3272],"pcon":[5.7104,58.8295],"ward":[1.6725,80.0074],"lsoa":[0.6513,87.8049]}},{"key":"eth_black","group":"origins","label":"Black, Black British, Caribbean or African","short":"Black","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[0.0,46.6231],"breaks":[0.0,9.325,18.649,27.974,37.298,46.623],"elevMax":4200,"table":"ts021","tierRange":{"oa":[0.0,73.8739],"gla":[4.4859,24.5389],"borough":[1.8953,26.7738],"pcon":[1.9725,34.3823],"ward":[0.6956,46.7771],"lsoa":[0.0,60.4672]}},{"key":"eth_mixed","group":"origins","label":"Mixed or multiple ethnic groups","short":"Mixed","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[1.0118,12.4088],"breaks":[1.012,3.291,5.571,7.85,10.129,12.409],"elevMax":3600,"table":"ts021","tierRange":{"oa":[0.0,45.1505],"gla":[3.9207,7.6428],"borough":[3.5539,8.0659],"pcon":[2.8949,8.5474],"ward":[1.4412,10.4742],"lsoa":[0.6829,18.4745]}},{"key":"eth_other","group":"origins","label":"Other ethnic group","short":"Other","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[0.0,19.3878],"breaks":[0.0,3.878,7.755,11.633,15.51,19.388],"elevMax":3600,"table":"ts021","tierRange":{"oa":[0.0,64.6907],"gla":[2.3517,11.0467],"borough":[2.0156,13.4354],"pcon":[1.5681,14.1076],"ward":[0.3511,24.0579],"lsoa":[0.0,35.2542]}},{"key":"cob_nonuk","group":"origins","label":"Born outside the UK","short":"Born abroad","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[11.838,70.283],"breaks":[11.838,23.527,35.216,46.905,58.594,70.283],"elevMax":4200,"table":"ts004","tierRange":{"oa":[1.8576,89.2308],"gla":[20.5955,53.9282],"borough":[19.4126,56.0743],"pcon":[16.0468,62.1768],"ward":[6.4591,74.1935],"lsoa":[4.5057,81.5516]}},{"key":"passport_none","group":"origins","label":"No passport held","short":"No passport","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[0.7299,15.534],"breaks":[0.73,3.691,6.652,9.612,12.573,15.534],"elevMax":3900,"table":"ts005","note":"A real answer, not missing data. It tracks age and income as much as nationality.","tierRange":{"oa":[0.0,36.5967],"gla":[3.1801,7.8344],"borough":[2.3169,9.8188],"pcon":[2.5843,10.4776],"ward":[0.2525,15.7147],"lsoa":[0.4785,18.9286]}},{"key":"natid_british","group":"origins","label":"British-only national identity","short":"British identity","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[34.8936,74.5826],"breaks":[34.894,42.831,50.769,58.707,66.645,74.583],"elevMax":4200,"table":"ts027","note":"National identity is a multi-response question, so its categories do not sum to 100%. Only the single unambiguous 'British only' category is mapped here.","tierRange":{"oa":[12.9545,92.6357],"gla":[50.4896,59.6494],"borough":[43.1133,62.7605],"pcon":[45.7977,64.2589],"ward":[27.381,73.5667],"lsoa":[27.5598,79.7511]}},{"key":"arrived_since_2011","group":"language","label":"Arrived since 2011","short":"Recent arrivals","unit":"% of residents born abroad","fmt":"pc1","kind":"count","denom":"nonukborn","domain":[13.2911,76.6082],"breaks":[13.291,25.955,38.618,51.281,63.945,76.608],"elevMax":4200,"table":"ts015","note":"Measured against residents born outside the UK, not all residents. Over all residents this would simply redraw the born-abroad map.","tierRange":{"oa":[0.0,96.1017],"gla":[32.0332,48.5308],"borough":[30.9664,60.6388],"pcon":[28.1003,55.7955],"ward":[16.9954,81.1429],"lsoa":[6.6667,82.1642]}},{"key":"resident_under5y","group":"language","label":"In the UK less than five years","short":"Here under 5 years","unit":"% of residents born abroad","fmt":"pc1","kind":"count","denom":"nonukborn","domain":[5.0,57.1429],"breaks":[5.0,15.429,25.857,36.286,46.714,57.143],"elevMax":4200,"table":"ts016","note":"Measured at the census, 21 March 2021 \u2014 so these are residents who arrived from 2016 onwards. As a share of residents born outside the UK, not of everyone.","tierRange":{"oa":[0.0,89.5522],"gla":[15.7424,31.8622],"borough":[14.5068,42.8135],"pcon":[12.2934,39.7707],"ward":[7.7933,65.1429],"lsoa":[2.3148,68.5075]}},{"key":"lang_not_english","group":"language","label":"Main language is not English","short":"Other main language","unit":"% of residents aged 3+","fmt":"pc1","kind":"count","denom":"res3plus","domain":[3.6,47.5578],"breaks":[3.6,12.392,21.183,29.975,38.766,47.558],"elevMax":4200,"table":"ts029","tierRange":{"oa":[0.0,73.1982],"gla":[8.6961,32.409],"borough":[8.0658,34.6364],"pcon":[7.4538,39.1556],"ward":[1.9326,49.9173],"lsoa":[1.0679,58.4387]}},{"key":"eng_not_well","group":"language","label":"Cannot speak English well","short":"Limited English","unit":"% of residents aged 3+","fmt":"pc1","kind":"count","denom":"res3plus","domain":[0.0,13.4503],"breaks":[0.0,2.69,5.38,8.07,10.76,13.45],"elevMax":3900,"table":"ts029","note":"Combines 'cannot speak English well' and 'cannot speak English'. The denominator is all residents aged 3 and over, matching ONS's own headline.","tierRange":{"oa":[0.0,40.7925],"gla":[1.2664,6.9501],"borough":[0.9912,8.0989],"pcon":[0.795,10.1112],"ward":[0.0,15.392],"lsoa":[0.0,23.6381]}},{"key":"hh_no_english","group":"language","label":"No one speaks English as a main language","short":"No English at home","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[0.8264,32.6667],"breaks":[0.826,7.194,13.563,19.931,26.299,32.667],"elevMax":3900,"table":"ts025","tierRange":{"oa":[0.0,58.9286],"gla":[4.3973,19.0552],"borough":[4.1721,20.2281],"pcon":[3.4544,22.8947],"ward":[0.6769,29.7234],"lsoa":[0.0,42.2468]}},{"key":"hh_some_english","group":"language","label":"Some but not all adults speak English","short":"Mixed-language home","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[2.0408,28.0992],"breaks":[2.041,7.252,12.464,17.676,22.888,28.099],"elevMax":3900,"table":"ts025","tierRange":{"oa":[0.0,60.4167],"gla":[4.7974,16.7488],"borough":[4.7444,18.8033],"pcon":[4.0369,24.1052],"ward":[1.704,31.9797],"lsoa":[1.0638,38.1339]}},{"key":"health_bad","group":"health","label":"Bad or very bad health","short":"Bad health","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[0.4202,10.5802],"breaks":[0.42,2.452,4.484,6.516,8.548,10.58],"elevMax":3900,"table":"ts037","note":"Self-reported. STRONGLY confounded by age \u2014 a retirement suburb reports far more bad health than a student area for reasons that have nothing to do with the place. Use the age-adjusted measure to compare places.","tierRange":{"oa":[0.0,28.8509],"gla":[3.2359,4.9309],"borough":[2.6778,5.5455],"pcon":[2.8037,5.9302],"ward":[0.0,9.9692],"lsoa":[0.4854,12.7094]}},{"key":"health_bad_isr","group":"health","label":"Bad health, age-adjusted","short":"Health vs age expectation","unit":"London = 100","fmt":"idx0","kind":"value","denom":"residents","domain":[45.6409,154.3591],"breaks":[45.641,72.82,100.0,127.18,154.359],"elevMax":3900,"table":"TS037 / TS007A","scale":200,"offset":0.0,"diverging":true,"center":100.0,"divLow":"better than its age predicts","divHigh":"worse than its age predicts","note":"Observed bad health against what this area's age profile predicts. London-wide age-specific rates are fitted from the output area data itself by non-negative least squares, and the ratio is shrunk toward 100 so that small areas, where a handful of cases would otherwise swing it wildly, are not over-read. Amber = worse health than its age mix predicts; blue = better.","tierRange":{"oa":[39.3393,293.2393],"gla":[80.3474,122.8403],"borough":[66.8192,138.2504],"pcon":[65.4892,142.2673],"ward":[35.095,215.3812],"lsoa":[38.6304,225.3061]}},{"key":"health_very_good","group":"health","label":"Very good health","short":"Very good health","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[39.5722,70.2128],"breaks":[39.572,45.7,51.828,57.957,64.085,70.213],"elevMax":3900,"table":"ts037","tierRange":{"oa":[9.542,90.5405],"gla":[50.6742,58.3642],"borough":[49.912,60.6306],"pcon":[49.5521,62.6846],"ward":[44.5444,71.4908],"lsoa":[38.4956,76.0741]}},{"key":"disab_lot","group":"health","label":"Disabled, activities limited a lot","short":"Limited a lot","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[0.9524,14.0436],"breaks":[0.952,3.571,6.189,8.807,11.425,14.044],"elevMax":3900,"table":"ts038","tierRange":{"oa":[0.0,50.8547],"gla":[4.6323,6.4051],"borough":[3.2716,7.2662],"pcon":[4.1226,7.5053],"ward":[0.0,11.605],"lsoa":[0.7282,17.0946]}},{"key":"disab_any","group":"health","label":"Disabled under the Equality Act","short":"Disabled","unit":"% of residents","fmt":"pc1","kind":"count","denom":"residents","domain":[5.3459,25.0746],"breaks":[5.346,9.292,13.237,17.183,21.129,25.075],"elevMax":3900,"table":"ts038","tierRange":{"oa":[0.0,58.9744],"gla":[11.6727,14.432],"borough":[10.7114,16.1818],"pcon":[10.5689,16.7085],"ward":[3.876,21.1973],"lsoa":[4.0453,28.5811]}},{"key":"care_any","group":"health","label":"Provides any unpaid care","short":"Unpaid carers","unit":"% of residents aged 5+","fmt":"pc1","kind":"count","denom":"res5plus","domain":[2.3305,12.7341],"breaks":[2.331,4.411,6.492,8.573,10.653,12.734],"elevMax":3900,"table":"ts039","tierRange":{"oa":[0.0,28.655],"gla":[6.1923,8.2464],"borough":[5.725,8.4191],"pcon":[5.3121,8.9754],"ward":[2.0,10.2121],"lsoa":[1.1956,14.8485]}},{"key":"care_20plus","group":"health","label":"Provides 20+ hours unpaid care a week","short":"Heavy carers","unit":"% of residents aged 5+","fmt":"pc1","kind":"count","denom":"res5plus","domain":[0.4608,7.8067],"breaks":[0.461,1.93,3.399,4.868,6.338,7.807],"elevMax":3900,"table":"ts039","note":"Columns 20-49 hours and 50+ hours. The 20-34 and 35-49 columns are subdivisions of the first and must not be added as well.","tierRange":{"oa":[0.0,17.0901],"gla":[2.9168,4.0119],"borough":[1.8647,4.3117],"pcon":[2.4256,4.4754],"ward":[0.0,6.0836],"lsoa":[0.278,8.4312]}},{"key":"qual_level4","group":"work","label":"Degree-level qualifications","short":"Degree level","unit":"% of residents aged 16+","fmt":"pc1","kind":"count","denom":"res16plus","domain":[22.7528,79.6813],"breaks":[22.753,34.139,45.524,56.91,68.296,79.681],"elevMax":4200,"table":"ts067","tierRange":{"oa":[8.8785,93.617],"gla":[36.4371,58.1551],"borough":[29.5245,74.1722],"pcon":[29.3056,65.1671],"ward":[24.1797,86.5435],"lsoa":[20.2473,87.0206]}},{"key":"qual_none","group":"work","label":"No qualifications","short":"No qualifications","unit":"% of residents aged 16+","fmt":"pc1","kind":"count","denom":"res16plus","domain":[2.8455,32.3944],"breaks":[2.846,8.755,14.665,20.575,26.485,32.394],"elevMax":4200,"table":"ts067","tierRange":{"oa":[0.0,57.2],"gla":[11.6048,20.6591],"borough":[6.635,22.7546],"pcon":[8.2013,24.7546],"ward":[1.8634,30.9727],"lsoa":[1.5291,40.038]}},{"key":"nssec_higher","group":"work","label":"Higher managerial and professional","short":"Higher managerial","unit":"% of residents aged 16+","fmt":"pc1","kind":"count","denom":"res16plus","domain":[3.5503,43.2203],"breaks":[3.55,11.484,19.418,27.352,35.286,43.22],"elevMax":4200,"table":"ts062","tierRange":{"oa":[0.0,68.9873],"gla":[13.5175,24.7569],"borough":[7.0182,39.6476],"pcon":[6.5032,29.9863],"ward":[4.5421,55.409],"lsoa":[2.9602,58.104]}},{"key":"nssec_routine","group":"work","label":"Routine and semi-routine occupations","short":"Routine","unit":"% of residents aged 16+","fmt":"pc1","kind":"count","denom":"res16plus","domain":[3.5789,32.4841],"breaks":[3.579,9.36,15.141,20.922,26.703,32.484],"elevMax":4200,"table":"ts062","tierRange":{"oa":[0.0,52.1739],"gla":[12.7548,19.9246],"borough":[6.8224,25.1187],"pcon":[8.9923,27.294],"ward":[2.6385,33.6182],"lsoa":[1.8682,35.8177]}},{"key":"econ_unemployed","group":"work","label":"Unemployed","short":"Unemployed","unit":"% of residents aged 16+","fmt":"pc1","kind":"count","denom":"res16plus","domain":[0.9404,10.7066],"breaks":[0.94,2.894,4.847,6.8,8.753,10.707],"elevMax":3600,"table":"ts066","note":"Includes unemployed full-time students, who are counted separately by ONS.","tierRange":{"oa":[0.0,28.8719],"gla":[3.5415,5.9787],"borough":[3.3705,6.2434],"pcon":[3.1136,6.3791],"ward":[2.1545,9.8658],"lsoa":[1.0383,12.6374]}},{"key":"econ_retired","group":"work","label":"Retired","short":"Retired","unit":"% of residents aged 16+","fmt":"pc1","kind":"count","denom":"res16plus","domain":[1.1527,32.3741],"breaks":[1.153,7.397,13.641,19.886,26.13,32.374],"elevMax":4200,"table":"ts066","tierRange":{"oa":[0.0,92.9577],"gla":[7.7233,20.4924],"borough":[5.8223,20.973],"pcon":[5.2343,23.5339],"ward":[0.4149,30.0036],"lsoa":[0.2611,42.9335]}},{"key":"econ_student","group":"work","label":"Full-time students","short":"Students","unit":"% of residents aged 16+","fmt":"pc1","kind":"count","denom":"res16plus","domain":[2.7211,25.1082],"breaks":[2.721,7.199,11.676,16.153,20.631,25.108],"elevMax":4200,"table":"ts066","note":"Economically active full-time students plus economically inactive students.","tierRange":{"oa":[0.0,92.4516],"gla":[6.5604,12.8755],"borough":[6.0645,15.76],"pcon":[5.9652,21.6322],"ward":[4.5779,41.0611],"lsoa":[2.7194,63.674]}},{"key":"occ_professional","group":"work","label":"Managerial and professional occupations","short":"Professional","unit":"% of those in employment","fmt":"pc1","kind":"count","denom":"emp16plus","domain":[24.8366,87.9464],"breaks":[24.837,37.459,50.081,62.702,75.324,87.946],"elevMax":4200,"table":"ts063","note":"Denominator is residents aged 16 and over who were in employment the week before the census \u2014 not all residents, which would draw the working-age map instead.","tierRange":{"oa":[7.9365,98.7179],"gla":[46.498,69.6978],"borough":[34.1019,83.6601],"pcon":[32.6479,75.7439],"ward":[23.5803,95.5823],"lsoa":[19.2437,93.6]}},{"key":"ten_outright","group":"housing","label":"Owned outright","short":"Owned outright","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[0.9174,53.4247],"breaks":[0.917,11.419,21.92,32.422,42.923,53.425],"elevMax":4200,"table":"ts054","tierRange":{"oa":[0.0,82.5],"gla":[11.3231,32.886],"borough":[7.8032,34.4479],"pcon":[7.4857,38.0037],"ward":[2.7158,49.2465],"lsoa":[0.155,63.6525]}},{"key":"ten_mortgage","group":"housing","label":"Owned with a mortgage","short":"Mortgaged","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[2.521,51.2821],"breaks":[2.521,12.273,22.025,31.778,41.53,51.282],"elevMax":4200,"table":"ts054","tierRange":{"oa":[0.0,91.7431],"gla":[13.2771,35.6571],"borough":[11.3658,36.003],"pcon":[10.7043,38.5605],"ward":[4.5929,46.5674],"lsoa":[0.7984,69.697]}},{"key":"ten_social","group":"housing","label":"Social rented","short":"Social rented","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[0.0,80.1802],"breaks":[0.0,16.036,32.072,48.108,64.144,80.18],"elevMax":4200,"table":"ts054","tierRange":{"oa":[0.0,100.0],"gla":[12.448,36.5959],"borough":[10.4106,40.4868],"pcon":[8.8736,47.536],"ward":[0.8264,69.7286],"lsoa":[0.0,92.1875]}},{"key":"ten_private","group":"housing","label":"Private rented","short":"Private rented","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[4.2735,72.3577],"breaks":[4.274,17.89,31.507,45.124,58.741,72.358],"elevMax":4200,"table":"ts054","tierRange":{"oa":[0.0,94.8454],"gla":[16.5241,39.9421],"borough":[15.2934,48.3276],"pcon":[11.3121,46.9417],"ward":[6.4663,83.7838],"lsoa":[2.6549,86.3636]}},{"key":"acc_flat","group":"housing","label":"Flats","short":"Flats","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[0.0,100.0],"breaks":[0.0,20.0,40.0,60.0,80.0,100.0],"elevMax":4200,"table":"ts044","note":"Purpose-built blocks, converted or shared houses, other converted buildings, and flats in commercial buildings.","tierRange":{"oa":[0.0,100.0],"gla":[28.4146,82.8581],"borough":[23.033,97.5066],"pcon":[15.5805,90.3979],"ward":[7.3831,100.0],"lsoa":[0.0,100.0]}},{"key":"acc_detsemi","group":"housing","label":"Detached and semi-detached houses","short":"Detached / semi","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[0.0,97.561],"breaks":[0.0,19.512,39.024,58.537,78.049,97.561],"elevMax":4200,"table":"ts044","tierRange":{"oa":[0.0,100.0],"gla":[4.2524,49.4079],"borough":[0.4865,52.3311],"pcon":[2.852,65.6848],"ward":[0.0,82.5606],"lsoa":[0.0,99.5392]}},{"key":"acc_terraced","group":"housing","label":"Terraced houses","short":"Terraced","unit":"% of households","fmt":"pc1","kind":"count","denom":"households","domain":[0.0,75.0],"breaks":[0.0,15.0,30.0,45.0,60.0,75.0],"elevMax":4200,"table":"ts044","tierRange":{"oa":[0.0,94.4882],"gla":[12.2666,28.3438],"borough":[1.5812,41.6102],"pcon":[6.4425,43.2266],"ward":[0.0,62.3124],"lsoa":[0.0,89.0063]}}],"initial":"pop_density","initialGroup":"people","ramp":["#004D80","#1877B8","#4A92CC","#80B4DD","#B4D4EB","#E2EEF7"],"rampDiverging":["#B4D4EB","#4A92CC","#1877B8","#1B5480","#39485A","#7A5326","#B5701E","#E0A24E","#F0CB96"],"colorGamma":0.72,"nodataColor":[35,44,56,255],"domainMethod":"population-weighted p2-p98 of the output-area distribution, shared by every area type"};
   var ORIENT = {"thames":{"type":"FeatureCollection","features":[{"type":"Feature","properties":{},"geometry":{"type":"MultiPolygon","coordinates":[[[[-0.3917,51.3642],[-0.3908,51.366],[-0.3913,51.3672],[-0.3908,51.3681],[-0.3891,51.3686],[-0.3864,51.3686],[-0.3847,51.3684],[-0.381,51.3673],[-0.3784,51.3687],[-0.3774,51.3714],[-0.378,51.3743],[-0.377,51.3765],[-0.3781,51.3793],[-0.3778,51.3809],[-0.3767,51.3835],[-0.3741,51.3863],[-0.3718,51.387],[-0.3617,51.3871],[-0.3592,51.3877],[-0.3568,51.3907],[-0.3567,51.3937],[-0.3557,51.3951],[-0.3546,51.3956],[-0.352,51.3961],[-0.3505,51.397],[-0.3483,51.3972],[-0.3472,51.3988],[-0.3444,51.3995],[-0.3438,51.4008],[-0.3444,51.4007],[-0.3443,51.401],[-0.3417,51.4013],[-0.3392,51.4013],[-0.339,51.401],[-0.3405,51.4012],[-0.3432,51.4009],[-0.3442,51.3993],[-0.3473,51.3985],[-0.3482,51.3971],[-0.3503,51.3969],[-0.3517,51.396],[-0.3553,51.3951],[-0.3563,51.3936],[-0.3564,51.3907],[-0.3582,51.3882],[-0.3595,51.3872],[-0.3622,51.3865],[-0.3715,51.3868],[-0.3739,51.3861],[-0.3764,51.3835],[-0.3775,51.381],[-0.3777,51.3794],[-0.3765,51.3767],[-0.3776,51.374],[-0.3768,51.3712],[-0.3781,51.3685],[-0.381,51.3671],[-0.3855,51.3684],[-0.3883,51.3686],[-0.3905,51.368],[-0.3911,51.3669],[-0.3905,51.366],[-0.3915,51.3642],[-0.3948,51.3626],[-0.3961,51.3614],[-0.3971,51.3584],[-0.3961,51.3569],[-0.3917,51.3555],[-0.3915,51.3553],[-0.3921,51.3549],[-0.3915,51.3545],[-0.3923,51.3549],[-0.3919,51.3554],[-0.3964,51.3569],[-0.3973,51.3586],[-0.3967,51.3608],[-0.3958,51.3622],[-0.3917,51.3642]]],[[[-0.4257,51.3891],[-0.4222,51.3916],[-0.4197,51.3941],[-0.4196,51.3951],[-0.4188,51.3955],[-0.4198,51.3968],[-0.4183,51.3978],[-0.4173,51.3977],[-0.417,51.3989],[-0.4133,51.4015],[-0.4111,51.4043],[-0.4076,51.4056],[-0.4043,51.406],[-0.4037,51.4066],[-0.4021,51.4073],[-0.3935,51.4098],[-0.388,51.4102],[-0.3874,51.4097],[-0.3836,51.4088],[-0.3786,51.4081],[-0.3761,51.4087],[-0.373,51.4104],[-0.3671,51.4113],[-0.3637,51.4126],[-0.3611,51.4125],[-0.3576,51.4119],[-0.3524,51.4101],[-0.3523,51.4103],[-0.3473,51.4071],[-0.347,51.4073],[-0.3468,51.4062],[-0.3444,51.4048],[-0.3399,51.403],[-0.337,51.3999],[-0.332,51.3961],[-0.3301,51.3939],[-0.3276,51.3922],[-0.3249,51.3918],[-0.3189,51.3933],[-0.3139,51.3968],[-0.3103,51.4],[-0.3096,51.401],[-0.3092,51.4032],[-0.3096,51.4113],[-0.309,51.4146],[-0.3067,51.4214],[-0.3079,51.4237],[-0.309,51.4236],[-0.3095,51.4248],[-0.3105,51.4256],[-0.3109,51.4258],[-0.31,51.425],[-0.3115,51.4261],[-0.3122,51.4256],[-0.3115,51.4261],[-0.3129,51.4271],[-0.3169,51.4289],[-0.3183,51.4291],[-0.3183,51.4296],[-0.3185,51.4291],[-0.3226,51.43],[-0.3262,51.4316],[-0.3283,51.4336],[-0.329,51.4366],[-0.3305,51.4384],[-0.3318,51.4392],[-0.3312,51.4398],[-0.3316,51.4413],[-0.3304,51.443],[-0.3268,51.4458],[-0.325,51.4465],[-0.3215,51.4468],[-0.3194,51.4464],[-0.3158,51.4467],[-0.3085,51.4488],[-0.3057,51.4504],[-0.304,51.452],[-0.3039,51.4534],[-0.306,51.4562],[-0.3073,51.457],[-0.3079,51.4567],[-0.3076,51.4572],[-0.3113,51.4588],[-0.3116,51.4586],[-0.3114,51.4588],[-0.314,51.4597],[-0.3176,51.4618],[-0.3169,51.4624],[-0.3163,51.4623],[-0.313,51.4603],[-0.3081,51.4588],[-0.3045,51.4559],[-0.3028,51.4534],[-0.3026,51.4522],[-0.3028,51.4513],[-0.3059,51.4485],[-0.3134,51.4464],[-0.3217,51.4454],[-0.3275,51.4436],[-0.3299,51.4419],[-0.3302,51.4399],[-0.328,51.4365],[-0.327,51.4335],[-0.3243,51.4314],[-0.323,51.4309],[-0.3235,51.4312],[-0.3232,51.4314],[-0.3169,51.4297],[-0.3094,51.4262],[-0.3069,51.4242],[-0.305,51.4205],[-0.3077,51.4154],[-0.3078,51.4123],[-0.3085,51.4096],[-0.3085,51.4015],[-0.3106,51.398],[-0.3198,51.3923],[-0.3197,51.3918],[-0.322,51.3913],[-0.3222,51.3917],[-0.321,51.3917],[-0.32,51.3923],[-0.3258,51.391],[-0.3313,51.3928],[-0.333,51.3948],[-0.3334,51.3964],[-0.3357,51.398],[-0.3397,51.4018],[-0.3409,51.4027],[-0.3454,51.4044],[-0.3571,51.4109],[-0.3586,51.4112],[-0.3642,51.4113],[-0.3729,51.4085],[-0.3783,51.4076],[-0.3812,51.4077],[-0.3876,51.4091],[-0.3922,51.4091],[-0.3961,51.4081],[-0.4009,51.4062],[-0.4074,51.4046],[-0.4122,51.4012],[-0.4166,51.3968],[-0.4182,51.3944],[-0.423,51.39],[-0.4266,51.388],[-0.4289,51.388],[-0.4308,51.3873],[-0.4317,51.3876],[-0.4297,51.3887],[-0.4266,51.3888],[-0.4257,51.3891]],[[-0.4182,51.3977],[-0.4195,51.3968],[-0.4186,51.3955],[-0.4195,51.3946],[-0.4193,51.3942],[-0.4172,51.3978],[-0.4182,51.3977]],[[-0.4134,51.4012],[-0.417,51.3983],[-0.4169,51.3977],[-0.4145,51.3995],[-0.4134,51.4012]],[[-0.4057,51.4054],[-0.4073,51.4052],[-0.4099,51.4042],[-0.4119,51.4021],[-0.4116,51.4019],[-0.4069,51.4052],[-0.4057,51.4054]],[[-0.4065,51.4051],[-0.4056,51.4052],[-0.4055,51.4053],[-0.4065,51.4051]],[[-0.3972,51.4086],[-0.4021,51.4072],[-0.4041,51.4061],[-0.4003,51.407],[-0.3972,51.4083],[-0.3972,51.4086]],[[-0.3963,51.4089],[-0.3968,51.4083],[-0.3922,51.4096],[-0.3963,51.4089]],[[-0.3885,51.41],[-0.3894,51.4099],[-0.3883,51.4098],[-0.3878,51.4099],[-0.3885,51.41]],[[-0.3721,51.4103],[-0.3752,51.4086],[-0.373,51.4089],[-0.3679,51.4108],[-0.3721,51.4103]],[[-0.3629,51.4123],[-0.3636,51.4121],[-0.3631,51.4121],[-0.3629,51.4121],[-0.3629,51.4123]],[[-0.3602,51.4117],[-0.3617,51.4116],[-0.3597,51.4114],[-0.3591,51.4115],[-0.3602,51.4117]],[[-0.3555,51.4104],[-0.3557,51.4104],[-0.3555,51.4103],[-0.3555,51.4104]],[[-0.3506,51.4085],[-0.3517,51.4091],[-0.3533,51.4096],[-0.3517,51.4086],[-0.3536,51.4095],[-0.3532,51.4098],[-0.355,51.4102],[-0.3548,51.4099],[-0.3505,51.4079],[-0.3506,51.4085]],[[-0.3488,51.4077],[-0.3497,51.4079],[-0.3502,51.4077],[-0.349,51.4068],[-0.3475,51.4064],[-0.3488,51.4077]],[[-0.3466,51.4053],[-0.3464,51.4051],[-0.3453,51.4046],[-0.3475,51.4057],[-0.3475,51.4057],[-0.3468,51.4053],[-0.3466,51.4053]],[[-0.3191,51.43],[-0.323,51.4309],[-0.321,51.4302],[-0.3191,51.43]],[[-0.3327,51.396],[-0.3318,51.3937],[-0.3306,51.3931],[-0.3327,51.396]],[[-0.3305,51.393],[-0.3307,51.3929],[-0.3304,51.3928],[-0.3305,51.393]],[[-0.3298,51.3929],[-0.3302,51.3927],[-0.3294,51.3923],[-0.329,51.3923],[-0.3298,51.3929]],[[-0.3083,51.4237],[-0.3094,51.4253],[-0.3125,51.4271],[-0.3094,51.4249],[-0.309,51.4239],[-0.3083,51.4237]],[[-0.3114,51.3987],[-0.3119,51.398],[-0.3111,51.3983],[-0.3102,51.3994],[-0.3114,51.3987]],[[-0.306,51.42],[-0.3062,51.4204],[-0.3063,51.4193],[-0.3061,51.4196],[-0.3059,51.4204],[-0.306,51.42]],[[-0.3059,51.4209],[-0.306,51.4205],[-0.3058,51.4205],[-0.3059,51.4209]],[[-0.3311,51.4396],[-0.3312,51.4391],[-0.3308,51.4388],[-0.3311,51.4396]],[[-0.3251,51.4448],[-0.323,51.4455],[-0.3232,51.4457],[-0.3229,51.4455],[-0.3209,51.4461],[-0.3258,51.4457],[-0.3281,51.444],[-0.3251,51.4447],[-0.3255,51.445],[-0.3251,51.4448]],[[-0.312,51.4594],[-0.312,51.4594],[-0.3119,51.4594],[-0.312,51.4594]],[[-0.311,51.4591],[-0.3111,51.459],[-0.311,51.459],[-0.311,51.4591]],[[-0.3091,51.4583],[-0.3099,51.4585],[-0.3093,51.4581],[-0.3083,51.4578],[-0.3091,51.4583]],[[-0.306,51.4498],[-0.3064,51.4494],[-0.3057,51.4496],[-0.3052,51.4502],[-0.306,51.4498]]],[[[-0.3163,51.4726],[-0.3157,51.4729],[-0.3161,51.4725],[-0.3144,51.473],[-0.3147,51.4734],[-0.3152,51.4732],[-0.3147,51.4734],[-0.3142,51.4731],[-0.3145,51.4735],[-0.314,51.4731],[-0.3143,51.4736],[-0.3137,51.4732],[-0.3139,51.4738],[-0.3131,51.4735],[-0.3137,51.474],[-0.3135,51.4741],[-0.313,51.4735],[-0.3131,51.4739],[-0.3125,51.4736],[-0.3132,51.4742],[-0.3122,51.4737],[-0.3129,51.4743],[-0.3127,51.4743],[-0.312,51.4738],[-0.3124,51.4741],[-0.3116,51.474],[-0.3125,51.4745],[-0.3115,51.474],[-0.311,51.4742],[-0.3116,51.4748],[-0.3107,51.4744],[-0.3112,51.4748],[-0.3114,51.4749],[-0.3104,51.4745],[-0.3111,51.4751],[-0.3102,51.4745],[-0.3109,51.4752],[-0.3099,51.4747],[-0.3105,51.4753],[-0.3099,51.4747],[-0.3101,51.4752],[-0.3095,51.4749],[-0.3103,51.4755],[-0.3102,51.4757],[-0.3095,51.4749],[-0.3093,51.475],[-0.3098,51.4754],[-0.3099,51.4755],[-0.3099,51.4756],[-0.3093,51.475],[-0.3091,51.4751],[-0.3092,51.4752],[-0.3091,51.4753],[-0.3091,51.4753],[-0.3086,51.4754],[-0.3092,51.4757],[-0.3086,51.4754],[-0.3081,51.4756],[-0.3085,51.4759],[-0.3087,51.4758],[-0.3089,51.476],[-0.3095,51.4758],[-0.3093,51.4762],[-0.3081,51.4758],[-0.3084,51.4761],[-0.3086,51.476],[-0.3087,51.476],[-0.3093,51.4763],[-0.3087,51.4761],[-0.3091,51.4764],[-0.3085,51.4762],[-0.308,51.4759],[-0.3081,51.4757],[-0.3078,51.4758],[-0.3088,51.4766],[-0.3078,51.4758],[-0.3078,51.4761],[-0.3074,51.476],[-0.3085,51.4766],[-0.3071,51.4761],[-0.3082,51.4767],[-0.3081,51.4768],[-0.3069,51.4762],[-0.3068,51.4763],[-0.3072,51.4765],[-0.3072,51.4767],[-0.3068,51.4763],[-0.3064,51.4768],[-0.307,51.477],[-0.3075,51.4766],[-0.3079,51.4772],[-0.3073,51.4768],[-0.3075,51.4774],[-0.307,51.4772],[-0.3062,51.477],[-0.3068,51.4772],[-0.3073,51.4775],[-0.3061,51.4771],[-0.3065,51.4773],[-0.3059,51.4773],[-0.3071,51.4777],[-0.3059,51.4774],[-0.307,51.4778],[-0.3058,51.4775],[-0.305,51.4786],[-0.3054,51.4787],[-0.3054,51.4788],[-0.3048,51.4787],[-0.3053,51.4789],[-0.3054,51.4789],[-0.3057,51.4788],[-0.3059,51.4789],[-0.3054,51.4789],[-0.3048,51.4788],[-0.3061,51.4791],[-0.3061,51.4792],[-0.3048,51.4788],[-0.3053,51.4792],[-0.3046,51.4789],[-0.3044,51.4791],[-0.3044,51.4793],[-0.3049,51.4791],[-0.3051,51.4792],[-0.3044,51.4793],[-0.305,51.4796],[-0.3052,51.4794],[-0.3053,51.4794],[-0.3055,51.4793],[-0.3055,51.4794],[-0.3047,51.4799],[-0.305,51.4804],[-0.3041,51.4796],[-0.3042,51.4799],[-0.3037,51.4799],[-0.3043,51.48],[-0.3035,51.4799],[-0.3008,51.4818],[-0.3001,51.4834],[-0.2997,51.4833],[-0.2995,51.4836],[-0.3,51.4842],[-0.3004,51.484],[-0.2992,51.4852],[-0.2927,51.4874],[-0.2873,51.4876],[-0.2872,51.488],[-0.2865,51.4875],[-0.2814,51.4862],[-0.277,51.4834],[-0.2729,51.4768],[-0.2679,51.4728],[-0.2655,51.4719],[-0.2628,51.4714],[-0.2578,51.4717],[-0.2545,51.473],[-0.2524,51.4755],[-0.2513,51.4781],[-0.2513,51.4827],[-0.2497,51.4857],[-0.248,51.4871],[-0.2417,51.4899],[-0.2341,51.4904],[-0.2287,51.4888],[-0.2269,51.4869],[-0.2237,51.4819],[-0.2237,51.4783],[-0.2228,51.4748],[-0.2166,51.4695],[-0.211,51.4673],[-0.2104,51.4677],[-0.2105,51.4671],[-0.202,51.4652],[-0.1997,51.465],[-0.1973,51.4652],[-0.1971,51.465],[-0.1939,51.4648],[-0.1907,51.4652],[-0.1862,51.4665],[-0.1836,51.4685],[-0.1809,51.4729],[-0.1789,51.4788],[-0.178,51.4797],[-0.1776,51.4796],[-0.1779,51.4803],[-0.1758,51.4816],[-0.1691,51.4829],[-0.1522,51.4852],[-0.1464,51.4857],[-0.1398,51.4848],[-0.1378,51.4848],[-0.1345,51.4852],[-0.1313,51.4863],[-0.1283,51.4883],[-0.1254,51.4915],[-0.1227,51.5052],[-0.121,51.5079],[-0.1189,51.5094],[-0.1161,51.5103],[-0.1128,51.5108],[-0.1077,51.5109],[-0.1073,51.5106],[-0.1004,51.5108],[-0.0961,51.5103],[-0.095,51.5106],[-0.0953,51.5102],[-0.0945,51.5099],[-0.0898,51.509],[-0.0872,51.5089],[-0.0871,51.509],[-0.0814,51.5084],[-0.0747,51.5067],[-0.0744,51.5063],[-0.0716,51.5059],[-0.0681,51.5045],[-0.0608,51.5028],[-0.0587,51.503],[-0.0565,51.5037],[-0.0504,51.5076],[-0.0494,51.5078],[-0.0497,51.5081],[-0.0483,51.5084],[-0.0457,51.5061],[-0.0465,51.5057],[-0.0461,51.5052],[-0.047,51.5054],[-0.048,51.5048],[-0.0477,51.5041],[-0.0486,51.5045],[-0.0488,51.504],[-0.0507,51.5029],[-0.0549,51.5014],[-0.0591,51.5006],[-0.0633,51.5006],[-0.0649,51.5008],[-0.0646,51.5013],[-0.0666,51.5017],[-0.0674,51.5012],[-0.0703,51.5021],[-0.0727,51.5036],[-0.0811,51.5059],[-0.0844,51.5066],[-0.0879,51.5068],[-0.0877,51.5073],[-0.0878,51.5069],[-0.0916,51.5072],[-0.0962,51.5085],[-0.1014,51.5086],[-0.1077,51.5086],[-0.1103,51.5082],[-0.1109,51.5085],[-0.116,51.5074],[-0.1179,51.5062],[-0.1192,51.5043],[-0.1213,51.4945],[-0.1226,51.4909],[-0.1244,51.4879],[-0.1258,51.4874],[-0.1257,51.4868],[-0.1272,51.4857],[-0.1321,51.4837],[-0.1357,51.4829],[-0.1361,51.4831],[-0.1368,51.4824],[-0.1373,51.4827],[-0.1403,51.4827],[-0.1462,51.4836],[-0.1497,51.4836],[-0.1658,51.4815],[-0.1719,51.4802],[-0.1737,51.4792],[-0.1752,51.4779],[-0.1784,51.471],[-0.1814,51.4671],[-0.1841,51.4654],[-0.1903,51.4634],[-0.1991,51.4627],[-0.2031,51.4631],[-0.2073,51.4639],[-0.2127,51.4656],[-0.2175,51.4679],[-0.2228,51.4718],[-0.2237,51.4716],[-0.2229,51.4718],[-0.2263,51.4755],[-0.227,51.4819],[-0.228,51.4851],[-0.2311,51.4877],[-0.2356,51.489],[-0.2389,51.4889],[-0.2408,51.4884],[-0.2483,51.4839],[-0.2494,51.4819],[-0.2493,51.4787],[-0.2499,51.4757],[-0.2515,51.4736],[-0.2529,51.4725],[-0.2571,51.4708],[-0.264,51.4702],[-0.2677,51.4712],[-0.2696,51.4721],[-0.2732,51.4748],[-0.2771,51.4812],[-0.2783,51.4824],[-0.2845,51.4859],[-0.2876,51.4865],[-0.2905,51.4862],[-0.2954,51.4847],[-0.3026,51.4793],[-0.3072,51.4747],[-0.313,51.4724],[-0.318,51.4708],[-0.3191,51.4688],[-0.3199,51.4651],[-0.3169,51.4624],[-0.3175,51.462],[-0.3187,51.4625],[-0.3214,51.4648],[-0.322,51.4662],[-0.3221,51.4689],[-0.3209,51.471],[-0.3162,51.4724],[-0.3163,51.4726]],[[-0.0873,51.5085],[-0.0873,51.5085],[-0.0877,51.5085],[-0.0873,51.5085]],[[-0.0876,51.5076],[-0.0876,51.5076],[-0.0881,51.5076],[-0.0876,51.5076]],[[-0.3204,51.4705],[-0.3212,51.4695],[-0.3209,51.4659],[-0.3197,51.4707],[-0.3204,51.4705]],[[-0.309,51.4753],[-0.309,51.4751],[-0.3088,51.4753],[-0.309,51.4753]],[[-0.3073,51.4772],[-0.3068,51.477],[-0.3066,51.477],[-0.3073,51.4772]],[[-0.3065,51.477],[-0.3063,51.4769],[-0.3062,51.4769],[-0.3065,51.477]],[[-0.2985,51.4851],[-0.2983,51.4848],[-0.2986,51.485],[-0.2984,51.4847],[-0.2987,51.4849],[-0.2987,51.4845],[-0.299,51.4847],[-0.2985,51.4841],[-0.2976,51.4853],[-0.2985,51.4851]],[[-0.2964,51.4856],[-0.2975,51.4845],[-0.2962,51.4853],[-0.2948,51.486],[-0.2964,51.4856]],[[-0.2919,51.487],[-0.2946,51.4861],[-0.2926,51.4864],[-0.2898,51.4872],[-0.2919,51.487]],[[-0.2807,51.4849],[-0.2818,51.4853],[-0.2808,51.4847],[-0.2804,51.4847],[-0.2807,51.4849]],[[-0.2797,51.4836],[-0.2798,51.4836],[-0.2797,51.4836],[-0.2797,51.4836]],[[-0.2795,51.4839],[-0.2794,51.4839],[-0.2794,51.4839],[-0.2795,51.4839]],[[-0.2791,51.4841],[-0.2792,51.4841],[-0.2791,51.4841],[-0.2791,51.4841]],[[-0.2789,51.4845],[-0.2789,51.4844],[-0.2789,51.4844],[-0.2789,51.4845]],[[-0.2463,51.4876],[-0.2477,51.4865],[-0.246,51.4872],[-0.2445,51.4883],[-0.2463,51.4876]],[[-0.2137,51.4665],[-0.2134,51.4663],[-0.2134,51.4663],[-0.2137,51.4665]],[[-0.2133,51.4668],[-0.213,51.4666],[-0.213,51.4666],[-0.2133,51.4668]],[[-0.2129,51.4672],[-0.2126,51.467],[-0.2126,51.467],[-0.2129,51.4672]],[[-0.2125,51.4675],[-0.2123,51.4673],[-0.2122,51.4673],[-0.2125,51.4675]],[[-0.1883,51.4653],[-0.1883,51.4653],[-0.188,51.4654],[-0.1883,51.4653]],[[-0.1876,51.4646],[-0.1876,51.4646],[-0.1874,51.4647],[-0.1876,51.4646]],[[-0.1799,51.4734],[-0.18,51.4733],[-0.1799,51.4734],[-0.1799,51.4734]],[[-0.1788,51.473],[-0.1788,51.4729],[-0.1787,51.473],[-0.1788,51.473]],[[-0.1729,51.4817],[-0.1731,51.4816],[-0.1729,51.4817],[-0.1729,51.4817]],[[-0.1728,51.4813],[-0.1727,51.4813],[-0.1726,51.4814],[-0.1728,51.4813]],[[-0.1724,51.4809],[-0.1722,51.4809],[-0.1722,51.4809],[-0.1724,51.4809]],[[-0.1719,51.4806],[-0.1721,51.4805],[-0.1718,51.4806],[-0.1719,51.4806]],[[-0.1501,51.485],[-0.1497,51.485],[-0.1497,51.485],[-0.1501,51.485]],[[-0.1495,51.4841],[-0.1499,51.484],[-0.1495,51.4841],[-0.1495,51.4841]],[[-0.1478,51.4841],[-0.147,51.4841],[-0.1469,51.4841],[-0.1478,51.4841]],[[-0.147,51.4846],[-0.1477,51.4846],[-0.1469,51.4846],[-0.147,51.4846]],[[-0.147,51.4851],[-0.1477,51.4851],[-0.1469,51.4851],[-0.147,51.4851]],[[-0.1278,51.4881],[-0.128,51.4879],[-0.1278,51.4881],[-0.1278,51.4881]],[[-0.1273,51.4879],[-0.1274,51.4876],[-0.1272,51.4879],[-0.1273,51.4879]],[[-0.1267,51.4876],[-0.1268,51.4874],[-0.1266,51.4876],[-0.1267,51.4876]],[[-0.1261,51.4873],[-0.1263,51.4871],[-0.126,51.4874],[-0.1261,51.4873]],[[-0.1241,51.4948],[-0.1241,51.4945],[-0.1241,51.4948],[-0.1241,51.4948]],[[-0.1234,51.4947],[-0.1234,51.4945],[-0.1234,51.4947],[-0.1234,51.4947]],[[-0.1231,51.501],[-0.1231,51.5008],[-0.1231,51.501],[-0.1231,51.501]],[[-0.1226,51.4946],[-0.1226,51.4944],[-0.1226,51.4946],[-0.1226,51.4946]],[[-0.1226,51.501],[-0.1226,51.5007],[-0.1226,51.501],[-0.1226,51.501]],[[-0.1221,51.501],[-0.1221,51.5007],[-0.1221,51.501],[-0.1221,51.501]],[[-0.1219,51.4945],[-0.1219,51.4943],[-0.1219,51.4946],[-0.1219,51.4945]],[[-0.1215,51.501],[-0.1215,51.5007],[-0.1215,51.501],[-0.1215,51.501]],[[-0.121,51.5009],[-0.1209,51.5007],[-0.1209,51.501],[-0.121,51.5009]],[[-0.1205,51.5009],[-0.1204,51.5007],[-0.1204,51.501],[-0.1205,51.5009]],[[-0.1195,51.5056],[-0.1194,51.5055],[-0.1194,51.5056],[-0.1195,51.5056]],[[-0.119,51.5062],[-0.119,51.5061],[-0.1189,51.5062],[-0.119,51.5062]],[[-0.1175,51.5095],[-0.1178,51.5094],[-0.1174,51.5095],[-0.1175,51.5095]],[[-0.117,51.5089],[-0.1173,51.5088],[-0.1169,51.5089],[-0.117,51.5089]],[[-0.1164,51.5083],[-0.1167,51.5082],[-0.1164,51.5083],[-0.1164,51.5083]],[[-0.1159,51.5077],[-0.1162,51.5076],[-0.1158,51.5077],[-0.1159,51.5077]],[[-0.0945,51.5084],[-0.0943,51.5083],[-0.0942,51.5083],[-0.0945,51.5084]],[[-0.0943,51.5087],[-0.094,51.5087],[-0.094,51.5087],[-0.0943,51.5087]],[[-0.094,51.5091],[-0.0938,51.5091],[-0.0937,51.5091],[-0.094,51.5091]],[[-0.0938,51.5095],[-0.0936,51.5094],[-0.0935,51.5094],[-0.0938,51.5095]],[[-0.0924,51.5079],[-0.0919,51.5077],[-0.0919,51.5078],[-0.0924,51.5079]],[[-0.0922,51.5083],[-0.0917,51.5081],[-0.0916,51.5081],[-0.0922,51.5083]],[[-0.092,51.5087],[-0.0915,51.5085],[-0.0915,51.5085],[-0.092,51.5087]],[[-0.0918,51.509],[-0.0913,51.5089],[-0.0912,51.5089],[-0.0918,51.509]],[[-0.0755,51.505],[-0.0752,51.5051],[-0.0757,51.5053],[-0.0755,51.505]],[[-0.075,51.5057],[-0.0747,51.5058],[-0.0753,51.506],[-0.075,51.5057]],[[-0.049,51.5046],[-0.0489,51.5046],[-0.0489,51.5047],[-0.049,51.5046]]],[[[-0.0051,51.4886],[-0.0026,51.4875],[-0.0044,51.4883],[-0.0031,51.4902],[-0.0032,51.4921],[-0.006,51.4957],[-0.0056,51.4958],[-0.0073,51.4983],[-0.0077,51.5008],[-0.0089,51.5012],[-0.0076,51.5015],[-0.0068,51.5039],[-0.0021,51.5074],[0.0029,51.5082],[0.0034,51.508],[0.0036,51.5084],[0.0058,51.5082],[0.0096,51.5071],[0.012,51.5053],[0.0134,51.5049],[0.0131,51.5044],[0.0138,51.5037],[0.018,51.5005],[0.0224,51.4989],[0.0279,51.4987],[0.035,51.4997],[0.0442,51.4999],[0.0585,51.4984],[0.0635,51.4987],[0.0637,51.4981],[0.0636,51.4987],[0.0687,51.499],[0.0687,51.4993],[0.0688,51.4991],[0.0701,51.4993],[0.0703,51.499],[0.0702,51.4994],[0.0737,51.5004],[0.0747,51.5016],[0.0744,51.5022],[0.0753,51.5023],[0.0767,51.5035],[0.0763,51.5038],[0.077,51.5038],[0.0778,51.5045],[0.0781,51.504],[0.0782,51.5044],[0.0769,51.5051],[0.078,51.5052],[0.0803,51.5084],[0.081,51.5086],[0.0837,51.511],[0.0833,51.5115],[0.0861,51.5129],[0.0905,51.5143],[0.0904,51.5147],[0.094,51.515],[0.0955,51.5155],[0.0967,51.5151],[0.0959,51.5157],[0.0966,51.5162],[0.0994,51.5148],[0.107,51.5139],[0.1088,51.5141],[0.1145,51.5157],[0.1143,51.516],[0.1187,51.518],[0.1226,51.5191],[0.1273,51.5195],[0.1325,51.5189],[0.1332,51.5191],[0.138,51.5181],[0.1438,51.5151],[0.1443,51.5155],[0.1467,51.5141],[0.1524,51.5126],[0.1582,51.512],[0.1591,51.5125],[0.1599,51.5118],[0.165,51.5117],[0.1663,51.5106],[0.1721,51.5083],[0.1737,51.5082],[0.1756,51.5071],[0.1786,51.5053],[0.1803,51.5022],[0.1802,51.5014],[0.1826,51.4993],[0.1824,51.499],[0.1835,51.4972],[0.1825,51.4966],[0.1825,51.496],[0.1833,51.4953],[0.1838,51.4923],[0.1848,51.4907],[0.1874,51.4886],[0.1877,51.4879],[0.196,51.4881],[0.2012,51.4892],[0.207,51.4895],[0.2084,51.4897],[0.2091,51.4903],[0.2089,51.4899],[0.2095,51.4898],[0.2106,51.4902],[0.2116,51.4898],[0.2119,51.4901],[0.2126,51.4897],[0.2156,51.4896],[0.2169,51.4888],[0.218,51.4887],[0.2259,51.4857],[0.2264,51.486],[0.2271,51.4856],[0.2281,51.4861],[0.2287,51.484],[0.2304,51.4825],[0.2389,51.4778],[0.2412,51.4763],[0.2412,51.4759],[0.2471,51.4728],[0.2554,51.4705],[0.2574,51.4694],[0.2511,51.4634],[0.2497,51.4639],[0.2488,51.4651],[0.2426,51.4679],[0.2397,51.4685],[0.2395,51.4695],[0.2369,51.4707],[0.2355,51.4719],[0.229,51.4756],[0.2273,51.4759],[0.2202,51.4794],[0.2118,51.4827],[0.2105,51.4825],[0.2097,51.4817],[0.2067,51.4812],[0.2056,51.4805],[0.2049,51.4808],[0.2036,51.48],[0.2046,51.4808],[0.2023,51.4806],[0.2021,51.4803],[0.2028,51.4802],[0.2019,51.4802],[0.2021,51.479],[0.1997,51.4784],[0.1989,51.4785],[0.2,51.4789],[0.2005,51.48],[0.1994,51.48],[0.1978,51.4784],[0.1986,51.4796],[0.1936,51.4793],[0.1926,51.4798],[0.191,51.4798],[0.1903,51.4791],[0.1902,51.4797],[0.1834,51.4811],[0.1783,51.4834],[0.1777,51.4832],[0.1782,51.4836],[0.176,51.4854],[0.1756,51.4853],[0.1745,51.4869],[0.1741,51.4868],[0.1736,51.4875],[0.1725,51.489],[0.1717,51.4977],[0.1701,51.5],[0.1668,51.5033],[0.1645,51.5045],[0.159,51.5057],[0.1518,51.5064],[0.15,51.5063],[0.1495,51.5059],[0.148,51.5065],[0.1479,51.5068],[0.1469,51.5067],[0.1375,51.5102],[0.1373,51.51],[0.1306,51.5129],[0.1285,51.5133],[0.1251,51.513],[0.1194,51.5112],[0.1113,51.5099],[0.1057,51.5094],[0.0989,51.5096],[0.0947,51.509],[0.0919,51.509],[0.0881,51.5056],[0.0877,51.5039],[0.0867,51.5036],[0.0823,51.499],[0.0766,51.4962],[0.0767,51.4959],[0.0759,51.4961],[0.0706,51.4952],[0.0641,51.4947],[0.0641,51.4945],[0.0591,51.4944],[0.059,51.4941],[0.0589,51.4944],[0.058,51.4944],[0.0579,51.494],[0.0578,51.4944],[0.0403,51.4954],[0.0295,51.4938],[0.0243,51.4938],[0.0222,51.4943],[0.0216,51.4939],[0.0217,51.4944],[0.0178,51.4951],[0.0142,51.4967],[0.0052,51.5044],[0.0042,51.5048],[0.0019,51.5048],[-0.0,51.5042],[-0.0014,51.5033],[-0.0021,51.5022],[-0.0009,51.5019],[-0.0016,51.502],[-0.0022,51.5013],[-0.0011,51.4964],[-0.0003,51.4952],[0.0009,51.4954],[0.0009,51.4945],[0.0027,51.4919],[0.0019,51.4885],[-0.0006,51.4865],[-0.0007,51.4866],[-0.0033,51.4849],[-0.0083,51.4836],[-0.0096,51.4864],[-0.0056,51.4875],[-0.0046,51.4881],[-0.0051,51.4886]]],[[[-0.0409,51.5099],[-0.0376,51.5096],[-0.0374,51.5093],[-0.0359,51.5094],[-0.0359,51.5091],[-0.0316,51.5082],[-0.0304,51.5072],[-0.0299,51.5074],[-0.0272,51.5037],[-0.0259,51.5032],[-0.027,51.5031],[-0.0274,51.5022],[-0.0279,51.4948],[-0.0276,51.4943],[-0.0263,51.4941],[-0.0274,51.4937],[-0.0255,51.4904],[-0.0219,51.4877],[-0.0188,51.4866],[-0.0144,51.486],[-0.0096,51.4864],[-0.0085,51.4838],[-0.011,51.4833],[-0.0111,51.483],[-0.0163,51.483],[-0.0163,51.4832],[-0.0226,51.4845],[-0.0249,51.4855],[-0.0294,51.4886],[-0.0323,51.4928],[-0.0326,51.4941],[-0.0333,51.4941],[-0.0327,51.4944],[-0.0325,51.4956],[-0.0331,51.4958],[-0.0325,51.496],[-0.0329,51.497],[-0.0323,51.5043],[-0.033,51.5044],[-0.0337,51.5059],[-0.0362,51.507],[-0.0368,51.5071],[-0.0372,51.5064],[-0.037,51.5072],[-0.0409,51.5075],[-0.0444,51.507],[-0.0454,51.5059],[-0.0483,51.5084],[-0.0478,51.5087],[-0.0474,51.5085],[-0.0464,51.5093],[-0.0409,51.5099]]]]}}]},"boroughs":{"type":"FeatureCollection","features":[{"type":"Feature","properties":{},"geometry":{"type":"MultiPolygon","coordinates":[[[[-0.1042,51.5085],[-0.1047,51.5084],[-0.1047,51.5086],[-0.1042,51.5085]]],[[[-0.0968,51.5233],[-0.0964,51.5228],[-0.0951,51.5231],[-0.0943,51.5215],[-0.0897,51.5207],[-0.09,51.52],[-0.0862,51.5188],[-0.0852,51.5204],[-0.0831,51.5198],[-0.081,51.522],[-0.0785,51.5215],[-0.0794,51.5189],[-0.0781,51.519],[-0.0769,51.5166],[-0.074,51.5145],[-0.0728,51.5102],[-0.0755,51.5097],[-0.0762,51.5106],[-0.0779,51.5101],[-0.0795,51.5078],[-0.0919,51.5094],[-0.0952,51.5102],[-0.0952,51.5106],[-0.0961,51.5103],[-0.0999,51.5108],[-0.1115,51.5108],[-0.1125,51.5127],[-0.1111,51.5138],[-0.1138,51.5183],[-0.1078,51.5178],[-0.0977,51.5207],[-0.0979,51.5229],[-0.0968,51.5233]]]]}},{"type":"Feature","properties":{},"geometry":{"type":"MultiPolygon","coordinates":[[[[0.0705,51.5385],[0.0756,51.5298],[0.0727,51.5293],[0.0718,51.5329],[0.0695,51.5363],[0.068,51.5362],[0.0689,51.5372],[0.0667,51.5406],[0.0684,51.5444],[0.0693,51.5442],[0.0684,51.5407],[0.0694,51.5403],[0.0691,51.5388],[0.0705,51.5385]]],[[[0.1482,51.599],[0.1481,51.5964],[0.1499,51.597],[0.1511,51.5954],[0.151,51.5838],[0.1486,51.5808],[0.1474,51.5808],[0.147,51.5757],[0.148,51.5758],[0.1479,51.5731],[0.149,51.5731],[0.1497,51.5697],[0.1467,51.5694],[0.1467,51.5688],[0.1504,51.5678],[0.1513,51.5681],[0.1619,51.5616],[0.1734,51.5651],[0.1835,51.5646],[0.1852,51.5655],[0.1827,51.5612],[0.1848,51.5599],[0.1848,51.5564],[0.1869,51.5558],[0.1879,51.5541],[0.1902,51.5527],[0.1896,51.5515],[0.1875,51.5502],[0.186,51.5475],[0.1804,51.5441],[0.1792,51.5403],[0.1751,51.5385],[0.1708,51.5326],[0.1645,51.527],[0.1588,51.5123],[0.1517,51.5127],[0.1466,51.5141],[0.1451,51.5146],[0.1458,51.5145],[0.1455,51.5151],[0.1443,51.5155],[0.1437,51.5151],[0.1393,51.5176],[0.1363,51.5186],[0.1267,51.5196],[0.119,51.5181],[0.1145,51.5157],[0.1088,51.5142],[0.1011,51.5144],[0.0972,51.5157],[0.0956,51.517],[0.0957,51.5201],[0.0928,51.5226],[0.0933,51.5247],[0.0922,51.5267],[0.0905,51.5261],[0.0889,51.5269],[0.0858,51.526],[0.0811,51.5277],[0.0781,51.5297],[0.0764,51.5298],[0.0704,51.5391],[0.0695,51.539],[0.0692,51.5436],[0.0697,51.5441],[0.0718,51.5436],[0.0768,51.5446],[0.078,51.544],[0.0859,51.5473],[0.0915,51.5483],[0.0926,51.5496],[0.0923,51.5486],[0.0935,51.5459],[0.1043,51.5498],[0.1084,51.5527],[0.1119,51.5527],[0.1147,51.5553],[0.1127,51.5565],[0.1133,51.5573],[0.1171,51.5569],[0.1171,51.5574],[0.1189,51.5574],[0.1205,51.5586],[0.1175,51.5592],[0.1197,51.5625],[0.1191,51.563],[0.125,51.5643],[0.1277,51.5662],[0.1293,51.5665],[0.1305,51.5703],[0.1299,51.5715],[0.1316,51.5718],[0.1309,51.5733],[0.1301,51.5731],[0.1294,51.5739],[0.1292,51.5763],[0.1316,51.5771],[0.1308,51.5794],[0.1336,51.5799],[0.1326,51.5813],[0.1278,51.5816],[0.1281,51.5828],[0.1264,51.5867],[0.131,51.5875],[0.1296,51.59],[0.1376,51.5939],[0.1466,51.5994],[0.1482,51.599]]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-0.199,51.6682],[-0.1948,51.6683],[-0.1967,51.6655],[-0.1925,51.6647],[-0.1911,51.6639],[-0.1878,51.6679],[-0.182,51.6687],[-0.1859,51.6628],[-0.1636,51.6582],[-0.1604,51.6568],[-0.1547,51.6555],[-0.1536,51.6545],[-0.1534,51.6533],[-0.1542,51.653],[-0.1526,51.6515],[-0.1523,51.6498],[-0.151,51.6501],[-0.1499,51.6488],[-0.1522,51.648],[-0.1511,51.6472],[-0.1521,51.6458],[-0.1516,51.6453],[-0.1492,51.6453],[-0.1478,51.6421],[-0.145,51.6426],[-0.1402,51.6375],[-0.1345,51.6347],[-0.1333,51.6333],[-0.1291,51.6323],[-0.1311,51.6297],[-0.1304,51.6293],[-0.1334,51.6264],[-0.1354,51.6218],[-0.1413,51.6175],[-0.142,51.6163],[-0.1445,51.6155],[-0.1387,51.6102],[-0.1434,51.6088],[-0.142,51.6037],[-0.1445,51.6001],[-0.1513,51.5975],[-0.153,51.5992],[-0.1534,51.6028],[-0.1563,51.6054],[-0.1618,51.5975],[-0.1597,51.5922],[-0.1587,51.592],[-0.1602,51.588],[-0.1586,51.588],[-0.1587,51.5866],[-0.1571,51.5862],[-0.1579,51.5862],[-0.1596,51.5845],[-0.1613,51.5853],[-0.1657,51.5832],[-0.167,51.5818],[-0.1668,51.5787],[-0.1681,51.5769],[-0.1693,51.5774],[-0.1694,51.574],[-0.1712,51.5736],[-0.1712,51.5724],[-0.1734,51.5711],[-0.1744,51.5693],[-0.1781,51.5705],[-0.1783,51.57],[-0.181,51.5697],[-0.1838,51.5675],[-0.1897,51.5652],[-0.1911,51.5617],[-0.1948,51.5605],[-0.1967,51.5607],[-0.1968,51.5592],[-0.1983,51.5589],[-0.1994,51.5562],[-0.2058,51.5553],[-0.206,51.5564],[-0.2088,51.5557],[-0.21,51.5568],[-0.2135,51.5552],[-0.2334,51.572],[-0.2376,51.5725],[-0.238,51.5718],[-0.2424,51.5728],[-0.2452,51.5719],[-0.246,51.5722],[-0.2467,51.5716],[-0.246,51.571],[-0.2465,51.569],[-0.2486,51.5685],[-0.2525,51.5715],[-0.253,51.5724],[-0.2513,51.5731],[-0.2545,51.5798],[-0.2543,51.5817],[-0.2517,51.5834],[-0.2482,51.5843],[-0.2529,51.5889],[-0.2874,51.617],[-0.3045,51.632],[-0.3056,51.6341],[-0.3038,51.6365],[-0.2961,51.6354],[-0.2919,51.6365],[-0.2855,51.6369],[-0.2814,51.6384],[-0.2737,51.6387],[-0.2742,51.6393],[-0.2729,51.6421],[-0.2682,51.6424],[-0.2683,51.6438],[-0.2644,51.6436],[-0.2633,51.6448],[-0.2607,51.6427],[-0.2574,51.6418],[-0.2562,51.6435],[-0.2545,51.6437],[-0.2516,51.648],[-0.2499,51.6546],[-0.2512,51.6555],[-0.2506,51.6561],[-0.2479,51.6553],[-0.2436,51.6567],[-0.2392,51.6574],[-0.2367,51.6588],[-0.2347,51.659],[-0.2342,51.6583],[-0.2289,51.66],[-0.2265,51.6572],[-0.2198,51.6607],[-0.2189,51.6601],[-0.2134,51.6624],[-0.2121,51.6613],[-0.2079,51.6629],[-0.2111,51.6669],[-0.2098,51.6676],[-0.208,51.6666],[-0.2056,51.6686],[-0.2022,51.6678],[-0.2034,51.6701],[-0.1999,51.6702],[-0.199,51.6682]]]}},{"type":"Feature","properties":{},"geometry":{"type":"MultiPolygon","coordinates":[[[[0.1993,51.4584],[0.199,51.4581],[0.1986,51.4583],[0.1993,51.4584]]],[[[0.2018,51.48],[0.2021,51.479],[0.1987,51.4783],[0.2001,51.4789],[0.2005,51.4798],[0.2011,51.4795],[0.2006,51.4798],[0.2018,51.48]]],[[[0.1289,51.5132],[0.1494,51.5059],[0.1499,51.5064],[0.1528,51.5064],[0.1603,51.5055],[0.1666,51.5035],[0.1716,51.4977],[0.1725,51.4888],[0.1753,51.4861],[0.1752,51.4853],[0.1761,51.4853],[0.1781,51.4835],[0.1779,51.483],[0.1783,51.4834],[0.1833,51.4811],[0.1903,51.4797],[0.1905,51.479],[0.1908,51.4798],[0.1938,51.4793],[0.1973,51.4796],[0.1971,51.4793],[0.1986,51.4797],[0.1974,51.4784],[0.1993,51.4801],[0.2006,51.4801],[0.2001,51.4789],[0.1986,51.4783],[0.2021,51.479],[0.2019,51.4802],[0.2032,51.4804],[0.2023,51.4806],[0.2048,51.4808],[0.2029,51.4796],[0.2051,51.4809],[0.2056,51.4804],[0.2064,51.4813],[0.2096,51.4816],[0.2117,51.4827],[0.2177,51.4804],[0.216,51.4795],[0.2164,51.4775],[0.2162,51.4781],[0.2157,51.4769],[0.2119,51.4758],[0.2114,51.4732],[0.2082,51.4708],[0.211,51.4684],[0.21,51.4656],[0.2102,51.4625],[0.2044,51.46],[0.2026,51.4584],[0.1991,51.4586],[0.1984,51.4584],[0.1973,51.4576],[0.1989,51.458],[0.198,51.457],[0.1996,51.4584],[0.2031,51.4579],[0.2026,51.4562],[0.2039,51.4558],[0.2034,51.4543],[0.2013,51.4538],[0.1991,51.4521],[0.1974,51.4518],[0.1963,51.4525],[0.193,51.4517],[0.191,51.4488],[0.1876,51.4487],[0.1874,51.4469],[0.1842,51.4446],[0.181,51.4442],[0.1796,51.4431],[0.1787,51.4435],[0.176,51.442],[0.1728,51.4433],[0.1667,51.435],[0.1668,51.4321],[0.1661,51.4314],[0.1667,51.4313],[0.1642,51.4286],[0.1607,51.4297],[0.1598,51.4292],[0.1591,51.4302],[0.1559,51.4309],[0.1553,51.429],[0.1538,51.4275],[0.1531,51.4223],[0.1512,51.4204],[0.1546,51.4185],[0.1541,51.4178],[0.1511,51.4176],[0.1512,51.4151],[0.1492,51.4124],[0.1497,51.4117],[0.1538,51.4113],[0.1529,51.4087],[0.1493,51.4091],[0.1489,51.4084],[0.1328,51.4143],[0.1283,51.415],[0.1199,51.4134],[0.1131,51.4129],[0.1076,51.4141],[0.0951,51.4201],[0.0892,51.424],[0.0832,51.4299],[0.0747,51.4322],[0.0761,51.4333],[0.0765,51.4349],[0.075,51.4359],[0.0766,51.4369],[0.0778,51.4364],[0.0809,51.4404],[0.0818,51.44],[0.0845,51.442],[0.083,51.4427],[0.083,51.4434],[0.0847,51.4426],[0.0874,51.4433],[0.0864,51.4453],[0.0881,51.4473],[0.0857,51.4564],[0.0787,51.4593],[0.0829,51.4598],[0.0823,51.4666],[0.0832,51.4665],[0.0848,51.4687],[0.0932,51.4729],[0.0966,51.4733],[0.0982,51.4755],[0.102,51.4745],[0.1049,51.4755],[0.1062,51.475],[0.1082,51.4761],[0.112,51.4731],[0.1185,51.4789],[0.1209,51.4785],[0.1242,51.4768],[0.122,51.483],[0.1202,51.5115],[0.125,51.513],[0.1289,51.5132]]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-0.2671,51.6004],[-0.2482,51.5843],[-0.2517,51.5834],[-0.2543,51.5817],[-0.2545,51.5798],[-0.2513,51.5731],[-0.253,51.5724],[-0.2525,51.5715],[-0.2486,51.5685],[-0.2465,51.569],[-0.246,51.571],[-0.2467,51.5716],[-0.246,51.5722],[-0.2452,51.5719],[-0.2424,51.5728],[-0.238,51.5718],[-0.2376,51.5725],[-0.2355,51.5725],[-0.2346,51.5718],[-0.2334,51.572],[-0.2255,51.5659],[-0.1915,51.5363],[-0.193,51.5339],[-0.1923,51.5333],[-0.193,51.532],[-0.1965,51.5276],[-0.1978,51.5279],[-0.1982,51.5304],[-0.203,51.5329],[-0.2078,51.5328],[-0.2153,51.5314],[-0.216,51.5279],[-0.2237,51.5299],[-0.2277,51.5299],[-0.2344,51.5326],[-0.2432,51.5318],[-0.2473,51.5335],[-0.2507,51.5341],[-0.256,51.5339],[-0.2577,51.5354],[-0.2686,51.5298],[-0.2746,51.5296],[-0.2804,51.5284],[-0.2857,51.5292],[-0.2894,51.5317],[-0.284,51.5335],[-0.2835,51.5328],[-0.2815,51.5332],[-0.281,51.5326],[-0.279,51.5332],[-0.2778,51.5351],[-0.2825,51.5386],[-0.2866,51.5368],[-0.2934,51.5349],[-0.2964,51.5353],[-0.3027,51.532],[-0.3075,51.5331],[-0.3063,51.5342],[-0.3059,51.5394],[-0.3047,51.5399],[-0.3085,51.5432],[-0.308,51.5444],[-0.3089,51.5452],[-0.3071,51.5453],[-0.3115,51.5476],[-0.3125,51.549],[-0.3177,51.5516],[-0.327,51.555],[-0.3356,51.5566],[-0.3313,51.5614],[-0.3282,51.5625],[-0.3287,51.566],[-0.3297,51.5662],[-0.3298,51.5671],[-0.3251,51.5683],[-0.3221,51.5697],[-0.3248,51.5733],[-0.3266,51.5786],[-0.3202,51.5804],[-0.3125,51.5844],[-0.3047,51.587],[-0.3014,51.5873],[-0.2825,51.5851],[-0.2842,51.5905],[-0.2856,51.5919],[-0.2904,51.5935],[-0.2833,51.5957],[-0.2765,51.5965],[-0.277,51.5969],[-0.2731,51.5984],[-0.271,51.5984],[-0.2671,51.6004]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[0.0422,51.4395],[0.0582,51.4249],[0.061,51.4251],[0.0617,51.4237],[0.0642,51.4253],[0.0666,51.426],[0.0717,51.4294],[0.0734,51.4318],[0.0749,51.4308],[0.0754,51.432],[0.0832,51.4299],[0.0892,51.424],[0.0951,51.4201],[0.1076,51.4141],[0.1131,51.4129],[0.1199,51.4134],[0.1283,51.415],[0.1328,51.4143],[0.1489,51.4084],[0.1511,51.4066],[0.1528,51.4063],[0.1552,51.404],[0.1574,51.4008],[0.159,51.3958],[0.1624,51.3925],[0.1477,51.3928],[0.1475,51.3922],[0.1498,51.3909],[0.1487,51.3887],[0.1505,51.386],[0.1498,51.3849],[0.1504,51.3811],[0.1496,51.3811],[0.1496,51.3801],[0.1511,51.3799],[0.151,51.3791],[0.1532,51.378],[0.1525,51.3752],[0.1517,51.3754],[0.1496,51.3736],[0.1512,51.3722],[0.1501,51.3702],[0.1521,51.3697],[0.1516,51.3684],[0.1494,51.3692],[0.1473,51.367],[0.1484,51.3664],[0.1451,51.3629],[0.1445,51.3611],[0.1454,51.3603],[0.1449,51.3584],[0.1459,51.3582],[0.1451,51.3558],[0.1429,51.3527],[0.1426,51.3507],[0.141,51.3501],[0.1387,51.3475],[0.1394,51.347],[0.1383,51.3471],[0.1372,51.3459],[0.1362,51.3459],[0.137,51.3442],[0.1318,51.3455],[0.1252,51.3459],[0.1222,51.3447],[0.1185,51.3441],[0.1167,51.3413],[0.1173,51.3398],[0.1185,51.34],[0.119,51.3387],[0.1183,51.3384],[0.12,51.3347],[0.1217,51.3336],[0.1179,51.3306],[0.1179,51.3297],[0.1166,51.33],[0.1157,51.3295],[0.1142,51.3274],[0.1101,51.328],[0.1098,51.3267],[0.1072,51.3275],[0.1049,51.3274],[0.1032,51.326],[0.1008,51.3256],[0.1002,51.3241],[0.0962,51.3213],[0.0878,51.3183],[0.085,51.316],[0.0856,51.3148],[0.0851,51.3126],[0.0836,51.3105],[0.0849,51.306],[0.0828,51.3056],[0.0854,51.3025],[0.0862,51.3002],[0.0912,51.2968],[0.0893,51.2961],[0.0857,51.2931],[0.0816,51.2918],[0.0734,51.2916],[0.0585,51.2893],[0.0561,51.2924],[0.0544,51.2921],[0.0508,51.294],[0.0457,51.294],[0.0448,51.2931],[0.0424,51.2927],[0.0443,51.2986],[0.0431,51.2991],[0.0426,51.3013],[0.0415,51.303],[0.0409,51.3027],[0.0329,51.3075],[0.0248,51.3021],[0.0209,51.2968],[0.0191,51.2917],[0.015,51.2918],[0.0084,51.3106],[0.0103,51.3162],[0.0066,51.3157],[0.0023,51.3291],[0.0033,51.3322],[0.0009,51.3336],[-0.0053,51.3526],[-0.0086,51.3558],[-0.0118,51.3573],[-0.0132,51.3572],[-0.0156,51.3588],[-0.0223,51.3659],[-0.0236,51.3653],[-0.0245,51.3668],[-0.0231,51.367],[-0.0236,51.3722],[-0.0261,51.3765],[-0.0268,51.3794],[-0.028,51.3794],[-0.0284,51.3781],[-0.0298,51.3773],[-0.0368,51.377],[-0.0364,51.379],[-0.037,51.379],[-0.0378,51.3833],[-0.0365,51.3884],[-0.0428,51.3895],[-0.0481,51.3931],[-0.0512,51.3935],[-0.0535,51.3949],[-0.0504,51.398],[-0.0508,51.3976],[-0.0521,51.3983],[-0.0506,51.3995],[-0.0529,51.4014],[-0.0605,51.3991],[-0.0601,51.3996],[-0.0622,51.4016],[-0.0646,51.4017],[-0.0686,51.4038],[-0.0728,51.4085],[-0.0735,51.4106],[-0.0727,51.4127],[-0.0804,51.4155],[-0.0811,51.4173],[-0.0786,51.4199],[-0.075,51.4256],[-0.0739,51.4262],[-0.0679,51.4259],[-0.066,51.4251],[-0.0624,51.4252],[-0.0568,51.423],[-0.0551,51.4229],[-0.0547,51.4237],[-0.0518,51.4236],[-0.0517,51.4225],[-0.046,51.4228],[-0.0462,51.4224],[-0.041,51.4243],[-0.0384,51.424],[-0.0375,51.425],[-0.0318,51.4247],[-0.032,51.4255],[-0.0301,51.4256],[-0.021,51.421],[-0.0214,51.4183],[-0.0226,51.4176],[-0.021,51.416],[-0.0178,51.4157],[-0.018,51.4151],[-0.0143,51.4152],[-0.0142,51.4136],[-0.0103,51.4136],[-0.0066,51.4147],[-0.0066,51.416],[-0.0056,51.4158],[-0.005,51.4146],[-0.0033,51.415],[-0.0034,51.4156],[-0.0007,51.4159],[-0.0001,51.4176],[0.0017,51.4186],[0.0035,51.4174],[0.0057,51.4185],[0.0052,51.4194],[0.0081,51.423],[0.01,51.4225],[0.0144,51.4252],[0.0141,51.4262],[0.0187,51.4271],[0.0212,51.4269],[0.0255,51.429],[0.0362,51.4224],[0.0391,51.4247],[0.0378,51.4278],[0.0377,51.4333],[0.0337,51.4317],[0.0316,51.4326],[0.0312,51.4321],[0.0314,51.4326],[0.0286,51.434],[0.0287,51.4364],[0.0272,51.4365],[0.0254,51.4357],[0.0248,51.4382],[0.0288,51.4388],[0.0286,51.4404],[0.0306,51.4443],[0.0398,51.441],[0.0422,51.4395]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-0.1673,51.573],[-0.1645,51.5725],[-0.1605,51.5728],[-0.1577,51.572],[-0.1502,51.5716],[-0.1424,51.5691],[-0.1406,51.5645],[-0.141,51.5605],[-0.137,51.5553],[-0.131,51.5515],[-0.1301,51.5496],[-0.1271,51.5475],[-0.1251,51.5411],[-0.1224,51.5371],[-0.1226,51.5307],[-0.1198,51.5309],[-0.1159,51.5298],[-0.1154,51.5278],[-0.1129,51.5264],[-0.1142,51.5255],[-0.1136,51.5246],[-0.1124,51.5237],[-0.109,51.523],[-0.1082,51.5221],[-0.107,51.5222],[-0.1053,51.5185],[-0.1078,51.5178],[-0.1138,51.5183],[-0.1116,51.5153],[-0.1138,51.5148],[-0.1147,51.516],[-0.1195,51.5145],[-0.1221,51.5146],[-0.1229,51.5151],[-0.1277,51.5127],[-0.1296,51.514],[-0.1308,51.5171],[-0.1325,51.5167],[-0.1352,51.5189],[-0.137,51.5189],[-0.1435,51.524],[-0.1434,51.5245],[-0.1452,51.524],[-0.1458,51.5253],[-0.1471,51.525],[-0.1527,51.5375],[-0.1593,51.5363],[-0.1604,51.5373],[-0.1649,51.5358],[-0.1694,51.5386],[-0.1709,51.5378],[-0.1719,51.5384],[-0.1735,51.5376],[-0.1739,51.5395],[-0.1783,51.5398],[-0.1842,51.5382],[-0.1887,51.5345],[-0.2135,51.5552],[-0.21,51.5568],[-0.2088,51.5557],[-0.206,51.5564],[-0.2058,51.5553],[-0.1994,51.5562],[-0.1983,51.5589],[-0.1968,51.5592],[-0.1967,51.5607],[-0.1948,51.5605],[-0.1911,51.5617],[-0.1897,51.5652],[-0.1838,51.5675],[-0.181,51.5697],[-0.1783,51.57],[-0.1781,51.5705],[-0.1744,51.5693],[-0.1734,51.5711],[-0.1712,51.5724],[-0.1673,51.573]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-0.1126,51.4232],[-0.106,51.4226],[-0.0927,51.4226],[-0.0863,51.4193],[-0.0786,51.4199],[-0.0811,51.4173],[-0.0808,51.416],[-0.0727,51.4127],[-0.0735,51.4106],[-0.0728,51.4085],[-0.0686,51.4038],[-0.0646,51.4017],[-0.0622,51.4016],[-0.0601,51.3996],[-0.0605,51.3991],[-0.0529,51.4014],[-0.0506,51.3995],[-0.0521,51.3983],[-0.0508,51.3976],[-0.0504,51.398],[-0.0535,51.3949],[-0.0512,51.3935],[-0.0481,51.3931],[-0.0428,51.3895],[-0.0365,51.3884],[-0.0378,51.3833],[-0.037,51.379],[-0.0364,51.379],[-0.0368,51.377],[-0.0298,51.3773],[-0.0284,51.3781],[-0.028,51.3794],[-0.0268,51.3794],[-0.0261,51.3765],[-0.0236,51.3722],[-0.0231,51.367],[-0.0245,51.3668],[-0.0236,51.3653],[-0.0223,51.3659],[-0.0156,51.3588],[-0.0132,51.3572],[-0.0118,51.3573],[-0.0086,51.3558],[-0.0053,51.3526],[0.0009,51.3336],[0.0033,51.3322],[0.0023,51.3291],[-0.0005,51.3288],[-0.0017,51.3303],[-0.0071,51.3337],[-0.0097,51.3339],[-0.0109,51.3337],[-0.0107,51.3331],[-0.0119,51.3329],[-0.0136,51.3315],[-0.0143,51.3298],[-0.016,51.3321],[-0.0179,51.333],[-0.0206,51.3372],[-0.0221,51.3381],[-0.0261,51.3385],[-0.0328,51.3374],[-0.0379,51.3387],[-0.0396,51.3375],[-0.042,51.3339],[-0.0503,51.3326],[-0.0511,51.3308],[-0.0488,51.3287],[-0.0479,51.3252],[-0.0498,51.3253],[-0.0513,51.3225],[-0.0549,51.3213],[-0.0562,51.3217],[-0.0584,51.3204],[-0.064,51.3186],[-0.0701,51.3189],[-0.071,51.3212],[-0.0789,51.3198],[-0.0788,51.3181],[-0.0848,51.3159],[-0.0819,51.3126],[-0.0819,51.3107],[-0.0868,51.3088],[-0.0888,51.3072],[-0.0887,51.3051],[-0.0912,51.3034],[-0.0912,51.3015],[-0.0948,51.3006],[-0.096,51.3015],[-0.0973,51.3011],[-0.0974,51.3004],[-0.0943,51.2994],[-0.111,51.2923],[-0.1147,51.2925],[-0.1145,51.2916],[-0.1169,51.2895],[-0.1178,51.2872],[-0.1243,51.2868],[-0.1263,51.2897],[-0.1303,51.2929],[-0.131,51.2955],[-0.1344,51.2984],[-0.1362,51.2983],[-0.1372,51.3007],[-0.1409,51.2996],[-0.1428,51.3],[-0.1436,51.3012],[-0.1456,51.2998],[-0.1484,51.3007],[-0.1498,51.3002],[-0.1534,51.3017],[-0.1553,51.3013],[-0.1577,51.3044],[-0.1545,51.3064],[-0.1572,51.3067],[-0.1543,51.3103],[-0.1583,51.311],[-0.1572,51.3134],[-0.1596,51.3171],[-0.1605,51.3169],[-0.1612,51.3175],[-0.1619,51.3196],[-0.1527,51.323],[-0.1521,51.3223],[-0.1507,51.3222],[-0.1456,51.3235],[-0.1444,51.3265],[-0.1492,51.3289],[-0.1441,51.3307],[-0.1456,51.3325],[-0.1475,51.3388],[-0.1445,51.3395],[-0.1435,51.3405],[-0.1446,51.3421],[-0.1369,51.3447],[-0.1325,51.3443],[-0.1329,51.3454],[-0.1311,51.3455],[-0.1314,51.346],[-0.129,51.3466],[-0.1283,51.3475],[-0.1273,51.3471],[-0.1268,51.3449],[-0.1168,51.3458],[-0.1214,51.3577],[-0.1242,51.3574],[-0.1245,51.3584],[-0.1246,51.3589],[-0.1219,51.3591],[-0.1229,51.3599],[-0.1218,51.36],[-0.1209,51.3633],[-0.1213,51.3647],[-0.1223,51.3645],[-0.1241,51.3653],[-0.1221,51.3657],[-0.1233,51.3712],[-0.1248,51.3737],[-0.1278,51.3747],[-0.1258,51.3756],[-0.128,51.3805],[-0.1303,51.3822],[-0.1286,51.3825],[-0.1295,51.3853],[-0.1288,51.3856],[-0.1306,51.3863],[-0.1296,51.3872],[-0.1332,51.3895],[-0.1326,51.3901],[-0.1343,51.3909],[-0.1287,51.3935],[-0.1296,51.3937],[-0.1241,51.3976],[-0.1257,51.3983],[-0.1277,51.4015],[-0.1305,51.4033],[-0.1323,51.4068],[-0.1321,51.4092],[-0.1295,51.4096],[-0.1277,51.4123],[-0.1262,51.4129],[-0.1258,51.4126],[-0.1245,51.4134],[-0.1241,51.4146],[-0.1225,51.415],[-0.1198,51.4188],[-0.1156,51.4206],[-0.1126,51.4232]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-0.327,51.555],[-0.3177,51.5516],[-0.3125,51.549],[-0.3115,51.5476],[-0.3071,51.5453],[-0.3089,51.5452],[-0.308,51.5444],[-0.3085,51.5432],[-0.3047,51.5399],[-0.3059,51.5394],[-0.3063,51.5342],[-0.3075,51.5331],[-0.3027,51.532],[-0.2964,51.5353],[-0.2934,51.5349],[-0.2866,51.5368],[-0.2825,51.5386],[-0.2778,51.5351],[-0.279,51.5332],[-0.281,51.5326],[-0.2815,51.5332],[-0.2835,51.5328],[-0.284,51.5335],[-0.2894,51.5317],[-0.2857,51.5292],[-0.2804,51.5284],[-0.2746,51.5296],[-0.2686,51.5298],[-0.2577,51.5354],[-0.256,51.5339],[-0.2507,51.5341],[-0.2473,51.5335],[-0.2463,51.5327],[-0.247,51.5318],[-0.2454,51.531],[-0.2499,51.5289],[-0.2503,51.5271],[-0.2525,51.525],[-0.2503,51.5202],[-0.2507,51.5192],[-0.249,51.5139],[-0.2464,51.5108],[-0.2451,51.5068],[-0.2465,51.5067],[-0.2457,51.5046],[-0.2551,51.5043],[-0.2534,51.5029],[-0.2528,51.4999],[-0.2556,51.496],[-0.2554,51.495],[-0.2691,51.494],[-0.2713,51.4948],[-0.2724,51.4962],[-0.2774,51.4991],[-0.2808,51.5029],[-0.2857,51.5008],[-0.2939,51.5016],[-0.3007,51.4993],[-0.2975,51.4949],[-0.3011,51.4944],[-0.3014,51.4952],[-0.3059,51.4962],[-0.3054,51.4945],[-0.3119,51.492],[-0.3151,51.494],[-0.3145,51.4944],[-0.3158,51.4959],[-0.3192,51.4942],[-0.3247,51.496],[-0.3261,51.495],[-0.3273,51.496],[-0.3299,51.495],[-0.3353,51.4962],[-0.3423,51.496],[-0.3506,51.4991],[-0.358,51.4978],[-0.3631,51.4959],[-0.3654,51.4933],[-0.3658,51.4937],[-0.3684,51.4923],[-0.3679,51.4918],[-0.3719,51.4905],[-0.3738,51.492],[-0.3758,51.4954],[-0.3779,51.4955],[-0.3779,51.4966],[-0.3818,51.4952],[-0.3866,51.4947],[-0.4069,51.4997],[-0.4029,51.5036],[-0.3935,51.507],[-0.3891,51.5147],[-0.385,51.5164],[-0.3818,51.5186],[-0.3761,51.5249],[-0.3764,51.5289],[-0.3866,51.5304],[-0.3871,51.5296],[-0.3893,51.5308],[-0.3926,51.5314],[-0.4118,51.5341],[-0.4153,51.5366],[-0.4174,51.5367],[-0.4175,51.5378],[-0.4194,51.5383],[-0.4182,51.5391],[-0.4194,51.5404],[-0.4168,51.5402],[-0.405,51.5425],[-0.3953,51.5425],[-0.3963,51.5457],[-0.3979,51.5457],[-0.3987,51.5479],[-0.3949,51.5476],[-0.395,51.5487],[-0.385,51.5513],[-0.3778,51.555],[-0.3759,51.5531],[-0.3733,51.5541],[-0.3729,51.5538],[-0.3625,51.556],[-0.3623,51.5573],[-0.3476,51.5597],[-0.3436,51.5577],[-0.327,51.555]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-0.079,51.6888],[-0.0672,51.6841],[-0.0621,51.683],[-0.057,51.683],[-0.0493,51.6842],[-0.0437,51.6831],[-0.0111,51.6809],[-0.0103,51.6767],[-0.0114,51.6719],[-0.0106,51.6691],[-0.0115,51.6639],[-0.0089,51.6602],[-0.0118,51.653],[-0.0133,51.6397],[-0.0168,51.6335],[-0.0259,51.6217],[-0.0321,51.6169],[-0.0353,51.613],[-0.034,51.6095],[-0.0352,51.6083],[-0.0414,51.6056],[-0.0497,51.6072],[-0.0545,51.6089],[-0.0856,51.6085],[-0.0925,51.6091],[-0.0952,51.6087],[-0.0958,51.6093],[-0.0977,51.6089],[-0.0975,51.6085],[-0.1018,51.6085],[-0.1025,51.608],[-0.1108,51.6086],[-0.1175,51.6082],[-0.1235,51.6087],[-0.125,51.6099],[-0.1277,51.6094],[-0.1352,51.6112],[-0.1387,51.6102],[-0.1445,51.6155],[-0.142,51.6163],[-0.1413,51.6175],[-0.1354,51.6218],[-0.1334,51.6264],[-0.1304,51.6293],[-0.1311,51.6297],[-0.1291,51.6323],[-0.1333,51.6333],[-0.1345,51.6347],[-0.1402,51.6375],[-0.145,51.6426],[-0.1478,51.6421],[-0.1492,51.6453],[-0.1516,51.6453],[-0.1521,51.6458],[-0.1511,51.6472],[-0.1522,51.648],[-0.1499,51.6488],[-0.151,51.6501],[-0.1523,51.6498],[-0.1526,51.6515],[-0.1542,51.653],[-0.1534,51.6533],[-0.1536,51.6545],[-0.1547,51.6555],[-0.1604,51.6568],[-0.1636,51.6582],[-0.1859,51.6628],[-0.182,51.6687],[-0.1767,51.6721],[-0.177,51.6727],[-0.1754,51.6726],[-0.1753,51.6735],[-0.1725,51.6731],[-0.1636,51.6824],[-0.1635,51.6881],[-0.1494,51.6855],[-0.1346,51.6888],[-0.1221,51.6885],[-0.1182,51.6891],[-0.1098,51.6916],[-0.1058,51.6919],[-0.0948,51.6901],[-0.0839,51.6899],[-0.079,51.6888]]]}},{"type":"Feature","properties":{},"geometry":{"type":"MultiPolygon","coordinates":[[[[-0.0206,51.4767],[-0.0206,51.4767],[-0.0206,51.4767],[-0.0206,51.4767]]],[[[-0.0164,51.4815],[-0.0171,51.4804],[-0.0178,51.4809],[-0.023,51.4797],[-0.0233,51.4808],[-0.0264,51.4815],[-0.0247,51.4855],[-0.0188,51.4835],[-0.0181,51.482],[-0.0164,51.4815]]],[[[0.1202,51.5115],[0.122,51.483],[0.1242,51.4768],[0.1209,51.4785],[0.1185,51.4789],[0.112,51.4731],[0.1082,51.4761],[0.1062,51.475],[0.1049,51.4755],[0.102,51.4745],[0.0982,51.4755],[0.0966,51.4733],[0.0932,51.4729],[0.0848,51.4687],[0.0832,51.4665],[0.0823,51.4666],[0.0829,51.4598],[0.0787,51.4593],[0.0857,51.4564],[0.0881,51.4473],[0.0864,51.4453],[0.0874,51.4433],[0.0847,51.4426],[0.083,51.4434],[0.083,51.4427],[0.0845,51.442],[0.0818,51.44],[0.0809,51.4404],[0.0778,51.4364],[0.0766,51.4369],[0.075,51.4359],[0.0765,51.4349],[0.0761,51.4333],[0.0747,51.4322],[0.0754,51.432],[0.0749,51.4308],[0.0734,51.4318],[0.0717,51.4294],[0.0666,51.426],[0.0642,51.4253],[0.0617,51.4237],[0.061,51.4251],[0.0582,51.4249],[0.0398,51.441],[0.0306,51.4443],[0.0294,51.4417],[0.0256,51.4417],[0.0215,51.4427],[0.0206,51.4442],[0.0215,51.4444],[0.0212,51.4467],[0.023,51.4472],[0.022,51.4489],[0.0151,51.45],[0.0149,51.4506],[0.0151,51.4502],[0.0199,51.4507],[0.0196,51.4517],[0.0184,51.4516],[0.0175,51.455],[0.0115,51.4567],[0.0099,51.4596],[0.0091,51.4659],[0.0133,51.4668],[0.0126,51.4698],[0.0165,51.4691],[0.015,51.4731],[0.018,51.4738],[-0.0009,51.4718],[-0.0082,51.4728],[-0.014,51.4727],[-0.0152,51.4718],[-0.0131,51.4689],[-0.0151,51.468],[-0.0166,51.4693],[-0.0191,51.47],[-0.0187,51.4707],[-0.0193,51.472],[-0.0203,51.4723],[-0.02,51.473],[-0.0226,51.4741],[-0.0229,51.4753],[-0.0206,51.4757],[-0.0205,51.4766],[-0.019,51.477],[-0.0184,51.4794],[-0.015,51.4817],[-0.0179,51.4826],[-0.0179,51.4832],[-0.0111,51.483],[-0.0073,51.4838],[-0.0033,51.4849],[0.0014,51.4878],[0.0024,51.4895],[0.0024,51.493],[0.001,51.4952],[-0.0002,51.4952],[-0.001,51.4963],[-0.0022,51.4998],[-0.0017,51.5028],[0.0008,51.5045],[0.0033,51.5049],[0.0052,51.5044],[0.0139,51.497],[0.018,51.495],[0.0215,51.4945],[0.0216,51.4939],[0.029,51.4939],[0.0403,51.4954],[0.0576,51.4944],[0.0578,51.494],[0.0762,51.4958],[0.0823,51.4989],[0.092,51.509],[0.0995,51.5096],[0.1069,51.5094],[0.1202,51.5115]]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-0.0612,51.5778],[-0.0584,51.5726],[-0.0563,51.5707],[-0.0544,51.5703],[-0.0533,51.5687],[-0.0467,51.5644],[-0.0473,51.5627],[-0.0424,51.5614],[-0.0402,51.5618],[-0.0388,51.5612],[-0.0363,51.5615],[-0.0333,51.5606],[-0.03,51.5614],[-0.0284,51.561],[-0.0258,51.5599],[-0.0239,51.5574],[-0.0185,51.5552],[-0.0172,51.5516],[-0.019,51.5516],[-0.0189,51.5505],[-0.0165,51.5433],[-0.0256,51.5433],[-0.029,51.5423],[-0.0295,51.5431],[-0.0332,51.5447],[-0.0377,51.5418],[-0.0371,51.5414],[-0.0415,51.5374],[-0.045,51.5358],[-0.0472,51.5354],[-0.0509,51.5365],[-0.0524,51.5359],[-0.0529,51.5349],[-0.0547,51.5352],[-0.0588,51.5341],[-0.0624,51.5355],[-0.0622,51.5333],[-0.0652,51.5332],[-0.0663,51.5312],[-0.0728,51.5307],[-0.0746,51.5299],[-0.0773,51.5273],[-0.0763,51.5271],[-0.0761,51.5224],[-0.0785,51.5215],[-0.081,51.522],[-0.0831,51.5198],[-0.0852,51.5204],[-0.0842,51.5239],[-0.0852,51.5239],[-0.0855,51.5245],[-0.085,51.5262],[-0.087,51.5258],[-0.0887,51.5275],[-0.0954,51.5292],[-0.0951,51.5301],[-0.097,51.533],[-0.0866,51.5373],[-0.0836,51.5452],[-0.0838,51.5466],[-0.0767,51.5461],[-0.0763,51.5472],[-0.0794,51.5517],[-0.0854,51.5521],[-0.0876,51.5528],[-0.0886,51.5539],[-0.0904,51.5541],[-0.0904,51.5576],[-0.0917,51.5602],[-0.096,51.5612],[-0.0986,51.5608],[-0.1044,51.5648],[-0.096,51.5707],[-0.0976,51.5737],[-0.0869,51.5743],[-0.0872,51.5747],[-0.0808,51.5756],[-0.0762,51.5749],[-0.0758,51.5755],[-0.0667,51.5763],[-0.0612,51.5778]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-0.2338,51.5323],[-0.2284,51.5303],[-0.2272,51.5248],[-0.2266,51.5246],[-0.2267,51.5219],[-0.2283,51.5211],[-0.2225,51.5154],[-0.2193,51.5095],[-0.2172,51.5104],[-0.2158,51.5091],[-0.2152,51.5076],[-0.2161,51.5075],[-0.2159,51.5064],[-0.218,51.5061],[-0.2134,51.5002],[-0.2079,51.496],[-0.2031,51.4934],[-0.2018,51.4918],[-0.2024,51.4917],[-0.198,51.4879],[-0.1936,51.4859],[-0.1842,51.4772],[-0.1794,51.4776],[-0.1831,51.4692],[-0.1863,51.4665],[-0.1904,51.4653],[-0.1942,51.4648],[-0.2028,51.4653],[-0.2105,51.4671],[-0.2105,51.4677],[-0.2113,51.4674],[-0.2168,51.4696],[-0.2225,51.4748],[-0.2235,51.4774],[-0.2236,51.4819],[-0.2287,51.4888],[-0.2344,51.4904],[-0.2405,51.4901],[-0.2445,51.4887],[-0.2456,51.49],[-0.2444,51.4979],[-0.2452,51.4983],[-0.2492,51.4969],[-0.2551,51.5043],[-0.2457,51.5046],[-0.2465,51.5067],[-0.2451,51.5068],[-0.2464,51.5108],[-0.249,51.5139],[-0.2507,51.5192],[-0.2503,51.5202],[-0.2525,51.525],[-0.2503,51.5271],[-0.2499,51.5289],[-0.2454,51.531],[-0.247,51.5318],[-0.2463,51.5327],[-0.2432,51.5318],[-0.2338,51.5323]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-0.1352,51.6112],[-0.1263,51.6093],[-0.1254,51.61],[-0.1235,51.6087],[-0.1025,51.608],[-0.1018,51.6085],[-0.0975,51.6085],[-0.0977,51.6089],[-0.0958,51.6093],[-0.0952,51.6087],[-0.0925,51.6091],[-0.0856,51.6085],[-0.0545,51.6089],[-0.0497,51.6072],[-0.0414,51.6056],[-0.046,51.6001],[-0.0504,51.5967],[-0.0535,51.59],[-0.0522,51.5877],[-0.0578,51.5825],[-0.0619,51.58],[-0.0612,51.5778],[-0.0667,51.5763],[-0.0758,51.5755],[-0.0762,51.5749],[-0.0808,51.5756],[-0.0872,51.5747],[-0.0869,51.5743],[-0.0976,51.5737],[-0.096,51.5707],[-0.1044,51.5648],[-0.115,51.5706],[-0.1161,51.5722],[-0.1155,51.5726],[-0.1176,51.5741],[-0.1196,51.5744],[-0.1189,51.5747],[-0.1195,51.5755],[-0.1249,51.5741],[-0.1311,51.5736],[-0.1424,51.5691],[-0.1502,51.5716],[-0.1577,51.572],[-0.1605,51.5728],[-0.1645,51.5725],[-0.1673,51.573],[-0.1712,51.5724],[-0.1712,51.5736],[-0.1694,51.574],[-0.1693,51.5774],[-0.1681,51.5769],[-0.1668,51.5787],[-0.167,51.5818],[-0.1657,51.5832],[-0.1613,51.5853],[-0.1596,51.5845],[-0.1579,51.5862],[-0.1571,51.5862],[-0.1587,51.5866],[-0.1586,51.588],[-0.1602,51.588],[-0.1587,51.592],[-0.1597,51.5922],[-0.1618,51.5975],[-0.1563,51.6054],[-0.1534,51.6028],[-0.153,51.5992],[-0.1513,51.5975],[-0.1445,51.6001],[-0.142,51.6037],[-0.1434,51.6088],[-0.1352,51.6112]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-0.3056,51.6341],[-0.3045,51.632],[-0.2874,51.617],[-0.2671,51.6004],[-0.271,51.5984],[-0.2731,51.5984],[-0.277,51.5969],[-0.2765,51.5965],[-0.2833,51.5957],[-0.2904,51.5935],[-0.2856,51.5919],[-0.2842,51.5905],[-0.2825,51.5851],[-0.3014,51.5873],[-0.3047,51.587],[-0.3125,51.5844],[-0.3202,51.5804],[-0.3266,51.5786],[-0.3248,51.5733],[-0.3221,51.5697],[-0.3251,51.5683],[-0.3298,51.5671],[-0.3297,51.5662],[-0.3287,51.566],[-0.3282,51.5625],[-0.3313,51.5614],[-0.3356,51.5566],[-0.3436,51.5577],[-0.3476,51.5597],[-0.3623,51.5573],[-0.3625,51.556],[-0.3729,51.5538],[-0.3733,51.5541],[-0.3759,51.5531],[-0.3802,51.559],[-0.3804,51.5609],[-0.3823,51.5629],[-0.3833,51.5673],[-0.3865,51.5716],[-0.3856,51.5721],[-0.3881,51.575],[-0.3875,51.5752],[-0.3885,51.5777],[-0.3916,51.5816],[-0.391,51.5831],[-0.392,51.5883],[-0.3945,51.5904],[-0.3955,51.5902],[-0.3965,51.5951],[-0.3977,51.5969],[-0.4003,51.5974],[-0.3999,51.5982],[-0.4023,51.6019],[-0.4018,51.6066],[-0.4032,51.6091],[-0.404,51.6132],[-0.3995,51.6134],[-0.3927,51.6152],[-0.3859,51.6158],[-0.382,51.6174],[-0.3758,51.6182],[-0.3655,51.6213],[-0.3597,51.6253],[-0.3492,51.6269],[-0.3399,51.6307],[-0.3383,51.6295],[-0.333,51.6338],[-0.3266,51.6367],[-0.3198,51.6382],[-0.3167,51.6405],[-0.3054,51.6371],[-0.3044,51.6364],[-0.3056,51.6341]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[0.2241,51.6317],[0.2374,51.6241],[0.2528,51.6174],[0.2646,51.6083],[0.2631,51.6073],[0.2617,51.6075],[0.2581,51.6065],[0.258,51.6049],[0.2572,51.6049],[0.2566,51.6036],[0.2547,51.6027],[0.254,51.6016],[0.2646,51.5997],[0.2699,51.5996],[0.2703,51.5975],[0.2693,51.5953],[0.2721,51.5877],[0.2738,51.5868],[0.282,51.5789],[0.285,51.5742],[0.2867,51.5736],[0.2867,51.5716],[0.2903,51.5643],[0.313,51.5658],[0.3153,51.5578],[0.3184,51.5568],[0.3189,51.5552],[0.3221,51.5542],[0.3223,51.5528],[0.3252,51.5531],[0.3278,51.551],[0.328,51.5486],[0.3295,51.5466],[0.3289,51.5458],[0.3315,51.5459],[0.3339,51.5425],[0.3333,51.5413],[0.334,51.5405],[0.3314,51.5401],[0.3316,51.5408],[0.3224,51.5405],[0.3007,51.5388],[0.3009,51.5381],[0.2972,51.5377],[0.2978,51.5353],[0.2818,51.5339],[0.2763,51.5329],[0.2707,51.5331],[0.2653,51.5322],[0.2654,51.525],[0.2667,51.5245],[0.2666,51.523],[0.265,51.5229],[0.2637,51.5179],[0.2603,51.5184],[0.2589,51.5178],[0.2538,51.5179],[0.2509,51.5288],[0.249,51.5287],[0.2489,51.5274],[0.2463,51.5265],[0.2471,51.5251],[0.2458,51.5235],[0.2429,51.5244],[0.241,51.5226],[0.2407,51.5212],[0.2443,51.5205],[0.2449,51.5188],[0.2439,51.5183],[0.2402,51.5194],[0.2372,51.5193],[0.2411,51.5137],[0.24,51.513],[0.2403,51.5108],[0.2415,51.5106],[0.2419,51.508],[0.2334,51.5067],[0.2266,51.5066],[0.226,51.5059],[0.23,51.4994],[0.2244,51.4973],[0.2236,51.4979],[0.2217,51.4978],[0.2142,51.496],[0.2131,51.495],[0.2119,51.491],[0.2096,51.4898],[0.2089,51.4899],[0.2093,51.4904],[0.2084,51.4897],[0.1892,51.4877],[0.1877,51.4879],[0.1848,51.4907],[0.1826,51.4959],[0.1837,51.4971],[0.1825,51.4994],[0.1802,51.5014],[0.1785,51.5053],[0.1741,51.508],[0.1662,51.5107],[0.165,51.5117],[0.1599,51.5118],[0.1596,51.5124],[0.1588,51.5123],[0.1645,51.527],[0.1708,51.5326],[0.1751,51.5385],[0.1792,51.5403],[0.1804,51.5441],[0.186,51.5475],[0.1875,51.5502],[0.1896,51.5515],[0.1902,51.5527],[0.1879,51.5541],[0.1869,51.5558],[0.1848,51.5564],[0.1848,51.5599],[0.1827,51.5612],[0.1852,51.5655],[0.1835,51.5646],[0.1734,51.5651],[0.1619,51.5616],[0.1513,51.5681],[0.1504,51.5678],[0.1467,51.5688],[0.1467,51.5694],[0.1497,51.5697],[0.149,51.5731],[0.1479,51.5731],[0.148,51.5758],[0.147,51.5757],[0.1474,51.5808],[0.1486,51.5808],[0.151,51.5838],[0.1511,51.5954],[0.1499,51.597],[0.1481,51.5964],[0.1477,51.5968],[0.1495,51.6029],[0.1475,51.6122],[0.1382,51.6236],[0.1555,51.6233],[0.1658,51.6224],[0.1689,51.6214],[0.1753,51.6236],[0.1804,51.6245],[0.1812,51.6258],[0.1859,51.6244],[0.186,51.6255],[0.1884,51.6254],[0.1894,51.6245],[0.1898,51.6251],[0.1948,51.6257],[0.2003,51.6249],[0.2036,51.6252],[0.2085,51.6267],[0.2122,51.627],[0.2175,51.6291],[0.2221,51.6301],[0.2241,51.6317]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-0.4971,51.6317],[-0.4935,51.6306],[-0.4915,51.6308],[-0.4882,51.627],[-0.4767,51.6219],[-0.4692,51.6168],[-0.4571,51.6123],[-0.4489,51.6153],[-0.4456,51.6196],[-0.4406,51.6201],[-0.4265,51.617],[-0.4166,51.6164],[-0.411,51.6138],[-0.404,51.6132],[-0.4032,51.6091],[-0.4018,51.6066],[-0.4023,51.6019],[-0.3999,51.5982],[-0.4003,51.5974],[-0.3977,51.5969],[-0.3965,51.5951],[-0.3955,51.5902],[-0.3945,51.5904],[-0.392,51.5883],[-0.391,51.5831],[-0.3916,51.5816],[-0.3885,51.5777],[-0.3875,51.5752],[-0.3881,51.575],[-0.3856,51.5721],[-0.3865,51.5716],[-0.3833,51.5673],[-0.3823,51.5629],[-0.3804,51.5609],[-0.3802,51.559],[-0.3777,51.5547],[-0.385,51.5513],[-0.395,51.5487],[-0.3949,51.5476],[-0.3987,51.5479],[-0.3979,51.5457],[-0.3963,51.5457],[-0.3953,51.5425],[-0.405,51.5425],[-0.4168,51.5402],[-0.4194,51.5404],[-0.4182,51.5391],[-0.4194,51.5383],[-0.4175,51.5378],[-0.4174,51.5367],[-0.4153,51.5366],[-0.4118,51.5341],[-0.3926,51.5314],[-0.3893,51.5308],[-0.3871,51.5296],[-0.3866,51.5304],[-0.3764,51.5289],[-0.3761,51.5249],[-0.3818,51.5186],[-0.385,51.5164],[-0.3891,51.5147],[-0.3935,51.507],[-0.4029,51.5036],[-0.4069,51.4997],[-0.4092,51.5003],[-0.4096,51.4999],[-0.4108,51.4977],[-0.4105,51.4962],[-0.4126,51.4885],[-0.4169,51.4825],[-0.4149,51.4769],[-0.4158,51.4739],[-0.4111,51.4699],[-0.4219,51.4666],[-0.4336,51.4617],[-0.4366,51.4579],[-0.435,51.4569],[-0.4414,51.4568],[-0.444,51.4533],[-0.4491,51.4538],[-0.4538,51.4549],[-0.454,51.4554],[-0.4557,51.4552],[-0.4611,51.4572],[-0.4736,51.4586],[-0.4772,51.4614],[-0.4862,51.4614],[-0.4896,51.4618],[-0.4921,51.463],[-0.4939,51.4628],[-0.4969,51.4659],[-0.501,51.4673],[-0.5064,51.4678],[-0.5073,51.4669],[-0.5102,51.4675],[-0.5098,51.4692],[-0.5085,51.4694],[-0.5059,51.4725],[-0.5035,51.4805],[-0.4987,51.4861],[-0.4997,51.4868],[-0.4992,51.4886],[-0.4983,51.4885],[-0.4986,51.4893],[-0.4966,51.4898],[-0.4968,51.4905],[-0.4949,51.4913],[-0.4948,51.4927],[-0.4914,51.4931],[-0.4887,51.496],[-0.4895,51.4976],[-0.4889,51.4986],[-0.4898,51.499],[-0.4888,51.5002],[-0.4863,51.5009],[-0.4847,51.5036],[-0.4851,51.5052],[-0.4833,51.5066],[-0.4836,51.5081],[-0.4855,51.51],[-0.4898,51.5115],[-0.4896,51.5141],[-0.4923,51.5171],[-0.4904,51.5202],[-0.4912,51.5213],[-0.4903,51.5246],[-0.4908,51.5264],[-0.489,51.5291],[-0.4912,51.5333],[-0.4905,51.5342],[-0.4933,51.5358],[-0.4955,51.5384],[-0.4936,51.541],[-0.4918,51.5416],[-0.4908,51.545],[-0.4914,51.5461],[-0.4893,51.5464],[-0.4895,51.5472],[-0.4881,51.5474],[-0.4866,51.55],[-0.4842,51.5515],[-0.4827,51.5515],[-0.4789,51.5548],[-0.4778,51.5548],[-0.4766,51.558],[-0.4775,51.5603],[-0.481,51.5607],[-0.4808,51.5618],[-0.4828,51.5628],[-0.4823,51.5639],[-0.4832,51.5651],[-0.4826,51.5657],[-0.4848,51.5669],[-0.484,51.5712],[-0.4855,51.5738],[-0.484,51.5751],[-0.4889,51.5773],[-0.4895,51.5782],[-0.4885,51.5796],[-0.4896,51.5818],[-0.4948,51.5848],[-0.4957,51.5881],[-0.4988,51.5912],[-0.4986,51.5919],[-0.4995,51.5921],[-0.4986,51.5944],[-0.5008,51.6003],[-0.5002,51.6012],[-0.4974,51.601],[-0.4963,51.6024],[-0.4992,51.6089],[-0.4984,51.6094],[-0.4989,51.6111],[-0.4978,51.6144],[-0.4953,51.6189],[-0.4969,51.6205],[-0.4991,51.621],[-0.5001,51.6221],[-0.5,51.6236],[-0.4984,51.6247],[-0.4976,51.6266],[-0.5001,51.6286],[-0.4993,51.6305],[-0.4971,51.6317]]]}},{"type":"Feature","properties":{},"geometry":{"type":"MultiPolygon","coordinates":[[[[-0.3264,51.4609],[-0.3264,51.4609],[-0.3264,51.4609],[-0.3264,51.4609]]],[[[-0.3237,51.4651],[-0.3243,51.4646],[-0.324,51.465],[-0.3237,51.4651]]],[[[-0.3217,51.4654],[-0.3226,51.4653],[-0.3217,51.4654],[-0.3217,51.4654]]],[[[-0.3198,51.4707],[-0.3209,51.466],[-0.3212,51.4696],[-0.3198,51.4707]]],[[[-0.2977,51.4852],[-0.2986,51.4841],[-0.299,51.4847],[-0.2977,51.4852]]],[[[-0.2804,51.4848],[-0.2808,51.4847],[-0.2818,51.4854],[-0.2804,51.4848]]],[[[-0.2448,51.488],[-0.2476,51.4865],[-0.2445,51.4883],[-0.2448,51.488]]],[[[-0.2808,51.5029],[-0.2774,51.4991],[-0.2724,51.4962],[-0.2713,51.4948],[-0.2691,51.494],[-0.2554,51.495],[-0.2556,51.496],[-0.2528,51.4999],[-0.253,51.5014],[-0.2492,51.4969],[-0.2452,51.4983],[-0.2444,51.4979],[-0.2456,51.49],[-0.2445,51.4887],[-0.2497,51.4857],[-0.2514,51.4822],[-0.2515,51.4773],[-0.2546,51.4729],[-0.2581,51.4717],[-0.2621,51.4714],[-0.2657,51.4719],[-0.2691,51.4736],[-0.2731,51.477],[-0.2767,51.4833],[-0.2816,51.4863],[-0.2873,51.4879],[-0.2925,51.4875],[-0.299,51.4853],[-0.3004,51.484],[-0.2997,51.4833],[-0.3005,51.4838],[-0.3014,51.4834],[-0.3002,51.4832],[-0.301,51.483],[-0.3034,51.4826],[-0.3042,51.4832],[-0.3063,51.4828],[-0.3049,51.4823],[-0.304,51.483],[-0.3044,51.4822],[-0.3001,51.4827],[-0.3035,51.4799],[-0.3047,51.4799],[-0.3045,51.4791],[-0.3058,51.4783],[-0.3062,51.477],[-0.3071,51.477],[-0.3063,51.4769],[-0.3069,51.4762],[-0.3088,51.4759],[-0.3082,51.4756],[-0.31,51.4747],[-0.3106,51.4749],[-0.3106,51.4744],[-0.3111,51.4747],[-0.3107,51.4743],[-0.3116,51.4744],[-0.312,51.4738],[-0.3135,51.4739],[-0.3131,51.4734],[-0.3143,51.4731],[-0.3147,51.4734],[-0.3144,51.473],[-0.3215,51.4705],[-0.3225,51.4707],[-0.3215,51.4704],[-0.3222,51.469],[-0.3218,51.4654],[-0.3235,51.4653],[-0.324,51.465],[-0.3268,51.4616],[-0.3256,51.4581],[-0.3269,51.457],[-0.3285,51.458],[-0.3304,51.4579],[-0.333,51.4554],[-0.3363,51.4557],[-0.337,51.4547],[-0.3406,51.4573],[-0.3401,51.4592],[-0.3417,51.459],[-0.3427,51.4581],[-0.3486,51.4568],[-0.3528,51.4569],[-0.3535,51.4582],[-0.3558,51.4584],[-0.365,51.4578],[-0.3678,51.4574],[-0.3684,51.4569],[-0.3727,51.457],[-0.373,51.4575],[-0.3837,51.4495],[-0.3845,51.4499],[-0.3878,51.4494],[-0.3863,51.4481],[-0.3862,51.4467],[-0.3797,51.4443],[-0.3795,51.4431],[-0.3782,51.4425],[-0.3739,51.443],[-0.3731,51.4437],[-0.3668,51.4416],[-0.3778,51.4368],[-0.3779,51.4363],[-0.3761,51.4355],[-0.3831,51.4322],[-0.3877,51.4289],[-0.3871,51.4282],[-0.3884,51.428],[-0.3841,51.4227],[-0.3854,51.4206],[-0.3927,51.4234],[-0.3913,51.4223],[-0.3981,51.4236],[-0.4054,51.4225],[-0.4084,51.4238],[-0.4109,51.4273],[-0.4131,51.4279],[-0.4124,51.4288],[-0.4143,51.4293],[-0.4138,51.4301],[-0.4179,51.431],[-0.4173,51.4319],[-0.4191,51.4324],[-0.4212,51.4322],[-0.4235,51.4309],[-0.4275,51.4308],[-0.4278,51.4293],[-0.4294,51.4294],[-0.4295,51.4288],[-0.44,51.4306],[-0.4397,51.4346],[-0.4477,51.435],[-0.4463,51.44],[-0.4565,51.4382],[-0.4554,51.4421],[-0.4574,51.443],[-0.4575,51.4491],[-0.4615,51.449],[-0.4613,51.4524],[-0.4598,51.4522],[-0.4593,51.4527],[-0.4587,51.4563],[-0.4491,51.4538],[-0.444,51.4533],[-0.4414,51.4568],[-0.435,51.4569],[-0.4366,51.4579],[-0.4336,51.4617],[-0.4219,51.4666],[-0.4111,51.4699],[-0.4158,51.4739],[-0.4149,51.4769],[-0.4169,51.4825],[-0.4126,51.4885],[-0.4105,51.4962],[-0.4108,51.4977],[-0.4092,51.5003],[-0.3866,51.4947],[-0.3818,51.4952],[-0.3779,51.4966],[-0.3779,51.4955],[-0.3758,51.4954],[-0.3738,51.492],[-0.3719,51.4905],[-0.3679,51.4918],[-0.3684,51.4923],[-0.3658,51.4937],[-0.3654,51.4933],[-0.3631,51.4959],[-0.358,51.4978],[-0.3506,51.4991],[-0.3423,51.496],[-0.3353,51.4962],[-0.3299,51.495],[-0.3273,51.496],[-0.3261,51.495],[-0.3247,51.496],[-0.3192,51.4942],[-0.3158,51.4959],[-0.3145,51.4944],[-0.3151,51.494],[-0.3119,51.492],[-0.3054,51.4945],[-0.3059,51.4962],[-0.3014,51.4952],[-0.3011,51.4944],[-0.2975,51.4949],[-0.3007,51.4993],[-0.2939,51.5016],[-0.2857,51.5008],[-0.2808,51.5029]]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-0.1176,51.5741],[-0.1155,51.5726],[-0.1161,51.5722],[-0.115,51.5706],[-0.1107,51.5686],[-0.0986,51.5608],[-0.096,51.5612],[-0.0917,51.5602],[-0.0904,51.5576],[-0.0904,51.5541],[-0.0886,51.5539],[-0.0876,51.5528],[-0.0854,51.5521],[-0.0794,51.5517],[-0.0763,51.5472],[-0.0767,51.5461],[-0.0838,51.5466],[-0.0836,51.5452],[-0.0866,51.5373],[-0.097,51.533],[-0.0951,51.5301],[-0.0954,51.5292],[-0.0887,51.5275],[-0.087,51.5258],[-0.085,51.5262],[-0.0855,51.5245],[-0.0852,51.5239],[-0.0842,51.5239],[-0.0862,51.5188],[-0.09,51.52],[-0.0897,51.5207],[-0.0943,51.5215],[-0.0951,51.5231],[-0.0964,51.5228],[-0.0968,51.5233],[-0.0979,51.5229],[-0.0977,51.5207],[-0.1053,51.5185],[-0.107,51.5222],[-0.1082,51.5221],[-0.109,51.523],[-0.1124,51.5237],[-0.1136,51.5246],[-0.1142,51.5255],[-0.1129,51.5264],[-0.1154,51.5278],[-0.1159,51.5298],[-0.1198,51.5309],[-0.1226,51.5307],[-0.1224,51.5371],[-0.1251,51.5411],[-0.1271,51.5475],[-0.1301,51.5496],[-0.131,51.5515],[-0.137,51.5553],[-0.141,51.5605],[-0.1406,51.5645],[-0.1424,51.5691],[-0.1311,51.5736],[-0.1249,51.5741],[-0.1195,51.5755],[-0.1189,51.5747],[-0.1196,51.5744],[-0.1176,51.5741]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-0.2287,51.5299],[-0.2237,51.5299],[-0.2178,51.5286],[-0.216,51.5279],[-0.2155,51.5267],[-0.213,51.5269],[-0.206,51.5258],[-0.2039,51.5235],[-0.2016,51.5227],[-0.2006,51.5207],[-0.2037,51.5206],[-0.2014,51.5178],[-0.2008,51.518],[-0.1992,51.5145],[-0.1951,51.515],[-0.194,51.5117],[-0.1929,51.5118],[-0.1921,51.5099],[-0.1879,51.5102],[-0.1842,51.5018],[-0.1803,51.5015],[-0.1795,51.4978],[-0.1681,51.499],[-0.1676,51.4983],[-0.1657,51.4992],[-0.1654,51.4987],[-0.1609,51.5017],[-0.1585,51.5022],[-0.1579,51.499],[-0.1561,51.4978],[-0.1552,51.495],[-0.156,51.4945],[-0.155,51.4938],[-0.156,51.4932],[-0.1547,51.492],[-0.1558,51.4915],[-0.1552,51.49],[-0.1558,51.4896],[-0.15,51.4855],[-0.1758,51.4816],[-0.1777,51.4804],[-0.1793,51.478],[-0.1839,51.4774],[-0.1936,51.4859],[-0.198,51.4879],[-0.2024,51.4917],[-0.2018,51.4918],[-0.2031,51.4934],[-0.2079,51.496],[-0.2134,51.5002],[-0.218,51.5061],[-0.2159,51.5064],[-0.2161,51.5075],[-0.2152,51.5076],[-0.2158,51.5091],[-0.2172,51.5104],[-0.2193,51.5095],[-0.2225,51.5154],[-0.2283,51.5211],[-0.2267,51.5219],[-0.2266,51.5246],[-0.2272,51.5248],[-0.2274,51.528],[-0.2287,51.5299]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-0.2512,51.4224],[-0.2497,51.4186],[-0.2495,51.4148],[-0.2472,51.4096],[-0.2475,51.4085],[-0.2453,51.4071],[-0.2447,51.4039],[-0.2452,51.4018],[-0.2468,51.4005],[-0.2474,51.3976],[-0.2447,51.3947],[-0.2417,51.3939],[-0.2387,51.3861],[-0.2416,51.3845],[-0.2432,51.3826],[-0.2443,51.3831],[-0.245,51.3801],[-0.2485,51.3801],[-0.2539,51.3787],[-0.261,51.3796],[-0.2623,51.3774],[-0.2646,51.3756],[-0.2725,51.3723],[-0.2766,51.3688],[-0.2798,51.3678],[-0.2841,51.3651],[-0.2884,51.3622],[-0.2852,51.3612],[-0.2912,51.3566],[-0.2929,51.3524],[-0.2992,51.3484],[-0.3014,51.3453],[-0.3041,51.3432],[-0.3054,51.3396],[-0.3051,51.3364],[-0.3062,51.3351],[-0.3137,51.3314],[-0.319,51.328],[-0.324,51.3267],[-0.3282,51.3265],[-0.3301,51.3275],[-0.3307,51.329],[-0.3291,51.3303],[-0.3297,51.3328],[-0.329,51.3402],[-0.3275,51.344],[-0.3281,51.344],[-0.3305,51.3484],[-0.328,51.3522],[-0.3237,51.3544],[-0.3198,51.3599],[-0.3183,51.3635],[-0.3179,51.3698],[-0.3167,51.3732],[-0.3143,51.3746],[-0.3087,51.3755],[-0.3074,51.3784],[-0.3085,51.3805],[-0.3093,51.3805],[-0.3095,51.3824],[-0.3117,51.3858],[-0.3108,51.3862],[-0.3132,51.3887],[-0.316,51.3876],[-0.3167,51.3888],[-0.3141,51.3902],[-0.3177,51.3937],[-0.3095,51.4001],[-0.3087,51.4023],[-0.3083,51.4153],[-0.3059,51.4213],[-0.3084,51.425],[-0.3144,51.4282],[-0.3129,51.4303],[-0.3106,51.4322],[-0.3069,51.4301],[-0.3059,51.4314],[-0.3018,51.4304],[-0.3016,51.4314],[-0.2955,51.4277],[-0.2948,51.4264],[-0.2934,51.4265],[-0.293,51.4289],[-0.2906,51.429],[-0.2866,51.4202],[-0.2804,51.4219],[-0.2709,51.4296],[-0.2541,51.4373],[-0.2531,51.4353],[-0.2513,51.4342],[-0.2511,51.4326],[-0.2542,51.4293],[-0.2522,51.4257],[-0.2529,51.4232],[-0.2512,51.4224]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-0.1151,51.5077],[-0.1089,51.5084],[-0.1082,51.5069],[-0.1073,51.5071],[-0.1064,51.5034],[-0.1074,51.503],[-0.1059,51.502],[-0.1083,51.5004],[-0.1103,51.4968],[-0.1115,51.4965],[-0.1109,51.4955],[-0.1048,51.4935],[-0.1033,51.4913],[-0.1085,51.4858],[-0.1064,51.4849],[-0.1072,51.4836],[-0.1056,51.4829],[-0.104,51.4809],[-0.1082,51.4803],[-0.1,51.4769],[-0.1007,51.4744],[-0.0988,51.4719],[-0.096,51.4699],[-0.093,51.472],[-0.0928,51.4699],[-0.0901,51.4658],[-0.0922,51.4611],[-0.0958,51.4574],[-0.1011,51.4539],[-0.1008,51.4503],[-0.1,51.4503],[-0.0951,51.4454],[-0.091,51.4376],[-0.0882,51.4293],[-0.0859,51.4285],[-0.0861,51.4278],[-0.084,51.4257],[-0.0835,51.423],[-0.0817,51.4234],[-0.0809,51.4219],[-0.0798,51.4221],[-0.0783,51.4206],[-0.0786,51.4199],[-0.0863,51.4193],[-0.0927,51.4226],[-0.106,51.4226],[-0.1126,51.4232],[-0.1156,51.4206],[-0.1198,51.4188],[-0.1225,51.415],[-0.1241,51.4146],[-0.1245,51.4134],[-0.1279,51.412],[-0.1327,51.4124],[-0.1335,51.4129],[-0.1341,51.411],[-0.1426,51.4134],[-0.1448,51.4124],[-0.1481,51.4129],[-0.1378,51.4211],[-0.1389,51.4243],[-0.1384,51.4305],[-0.1353,51.4303],[-0.1365,51.4339],[-0.1379,51.4338],[-0.1399,51.437],[-0.1377,51.4386],[-0.1375,51.4402],[-0.1359,51.442],[-0.1436,51.4418],[-0.1456,51.446],[-0.1448,51.4484],[-0.1423,51.451],[-0.1477,51.4523],[-0.1481,51.4564],[-0.1512,51.4659],[-0.1505,51.4659],[-0.1505,51.4676],[-0.1431,51.4705],[-0.1427,51.4701],[-0.1369,51.4731],[-0.1358,51.4727],[-0.1347,51.4733],[-0.1352,51.4743],[-0.1299,51.4812],[-0.1275,51.482],[-0.1263,51.4845],[-0.1285,51.485],[-0.1242,51.4879],[-0.1221,51.4919],[-0.1194,51.5038],[-0.1182,51.5058],[-0.1151,51.5077]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-0.0324,51.493],[-0.0295,51.4885],[-0.0247,51.4855],[-0.0264,51.4815],[-0.0233,51.4808],[-0.023,51.4797],[-0.0178,51.4809],[-0.0171,51.4804],[-0.0192,51.4796],[-0.0194,51.4772],[-0.0228,51.4759],[-0.0209,51.4761],[-0.0209,51.4757],[-0.0229,51.4753],[-0.0228,51.4745],[-0.02,51.473],[-0.0203,51.4723],[-0.0193,51.472],[-0.0187,51.4707],[-0.0191,51.47],[-0.0166,51.4693],[-0.0151,51.468],[-0.0131,51.4689],[-0.0152,51.4718],[-0.014,51.4727],[-0.0082,51.4728],[-0.0009,51.4718],[0.018,51.4738],[0.015,51.4731],[0.0165,51.4691],[0.0126,51.4698],[0.0133,51.4668],[0.0091,51.4659],[0.0099,51.4596],[0.0115,51.4567],[0.0175,51.455],[0.0184,51.4516],[0.0196,51.4517],[0.0199,51.4507],[0.0151,51.4502],[0.0149,51.4506],[0.0151,51.45],[0.022,51.4489],[0.023,51.4472],[0.0212,51.4467],[0.0215,51.4444],[0.0206,51.4442],[0.0215,51.4427],[0.0256,51.4417],[0.0294,51.4417],[0.0288,51.4388],[0.0248,51.4382],[0.0254,51.4357],[0.0272,51.4365],[0.0287,51.4364],[0.0286,51.434],[0.0314,51.4326],[0.0312,51.4321],[0.0316,51.4326],[0.0337,51.4317],[0.0377,51.4333],[0.0378,51.4278],[0.0391,51.4247],[0.0362,51.4224],[0.0255,51.429],[0.0212,51.4269],[0.0187,51.4271],[0.0141,51.4262],[0.0144,51.4252],[0.01,51.4225],[0.0081,51.423],[0.0052,51.4194],[0.0057,51.4185],[0.0035,51.4174],[0.0017,51.4186],[-0.0001,51.4176],[-0.0007,51.4159],[-0.0034,51.4156],[-0.0033,51.415],[-0.005,51.4146],[-0.0056,51.4158],[-0.0066,51.416],[-0.0066,51.4147],[-0.0103,51.4136],[-0.0142,51.4136],[-0.0143,51.4152],[-0.018,51.4151],[-0.0178,51.4157],[-0.021,51.416],[-0.0222,51.4167],[-0.0217,51.4173],[-0.0226,51.4176],[-0.0214,51.4183],[-0.021,51.421],[-0.0301,51.4256],[-0.032,51.4255],[-0.0318,51.4247],[-0.0375,51.425],[-0.0384,51.424],[-0.041,51.4243],[-0.0462,51.4224],[-0.046,51.4228],[-0.0517,51.4225],[-0.0518,51.4236],[-0.0547,51.4237],[-0.0551,51.4229],[-0.0568,51.423],[-0.0624,51.4252],[-0.066,51.4251],[-0.0679,51.4259],[-0.0739,51.4262],[-0.0751,51.429],[-0.0729,51.4321],[-0.0668,51.4339],[-0.0634,51.4376],[-0.064,51.4408],[-0.065,51.4412],[-0.0618,51.4478],[-0.0576,51.4503],[-0.0539,51.4487],[-0.049,51.4501],[-0.0461,51.4499],[-0.0416,51.455],[-0.0461,51.4569],[-0.0452,51.4594],[-0.046,51.464],[-0.0482,51.4659],[-0.0508,51.4667],[-0.0523,51.4692],[-0.0517,51.4697],[-0.0527,51.473],[-0.0527,51.478],[-0.0542,51.4786],[-0.0528,51.4827],[-0.0535,51.4857],[-0.0529,51.4867],[-0.054,51.4879],[-0.0526,51.4875],[-0.0505,51.4879],[-0.0501,51.4883],[-0.0519,51.4891],[-0.0465,51.4907],[-0.0423,51.4901],[-0.0403,51.4911],[-0.041,51.4918],[-0.04,51.4922],[-0.0405,51.4928],[-0.0392,51.493],[-0.0372,51.4922],[-0.0324,51.493]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-0.1892,51.4385],[-0.1912,51.4335],[-0.1898,51.4314],[-0.1874,51.4321],[-0.1873,51.433],[-0.1857,51.4332],[-0.1842,51.4313],[-0.184,51.4263],[-0.1819,51.4247],[-0.1736,51.4232],[-0.165,51.4201],[-0.1616,51.4199],[-0.1599,51.4226],[-0.1514,51.4199],[-0.1494,51.4199],[-0.1444,51.4177],[-0.1404,51.4193],[-0.145,51.4158],[-0.1443,51.4153],[-0.1481,51.4129],[-0.1448,51.4124],[-0.1426,51.4134],[-0.1341,51.411],[-0.1335,51.4129],[-0.1327,51.4124],[-0.1277,51.4123],[-0.1295,51.4096],[-0.1321,51.4092],[-0.1323,51.4068],[-0.1305,51.4033],[-0.1277,51.4015],[-0.1257,51.3983],[-0.1241,51.3976],[-0.1296,51.3937],[-0.1287,51.3935],[-0.1343,51.3909],[-0.1419,51.3893],[-0.1443,51.3907],[-0.158,51.3892],[-0.161,51.3878],[-0.1653,51.388],[-0.1663,51.3896],[-0.1713,51.3925],[-0.1748,51.3934],[-0.1793,51.3898],[-0.1884,51.3854],[-0.1938,51.3879],[-0.2003,51.3849],[-0.2034,51.3873],[-0.2051,51.3861],[-0.2098,51.3883],[-0.2181,51.3802],[-0.2277,51.384],[-0.2337,51.3876],[-0.2346,51.3906],[-0.2397,51.3893],[-0.2417,51.3939],[-0.2447,51.3947],[-0.2474,51.3976],[-0.2468,51.4005],[-0.2452,51.4018],[-0.2447,51.4039],[-0.2453,51.4071],[-0.2475,51.4085],[-0.2472,51.4096],[-0.2495,51.4148],[-0.2497,51.4186],[-0.2512,51.4224],[-0.2529,51.4232],[-0.2522,51.4257],[-0.2542,51.4293],[-0.2511,51.4326],[-0.2312,51.4382],[-0.2243,51.4389],[-0.2178,51.4387],[-0.2157,51.4377],[-0.2125,51.4378],[-0.19,51.4415],[-0.1906,51.4389],[-0.1892,51.4385]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[0.0544,51.5596],[0.0602,51.5564],[0.0636,51.5573],[0.0666,51.5547],[0.0669,51.5533],[0.0678,51.5533],[0.0687,51.5475],[0.0667,51.5406],[0.0689,51.5372],[0.068,51.5362],[0.0695,51.5363],[0.0718,51.5329],[0.0727,51.5293],[0.078,51.5291],[0.0785,51.5288],[0.0776,51.5285],[0.0789,51.5284],[0.0852,51.5256],[0.0889,51.5262],[0.0897,51.5256],[0.0921,51.5256],[0.0922,51.5241],[0.0907,51.5239],[0.0918,51.5236],[0.0918,51.5226],[0.0945,51.5203],[0.0939,51.519],[0.0948,51.5165],[0.0969,51.5153],[0.0903,51.5148],[0.0905,51.5143],[0.0833,51.5115],[0.0837,51.511],[0.0803,51.5084],[0.078,51.5052],[0.0767,51.5049],[0.0782,51.5044],[0.0781,51.504],[0.0778,51.5045],[0.0762,51.5038],[0.0767,51.5035],[0.0753,51.5023],[0.074,51.5021],[0.0747,51.5016],[0.0737,51.5004],[0.0697,51.4992],[0.0601,51.4984],[0.0435,51.4999],[0.035,51.4996],[0.0268,51.4986],[0.0224,51.4989],[0.0171,51.501],[0.0131,51.5044],[0.0134,51.5049],[0.0097,51.5068],[0.0105,51.5086],[0.0066,51.51],[0.0082,51.5125],[0.0072,51.5144],[0.0051,51.5142],[0.0037,51.511],[0.0026,51.511],[0.0044,51.5147],[0.0032,51.5158],[-0.0025,51.5185],[-0.0051,51.5169],[-0.0066,51.519],[-0.0086,51.52],[-0.0065,51.5257],[-0.0021,51.527],[0.0007,51.5283],[0.0018,51.5303],[0.0011,51.5311],[-0.0008,51.5281],[-0.0023,51.5272],[-0.0038,51.527],[-0.0039,51.5283],[-0.0049,51.5264],[-0.0065,51.5263],[-0.008,51.5272],[-0.0069,51.5261],[-0.0079,51.523],[-0.0076,51.5263],[-0.0086,51.5276],[-0.0107,51.5293],[-0.0171,51.5313],[-0.0213,51.537],[-0.0161,51.5425],[-0.019,51.5516],[-0.0169,51.5514],[-0.0108,51.5526],[-0.0094,51.5522],[-0.0087,51.5499],[0.0033,51.5521],[0.0057,51.5519],[0.0058,51.5507],[0.0096,51.5513],[0.0108,51.5522],[0.0096,51.5534],[0.0111,51.5544],[0.0116,51.5539],[0.0146,51.555],[0.017,51.5532],[0.0215,51.5549],[0.0205,51.5561],[0.0226,51.5561],[0.0234,51.5568],[0.0238,51.5555],[0.0254,51.5555],[0.0255,51.554],[0.0354,51.5553],[0.0463,51.5548],[0.0443,51.5576],[0.0429,51.5584],[0.042,51.5615],[0.0503,51.564],[0.0516,51.5622],[0.0541,51.5608],[0.0544,51.5596]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[0.0327,51.6223],[0.0408,51.6157],[0.0441,51.617],[0.0537,51.6183],[0.0542,51.6167],[0.0533,51.6163],[0.0519,51.6169],[0.0502,51.6164],[0.0485,51.615],[0.048,51.6133],[0.0489,51.6136],[0.0626,51.607],[0.064,51.6072],[0.0728,51.6047],[0.0794,51.607],[0.0844,51.6063],[0.0871,51.6044],[0.0925,51.6062],[0.0919,51.6082],[0.0946,51.6108],[0.0923,51.6136],[0.0981,51.6154],[0.1002,51.6127],[0.1034,51.6135],[0.1038,51.6125],[0.1096,51.614],[0.1167,51.6169],[0.1193,51.6154],[0.1242,51.6175],[0.1261,51.6196],[0.1288,51.6207],[0.1292,51.6214],[0.1358,51.6236],[0.1382,51.6236],[0.1475,51.6122],[0.1495,51.6029],[0.1482,51.599],[0.1466,51.5994],[0.1376,51.5939],[0.1296,51.59],[0.131,51.5875],[0.1264,51.5867],[0.1281,51.5828],[0.1278,51.5816],[0.1326,51.5813],[0.1336,51.5799],[0.1308,51.5794],[0.1316,51.5771],[0.1292,51.5763],[0.1294,51.5739],[0.1301,51.5731],[0.1309,51.5733],[0.1316,51.5718],[0.1299,51.5715],[0.1305,51.5703],[0.1293,51.5665],[0.1277,51.5662],[0.125,51.5643],[0.1191,51.563],[0.1197,51.5625],[0.1175,51.5592],[0.1205,51.5586],[0.1189,51.5574],[0.1171,51.5574],[0.1171,51.5569],[0.1133,51.5573],[0.1127,51.5565],[0.1147,51.5553],[0.1119,51.5527],[0.1084,51.5527],[0.1043,51.5498],[0.0935,51.5459],[0.0923,51.5486],[0.0926,51.5496],[0.0915,51.5483],[0.0859,51.5473],[0.078,51.544],[0.0768,51.5446],[0.0718,51.5436],[0.0697,51.5441],[0.0695,51.5504],[0.068,51.5543],[0.066,51.5568],[0.0633,51.5583],[0.0609,51.5585],[0.0574,51.5609],[0.0607,51.5584],[0.0641,51.5578],[0.0659,51.5567],[0.0676,51.5547],[0.0693,51.5503],[0.0693,51.5442],[0.0684,51.5444],[0.0678,51.5533],[0.0669,51.5533],[0.0666,51.5547],[0.0636,51.5573],[0.0602,51.5564],[0.0572,51.558],[0.057,51.5587],[0.0544,51.5596],[0.0541,51.5608],[0.0516,51.5622],[0.0503,51.564],[0.042,51.5615],[0.0429,51.5584],[0.0443,51.5576],[0.0463,51.5548],[0.0354,51.5553],[0.0255,51.554],[0.0254,51.5555],[0.0238,51.5555],[0.0234,51.5568],[0.0226,51.5561],[0.0205,51.5561],[0.0171,51.5588],[0.0148,51.5594],[0.0145,51.5656],[0.0176,51.5657],[0.0189,51.5663],[0.0177,51.57],[0.0191,51.5699],[0.0189,51.5723],[0.0181,51.572],[0.0165,51.5729],[0.0175,51.5774],[0.0154,51.5816],[0.0155,51.5834],[0.0134,51.5838],[0.0121,51.5927],[0.013,51.5991],[0.0214,51.6111],[0.0213,51.6123],[0.0163,51.6169],[0.0087,51.6191],[0.0145,51.6189],[0.0143,51.6203],[0.0188,51.6233],[0.021,51.6289],[0.0291,51.6251],[0.0305,51.6233],[0.0327,51.6223]]]}},{"type":"Feature","properties":{},"geometry":{"type":"MultiPolygon","coordinates":[[[[-0.3312,51.4396],[-0.3307,51.4389],[-0.3315,51.4393],[-0.3312,51.4396]]],[[[-0.3209,51.4461],[-0.3255,51.445],[-0.3281,51.444],[-0.3258,51.4457],[-0.3209,51.4461]]],[[[-0.3087,51.4582],[-0.3085,51.4578],[-0.3099,51.4585],[-0.3087,51.4582]]],[[[-0.3269,51.4612],[-0.3269,51.4612],[-0.3269,51.4613],[-0.3269,51.4612]]],[[[-0.3252,51.4638],[-0.3257,51.4631],[-0.3253,51.4637],[-0.3252,51.4638]]],[[[-0.2948,51.486],[-0.2974,51.4846],[-0.2964,51.4856],[-0.2948,51.486]]],[[[-0.2939,51.4862],[-0.2945,51.4861],[-0.2899,51.4872],[-0.2939,51.4862]]],[[[-0.2266,51.4762],[-0.2229,51.4718],[-0.2237,51.4716],[-0.2236,51.4707],[-0.2312,51.4728],[-0.2327,51.4725],[-0.2333,51.464],[-0.2442,51.4653],[-0.253,51.4652],[-0.256,51.4631],[-0.258,51.4604],[-0.2568,51.4598],[-0.2591,51.4549],[-0.2473,51.4492],[-0.2416,51.4431],[-0.2427,51.4419],[-0.2562,51.4367],[-0.2709,51.4296],[-0.2804,51.4219],[-0.2866,51.4202],[-0.2906,51.429],[-0.293,51.4289],[-0.2934,51.4265],[-0.2948,51.4264],[-0.2955,51.4277],[-0.3016,51.4314],[-0.3018,51.4304],[-0.3059,51.4314],[-0.3069,51.4301],[-0.3106,51.4322],[-0.3144,51.4282],[-0.3084,51.425],[-0.3059,51.4213],[-0.3083,51.4153],[-0.3087,51.4023],[-0.3095,51.4001],[-0.3129,51.3971],[-0.3198,51.3926],[-0.3259,51.3914],[-0.3276,51.3917],[-0.3405,51.4031],[-0.3437,51.4039],[-0.3551,51.4098],[-0.3554,51.4108],[-0.3591,51.4119],[-0.3647,51.4116],[-0.3739,51.4085],[-0.3794,51.4078],[-0.3834,51.4085],[-0.3838,51.4101],[-0.3896,51.4107],[-0.3903,51.4143],[-0.3861,51.4143],[-0.3877,51.4193],[-0.3866,51.4201],[-0.3929,51.4233],[-0.391,51.4231],[-0.3854,51.4206],[-0.3841,51.4227],[-0.3884,51.428],[-0.3871,51.4282],[-0.3877,51.4289],[-0.3831,51.4322],[-0.3761,51.4355],[-0.3779,51.4363],[-0.3778,51.4368],[-0.3668,51.4416],[-0.3731,51.4437],[-0.3739,51.443],[-0.3782,51.4425],[-0.3795,51.4431],[-0.3797,51.4443],[-0.3862,51.4467],[-0.3863,51.4481],[-0.3878,51.4494],[-0.3845,51.4499],[-0.3837,51.4495],[-0.373,51.4575],[-0.3727,51.457],[-0.3684,51.4569],[-0.3678,51.4574],[-0.365,51.4578],[-0.3558,51.4584],[-0.3535,51.4582],[-0.3528,51.4569],[-0.3486,51.4568],[-0.3427,51.4581],[-0.3417,51.459],[-0.3401,51.4592],[-0.3406,51.4573],[-0.337,51.4547],[-0.3363,51.4557],[-0.333,51.4554],[-0.3304,51.4579],[-0.3285,51.458],[-0.3269,51.457],[-0.3256,51.4581],[-0.3265,51.4593],[-0.3264,51.4621],[-0.3237,51.4651],[-0.3217,51.4654],[-0.319,51.4627],[-0.314,51.4597],[-0.3059,51.4562],[-0.3039,51.4533],[-0.3044,51.4516],[-0.3089,51.4487],[-0.3158,51.4467],[-0.3251,51.4465],[-0.3272,51.4456],[-0.3316,51.4413],[-0.3312,51.4397],[-0.3318,51.4392],[-0.3291,51.4367],[-0.3272,51.4324],[-0.3223,51.4299],[-0.3185,51.4291],[-0.3191,51.43],[-0.3234,51.4309],[-0.327,51.4334],[-0.3285,51.438],[-0.3301,51.4397],[-0.3301,51.4416],[-0.3278,51.4434],[-0.3217,51.4454],[-0.313,51.4465],[-0.3058,51.4486],[-0.3026,51.4522],[-0.305,51.4565],[-0.308,51.4588],[-0.3139,51.4607],[-0.3198,51.4647],[-0.3186,51.4702],[-0.3177,51.471],[-0.3068,51.4749],[-0.3026,51.4793],[-0.2953,51.4848],[-0.29,51.4863],[-0.2873,51.4865],[-0.2844,51.4859],[-0.2779,51.4821],[-0.274,51.4757],[-0.2705,51.4727],[-0.2678,51.4712],[-0.264,51.4702],[-0.2586,51.4704],[-0.2557,51.4712],[-0.2515,51.4736],[-0.2497,51.4761],[-0.2494,51.4821],[-0.2484,51.4838],[-0.2411,51.4883],[-0.2356,51.489],[-0.2313,51.4879],[-0.228,51.4851],[-0.2266,51.4762]]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-0.1089,51.5084],[-0.0961,51.5084],[-0.0921,51.5072],[-0.0811,51.5059],[-0.0727,51.5036],[-0.0709,51.5026],[-0.0735,51.5005],[-0.0708,51.5022],[-0.0638,51.5006],[-0.0573,51.5008],[-0.0507,51.5029],[-0.0488,51.504],[-0.0492,51.5044],[-0.0477,51.5042],[-0.048,51.5048],[-0.047,51.5054],[-0.0461,51.5052],[-0.0465,51.5057],[-0.0444,51.507],[-0.0413,51.5075],[-0.0373,51.5072],[-0.0373,51.5064],[-0.0368,51.5071],[-0.0342,51.5063],[-0.033,51.5044],[-0.0323,51.5044],[-0.0326,51.496],[-0.034,51.4957],[-0.0325,51.4957],[-0.0333,51.4941],[-0.0324,51.4931],[-0.0372,51.4922],[-0.0392,51.493],[-0.0405,51.4928],[-0.04,51.4922],[-0.041,51.4918],[-0.0403,51.4911],[-0.0423,51.4901],[-0.0465,51.4907],[-0.0519,51.4891],[-0.0501,51.4883],[-0.0505,51.4879],[-0.0526,51.4875],[-0.054,51.4879],[-0.0529,51.4867],[-0.0535,51.4857],[-0.0528,51.4827],[-0.0542,51.4786],[-0.0527,51.478],[-0.0527,51.473],[-0.0517,51.4697],[-0.0523,51.4692],[-0.0508,51.4667],[-0.0482,51.4659],[-0.046,51.464],[-0.0452,51.4594],[-0.0461,51.4569],[-0.0416,51.455],[-0.0461,51.4499],[-0.049,51.4501],[-0.0539,51.4487],[-0.0576,51.4503],[-0.0618,51.4478],[-0.065,51.4412],[-0.064,51.4408],[-0.0634,51.4376],[-0.0668,51.4339],[-0.0691,51.4328],[-0.0722,51.4325],[-0.0749,51.4298],[-0.0739,51.4262],[-0.075,51.4256],[-0.0783,51.4206],[-0.0798,51.4221],[-0.0809,51.4219],[-0.0817,51.4234],[-0.0835,51.423],[-0.084,51.4257],[-0.0861,51.4278],[-0.0859,51.4285],[-0.0882,51.4293],[-0.091,51.4376],[-0.0951,51.4454],[-0.1,51.4503],[-0.1008,51.4503],[-0.1014,51.4522],[-0.1011,51.4539],[-0.0958,51.4574],[-0.0922,51.4611],[-0.0901,51.4658],[-0.0928,51.4699],[-0.093,51.472],[-0.096,51.4699],[-0.0988,51.4719],[-0.1007,51.4744],[-0.1,51.4769],[-0.1082,51.4803],[-0.104,51.4809],[-0.1056,51.4829],[-0.1072,51.4836],[-0.1064,51.4849],[-0.1085,51.4858],[-0.1033,51.4913],[-0.1048,51.4935],[-0.1109,51.4955],[-0.1115,51.4965],[-0.1103,51.4968],[-0.1083,51.5004],[-0.1059,51.502],[-0.1074,51.503],[-0.1064,51.5034],[-0.1065,51.5051],[-0.1089,51.5084]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-0.1663,51.3896],[-0.1653,51.388],[-0.161,51.3878],[-0.158,51.3892],[-0.1443,51.3907],[-0.1419,51.3893],[-0.1348,51.391],[-0.1326,51.3901],[-0.1332,51.3895],[-0.1296,51.3872],[-0.1306,51.3863],[-0.1288,51.3856],[-0.1295,51.3853],[-0.1286,51.3825],[-0.1303,51.3822],[-0.128,51.3805],[-0.1258,51.3756],[-0.1278,51.3747],[-0.1248,51.3737],[-0.1233,51.3712],[-0.1221,51.3657],[-0.1241,51.3653],[-0.1223,51.3645],[-0.1213,51.3647],[-0.1209,51.3633],[-0.1218,51.36],[-0.1229,51.3599],[-0.1219,51.3591],[-0.1246,51.3589],[-0.1245,51.3584],[-0.1242,51.3574],[-0.1214,51.3577],[-0.1168,51.3458],[-0.1268,51.3449],[-0.1273,51.3471],[-0.1283,51.3475],[-0.129,51.3466],[-0.1314,51.346],[-0.1311,51.3455],[-0.1329,51.3454],[-0.1325,51.3443],[-0.1369,51.3447],[-0.1446,51.3421],[-0.1435,51.3405],[-0.1445,51.3395],[-0.1475,51.3388],[-0.1456,51.3325],[-0.1441,51.3307],[-0.1492,51.3289],[-0.1442,51.3259],[-0.1456,51.3235],[-0.1507,51.3222],[-0.1521,51.3223],[-0.1527,51.323],[-0.1565,51.3215],[-0.1586,51.324],[-0.1606,51.3232],[-0.1642,51.326],[-0.1636,51.3262],[-0.1644,51.3281],[-0.1623,51.3289],[-0.1631,51.3303],[-0.1701,51.3295],[-0.1699,51.3302],[-0.1729,51.33],[-0.1741,51.3332],[-0.1875,51.3408],[-0.1973,51.3436],[-0.2012,51.3399],[-0.2021,51.3401],[-0.213,51.3355],[-0.212,51.3333],[-0.2142,51.3302],[-0.2208,51.3298],[-0.2298,51.3365],[-0.2173,51.3434],[-0.2204,51.3514],[-0.2221,51.3513],[-0.2227,51.3571],[-0.2241,51.3593],[-0.2269,51.3626],[-0.2332,51.366],[-0.2339,51.3654],[-0.2378,51.367],[-0.2409,51.367],[-0.2412,51.3663],[-0.2454,51.3669],[-0.2447,51.3691],[-0.2449,51.3807],[-0.2443,51.3831],[-0.2432,51.3826],[-0.2416,51.3845],[-0.2387,51.3861],[-0.2397,51.3893],[-0.2346,51.3906],[-0.2337,51.3876],[-0.2277,51.384],[-0.2181,51.3802],[-0.2098,51.3883],[-0.2051,51.3861],[-0.2034,51.3873],[-0.2003,51.3849],[-0.1938,51.3879],[-0.1884,51.3854],[-0.1793,51.3898],[-0.1748,51.3934],[-0.1713,51.3925],[-0.1663,51.3896]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-0.0295,51.5431],[-0.029,51.5423],[-0.0256,51.5433],[-0.0165,51.5433],[-0.0166,51.5414],[-0.0213,51.537],[-0.0171,51.5313],[-0.0107,51.5293],[-0.0076,51.5263],[-0.0079,51.523],[-0.0094,51.5218],[-0.0092,51.5199],[-0.0067,51.5183],[-0.006,51.5164],[-0.0044,51.5164],[-0.0026,51.5178],[0.0027,51.5155],[0.0036,51.5145],[0.0018,51.5109],[0.0028,51.5104],[0.0043,51.5106],[0.0055,51.5135],[0.0067,51.5139],[0.0074,51.5127],[0.0056,51.51],[0.009,51.5088],[0.0088,51.5074],[0.0037,51.5084],[-0.0017,51.5075],[-0.0058,51.5051],[-0.0076,51.5015],[-0.0087,51.5014],[-0.0077,51.5008],[-0.0073,51.4983],[-0.0056,51.4958],[-0.0062,51.4956],[-0.0048,51.4945],[-0.0031,51.4909],[-0.0037,51.489],[-0.0044,51.4883],[-0.0051,51.4886],[-0.0046,51.4881],[-0.0067,51.4871],[-0.0115,51.4861],[-0.0164,51.4861],[-0.021,51.4873],[-0.0257,51.4907],[-0.0273,51.4935],[-0.0262,51.494],[-0.0279,51.4947],[-0.0267,51.5033],[-0.0301,51.5074],[-0.0315,51.5078],[-0.0299,51.5089],[-0.0326,51.5082],[-0.0373,51.5094],[-0.0369,51.51],[-0.0378,51.5095],[-0.0421,51.5098],[-0.0461,51.5094],[-0.0497,51.5081],[-0.0562,51.5039],[-0.0596,51.5028],[-0.0654,51.5035],[-0.0681,51.5049],[-0.0687,51.5045],[-0.0712,51.5052],[-0.0713,51.5058],[-0.0795,51.5078],[-0.0779,51.5101],[-0.0762,51.5106],[-0.0755,51.5097],[-0.0728,51.5102],[-0.074,51.5145],[-0.0769,51.5166],[-0.0781,51.519],[-0.0794,51.5189],[-0.0783,51.5219],[-0.0761,51.5224],[-0.0763,51.5271],[-0.0773,51.5273],[-0.0746,51.5299],[-0.0728,51.5307],[-0.0663,51.5312],[-0.0652,51.5332],[-0.0622,51.5333],[-0.0624,51.5355],[-0.0588,51.5341],[-0.0547,51.5352],[-0.0529,51.5349],[-0.0524,51.5359],[-0.0509,51.5365],[-0.0472,51.5354],[-0.045,51.5358],[-0.0415,51.5374],[-0.0371,51.5414],[-0.0377,51.5418],[-0.0332,51.5447],[-0.0295,51.5431]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-0.0082,51.6436],[-0.0046,51.6435],[-0.004,51.6427],[-0.0005,51.6437],[0.0011,51.6418],[0.0099,51.6414],[0.0174,51.6403],[0.0227,51.6411],[0.0231,51.6377],[0.0252,51.6373],[0.0247,51.636],[0.0257,51.6346],[0.0239,51.6308],[0.0218,51.6288],[0.021,51.6289],[0.0185,51.6228],[0.0143,51.6203],[0.0145,51.6189],[0.0087,51.6191],[0.0163,51.6169],[0.0213,51.6123],[0.0214,51.6111],[0.0193,51.6082],[0.0196,51.6076],[0.013,51.5991],[0.0121,51.5927],[0.0134,51.5838],[0.0155,51.5834],[0.0154,51.5816],[0.0175,51.5774],[0.0165,51.5729],[0.0181,51.572],[0.0189,51.5723],[0.0191,51.5699],[0.0177,51.57],[0.0189,51.5663],[0.0176,51.5657],[0.0145,51.5656],[0.0148,51.5594],[0.0171,51.5588],[0.0215,51.5549],[0.017,51.5532],[0.0146,51.555],[0.0116,51.5539],[0.0111,51.5544],[0.0096,51.5534],[0.0108,51.5522],[0.0096,51.5513],[0.0058,51.5507],[0.0057,51.5519],[0.0033,51.5521],[-0.0087,51.5499],[-0.0094,51.5522],[-0.0108,51.5526],[-0.0169,51.5514],[-0.0185,51.5552],[-0.0239,51.5574],[-0.0258,51.5599],[-0.0284,51.561],[-0.03,51.5614],[-0.0333,51.5606],[-0.0363,51.5615],[-0.0388,51.5612],[-0.0402,51.5618],[-0.0424,51.5614],[-0.0473,51.5627],[-0.0467,51.5644],[-0.0533,51.5687],[-0.0544,51.5703],[-0.0563,51.5707],[-0.0584,51.5726],[-0.0622,51.5792],[-0.061,51.5808],[-0.0578,51.5825],[-0.0522,51.5877],[-0.0535,51.59],[-0.0504,51.5967],[-0.046,51.6001],[-0.0414,51.6056],[-0.0352,51.6083],[-0.034,51.6095],[-0.0353,51.613],[-0.0321,51.6169],[-0.0259,51.6217],[-0.0168,51.6335],[-0.0133,51.6397],[-0.0123,51.6462],[-0.0073,51.6462],[-0.0082,51.6436]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-0.1263,51.4845],[-0.1275,51.482],[-0.1299,51.4812],[-0.1352,51.4743],[-0.1347,51.4733],[-0.1358,51.4727],[-0.1369,51.4731],[-0.1427,51.4701],[-0.1431,51.4705],[-0.1505,51.4676],[-0.1505,51.4659],[-0.1512,51.4659],[-0.1481,51.4564],[-0.1477,51.4523],[-0.1423,51.451],[-0.1448,51.4484],[-0.1456,51.446],[-0.1436,51.4418],[-0.1359,51.442],[-0.1375,51.4402],[-0.1377,51.4386],[-0.1399,51.437],[-0.1379,51.4338],[-0.1365,51.4339],[-0.1353,51.4303],[-0.1384,51.4305],[-0.1389,51.4243],[-0.1378,51.4211],[-0.1404,51.4193],[-0.1444,51.4177],[-0.1494,51.4199],[-0.1514,51.4199],[-0.1599,51.4226],[-0.1616,51.4199],[-0.165,51.4201],[-0.1736,51.4232],[-0.1819,51.4247],[-0.184,51.4263],[-0.1842,51.4313],[-0.1857,51.4332],[-0.1873,51.433],[-0.1874,51.4321],[-0.1898,51.4314],[-0.1912,51.4335],[-0.1893,51.438],[-0.1892,51.4385],[-0.1906,51.4389],[-0.19,51.4415],[-0.2125,51.4378],[-0.2157,51.4377],[-0.2178,51.4387],[-0.2243,51.4389],[-0.2312,51.4382],[-0.2511,51.4326],[-0.2513,51.4342],[-0.2531,51.4353],[-0.2541,51.4373],[-0.2427,51.4419],[-0.2416,51.4431],[-0.2473,51.4492],[-0.2591,51.4549],[-0.2568,51.4598],[-0.258,51.4604],[-0.256,51.4631],[-0.253,51.4652],[-0.2442,51.4653],[-0.2333,51.464],[-0.233,51.4717],[-0.2327,51.4725],[-0.2312,51.4728],[-0.2236,51.4707],[-0.2229,51.4717],[-0.218,51.4682],[-0.2128,51.4656],[-0.2073,51.4639],[-0.1991,51.4627],[-0.1955,51.4629],[-0.1951,51.46],[-0.1933,51.4598],[-0.1948,51.4602],[-0.1949,51.4618],[-0.1939,51.4615],[-0.1948,51.4629],[-0.1904,51.4634],[-0.1836,51.4655],[-0.1786,51.4706],[-0.1779,51.4706],[-0.1785,51.4708],[-0.1753,51.4778],[-0.1716,51.4803],[-0.1489,51.4836],[-0.1369,51.4824],[-0.1285,51.485],[-0.1263,51.4845]]]}},{"type":"Feature","properties":{},"geometry":{"type":"Polygon","coordinates":[[[-0.1739,51.5395],[-0.1735,51.5376],[-0.1719,51.5384],[-0.1709,51.5378],[-0.1694,51.5386],[-0.1649,51.5358],[-0.1604,51.5373],[-0.1593,51.5363],[-0.1527,51.5375],[-0.1471,51.525],[-0.1458,51.5253],[-0.1452,51.524],[-0.1434,51.5245],[-0.1435,51.524],[-0.137,51.5189],[-0.1352,51.5189],[-0.1325,51.5167],[-0.1308,51.5171],[-0.1296,51.514],[-0.1277,51.5127],[-0.1229,51.5151],[-0.1221,51.5146],[-0.1195,51.5145],[-0.1147,51.516],[-0.1138,51.5148],[-0.1116,51.5153],[-0.1111,51.5138],[-0.1125,51.5127],[-0.1115,51.5108],[-0.1169,51.5101],[-0.1195,51.5091],[-0.1224,51.5061],[-0.1254,51.4916],[-0.1284,51.4882],[-0.1325,51.4857],[-0.1381,51.4848],[-0.149,51.4855],[-0.1491,51.4862],[-0.15,51.4855],[-0.1558,51.4896],[-0.1552,51.49],[-0.1558,51.4915],[-0.1547,51.492],[-0.156,51.4932],[-0.155,51.4938],[-0.156,51.4945],[-0.1552,51.495],[-0.1561,51.4978],[-0.1579,51.499],[-0.1585,51.5022],[-0.1609,51.5017],[-0.1654,51.4987],[-0.1657,51.4992],[-0.1676,51.4983],[-0.1681,51.499],[-0.1795,51.4978],[-0.1803,51.5015],[-0.1842,51.5018],[-0.1879,51.5102],[-0.1921,51.5099],[-0.1929,51.5118],[-0.194,51.5117],[-0.1951,51.515],[-0.1992,51.5145],[-0.2008,51.518],[-0.2014,51.5178],[-0.2037,51.5206],[-0.2006,51.5207],[-0.2016,51.5227],[-0.2039,51.5235],[-0.206,51.5258],[-0.2073,51.5262],[-0.2155,51.5267],[-0.216,51.5279],[-0.2153,51.5314],[-0.2078,51.5328],[-0.203,51.5329],[-0.1982,51.5304],[-0.1978,51.5279],[-0.1965,51.5276],[-0.193,51.532],[-0.1923,51.5333],[-0.193,51.5339],[-0.1915,51.5363],[-0.1887,51.5345],[-0.1842,51.5382],[-0.1801,51.5396],[-0.1739,51.5395]]]}}]},"labels":{"type":"FeatureCollection","features":[{"type":"Feature","properties":{"name":"City of London"},"geometry":{"type":"Point","coordinates":[-0.094,51.516]}},{"type":"Feature","properties":{"name":"Barking and Dagenham"},"geometry":{"type":"Point","coordinates":[0.1507,51.5555]}},{"type":"Feature","properties":{"name":"Barnet"},"geometry":{"type":"Point","coordinates":[-0.213,51.6139]}},{"type":"Feature","properties":{"name":"Bexley"},"geometry":{"type":"Point","coordinates":[0.144,51.4606]}},{"type":"Feature","properties":{"name":"Brent"},"geometry":{"type":"Point","coordinates":[-0.276,51.5642]}},{"type":"Feature","properties":{"name":"Bromley"},"geometry":{"type":"Point","coordinates":[0.0619,51.3669]}},{"type":"Feature","properties":{"name":"Camden"},"geometry":{"type":"Point","coordinates":[-0.1626,51.5431]}},{"type":"Feature","properties":{"name":"Croydon"},"geometry":{"type":"Point","coordinates":[-0.0639,51.3544]}},{"type":"Feature","properties":{"name":"Ealing"},"geometry":{"type":"Point","coordinates":[-0.3138,51.526]}},{"type":"Feature","properties":{"name":"Enfield"},"geometry":{"type":"Point","coordinates":[-0.0815,51.6484]}},{"type":"Feature","properties":{"name":"Greenwich"},"geometry":{"type":"Point","coordinates":[0.0485,51.4677]}},{"type":"Feature","properties":{"name":"Hackney"},"geometry":{"type":"Point","coordinates":[-0.0475,51.5485]}},{"type":"Feature","properties":{"name":"Hammersmith and Fulham"},"geometry":{"type":"Point","coordinates":[-0.2312,51.4991]}},{"type":"Feature","properties":{"name":"Haringey"},"geometry":{"type":"Point","coordinates":[-0.1054,51.5878]}},{"type":"Feature","properties":{"name":"Harrow"},"geometry":{"type":"Point","coordinates":[-0.3371,51.5967]}},{"type":"Feature","properties":{"name":"Havering"},"geometry":{"type":"Point","coordinates":[0.2498,51.5589]}},{"type":"Feature","properties":{"name":"Hillingdon"},"geometry":{"type":"Point","coordinates":[-0.4439,51.5425]}},{"type":"Feature","properties":{"name":"Hounslow"},"geometry":{"type":"Point","coordinates":[-0.3791,51.4624]}},{"type":"Feature","properties":{"name":"Islington"},"geometry":{"type":"Point","coordinates":[-0.1017,51.5469]}},{"type":"Feature","properties":{"name":"Kensington and Chelsea"},"geometry":{"type":"Point","coordinates":[-0.2004,51.5033]}},{"type":"Feature","properties":{"name":"Kingston upon Thames"},"geometry":{"type":"Point","coordinates":[-0.277,51.3815]}},{"type":"Feature","properties":{"name":"Lambeth"},"geometry":{"type":"Point","coordinates":[-0.1214,51.4602]}},{"type":"Feature","properties":{"name":"Lewisham"},"geometry":{"type":"Point","coordinates":[-0.0126,51.4534]}},{"type":"Feature","properties":{"name":"Merton"},"geometry":{"type":"Point","coordinates":[-0.1882,51.4103]}},{"type":"Feature","properties":{"name":"Newham"},"geometry":{"type":"Point","coordinates":[0.0278,51.5312]}},{"type":"Feature","properties":{"name":"Redbridge"},"geometry":{"type":"Point","coordinates":[0.07,51.5853]}},{"type":"Feature","properties":{"name":"Richmond upon Thames"},"geometry":{"type":"Point","coordinates":[-0.2881,51.4405]}},{"type":"Feature","properties":{"name":"Southwark"},"geometry":{"type":"Point","coordinates":[-0.0685,51.4646]}},{"type":"Feature","properties":{"name":"Sutton"},"geometry":{"type":"Point","coordinates":[-0.1736,51.3576]}},{"type":"Feature","properties":{"name":"Tower Hamlets"},"geometry":{"type":"Point","coordinates":[-0.0358,51.515]}},{"type":"Feature","properties":{"name":"Waltham Forest"},"geometry":{"type":"Point","coordinates":[-0.018,51.5979]}},{"type":"Feature","properties":{"name":"Wandsworth"},"geometry":{"type":"Point","coordinates":[-0.1987,51.4517]}},{"type":"Feature","properties":{"name":"Westminster"},"geometry":{"type":"Point","coordinates":[-0.1531,51.5123]}}]}};
 
   var DATA_BASE = "d/";
@@ -258,10 +297,14 @@
   var NODATA = MANIFEST.nodata;
 
   var params = new URLSearchParams(location.search);
-  var pinnedTier = params.get("tier");          // capture driver escape hatch
+  // AUTO is the pair the zoom switch drives, coarse first. Everything else is
+  // pinned from the area pill row (or ?tier=, which the screenshot driver and
+  // any deep link both use).
+  var AUTO = MANIFEST.autoTiers;
+  var pinnedTier = MANIFEST.tiers[params.get("tier")] ? params.get("tier") : null;
   var measureKey = params.get("m") || MANIFEST.initial;
   var groupKey = measureFor(measureKey).group;
-  var tier = pinnedTier === "oa" ? "oa" : "lsoa";
+  var tier = pinnedTier || AUTO[0];
   var mode = params.get("mode") === "street" ? "street" : "boroughs";
   var areasShow = params.get("areas") !== "hide";
 
@@ -300,6 +343,16 @@
   var TRANSITION = reducedMotion ? 0 : 750;
   function easeCubicInOut(t) {
     return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
+  // For the outgoing areas of an area-type change. A symmetric ease spends its
+  // last third barely moving, and that near-stationary tail is dead time the
+  // reader sits through before anything else can start. This keeps enough
+  // initial velocity to feel like a response to the click (f'(0) = 0.35) and
+  // then accelerates into the ground (f'(1) = 2.3), so the descent finishes
+  // when it finishes and hands straight over.
+  function easeDrop(t) {
+    return 0.35 * t + 0.65 * t * t * t;
   }
 
   function clamp01(t) { return t < 0 ? 0 : t > 1 ? 1 : t; }
@@ -439,22 +492,38 @@
     return TIERS[t];
   }
 
+  // Slot widths travel in the container header, they are never assumed. Counts
+  // and bases grow with the area — an output area holds ~330 residents and a
+  // borough a third of a million — so the aggregated area types widen to
+  // uint32 while the census ones stay uint16. Reading that from the header is
+  // what makes one reader correct for every area type.
+  var SLOT_CTOR = { f32: Float32Array, u32: Uint32Array, u16: Uint16Array };
+  var SLOT_NODATA = { f32: null, u32: 4294967295, u16: 65535 };
+
   function readSlots(c) {
-    var out = {}, n = c.header.n, o = c.header.byteOffsets;
+    var out = { __nodata: {} }, n = c.header.n, o = c.header.byteOffsets;
     c.header.slots.forEach(function (s, i) {
-      var Ctor = s.type === "f32" ? Float32Array : Uint16Array;
+      var Ctor = SLOT_CTOR[s.type] || Uint16Array;
       out[s.key] = new Ctor(c.buf, c.base + o[i], n);
+      out.__nodata[s.key] = SLOT_NODATA[s.type];
     });
     return out;
   }
 
   // The PROMISE is the cache entry, not the resolved value: two fast clicks on
   // the same group then coalesce into one request instead of racing.
+  //
+  // An area type flagged `single` in the manifest ships every measure in one
+  // small file, so the group a click asked for is ignored and all of them
+  // resolve to the same promise. Lazy per-group loading exists for the
+  // output-area tier's 1.6 MB; at 33 boroughs the whole catalogue is 6 KB.
   function loadGroup(t, g) {
-    var k = t + ":" + g;
+    var single = MANIFEST.tiers[t].single;
+    var file = single || GROUP_BY_KEY[g].file;
+    var k = t + ":" + (single ? "*" : g);
     if (!GROUPS[k]) {
       GROUPS[k] = fetchContainer(
-        DATA_BASE + MANIFEST.tiers[t].prefix + GROUP_BY_KEY[g].file + ".bin" + CACHEBUST,
+        DATA_BASE + MANIFEST.tiers[t].prefix + file + ".bin" + CACHEBUST,
         "NGV1").then(readSlots);
     }
     return GROUPS[k];
@@ -465,9 +534,12 @@
     return m.kind === "value" ? rawVal / m.scale + m.offset : rawVal;
   }
 
-  function shownValue(i, m, vals, base) {
+  // `nd` is the sentinel for THIS slot's integer width, taken from the
+  // container header. Passing it rather than assuming 65535 is what stops a
+  // genuine count of 65,535 at a coarse area type reading as a hole.
+  function shownValue(i, m, vals, base, nd) {
     var raw = vals[i];
-    if (raw === NODATA) return null;
+    if (raw === nd) return null;
     if (m.kind === "value") return decode(raw, m);
     var b = base[m.denom][i];
     if (b <= 0) return null;
@@ -480,13 +552,36 @@
     return b <= 0 || b < MIN_BASE[m.denom];
   }
 
-  function paint(T, vals, m) {
+  // `sentinel` is the nodata value for this measure's slot; NODATA_COLOR is the
+  // colour a hole is painted. They were briefly both called `nd`, and the local
+  // shadowed the parameter — so every sentinel check in here compared a number
+  // against an RGBA array, silently never matched, and an undefined value would
+  // have rendered as a bright full-height bar rather than a hole. No measure
+  // currently ships a sentinel, so nothing was visibly wrong; it was a trap
+  // armed and waiting for the first one that did.
+  // An easing that HOLDS the old value and then moves late. deck.gl gives one
+  // duration and one curve per attribute, so this is how the outgoing areas get
+  // to keep their colour for most of the descent and lose it only at the end:
+  // the height eases down over the whole window, the alpha waits and then goes.
+  function easeLateFade(t) {
+    return t < 0.62 ? 0 : easeCubicInOut((t - 0.62) / 0.38);
+  }
+
+  function paint(T, vals, m, sentinel) {
     // Fresh buffers each time, not a mutated pair. deck.gl interpolates from
     // the values it already holds to the ones handed in, so writing over the
     // same arrays in place leaves it with nothing to animate away from.
     var col = new Uint8ClampedArray(T.header.nVerts * 4);
     var elev = new Float32Array(T.header.nVerts);
+    // One height per FEATURE as well as per vertex. The peak markers sit on top
+    // of their bars and have to move with them during a transition, which means
+    // knowing both where each bar is going and where it came from.
+    var elevF = new Float32Array(T.header.nFeatures);
     T.col = col; T.elev = elev;
+    T.elevFPrev = T.elevF || elevF;
+    T.elevF = elevF;
+    T.barT0 = performance.now();
+    T.phase = (T.phase || 0) + 1;
     var ring = T.ringStart, fo = T.featureOf;
     var nd = NODATA_COLOR;
     // Colour is memoised on the value quantised to 64 buckets per unit. That is
@@ -495,7 +590,7 @@
     var cache = new Map();
     for (var r = 0, nr = ring.length - 1; r < nr; r++) {
       var f = fo[r];
-      var v = suppressed(f, m, T) ? null : shownValue(f, m, vals, T.base);
+      var v = suppressed(f, m, T) ? null : shownValue(f, m, vals, T.base, sentinel);
       var c, e;
       if (v === null) { c = nd; e = 0; }
       else {
@@ -504,6 +599,7 @@
         if (c === undefined) { c = colorFor(v, m); cache.set(key, c); }
         e = elevationFor(v, m);
       }
+      elevF[f] = e;
       for (var i = ring[r], end = ring[r + 1]; i < end; i++) {
         col[4 * i] = c[0]; col[4 * i + 1] = c[1];
         col[4 * i + 2] = c[2]; col[4 * i + 3] = c[3];
@@ -511,6 +607,30 @@
       }
     }
     T.painted = m.key;
+  }
+
+  // The same layer, every vertex at ground level and fully transparent. Keeping
+  // the layer alive with an identical vertex count is the whole trick behind
+  // the cross-fade: deck.gl can only interpolate an attribute against a
+  // previous value of the same shape, so an area type animates in by being
+  // rendered flat for one frame and then updated to its real heights.
+  function paintFlat(T) {
+    // Keeps each area's COLOUR and drops only its alpha. Zeroing the whole
+    // buffer fades the bars to transparent at the same rate as they sink, and
+    // transparency wins the race by a mile: what you see is areas vanishing,
+    // not areas descending. Holding the hue means the descent is legible, and
+    // the alpha is taken away separately and late — see easeLateFade.
+    var col = new Uint8ClampedArray(T.header.nVerts * 4);
+    if (T.col && T.col.length === col.length) {
+      col.set(T.col);
+      for (var i = 3; i < col.length; i += 4) col[i] = 0;
+    }
+    T.col = col;
+    T.elev = new Float32Array(T.header.nVerts);
+    T.elevFPrev = T.elevF || new Float32Array(T.header.nFeatures);
+    T.elevF = new Float32Array(T.header.nFeatures);
+    T.barT0 = performance.now();
+    T.phase = (T.phase || 0) + 1;
   }
 
   // ---- layers -------------------------------------------------------------
@@ -650,33 +770,217 @@
       extruded: true, filled: true, wireframe: false, pickable: true,
       material: { ambient: 0.5, diffuse: 0.65, shininess: 20,
                   specularColor: [40, 52, 68] },
+      // The phase counter, not just the measure key: an area type on its way
+      // out is repainted flat while the measure is unchanged, and without a
+      // counter deck.gl would see identical triggers and skip the update that
+      // drives the animation.
       updateTriggers: {
-        getFillColor: T.key + ":" + m.key,
-        getElevation: T.key + ":" + m.key
+        getFillColor: T.key + ":" + m.key + ":" + (T.phase || 0),
+        getElevation: T.key + ":" + m.key + ":" + (T.phase || 0)
       },
+      // Duration is per layer, because the two halves of an area-type change
+      // want different pacing from a measure change: dropping the old areas is
+      // a dismissal and should be brisk, raising the new ones is the reveal and
+      // earns a little more time.
       transitions: TRANSITION ? {
-        getFillColor: { duration: TRANSITION, easing: easeCubicInOut },
-        getElevation: { duration: TRANSITION, easing: easeCubicInOut }
+        getFillColor: {
+          duration: T.dur || TRANSITION,
+          easing: T.fadeLate ? easeLateFade : (T.ease || easeCubicInOut)
+        },
+        getElevation: { duration: T.dur || TRANSITION, easing: T.ease || easeCubicInOut }
       } : {}
     });
   }
 
+  // The stack is rebuilt only when something in it actually changes, and cached
+  // in between. The peak animation runs a requestAnimationFrame loop, and
+  // rebuilding six layers per frame — two of them carrying 26,000 polygons —
+  // was enough to make a 60 fps animation visibly stutter on hardware with
+  // nothing else to do. Everything that changes the stack now goes through
+  // redraw(); the animation loop reuses the cached instances and swaps only the
+  // one layer that is moving.
+  var LAYER_CACHE = null;
   function layers() {
+    if (!LAYER_CACHE) LAYER_CACHE = buildStack();
+    var p = pulseLayer();
+    return p ? LAYER_CACHE.concat(p) : LAYER_CACHE;
+  }
+  function redraw() {
+    LAYER_CACHE = null;
+    deckgl.setProps({ layers: layers() });
+  }
+  function buildStack() {
     // The Thames polygon and the borough labels are redundant over the street
     // map, which draws both far better than we can.
     var stack = mode === "street" ? [basemapLayer()] : [thamesLayer()];
     if (areasShow) {
-      ["lsoa", "oa"].forEach(function (t) {
+      // Every resolved area type stays in the stack with only its visibility
+      // flipped. Tessellating 26,369 output areas costs a few hundred
+      // milliseconds and deck.gl caches it, so switching back to an area type
+      // already seen is a uniform flip rather than a rebuild.
+      //
+      // During a switch TWO are visible at once: the outgoing one sinking to
+      // ground and fading out while the incoming one rises. That overlap is
+      // what makes it a dissolve rather than a curtain coming down and going
+      // back up.
+      Object.keys(MANIFEST.tiers).forEach(function (t) {
         var T = READY[t];
-        if (T && T.painted) stack.push(polyLayer(T, t === tier));
+        // While an area type is on its way OUT it is the only one drawn.
+        // Overlapping the two sets looked like a dissolve in theory and like a
+        // mess in practice: two different partitions of the same ground, both
+        // part-height, interpenetrating and z-fighting all the way through. A
+        // clean hand-off reads better than a clever one.
+        if (T && T.painted) stack.push(polyLayer(T, fading ? t === fading : t === tier));
       });
     }
-    stack.push(boroughCasing(), boroughLayer());   // over the extrusions, not under
+    // Borough outlines over the extrusions, not under. Skipped on the borough
+    // area type, where the bar edges already are the outlines and drawing both
+    // gives every borough a doubled, slightly offset border.
+    //
+    // But NOT while an area-type hand-off is in flight. The bars are at or near
+    // ground for most of that second, and dropping the outlines too left the
+    // reader looking at a bare Thames and a scatter of place names with no
+    // London around them. The outlines are the one thing that should persist
+    // through the curtain.
+    if (tier !== "borough" || !areasShow || switching) {
+      stack.push(boroughCasing(), boroughLayer());
+    }
     if (mode !== "street") stack.push(boroughLabels());
     return stack;
   }
 
   var READY = {};        // resolved tiers, by key
+  var fading = null;     // an area type on its way out, still drawn
+  var switching = false; // an area-type hand-off is in flight, either half
+
+  // ---- marking the extremes -----------------------------------------------
+  //
+  // Hunting for the highest area by eye does not work. People look for the
+  // palest, tallest bar, land somewhere in the top twenty and have no way of
+  // telling whether they found the maximum — the highest population density in
+  // London is in central Croydon, not central London, and nothing on the map
+  // says so. So the top areas ping when a measure is chosen, in a wave running
+  // from the least extreme of them up to rank 1, which leaves the eye on the
+  // actual maximum at the end of the sweep.
+  //
+  // Deliberately brief: this is a signpost, not an animation to sit through.
+  var PULSE_SHARE = 0.05;         // the top (or bottom) 5% ...
+  var PULSE_MIN = 3;
+  var PULSE_MAX = 120;            // ... clamped, because 5% of 26,369 output
+                                  // areas is 1,300 simultaneous pings, which
+                                  // is a light show with no target in it
+  var PULSE_TOTAL = 750;          // matches the view easing used elsewhere
+  var PULSE_PING = 340;           // one marker's bloom and fade
+  // The wave starts 200 ms after the bars begin moving and ends 200 ms after
+  // they stop, so the two overlap instead of queueing. The markers also RIDE
+  // the bars: each one's height is interpolated from that area's previous
+  // elevation to its new one on the same cubic easing the extrusions use, so a
+  // ping never hangs in the air above a bar that has not arrived yet.
+  var PULSE_LEAD = 200;
+  // The two halves of an area-type change. Brisk down, unhurried up.
+  var FADE_DOWN = 380;
+  var FADE_UP = 560;
+  var highlight = params.get("highlight") || "high";   // high | low | off
+  var PULSE = null;
+  var pulseRAF = null;
+
+  function stopPulse() {
+    if (pulseRAF) cancelAnimationFrame(pulseRAF);
+    pulseRAF = null;
+    PULSE = null;
+  }
+
+  function startPulse() {
+    stopPulse();
+    if (highlight === "off" || !TRANSITION) return;
+    var T = READY[tier], m = MEASURE_BY_KEY[measureKey];
+    if (!T || !T.painted || !CURRENT_VALS) return;
+    var R = ranksFor(T, m, CURRENT_VALS, CURRENT_ND);
+    if (R.n < 2) return;
+    var n = Math.min(R.n, Math.max(PULSE_MIN,
+              Math.min(PULSE_MAX, Math.round(R.n * PULSE_SHARE))));
+    // Ordered highest (or lowest) first, then played back to front, so the
+    // final ping is rank 1 and the eye finishes on the area that matters.
+    var picked = highlight === "low"
+      ? R.order.slice(R.n - n).reverse()
+      : R.order.slice(0, n);
+    var cent = centroids(T);
+    var prev = T.elevFPrev || T.elevF;
+    PULSE = {
+      tier: tier,
+      barT0: T.barT0 || performance.now(),
+      pts: picked.map(function (f, i) {
+        return {
+          f: f,
+          lon: cent[2 * f], lat: cent[2 * f + 1],
+          z0: (prev && prev[f]) || 0,
+          z1: (T.elevF && T.elevF[f]) || 0,
+          delay: PULSE_LEAD +
+                 (n === 1 ? 0 : (n - 1 - i) / (n - 1)) * (PULSE_TOTAL - PULSE_PING)
+        };
+      }),
+      t0: performance.now()
+    };
+    tickPulse();
+  }
+
+  function tickPulse() {
+    pulseRAF = requestAnimationFrame(function () {
+      if (!PULSE) { pulseRAF = null; return; }
+      if (performance.now() - PULSE.t0 > PULSE_LEAD + PULSE_TOTAL + 60) {
+        PULSE = null; pulseRAF = null;
+        deckgl.setProps({ layers: layers() });     // one clean frame without it
+        return;
+      }
+      deckgl.setProps({ layers: layers() });
+      tickPulse();
+    });
+  }
+
+  // Where a marker sits right now: its own bar top, interpolated on the same
+  // easing the extrusion is using, so the two move together.
+  function pulseZ(p, barU) {
+    return (p.z0 + (p.z1 - p.z0) * barU) * curElevScale;
+  }
+
+  function pulseLayer() {
+    if (!PULSE || PULSE.tier !== tier) return null;
+    var now = performance.now() - PULSE.t0;
+    var barU = easeCubicInOut(Math.max(0, Math.min(1,
+                 (performance.now() - PULSE.barT0) / TRANSITION)));
+    var live = [];
+    for (var i = 0; i < PULSE.pts.length; i++) {
+      var p = PULSE.pts[i], u = (now - p.delay) / PULSE_PING;
+      if (u > 0 && u < 1) live.push({ p: p, u: u, z: pulseZ(p, barU) });
+    }
+    if (!live.length) return null;
+    var warm = highlight !== "low";
+    var ring = warm ? [255, 214, 158] : [186, 219, 244];
+    var core = warm ? [224, 162, 78] : [90, 159, 212];
+
+    // An expanding ring over a soft core, billboarded so it faces the camera at
+    // any tilt or bearing. A sunburst and a particle burst were built and tried
+    // alongside this; the halo read best and is the only one that needs no
+    // sprite atlas.
+    return new deck.ScatterplotLayer({
+      id: "pulse", data: live,
+      billboard: true, stroked: true, filled: true,
+      radiusUnits: "pixels", lineWidthUnits: "pixels", radiusMinPixels: 0,
+      getPosition: function (d) { return [d.p.lon, d.p.lat, d.z]; },
+      getRadius: function (d) { return 4 + 30 * (1 - (1 - d.u) * (1 - d.u)); },
+      getLineWidth: function (d) { return 1.1 + 4.2 * (1 - d.u); },
+      getLineColor: function (d) { return ring.concat(Math.round(255 * (1 - d.u * d.u))); },
+      getFillColor: function (d) { return core.concat(Math.round(90 * (1 - d.u) * (1 - d.u))); },
+      updateTriggers: { getPosition: now, getRadius: now, getLineWidth: now,
+                        getLineColor: now, getFillColor: now },
+      // Over the bars rather than through them: a ring that vanishes behind the
+      // very tower it is pointing at is worse than no ring at all. deck.gl 9
+      // takes luma.gl v9 parameter names, so this is depthCompare and NOT the
+      // v8 depthTest — which is silently ignored rather than rejected.
+      parameters: { depthCompare: "always" },
+      pickable: false
+    });
+  }
 
   // ---- tooltip ------------------------------------------------------------
   function codeOf(T, f) {
@@ -685,14 +989,105 @@
     while (n.length < L.codeWidth) n = "0" + n;
     return L.codePrefix + n;
   }
+  // What to call this area. Output areas have only their borough; a
+  // neighbourhood has a fragment ("001A") that needs the borough to mean
+  // anything; a ward has both and reads best as "Fairfield, Croydon". A
+  // constituency or Assembly seat has a name of its own and no single borough
+  // to append — Cities of London and Westminster spans two — so the borough is
+  // simply absent from those label files rather than guessed at.
   function placeName(T, f) {
     var L = T.labels;
-    var borough = L.ladNames[L.lad[f]];
-    if (L.names) return L.names[f] + ", " + borough;
-    return borough;
+    var borough = L.lad ? L.ladNames[L.lad[f]] : null;
+    var own = L.names ? L.names[f] : null;
+    if (own && borough) return own + ", " + borough;
+    return own || borough || "";
   }
 
+  // Which borough this area is in, where that has one answer. Output areas,
+  // neighbourhoods and wards carry a lad[] index; the borough tier IS the
+  // answer and carries it as its own name; constituencies and Assembly seats
+  // span several boroughs and carry neither, so they get null.
+  //
+  // This has to be nullable, and reading it unguarded is what froze the map:
+  // labels.lad is absent on three of the six area types, `undefined[f]` threw
+  // inside getTooltip, and an exception there takes deck.gl's interaction loop
+  // down with it — the map stops responding entirely and only a reload brings
+  // it back. Everything else kept working, which is why it looked like a
+  // rendering problem rather than a one-line type error.
+  function boroughOf(T, f) {
+    var L = T.labels;
+    if (L.lad) return L.ladNames[L.lad[f]];
+    return L.names ? L.names[f] : null;
+  }
+
+  // ---- ranking ------------------------------------------------------------
+  // Rank 1 is the highest. Computed only over the areas actually SHOWN,
+  // because "3rd highest" would be a lie if a dozen suppressed areas had been
+  // quietly dropped from the sort. One sort per area-type-and-measure, cached:
+  // 26,369 values is a couple of milliseconds, and this is asked for on every
+  // hover and on every measure change.
+  var RANKS = {};
+  function ranksFor(T, m, vals, nd) {
+    var k = T.key + ":" + m.key;
+    if (RANKS[k]) return RANKS[k];
+    var n = T.header.nFeatures;
+    var rank = new Int32Array(n);
+    var val = new Float64Array(n);
+    var order = [];
+    for (var f = 0; f < n; f++) {
+      rank[f] = 0;
+      if (suppressed(f, m, T)) continue;
+      var v = shownValue(f, m, vals, T.base, nd);
+      if (v === null) continue;
+      val[f] = v;
+      order.push(f);
+    }
+    order.sort(function (a, b) { return val[b] - val[a]; });
+    for (var i = 0; i < order.length; i++) rank[order[i]] = i + 1;
+    return (RANKS[k] = { rank: rank, order: order, val: val, n: order.length });
+  }
+
+  // A marker for an area needs one point, and an extruded map needs it at the
+  // TOP of the bar or it is hidden underneath. Averaging the largest ring
+  // rather than every ring keeps the point inside the area when best fit has
+  // stranded an output area on the far side of a ward.
+  function centroids(T) {
+    if (T.cent) return T.cent;
+    var n = T.header.nFeatures, ring = T.ringStart, fo = T.featureOf, pos = T.pos;
+    var best = new Int32Array(n), bestLen = new Int32Array(n);
+    for (var r = 0, nr = ring.length - 1; r < nr; r++) {
+      var len = ring[r + 1] - ring[r], f = fo[r];
+      if (len > bestLen[f]) { bestLen[f] = len; best[f] = r; }
+    }
+    var c = new Float64Array(n * 2);
+    for (var g = 0; g < n; g++) {
+      var s = ring[best[g]], e = ring[best[g] + 1], sx = 0, sy = 0;
+      for (var i = s; i < e; i++) { sx += pos[2 * i]; sy += pos[2 * i + 1]; }
+      var cnt = Math.max(e - s, 1);
+      c[2 * g] = sx / cnt; c[2 * g + 1] = sy / cnt;
+    }
+    return (T.cent = c);
+  }
+
+  // getTooltip runs on every pointer move, and an exception thrown inside it
+  // stops deck.gl's interaction loop dead — the map freezes and only a reload
+  // recovers it. That is far too harsh a punishment for a missing label, so the
+  // body is wrapped and a failure degrades to a bare tooltip plus one console
+  // line. The underlying bug still gets fixed; this stops the next one taking
+  // the whole map with it.
   function tooltip(info) {
+    try {
+      return buildTooltip(info);
+    } catch (e) {
+      if (!tooltip._warned) {
+        tooltip._warned = true;
+        console.error("tooltip failed", e);
+      }
+      return null;
+    }
+  }
+
+  function buildTooltip(info) {
     var T = READY[tier];
     if (!T || info.index === undefined || info.index < 0) return null;
     if (!info.layer || info.layer.id !== "poly-" + tier) return null;
@@ -709,7 +1104,7 @@
       html += "<div>Not shown — only <b>" + b + "</b> " +
               denomLabel(m.denom) + " here, too few to give a reliable figure.</div>";
     } else {
-      var v = shownValue(f, m, vals, T.base);
+      var v = shownValue(f, m, vals, T.base, CURRENT_ND);
       if (v === null) {
         html += "<div>No figure available here.</div>";
       } else {
@@ -720,6 +1115,16 @@
                   Math.round(T.base[m.denom][f]).toLocaleString("en-GB") + " " +
                   denomLabel(m.denom) + "</div>";
         }
+        // Where this area sits in the whole distribution. Eyeballing for the
+        // tallest bar and hovering it is how people were doing this, and it
+        // does not answer the question — the highest is often not where you
+        // expect, and you cannot tell 1st from 4th by looking.
+        var R = ranksFor(T, m, vals, CURRENT_ND);
+        var r = R.rank[f];
+        if (r) {
+          html += '<div class="tt-rank">Rank <b>' + r.toLocaleString("en-GB") +
+                  "</b> of " + R.n.toLocaleString("en-GB") + "</div>";
+        }
       }
     }
     // Standing caveats that would otherwise silently mislead.
@@ -728,7 +1133,7 @@
       html += '<div class="tt-note">Mostly a communal establishment — halls, ' +
               "a care home or similar.</div>";
     }
-    if (T.labels.ladNames[T.labels.lad[f]] === "City of London") {
+    if (boroughOf(T, f) === "City of London") {
       html += '<div class="tt-note">The City has few residents but around 600,000 ' +
               "weekday workers; residential figures describe almost nobody who is " +
               "here in the daytime.</div>";
@@ -754,6 +1159,7 @@
   var subEl = document.getElementById("subtitle");
   var loadEl = document.getElementById("loading");
   var modebar = document.getElementById("modebar");
+  var areabar = document.getElementById("areabar");
   var groupbar = document.getElementById("groupbar");
   var switcher = document.getElementById("switcher");
   var resetBtn = document.getElementById("reset");
@@ -772,15 +1178,30 @@
     }
   }
 
+  // What a measure is, when it has no note of its own. A pill's hover title
+  // carries the full label and unit, which is invisible on a phone or tablet —
+  // there is no hover — so the same information has to reach the caption. Most
+  // of the value is the denominator: "one-person households" is a share of
+  // households, not of people, and that is the single most useful thing to say
+  // about it in one line.
+  function describe(m) {
+    if (m.kind === "count") return "A share of all " + denomLabel(m.denom) + ".";
+    if (m.unit) return "Measured in " + m.unit + ".";
+    return "";
+  }
+
   function setText() {
     var m = MEASURE_BY_KEY[measureKey];
     var spec = MANIFEST.tiers[tier];
     titleEl.textContent = m.label;
     var bits = [];
-    if (m.note) bits.push(m.note);
-    bits.push("Shown across " + spec.n.toLocaleString("en-GB") + " " +
-              spec.labelPlural + (tier === "lsoa" ? " — zoom in for output areas." : "."));
-    subEl.textContent = bits.join(" ");
+    bits.push(m.note || describe(m));
+    var where = "Shown across " + spec.n.toLocaleString("en-GB") + " " +
+                spec.labelPlural;
+    // The refinement promise is only true while the zoom switch is driving.
+    // Pinned to boroughs, "zoom in for output areas" is a lie.
+    if (!pinnedTier && tier === AUTO[0]) where += " — zoom in for output areas";
+    subEl.textContent = bits.filter(Boolean).concat(where + ".").join(" ");
   }
 
   function renderLegend() {
@@ -808,6 +1229,32 @@
     }
     document.getElementById("lgNd").style.background =
       "rgb(" + NODATA_COLOR.slice(0, 3).join(",") + ")";
+
+    // Where the CURRENT area type actually sits on a scale built for output
+    // areas. Aggregation genuinely destroys variation — a borough is an average
+    // of hundreds of neighbourhoods, so it cannot be as extreme as the most
+    // extreme of them — and the scale is deliberately not rescaled per area
+    // type, because a place changing colour when you change the unit of
+    // analysis reads as data and is an artefact. So say it instead of hiding
+    // it: the bracket is the finding, not an apology for one.
+    var span = document.getElementById("lgSpan");
+    var mark = document.getElementById("lgMark");
+    var r = m.tierRange && m.tierRange[tier];
+    var d0 = m.domain[0], d1 = m.domain[1];
+    var frac = r ? (r[1] - r[0]) / Math.max(d1 - d0, 1e-9) : 1;
+    if (r && tier !== "oa" && frac < 0.92) {
+      var lo = Math.max(0, Math.min(1, (r[0] - d0) / (d1 - d0)));
+      var hi = Math.max(0, Math.min(1, (r[1] - d0) / (d1 - d0)));
+      mark.style.display = "block";
+      mark.style.left = (lo * 100) + "%";
+      mark.style.width = Math.max(hi - lo, 0.004) * 100 + "%";
+      span.style.display = "block";
+      span.textContent = MANIFEST.tiers[tier].labelPlural + " span " +
+                         fmt(r[0], m.fmt) + " to " + fmt(r[1], m.fmt);
+    } else {
+      mark.style.display = "none";
+      span.style.display = "none";
+    }
     lg.style.visibility = "visible";
   }
 
@@ -821,19 +1268,32 @@
     document.body.classList.toggle("light-base", mode === "street");
     document.getElementById("mapbtn").textContent =
       "Map: " + (mode === "street" ? "Street" : "Boroughs");
+    // "Data", not "Areas". This pill and the one beside it control the two
+    // layers on screen — the map underneath and the data on top — so naming
+    // them that way makes the pair self-explanatory, and it frees the word
+    // "areas" for the row above, which chooses what an area IS.
     document.getElementById("areabtn").textContent =
-      "Areas: " + (areasShow ? "show" : "hide");
+      "Data: " + (areasShow ? "show" : "hide");
+    var hi = document.getElementById("hibtn");
+    if (hi) hi.textContent = "Peaks: " + (highlight === "high" ? "highest"
+                           : highlight === "low" ? "lowest" : "off");
   }
 
   function setMode(m) {
     mode = m === "street" ? "street" : "boroughs";
-    deckgl.setProps({ layers: layers() });
+    redraw();
     updateChrome();
   }
   function setAreas(show) {
     areasShow = !!show;
-    deckgl.setProps({ layers: layers() });
+    redraw();
     updateChrome();
+  }
+  var HIGHLIGHTS = ["high", "low", "off"];
+  function setHighlight(h) {
+    highlight = HIGHLIGHTS.indexOf(h) < 0 ? "high" : h;
+    updateChrome();
+    startPulse();
   }
 
   function buildModeBar() {
@@ -848,9 +1308,53 @@
 
     var areaBtn = document.createElement("button");
     areaBtn.id = "areabtn";
-    areaBtn.title = "Hide the extruded areas to see the map underneath";
+    areaBtn.title = "Hide the extruded data layer to see the map underneath";
     areaBtn.addEventListener("click", function () { setAreas(!areasShow); });
     modebar.appendChild(areaBtn);
+
+    var hiBtn = document.createElement("button");
+    hiBtn.id = "hibtn";
+    // Not "the most extreme": on a measure like the share of Black or White
+    // residents that reads as a judgement about the places at either end,
+    // which is the opposite of what a neutral explorer should say. "Highest"
+    // and "lowest" are just directions on the scale.
+    hiBtn.title = "Ping the highest or lowest areas when a statistic is chosen. "
+                + "Click the same statistic again to replay it.";
+    hiBtn.addEventListener("click", function () {
+      setHighlight(HIGHLIGHTS[(HIGHLIGHTS.indexOf(highlight) + 1) % HIGHLIGHTS.length]);
+    });
+    modebar.appendChild(hiBtn);
+  }
+
+  // The area pill row. Exactly one pill is true at a time; "Census Areas" means
+  // "let the zoom decide", which is the map's original behaviour and still the
+  // default. The rest pin an area type and stop the zoom switch — reusing
+  // pinnedTier, which existed as an escape hatch for the screenshot driver and
+  // turns out to be exactly the feature a reader wants.
+  function buildAreaBar() {
+    var lbl = document.createElement("span");
+    lbl.className = "lbl";
+    lbl.textContent = "Areas";
+    areabar.appendChild(lbl);
+
+    MANIFEST.areaPills.forEach(function (p) {
+      var b = document.createElement("button");
+      b.textContent = p.label;
+      b.dataset.tier = p.tier || "";
+      var spec = p.tier && MANIFEST.tiers[p.tier];
+      b.title = spec
+        ? spec.blurb + (spec.fit === "bestfit"
+            ? " Built from the output areas ONS assigns to each one, so edges are approximate."
+            : "")
+        : "Census neighbourhoods, refining to output areas as you zoom in.";
+      b.addEventListener("click", function () {
+        if (b.classList.contains("pending")) return;
+        b.classList.add("pending");
+        setArea(p.tier).then(function () { b.classList.remove("pending"); },
+                             function () { b.classList.remove("pending"); });
+      });
+      areabar.appendChild(b);
+    });
   }
 
   function buildGroupBar() {
@@ -885,6 +1389,11 @@
     var gs = groupbar.querySelectorAll("button");
     for (var j = 0; j < gs.length; j++)
       gs[j].classList.toggle("active", gs[j].dataset.group === groupKey);
+    // The "Census Areas" pill carries an empty tier and is active whenever
+    // nothing is pinned, whichever of the automatic pair the zoom has chosen.
+    var as = areabar.querySelectorAll("button");
+    for (var k = 0; k < as.length; k++)
+      as[k].classList.toggle("active", as[k].dataset.tier === (pinnedTier || ""));
   }
   function markPending(key, on) {
     var bs = switcher.querySelectorAll("button");
@@ -894,24 +1403,87 @@
 
   // ---- state transitions --------------------------------------------------
   var CURRENT_VALS = null;
+  var CURRENT_ND = null;   // nodata sentinel for the active measure's slot
 
-  function apply() {
+  function apply(opts) {
     var m = MEASURE_BY_KEY[measureKey];
+    var from = opts && opts.from && READY[opts.from];
     window.__NG_DONE__ = false;
     markPending(measureKey, true);
     showLoading(true);
+    stopPulse();
     return Promise.all([loadTier(tier), loadGroup(tier, groupKey)])
       .then(function (r) {
         var T = r[0], slots = r[1];
         READY[tier] = T;
         CURRENT_VALS = slots[measureKey];
-        paint(T, CURRENT_VALS, m);
-        // Clear the frame flag HERE, immediately before the setProps whose
-        // render we are waiting on — not at the top of apply(). Clearing it
-        // early lets an unrelated earlier render satisfy it, which is how the
-        // screenshot driver ends up photographing the previous measure.
-        notDone();
-        deckgl.setProps({ layers: layers() });
+        CURRENT_ND = slots.__nodata[measureKey];
+
+        // Switching AREA TYPE swaps one set of shapes for a different set, so
+        // there is no attribute to interpolate between them — deck.gl can
+        // animate a value, not a change of geometry. What it can do is animate
+        // both sets at once: the outgoing areas sink to ground and fade while
+        // the incoming ones rise out of it. Overlapped like that it reads as a
+        // dissolve rather than the curtain-down-then-up a sequential swap
+        // would give, and it costs one extra frame.
+        //
+        // The incoming set has to be rendered FLAT for that frame first. A
+        // layer appearing for the first time has no previous attribute value,
+        // so without it there is nothing to animate from and the new areas
+        // simply pop into place — which is exactly what they used to do.
+        var crossFade = from && TRANSITION && from.painted && from.key !== tier;
+        if (crossFade) {
+          // CURTAIN DOWN, then UP. The outgoing areas sink to ground on their
+          // own, and only once they are flat do the incoming ones rise. The
+          // sequence costs a couple of hundred milliseconds over an overlap and
+          // is worth every one of them: the shapes never share the frame at
+          // conflicting heights.
+          fading = from.key;
+          switching = true;
+          from.dur = FADE_DOWN;
+          from.ease = easeDrop;
+          from.fadeLate = true;
+          paintFlat(from);
+          // The incoming set's flat baseline is established HERE, at the top of
+          // the descent, rather than after it. deck.gl can only animate an
+          // attribute against a previous value, and a layer shown for the first
+          // time has none — but it does not have to be VISIBLE to acquire one.
+          // Uploading the flat state now, while the layer is still hidden
+          // behind the outgoing one, means the rise can begin on the very frame
+          // the descent ends instead of costing a render and an animation frame
+          // to set itself up first.
+          paintFlat(T);
+          T.painted = m.key;
+          notDone();
+          redraw();
+          setTimeout(function () {
+            fading = null;
+            from.dur = from.ease = null;
+            from.fadeLate = false;
+            T.dur = FADE_UP;
+            paint(T, CURRENT_VALS, m, CURRENT_ND);
+            notDone();
+            redraw();
+            startPulse();       // rides the new areas up, as on a measure change
+            setTimeout(function () {
+              T.dur = null;
+              switching = false;
+              redraw();            // borough outlines step back out of the way
+            }, FADE_UP + 60);
+          }, FADE_DOWN);
+        } else {
+          paint(T, CURRENT_VALS, m, CURRENT_ND);
+          // Clear the frame flag HERE, immediately before the setProps whose
+          // render we are waiting on — not at the top of apply(). Clearing it
+          // early lets an unrelated earlier render satisfy it, which is how the
+          // screenshot driver ends up photographing the previous measure.
+          notDone();
+          redraw();
+          // Straight away, not after the bars settle. The markers interpolate
+          // their own height on the same easing, so they ride up with the
+          // extrusions instead of waiting for them.
+          startPulse();
+        }
         setText(); renderLegend(); markActive();
         markPending(measureKey, false); showLoading(false);
       })
@@ -933,7 +1505,9 @@
     return apply();
   }
   function setMeasure(k) {
-    if (k === measureKey) return Promise.resolve();
+    // Re-clicking the pill you are already on replays the highlight. Nothing
+    // else changes, and it is the obvious gesture for "show me that again".
+    if (k === measureKey) { startPulse(); return Promise.resolve(); }
     measureKey = k;
     markActive();
     titleEl.style.opacity = subEl.style.opacity = 0;
@@ -944,30 +1518,46 @@
   }
   function setTier(t) {
     if (t === tier) return Promise.resolve();
+    var from = tier;
     tier = t;
-    return apply();
+    return apply({ from: from });
+  }
+
+  // Pick an area type from the pill row. null means "let the zoom decide",
+  // which re-enters the automatic behaviour at whatever the current zoom
+  // implies rather than snapping to a fixed one.
+  function setArea(t) {
+    pinnedTier = t || null;
+    markActive();
+    var want = pinnedTier || targetTier(curZoom);
+    var p = want === tier ? Promise.resolve() : setTier(want);
+    return p.then(function () { setText(); renderLegend(); });
   }
 
   // ---- zoom-driven tier switch -------------------------------------------
   var Z = MANIFEST.zoom;
-  function targetTier(z) { return z < Z.switch ? "lsoa" : "oa"; }
+  function targetTier(z) { return z < Z.switch ? AUTO[0] : AUTO[1]; }
   var prefetched = false;
+  var curZoom = 0;
   function maybePrefetch(z) {
-    // A full zoom band before the switch, start pulling OA in the background so
-    // crossing the threshold is a visibility flip and not a download.
+    // A full zoom band before the switch, start pulling the fine tier in the
+    // background so crossing the threshold is a visibility flip and not a
+    // download. Only the automatic pair gets this: the aggregated area types
+    // are a few kilobytes each and arrive well inside the patience threshold.
     if (prefetched || z < Z.prefetch) return;
     prefetched = true;
-    loadTier("oa").then(function (T) { READY.oa = T; }).catch(function () {});
-    loadGroup("oa", groupKey).catch(function () {});
+    loadTier(AUTO[1]).then(function (T) { READY[AUTO[1]] = T; }).catch(function () {});
+    loadGroup(AUTO[1], groupKey).catch(function () {});
   }
   function applyZoom(z) {
+    curZoom = z;
     maybePrefetch(z);
     // Only rebuild when the change is visible — this fires on every frame of a
     // zoom gesture, and a setProps per frame for a 2% height change is waste.
     var s = elevScale(z);
     if (Math.abs(s - curElevScale) / curElevScale > 0.04) {
       curElevScale = s;
-      if (READY[tier] && READY[tier].painted) deckgl.setProps({ layers: layers() });
+      if (READY[tier] && READY[tier].painted) redraw();
     }
     if (pinnedTier) return;
     var t = targetTier(z);
@@ -1056,12 +1646,15 @@
     return apply();
   };
   window.__setTier = function (t) { pinnedTier = t; tier = t; return apply(); };
+  window.__setArea = setArea;
+  window.__setHighlight = setHighlight;
   window.__setMode = setMode;
   window.__setAreas = setAreas;
   window.__applyZoom = applyZoom;
 
   // ---- boot ---------------------------------------------------------------
   buildModeBar();
+  buildAreaBar();
   buildGroupBar();
   buildSwitcher();
   updateChrome();
