@@ -817,6 +817,62 @@ def main():
             % ("pass" if fps_ok else "FAIL", cost5.get("fps", 0), MIN_FPS))
         log("")
 
+        # S6. THE ARM THE BEATS EXIST TO AVOID, re-measured every run rather
+        #     than remembered. ?concurrent=1 collapses the split's second and
+        #     third beats into one: the values left on deck.gl's transition
+        #     while the CPU loop moves the outlines, both over the same
+        #     duration. Every position frame restarts the value transition.
+        #
+        #     WHAT IS ASSERTED IS THE LAG, NOT THE LANDING. An earlier build of
+        #     this driver asserted that the concurrent arm ends up short of the
+        #     ward map, on the strength of a development probe that measured
+        #     3.77/255. It does not reproduce: once the position loop stops
+        #     restarting it, the transition converges and the END STATE is fine.
+        #     The reproducible harm is that nothing moves while the animation is
+        #     running — the colours sit at the plateau for the whole ease and
+        #     catch up afterwards — so that is what this measures and asserts.
+        t0 = time.time()
+        n = Nav(page, base, "?warp=split&dur=%d&when=250&concurrent=1" % slow)
+        got, st, mt = n.poll(logged("crack"), timeout=180)
+        ok_all &= check(n, st, got, "S6 concurrent boot")
+        conc_crack = page.shot_bytes()
+        got, st, mt = n.poll(logged("values"), timeout=60)
+        at = log_at(mt, "values") or n.clock()
+        n.wait_clock(at + slow * 0.79)
+        b0 = n.clock()
+        page.screenshot(OUT / "spike_concurrent_79.png")
+        b1 = n.clock()
+        conc_at = 100.0 * ((b0 + b1) / 2.0 - at) / slow
+        got, st, mt = n.poll(done, timeout=180)
+        time.sleep(SETTLE)
+        conc_end = page.shot_bytes()
+        ok_s6 = check(n, st, got, "S6 concurrent end", conc_end)
+        ok_all &= ok_s6
+        conc_span = mad_of(conc_crack, OUT / "ref_ward.png")
+        conc_p = progress_of(OUT / "spike_concurrent_79.png", conc_crack,
+                             OUT / "ref_ward.png", conc_span)
+        conc_end_mad = mad_of(OUT / "ref_ward.png", conc_end)
+        # Cubic-in-out at t=0.79 is u=0.966, so an animation that was working
+        # would be within a few points of home by this frame. Half is a very
+        # generous line to draw between "moving" and "not moving".
+        conc_lags = conc_p < 0.5
+        ok_all &= conc_lags
+        log("shot %-26s %-42s %5.1fs  %s"
+            % ("spike_concurrent_79.png", "S6 outlines and values TOGETHER",
+               time.time() - t0, "ok" if ok_s6 else "FAILED"))
+        log("     the crack and the ward map are %.4f/255 apart" % conc_span)
+        log("     at %.1f%% of the ease the values are %.2f%% across — a working "
+            "transition would" % (conc_at, 100 * conc_p))
+        log("     be at ~96.6%, which is where cubic-in-out has got to by then")
+        log("     %s the values do not move while the outlines do (under 50%% "
+            "across at the 79%% mark)"
+            % ("confirmed" if conc_lags else "FAIL"))
+        log("     they arrive AFTERWARDS: %.4f/255 from the ward map once the "
+            "loop stops" % conc_end_mad)
+        log("     IF THIS EVER FAILS, deck.gl has changed and the three-beat "
+            "split should be revisited.")
+        log("")
+
         # ---- THE VERDICT ----------------------------------------------------
         log("=" * 74)
         spike_ok = bool(slides)
@@ -860,23 +916,39 @@ def main():
             "same geometry." % d_ground)
         log("")
         log("  WHAT THE CPU PATH CANNOT DO is carry the VALUES at the same "
-            "time, and that is")
-        log("  measured too. Any attribute deck.gl holds in transition is drawn "
-            "from the")
-        log("  transition's own buffer, so a value handed over every frame is "
-            "superseded")
-        log("  before it lands: with the outlines held still and only the "
-            "colours lerped,")
-        log("  0.01%% of the way across at u = 0.64, at every duration from 1 "
-            "ms to 750 ms.")
-        log("  Left on deck's transition CONCURRENTLY they lag instead — 62.87%% "
-            "across at the")
-        log("  79%% mark, ending 3.77/255 short. Taking them out of "
-            "`transitions` blanks the")
-        log("  layer the moment a vertex moves. So the choreography gives the "
-            "outlines and")
-        log("  the values SEPARATE BEATS, and every beat runs on a mechanism "
-            "with proof.")
+            "time. Any attribute")
+        log("  deck.gl holds in transition is drawn from the transition's own "
+            "buffer, so one")
+        log("  handed a new value every frame is superseded before it lands, "
+            "and leaving the")
+        log("  values on deck's transition while the outlines move restarts "
+            "that transition")
+        log("  sixty times a second. S6 above measures exactly that, live, this "
+            "run: at the")
+        log("  %.0f%% mark of the ease the values are %.2f%% of the way across, "
+            "where a working"
+            % (conc_at, 100 * conc_p))
+        log("  transition would be at ~96.6%. They arrive only once the loop "
+            "stops restarting")
+        log("  them (%.4f/255 from the ward map by then), which is after the "
+            "animation has" % conc_end_mad)
+        log("  finished — so the motion is wrong even though the destination "
+            "is right.")
+        log("")
+        log("  Two further arms were measured in separate probe runs during "
+            "development and")
+        log("  are NOT re-measured here — see task-4-report.md §3 of the "
+            "continuation for both:")
+        log("    * values lerped on the CPU and handed over per frame never "
+            "arrive at all")
+        log("      (0.01% of the way across at u = 0.64, at every duration "
+            "from 1 ms to 750 ms).")
+        log("    * taking the values out of `transitions` altogether blanks the "
+            "layer the")
+        log("      moment a vertex moves.")
+        log("  So the choreography gives the outlines and the values SEPARATE "
+            "BEATS, and every")
+        log("  beat runs on a mechanism with proof.")
         log("=" * 74)
         log("")
 
@@ -1000,6 +1072,11 @@ def main():
                100 * p5[25], 100 * p5[50], 100 * p5[75]))
         log("     %s S5 CPU path holds %.1f fps (floor %.0f)"
             % ("pass" if fps_ok else "FAIL", cost5.get("fps", 0), MIN_FPS))
+        log("     %s S6 outlines and values TOGETHER: the values are %.2f%% "
+            "across at the %.0f%% mark"
+            % ("confirmed" if conc_lags else "FAIL", 100 * conc_p, conc_at))
+        log("        (a working transition would be at ~96.6%), so the two "
+            "cannot share a beat")
         log("")
 
         ok_all &= compare(OUT / "ref_ward.png", OUT / "split_end.png",

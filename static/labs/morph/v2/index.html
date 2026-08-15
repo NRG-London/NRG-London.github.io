@@ -177,6 +177,16 @@
   var S0 = parseFloat(params.get("s0"));
   var HAS_S0 = isFinite(S0) && S0 > 0 && S0 <= 1;
 
+  // THE ARM THAT DOES NOT WORK, kept reachable on purpose.
+  //
+  // `?concurrent=1` runs the split's second beat the way this experiment was
+  // drawn: the values on deck.gl's transition WHILE the rAF loop moves the
+  // outlines, both over the same duration. It is the configuration the beats
+  // exist to avoid, and the reason they exist is a number — so the number is
+  // re-measured on every driver run from this flag rather than remembered from
+  // a development probe. See animateWarp for the full account.
+  var CONCURRENT = params.get("concurrent") === "1";
+
   var MEASURE_BY_KEY = {};
   MANIFEST.measures.forEach(function (m) { MEASURE_BY_KEY[m.key] = m; });
   var GROUP_BY_KEY = {};
@@ -1150,10 +1160,14 @@
   //     across where the static one sat 59.2%, 2.76/255 apart.
   //   * taking the values out of `transitions` so they are drawn literally
   //     blanks the layer the moment a vertex moves (see polyTransitions).
-  //   * leaving them on deck's transitions CONCURRENTLY makes them lag: every
-  //     position frame restarts the ease, which is a first-order filter.
-  //     Measured on the split: 62.87% across at the 79% mark, ending 3.77/255
-  //     short of the ward map.
+  //   * leaving them on deck's transitions CONCURRENTLY stops them moving at
+  //     all while the outlines are moving: every position frame restarts the
+  //     ease. `?concurrent=1` is that arm, kept reachable so the driver can
+  //     re-measure it every run rather than quote a number from a probe — at
+  //     the 79% mark of the ease the values are a few per cent across where a
+  //     working transition would be at ~97%. They do arrive, but only once the
+  //     loop stops restarting them, which is after the animation has ended: the
+  //     destination is right and the motion is wrong.
   //
   // So the outlines and the values take turns. Each beat of the choreography
   // moves one or the other, never both, and every beat therefore runs on a
@@ -1236,17 +1250,24 @@
     paintPlateau();
     morphBasis = WARP;
     curTier = WARP;
-    redraw();
-    logPhase("crack");
-    setStatus();
 
-    // ARMED BEFORE THE REDRAW IT IS WAITING ON — deck.gl can service a setProps
-    // that changes the layer stack during the call, so a hook added afterwards
-    // is waiting for a render that has already happened. TWO commits, because
-    // the one-millisecond snap is CREATED on the render that first sees the new
-    // buffers and only APPLIED on the next; animating out of a transition that
-    // has been created and not applied means animating out of the values the
-    // snap was supposed to have replaced.
+    // ARMED BEFORE THE REDRAW IT IS WAITING ON, and the order of these two
+    // statements is the whole point. deck.gl can service a setProps that changes
+    // the layer stack DURING the call — onAfterRender has already fired by the
+    // time setProps returns — so a hook registered afterwards is waiting for a
+    // render that has already happened. v0 measured what that costs: with
+    // nothing else on screen moving, deck has no reason to draw again and the
+    // choreography stops dead with no error anywhere.
+    //
+    // (It survived being the other way round in this build only by luck: the
+    // one-millisecond snap issued just above guarantees another render or two,
+    // and the watchdog would have forced it through regardless. Neither is a
+    // reason to rely on the order being wrong.)
+    //
+    // TWO commits, because the one-millisecond snap is CREATED on the render
+    // that first sees the new buffers and only APPLIED on the next; animating
+    // out of a transition that has been created and not applied means animating
+    // out of the values the snap was supposed to have replaced.
     afterCommit(function () {
       if (tok !== MORPH.token) return;
       // BEAT 2 — THE VALUES, on deck.gl's own transition, with the outlines
@@ -1258,6 +1279,26 @@
       paintTrue(W);
       redraw();
       logPhase("values");
+
+      // ?concurrent=1 — the two beats collapsed into one, which is what this
+      // build is here to show does not work. The outlines go to the rAF loop
+      // and the values are left on the transition just issued; every position
+      // frame restarts that transition, so the colours crawl and the map is
+      // still short of the ward values when the choreography says it is done.
+      if (CONCURRENT) {
+        animateWarp(W, s, 1, dv, easeCubicInOut, function () {
+          if (tok !== MORPH.token) return;
+          W.dur = null;
+          W.ease = null;
+          morphBasis = null;
+          redraw();
+          logPhase("finalise");
+          setStatus();
+        });
+        setStatus();
+        return;
+      }
+
       MORPH.timer = setTimeout(function () {
         if (tok !== MORPH.token) return;
         W.dur = null;
@@ -1278,6 +1319,12 @@
       }, dv + 60);
       setStatus();
     }, 2);
+
+    // The redraw the arm above is waiting on. The layer becomes visible here,
+    // which is the crack.
+    redraw();
+    logPhase("crack");
+    setStatus();
   }
 
   // ---- MERGE: ward -> borough ---------------------------------------------

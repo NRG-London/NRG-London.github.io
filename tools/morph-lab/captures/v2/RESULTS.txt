@@ -1,20 +1,20 @@
 driver     capture_v2.py
 browser    C:\Program Files\Google\Chrome\Application\chrome.exe
-serving    C:\Users\neilg\OneDrive\Documents\neilgarratt.com\Neil_Garratt_Hugo_Site\static  ->  http://127.0.0.1:57857/labs/morph/v2/
+serving    C:\Users\neilg\OneDrive\Documents\neilgarratt.com\Neil_Garratt_Hugo_Site\static  ->  http://127.0.0.1:53064/labs/morph/v2/
 viewport   1400x950, comparing everything OUTSIDE the 420x260 control-panel corner
 slow runs  3000 ms, so a mid-flight frame is a photograph and not a guess
 
 probe [real GPU                              ] boot  {"ready": true, "errors": 0, "tier": "ward", "drawn": "ward", "s": 0.92, "posPhase": 1, "w2b": true}
-                                             split ["split", "crack+3", "values+134", "heal+946", "finalise+1343"]
+                                             split ["split", "crack+6", "values+472", "heal+1288", "finalise+1688"]
 
 PASS probe  boots and completes a split under [real GPU]
 
 ---- S. the spike: can the outlines warp, and can the warp be tweened? ----
 
-shot ref_ward.png               S0 control: ward map, no getPolygon transition   4.1s  ok
+shot ref_ward.png               S0 control: ward map, no getPolygon transition   5.0s  ok
      ink 0.3166 of the map area — the control, and what the ward extrusions look like
 
-shot spike_trans_f64.png        S1 getPolygon transition declared, f64       1.8s  ok
+shot spike_trans_f64.png        S1 getPolygon transition declared, f64       2.2s  ok
      pass the page really built its ward positions as f64 (it reports f64)
      ink 0.0363 (control 0.3166)   MAD vs the control 16.9966/255
      the page's own error count: 0 — nothing was thrown
@@ -24,7 +24,7 @@ shot spike_trans_f64.png        S1 getPolygon transition declared, f64       1.8
      browser log: WebGL: INVALID_OPERATION: endTransformFeedback: transform feedback is not active
      MEASURED: the layer is BLANK with getPolygon in transitions (f64)
 
-shot spike_trans_f32.png        S2 getPolygon transition declared, f32       1.6s  ok
+shot spike_trans_f32.png        S2 getPolygon transition declared, f32       1.8s  ok
      pass the page really built its ward positions as f32 (it reports f32)
      ink 0.0363 (control 0.3166)   MAD vs the control 16.9966/255
      the page's own error count: 0 — nothing was thrown
@@ -34,21 +34,29 @@ shot spike_trans_f32.png        S2 getPolygon transition declared, f32       1.6
      browser log: WebGL: INVALID_OPERATION: endTransformFeedback: transform feedback is not active
      MEASURED: the layer is BLANK with getPolygon in transitions (f32)
 
-shot spike_ground.png           S3 ground truth: inset 0.90 before the first draw   2.3s  ok
-     ink 0.3045   MAD vs the control 1.8981/255 — THIS is how big a 0.90 inset is
+shot spike_ground.png           S3 ground truth: inset 0.90 before the first draw   2.5s  ok
+     ink 0.3045   MAD vs the control 1.8982/255 — THIS is how big a 0.90 inset is
 
-shot spike_inplace.png          S4 the same inset, applied in place          2.7s  ok
-     ink 0.3045   MAD vs the GROUND TRUTH 0.0008/255   browser WebGL errors: 0
+shot spike_inplace.png          S4 the same inset, applied in place          3.4s  ok
+     ink 0.3045   MAD vs the GROUND TRUTH 0.0004/255   browser WebGL errors: 0
      pass an in-place position swap lands exactly where a first draw of the same geometry does
 
-shot spike_anim_mid.png         S5 the warp animated ON THE CPU PATH         5.9s  ok
-     the start and the end of the 3000 ms warp are 1.8981/255 apart
-     frame at  28.7% of the ease  ->    8.14% across
-     frame at  54.7% of the ease  ->   55.43% across
-     frame at  79.0% of the ease  ->   94.91% across
+shot spike_anim_mid.png         S5 the warp animated ON THE CPU PATH         6.2s  ok
+     the start and the end of the 3000 ms warp are 1.8982/255 apart
+     frame at  29.7% of the ease  ->    8.50% across
+     frame at  55.2% of the ease  ->   54.07% across
+     frame at  80.5% of the ease  ->   94.94% across
      pass it SLIDES — every frame strictly between the ends, and rising
-     cost: 41.9 fps over 3008 ms, 126 frames, 22.6 ms ema, 38.9 ms worst
-     pass and it holds 41.9 fps, against a floor of 15
+     cost: 34.5 fps over 3016 ms, 104 frames, 25.3 ms ema, 39.0 ms worst
+     pass and it holds 34.5 fps, against a floor of 15
+
+shot spike_concurrent_79.png    S6 outlines and values TOGETHER              5.6s  ok
+     the crack and the ward map are 5.2277/255 apart
+     at 83.8% of the ease the values are 29.25% across — a working transition would
+     be at ~96.6%, which is where cubic-in-out has got to by then
+     confirmed the values do not move while the outlines do (under 50% across at the 79% mark)
+     they arrive AFTERWARDS: 0.0002/255 from the ward map once the loop stops
+     IF THIS EVER FAILS, deck.gl has changed and the three-beat split should be revisited.
 
 ==========================================================================
 SPIKE-VERDICT: deck.gl's built-in transitions NEGATIVE; the CPU path POSITIVE
@@ -66,38 +74,47 @@ SPIKE-VERDICT: deck.gl's built-in transitions NEGATIVE; the CPU path POSITIVE
   INVALID_OPERATION is not a JavaScript exception. Reproduce with ?postrans=1.
 
   POSITIVE — driving the same warp from requestAnimationFrame does animate it:
-  8.14% -> 55.43% -> 94.91% across a 3000 ms ease, at 41.9 fps (22.6 ms ema, 38.9 ms
+  8.50% -> 54.07% -> 94.94% across a 3000 ms ease, at 34.5 fps (25.3 ms ema, 39.0 ms
   worst) with 689 features and 50,738 vertices re-warped, re-uploaded and
   re-tessellated every frame. deck.gl draws swapped-in positions exactly — S4
-  above puts an in-place swap 0.0008/255 from a first draw of the same geometry.
+  above puts an in-place swap 0.0004/255 from a first draw of the same geometry.
 
-  WHAT THE CPU PATH CANNOT DO is carry the VALUES at the same time, and that is
-  measured too. Any attribute deck.gl holds in transition is drawn from the
-  transition's own buffer, so a value handed over every frame is superseded
-  before it lands: with the outlines held still and only the colours lerped,
-  0.01%% of the way across at u = 0.64, at every duration from 1 ms to 750 ms.
-  Left on deck's transition CONCURRENTLY they lag instead — 62.87%% across at the
-  79%% mark, ending 3.77/255 short. Taking them out of `transitions` blanks the
-  layer the moment a vertex moves. So the choreography gives the outlines and
-  the values SEPARATE BEATS, and every beat runs on a mechanism with proof.
+  WHAT THE CPU PATH CANNOT DO is carry the VALUES at the same time. Any attribute
+  deck.gl holds in transition is drawn from the transition's own buffer, so one
+  handed a new value every frame is superseded before it lands, and leaving the
+  values on deck's transition while the outlines move restarts that transition
+  sixty times a second. S6 above measures exactly that, live, this run: at the
+  84% mark of the ease the values are 29.25% of the way across, where a working
+  transition would be at ~96.6%. They arrive only once the loop stops restarting
+  them (0.0002/255 from the ward map by then), which is after the animation has
+  finished — so the motion is wrong even though the destination is right.
+
+  Two further arms were measured in separate probe runs during development and
+  are NOT re-measured here — see task-4-report.md §3 of the continuation for both:
+    * values lerped on the CPU and handed over per frame never arrive at all
+      (0.01% of the way across at u = 0.64, at every duration from 1 ms to 750 ms).
+    * taking the values out of `transitions` altogether blanks the layer the
+      moment a vertex moves.
+  So the choreography gives the outlines and the values SEPARATE BEATS, and every
+  beat runs on a mechanism with proof.
 ==========================================================================
 
 ---- captures ----
-shot ref_borough.png            1 borough map, loaded directly               1.8s  ok
+shot ref_borough.png            1 borough map, loaded directly               2.0s  ok
 
-shot split_crack.png            2 the crack — the cut that opens the split   1.3s  ok
-shot split_values_50.png        2 beat 2: values, seams held open                 landed at 52.0% of the 3000 ms beat  
-shot split_heal_50.png          2 beat 3: seams healing (CPU)                     landed at 54.4% of the 3000 ms beat  
-shot split_end.png              2 split end-state                            8.2s  ok
-     {"status": {"ready": true, "errors": 0, "tier": "ward", "drawn": null, "s": 1, "posPhase": 140, "w2b": true}, "log": ["split", "crack+4", "values+42", "heal+3104", "finalise+6149"]}
-     heal beat cost: 46.0 fps, 139 frames, 22.8 ms ema, 50.0 ms worst
+shot split_crack.png            2 the crack — the cut that opens the split   1.5s  ok
+shot split_values_50.png        2 beat 2: values, seams held open                 landed at 52.2% of the 3000 ms beat  
+shot split_heal_50.png          2 beat 3: seams healing (CPU)                     landed at 54.0% of the 3000 ms beat  
+shot split_end.png              2 split end-state                            8.4s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "ward", "drawn": null, "s": 1, "posPhase": 122, "w2b": true}, "log": ["split", "crack+3", "values+54", "heal+3117", "finalise+6160"]}
+     heal beat cost: 40.1 fps, 121 frames, 24.0 ms ema, 55.6 ms worst
 
-shot merge_open_50.png          3 beat 1: seams opening (CPU)                     landed at 54.0% of the 3000 ms beat  
-shot merge_values_50.png        3 beat 2: values converging                       landed at 51.7% of the 3000 ms beat  
-shot merge_heal_50.png          3 beat 3: seams healing (CPU)                     landed at 53.0% of the 3000 ms beat  
-shot merge_end.png              3 merge end-state                           11.3s  ok
-     {"status": {"ready": true, "errors": 0, "tier": "borough", "drawn": null, "s": 1, "posPhase": 268, "w2b": true}, "log": ["merge", "open+0", "values+3049", "heal+6113", "finalise+9165"]}
-     heal beat cost: 45.7 fps, 138 frames, 23.6 ms ema, 33.3 ms worst
+shot merge_open_50.png          3 beat 1: seams opening (CPU)                     landed at 54.1% of the 3000 ms beat  
+shot merge_values_50.png        3 beat 2: values converging                       landed at 51.9% of the 3000 ms beat  
+shot merge_heal_50.png          3 beat 3: seams healing (CPU)                     landed at 53.9% of the 3000 ms beat  
+shot merge_end.png              3 merge end-state                           11.5s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "borough", "drawn": null, "s": 1, "posPhase": 244, "w2b": true}, "log": ["merge", "open+0", "values+3049", "heal+6112", "finalise+9152"]}
+     heal beat cost: 43.4 fps, 131 frames, 21.9 ms ema, 33.4 ms worst
 
 ---- assertions ----
 PASS 1 BOOT: ready, errors 0, and the ward->borough mapping was CHECKED, not assumed
@@ -107,33 +124,35 @@ PASS 1 BOOT: ready, errors 0, and the ward->borough mapping was CHECKED, not ass
 PASS S SPIKE: the outlines animate — on the CPU path, not on deck's transitions
      built-in, f64: ink 0.0363 vs control 0.3166, MAD 16.9966, WebGL errors 12, precision confirmed True
      built-in, f32: ink 0.0363 vs control 0.3166, MAD 16.9966, WebGL errors 12, precision confirmed True
-     pass S4 in-place position swap == a first draw of the same geometry (0.0008/255)
-     pass S5 CPU path: 8.14% -> 55.43% -> 94.91% across
-     pass S5 CPU path holds 41.9 fps (floor 15)
+     pass S4 in-place position swap == a first draw of the same geometry (0.0004/255)
+     pass S5 CPU path: 8.50% -> 54.07% -> 94.94% across
+     pass S5 CPU path holds 34.5 fps (floor 15)
+     confirmed S6 outlines and values TOGETHER: the values are 29.25% across at the 84% mark
+        (a working transition would be at ~96.6%), so the two cannot share a beat
 
 PASS ref_ward.png vs split_end.png
      2 SPLIT END-STATE: crack, values, heal — landing on exactly the ward map
-     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1220800 = 0.0000% (limit 0.5%)   max channel diff 3
+     MAD 0.0004/255 (limit 2.0)   pixels >12/255: 24 of 1220800 = 0.0020% (limit 0.5%)   max channel diff 37
 
 PASS ref_borough.png vs merge_end.png
      3 MERGE END-STATE: open, converge, heal — handing back exactly the borough map
-     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1220800 = 0.0000% (limit 0.5%)   max channel diff 0
+     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1220800 = 0.0000% (limit 0.5%)   max channel diff 1
 
 4 FRAME RATE OF THE CPU WARP, at ward grain (689 features, 50,738 vertices,
   re-warped and re-tessellated every frame):
-     spike tween   41.9 fps   126 frames   ema  22.6 ms   worst  38.9 ms
-     split heal    46.0 fps   139 frames   ema  22.8 ms   worst  50.0 ms
-     merge heal    45.7 fps   138 frames   ema  23.6 ms   worst  33.3 ms
+     spike tween   34.5 fps   104 frames   ema  25.3 ms   worst  39.0 ms
+     split heal    40.1 fps   121 frames   ema  24.0 ms   worst  55.6 ms
+     merge heal    43.4 fps   131 frames   ema  21.9 ms   worst  33.4 ms
 
 5 MID FRAMES FOR THE EYE — saved, error- and ink-gated, deliberately NOT
   pixel-asserted: the crack is SUPPOSED to differ from both ends, so a band on
   it would be measuring the gaps rather than the choreography.
        split_crack.png       the cut that opens it, at s=0.92
-       split_values_50.png   52.0% through the values beat, seams held open
-       split_heal_50.png     54.4% through the healing beat
-       merge_open_50.png     54.0% through the opening beat
-       merge_values_50.png   51.7% through the values beat
-       merge_heal_50.png     53.0% through the healing beat
+       split_values_50.png   52.2% through the values beat, seams held open
+       split_heal_50.png     54.0% through the healing beat
+       merge_open_50.png     54.1% through the opening beat
+       merge_values_50.png   51.9% through the values beat
+       merge_heal_50.png     53.9% through the healing beat
 
 ---- UNTESTED-BY-DRIVER (left to the human eye) ----
   * whether style B reads better than style A — the whole point of
@@ -146,7 +165,7 @@ PASS ref_borough.png vs merge_end.png
     small ward opens a small gap and a large one opens a large gap.
   * per-ring insetting shrinks HOLES towards their own centres too,
     so an enclave inside a ward grows rather than shrinking.
-  * 42 fps is a NUMBER, not a verdict on smoothness: whether a
+  * 34 fps is a NUMBER, not a verdict on smoothness: whether a
     warp that misses vsync reads as fluid is an eye question.
   * seam shimmer under rotation and tilt, which is not a
     still-frame question.
