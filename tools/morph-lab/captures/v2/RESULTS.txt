@@ -1,20 +1,20 @@
 driver     capture_v2.py
 browser    C:\Program Files\Google\Chrome\Application\chrome.exe
-serving    C:\Users\neilg\OneDrive\Documents\neilgarratt.com\Neil_Garratt_Hugo_Site\static  ->  http://127.0.0.1:58399/labs/morph/v2/
+serving    C:\Users\neilg\OneDrive\Documents\neilgarratt.com\Neil_Garratt_Hugo_Site\static  ->  http://127.0.0.1:57857/labs/morph/v2/
 viewport   1400x950, comparing everything OUTSIDE the 420x260 control-panel corner
 slow runs  3000 ms, so a mid-flight frame is a photograph and not a guess
 
-probe [real GPU                              ] boot  {"ready": true, "errors": 0, "tier": "borough", "drawn": null, "s": 0.92, "posPhase": 1, "w2b": true}
-                                             split ["split", "seed+3", "crack+142", "animate+165", "finalise+976"]
+probe [real GPU                              ] boot  {"ready": true, "errors": 0, "tier": "ward", "drawn": "ward", "s": 0.92, "posPhase": 1, "w2b": true}
+                                             split ["split", "crack+3", "values+134", "heal+946", "finalise+1343"]
 
 PASS probe  boots and completes a split under [real GPU]
 
 ---- S. the spike: can the outlines warp, and can the warp be tweened? ----
 
-shot ref_ward.png               S0 control: ward map, no getPolygon transition   4.3s  ok
+shot ref_ward.png               S0 control: ward map, no getPolygon transition   4.1s  ok
      ink 0.3166 of the map area — the control, and what the ward extrusions look like
 
-shot spike_trans_f64.png        S1 getPolygon transition declared, f64       1.9s  ok
+shot spike_trans_f64.png        S1 getPolygon transition declared, f64       1.8s  ok
      pass the page really built its ward positions as f64 (it reports f64)
      ink 0.0363 (control 0.3166)   MAD vs the control 16.9966/255
      the page's own error count: 0 — nothing was thrown
@@ -24,7 +24,7 @@ shot spike_trans_f64.png        S1 getPolygon transition declared, f64       1.9
      browser log: WebGL: INVALID_OPERATION: endTransformFeedback: transform feedback is not active
      MEASURED: the layer is BLANK with getPolygon in transitions (f64)
 
-shot spike_trans_f32.png        S2 getPolygon transition declared, f32       1.7s  ok
+shot spike_trans_f32.png        S2 getPolygon transition declared, f32       1.6s  ok
      pass the page really built its ward positions as f32 (it reports f32)
      ink 0.0363 (control 0.3166)   MAD vs the control 16.9966/255
      the page's own error count: 0 — nothing was thrown
@@ -34,113 +34,121 @@ shot spike_trans_f32.png        S2 getPolygon transition declared, f32       1.7
      browser log: WebGL: INVALID_OPERATION: endTransformFeedback: transform feedback is not active
      MEASURED: the layer is BLANK with getPolygon in transitions (f32)
 
-shot spike_ground.png           S3 ground truth: inset 0.90 before the first draw   2.4s  ok
-     ink 0.3045   MAD vs the control 1.8983/255 — THIS is how big a 0.90 inset is
+shot spike_ground.png           S3 ground truth: inset 0.90 before the first draw   2.3s  ok
+     ink 0.3045   MAD vs the control 1.8981/255 — THIS is how big a 0.90 inset is
 
-shot spike_inplace.png          S4 the same inset, applied in place          3.0s  ok
-     ink 0.3045   MAD vs the GROUND TRUTH 0.0002/255   browser WebGL errors: 0
+shot spike_inplace.png          S4 the same inset, applied in place          2.7s  ok
+     ink 0.3045   MAD vs the GROUND TRUTH 0.0008/255   browser WebGL errors: 0
      pass an in-place position swap lands exactly where a first draw of the same geometry does
 
-shot spike_anim_mid.png         S5 the warp asked for as an animation        6.0s  ok
+shot spike_anim_mid.png         S5 the warp animated ON THE CPU PATH         5.9s  ok
      the start and the end of the 3000 ms warp are 1.8981/255 apart
-     frame at  27.1% of the ease  ->  100.00% across
-     frame at  52.0% of the ease  ->  100.00% across
-     frame at  77.0% of the ease  ->  100.00% across
-     FAIL it slides (every frame strictly between the ends, and rising)
-     confirmed it CUTS — the first sampled frame is already at the destination
+     frame at  28.7% of the ease  ->    8.14% across
+     frame at  54.7% of the ease  ->   55.43% across
+     frame at  79.0% of the ease  ->   94.91% across
+     pass it SLIDES — every frame strictly between the ends, and rising
+     cost: 41.9 fps over 3008 ms, 126 frames, 22.6 ms ema, 38.9 ms worst
+     pass and it holds 41.9 fps, against a floor of 15
 
 ==========================================================================
-SPIKE-VERDICT: NEGATIVE
+SPIKE-VERDICT: deck.gl's built-in transitions NEGATIVE; the CPU path POSITIVE
 
-  getPolygon position transitions are not available on this page's setup, and
-  the failure is not that they interpolate badly — it is that declaring one
-  stops the layer drawing at all.
+  NEGATIVE — `transitions: {getPolygon}` does not animate the outlines. It stops
+  the SolidPolygonLayer drawing at all: ink 0.0363 against the control's 0.3166,
+  17.00/255 away from it, identical under Float32 (ink 0.0363) because the layer
+  declares its own attribute type as float64 whatever array is handed in. The
+  mechanism, from the browser rather than from inference:
+      WebGL: INVALID_OPERATION: beginTransformFeedback: not enough transform feedback buffers bound
+      WebGL: INVALID_OPERATION: endTransformFeedback: transform feedback is not active
+  deck.gl runs an attribute transition as a transform feedback pass and cannot
+  bind the buffers for SolidPolygonLayer's double-precision vertexPositions. It
+  is SILENT: the page's own error count stayed at 0 throughout, because a WebGL
+  INVALID_OPERATION is not a JavaScript exception. Reproduce with ?postrans=1.
 
-  1. With getPolygon in the transitions block the SolidPolygonLayer renders
-     NOTHING: ink 0.0363 against the control's 0.3166, and 17.00/255 away from it.
-  2. Float32 positions change nothing: ink 0.0363, MAD 16.9966. The layer declares its
-     own attribute type as float64 whatever array is handed in, so the fallback
-     the brief asks for never reaches the mechanism that fails.
-  3. That mechanism, from the browser rather than from inference:
-       WebGL: INVALID_OPERATION: beginTransformFeedback: not enough transform feedback buffers bound
-       WebGL: INVALID_OPERATION: endTransformFeedback: transform feedback is not active
-       WebGL: INVALID_OPERATION: beginTransformFeedback: not enough transform feedback buffers bound
-     deck.gl runs an attribute transition as a transform feedback pass, and it
-     cannot bind the buffers for SolidPolygonLayer's double-precision
-     vertexPositions. The pass fails, the destination buffer is never written,
-     and the layer draws from it anyway.
-  4. IT IS SILENT. The page's own error count stayed at 0 throughout: a WebGL
-     INVALID_OPERATION is not a JavaScript exception, so nothing reaches
-     window.onerror and no assertion watching the page would ever see it.
-  5. What DOES work: positions swapped in place land pixel-exactly where a
-     first draw of the same geometry lands (0.0002/255 apart, S3 vs S4) — so the
-     warp itself is sound. Asked for as an animation it CUTS: 100.0% across at
-     the quarter mark of a 3000 ms ease.
+  POSITIVE — driving the same warp from requestAnimationFrame does animate it:
+  8.14% -> 55.43% -> 94.91% across a 3000 ms ease, at 41.9 fps (22.6 ms ema, 38.9 ms
+  worst) with 689 features and 50,738 vertices re-warped, re-uploaded and
+  re-tessellated every frame. deck.gl draws swapped-in positions exactly — S4
+  above puts an in-place swap 0.0008/255 from a first draw of the same geometry.
 
-  No shader extension was attempted: the brief puts that decision with the
-  controller and out of this task's scope.
+  WHAT THE CPU PATH CANNOT DO is carry the VALUES at the same time, and that is
+  measured too. Any attribute deck.gl holds in transition is drawn from the
+  transition's own buffer, so a value handed over every frame is superseded
+  before it lands: with the outlines held still and only the colours lerped,
+  0.01%% of the way across at u = 0.64, at every duration from 1 ms to 750 ms.
+  Left on deck's transition CONCURRENTLY they lag instead — 62.87%% across at the
+  79%% mark, ending 3.77/255 short. Taking them out of `transitions` blanks the
+  layer the moment a vertex moves. So the choreography gives the outlines and
+  the values SEPARATE BEATS, and every beat runs on a mechanism with proof.
 ==========================================================================
 
----- captures (pos=f64) ----
-shot ref_borough.png            1 borough map, loaded directly               1.7s  ok
+---- captures ----
+shot ref_borough.png            1 borough map, loaded directly               1.8s  ok
 
-shot split_crack.png            2 the crack, just after the swap             2.0s  ok
-shot split_25.png               2 split mid-flight                                landed at 28.9% of a 3000 ms split
-shot split_50.png               2 split mid-flight                                landed at 52.2% of a 3000 ms split
-shot split_75.png               2 split mid-flight                                landed at 77.2% of a 3000 ms split
-shot split_end.png              2 split end-state                            5.8s  ok
-     {"status": {"ready": true, "errors": 0, "tier": "ward", "drawn": null, "s": 1, "posPhase": 2, "w2b": true}, "log": ["split", "seed+5", "watchdog+545", "crack+546", "animate+580", "finalise+3641"]}
+shot split_crack.png            2 the crack — the cut that opens the split   1.3s  ok
+shot split_values_50.png        2 beat 2: values, seams held open                 landed at 52.0% of the 3000 ms beat  
+shot split_heal_50.png          2 beat 3: seams healing (CPU)                     landed at 54.4% of the 3000 ms beat  
+shot split_end.png              2 split end-state                            8.2s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "ward", "drawn": null, "s": 1, "posPhase": 140, "w2b": true}, "log": ["split", "crack+4", "values+42", "heal+3104", "finalise+6149"]}
+     heal beat cost: 46.0 fps, 139 frames, 22.8 ms ema, 50.0 ms worst
 
-shot merge_p1_50.png            3 merge phase 1: values + seams                   landed at 51.9% of phase 1 (3000 ms)
-shot merge_p2_50.png            3 merge phase 2: outlines alone                   landed at 51.7% of phase 2 (2625 ms)
-shot merge_end.png              3 merge end-state                            7.9s  ok
-     {"status": {"ready": true, "errors": 0, "tier": "borough", "drawn": null, "s": 1, "posPhase": 2, "w2b": true}, "log": ["merge", "phase1+6", "phase2+3072", "finalise+5762"]}
+shot merge_open_50.png          3 beat 1: seams opening (CPU)                     landed at 54.0% of the 3000 ms beat  
+shot merge_values_50.png        3 beat 2: values converging                       landed at 51.7% of the 3000 ms beat  
+shot merge_heal_50.png          3 beat 3: seams healing (CPU)                     landed at 53.0% of the 3000 ms beat  
+shot merge_end.png              3 merge end-state                           11.3s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "borough", "drawn": null, "s": 1, "posPhase": 268, "w2b": true}, "log": ["merge", "open+0", "values+3049", "heal+6113", "finalise+9165"]}
+     heal beat cost: 45.7 fps, 138 frames, 23.6 ms ema, 33.3 ms worst
 
 ---- assertions ----
 PASS 1 BOOT: ready, errors 0, and the ward->borough mapping was CHECKED, not assumed
      689 of 689 wards mapped from 26369 output areas, 0 conflicts (a conflict throws at boot)
      ward tier: 689 features, 50738 vertices; positions f64
 
-FAIL S SPIKE: getPolygon position transitions animate
-     f64 with the transition declared: ink 0.0363 vs control 0.3166, MAD 16.9966, WebGL errors 12, precision confirmed True
-     f32 with the transition declared: ink 0.0363 vs control 0.3166, MAD 16.9966, WebGL errors 12, precision confirmed True
-     pass S4 in-place position swap == a first draw of the same geometry (0.0002/255)
-     S5 asked for as an animation: 100.00% -> 100.00% -> 100.00% across (a cut lands on 100/100/100)
-     THE VERDICT IS THE FINDING, and the non-zero exit code below records it.
+PASS S SPIKE: the outlines animate — on the CPU path, not on deck's transitions
+     built-in, f64: ink 0.0363 vs control 0.3166, MAD 16.9966, WebGL errors 12, precision confirmed True
+     built-in, f32: ink 0.0363 vs control 0.3166, MAD 16.9966, WebGL errors 12, precision confirmed True
+     pass S4 in-place position swap == a first draw of the same geometry (0.0008/255)
+     pass S5 CPU path: 8.14% -> 55.43% -> 94.91% across
+     pass S5 CPU path holds 41.9 fps (floor 15)
 
 PASS ref_ward.png vs split_end.png
-     2 SPLIT END-STATE: the cracked-open wards heal into exactly the ward map
-     MAD 0.0004/255 (limit 2.0)   pixels >12/255: 23 of 1220800 = 0.0019% (limit 0.5%)   max channel diff 33
+     2 SPLIT END-STATE: crack, values, heal — landing on exactly the ward map
+     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1220800 = 0.0000% (limit 0.5%)   max channel diff 3
 
 PASS ref_borough.png vs merge_end.png
-     3 MERGE END-STATE: the wards converge and hand back to exactly the borough map
-     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1220800 = 0.0000% (limit 0.5%)   max channel diff 1
+     3 MERGE END-STATE: open, converge, heal — handing back exactly the borough map
+     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1220800 = 0.0000% (limit 0.5%)   max channel diff 0
 
-4 MID FRAMES FOR THE EYE — saved, error-gated, deliberately NOT pixel-asserted:
-     the crack is SUPPOSED to differ from both ends, so a progression band on the
-     split would be measuring the gaps rather than the choreography. Read them
-     knowing what the spike found: the VALUES still tween (colour and height keep
-     their transitions and v0 proved those), and the OUTLINES cut.
-       split_crack.png   the swap, at s=0.92: every ward boundary is a gap of ground
-       split_%d.png      28.9 / 52.2 / 77.2% of the 3000 ms split — values sliding,
-                         outlines already home
-       merge_p1_50.png   51.9% of phase 1 — values converging, seams already open
-       merge_p2_50.png   51.7% of phase 2 — the seams' one instant close
+4 FRAME RATE OF THE CPU WARP, at ward grain (689 features, 50,738 vertices,
+  re-warped and re-tessellated every frame):
+     spike tween   41.9 fps   126 frames   ema  22.6 ms   worst  38.9 ms
+     split heal    46.0 fps   139 frames   ema  22.8 ms   worst  50.0 ms
+     merge heal    45.7 fps   138 frames   ema  23.6 ms   worst  33.3 ms
+
+5 MID FRAMES FOR THE EYE — saved, error- and ink-gated, deliberately NOT
+  pixel-asserted: the crack is SUPPOSED to differ from both ends, so a band on
+  it would be measuring the gaps rather than the choreography.
+       split_crack.png       the cut that opens it, at s=0.92
+       split_values_50.png   52.0% through the values beat, seams held open
+       split_heal_50.png     54.4% through the healing beat
+       merge_open_50.png     54.0% through the opening beat
+       merge_values_50.png   51.7% through the values beat
+       merge_heal_50.png     53.0% through the healing beat
 
 ---- UNTESTED-BY-DRIVER (left to the human eye) ----
-  * whether style B reads better than style A. That is the whole
-    point of the experiment, no assertion here touches it, and the
-    spike means it can only be judged as a cut, not as a warp.
+  * whether style B reads better than style A — the whole point of
+    the experiment, and no assertion here touches it.
+  * whether taking turns reads as one gesture or as three. The
+    outlines and the values cannot move together (see the verdict),
+    so this is the shape the technique allows, not the shape it
+    was drawn as.
   * the inset rate: s is a fixed FRACTION of each ward's size, so a
     small ward opens a small gap and a large one opens a large gap.
-    A constant-metre inset would look different and is not built.
   * per-ring insetting shrinks HOLES towards their own centres too,
-    so an enclave inside a ward grows rather than shrinking. There
-    are few of these at ward grain and none were seen to matter.
-  * a mid-flight opposite click restarts the choreography from
-    wherever the VALUE interpolation had got to; it lands correctly,
-    but whether the restart reads as a correction is an eye question.
+    so an enclave inside a ward grows rather than shrinking.
+  * 42 fps is a NUMBER, not a verdict on smoothness: whether a
+    warp that misses vsync reads as fluid is an eye question.
   * seam shimmer under rotation and tilt, which is not a
     still-frame question.
 
-RESULT SPIKE NEGATIVE — recorded above with its evidence; every other assertion in this run passed
+RESULT ALL ASSERTIONS PASS — built-in transitions negative, CPU path positive

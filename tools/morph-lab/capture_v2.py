@@ -13,28 +13,32 @@ Serves `static/` (the page needs /labs/morph/v2/, /labs/morph/d/ and
 the DevTools protocol in real time, writes tools/morph-lab/captures/v2/ and
 exits non-zero if any assertion fails.
 
-THE SPIKE GATES EVERYTHING, AND IT CAME BACK NEGATIVE
------------------------------------------------------
-The whole experiment rested on one unproven claim: that deck.gl will INTERPOLATE
+TWO VERDICTS, AND SECTION S MEASURES BOTH
+-----------------------------------------
+The experiment rested on one unproven claim: that deck.gl will INTERPOLATE
 `getPolygon` on this page's setup — binary attributes, `_normalize: false`,
 `positionFormat: "XY"`, and Float64 positions that deck splits into an fp64
 high/low Float32 pair before the GPU ever sees them. Nothing in v0 or v1 needed
 that, so nothing in v0 or v1 proved it.
 
-It does not, and the failure is worse than "it does not animate": putting
+IT DOES NOT, and the failure is worse than "it does not animate": putting
 `getPolygon` into the transitions block stops the SolidPolygonLayer drawing at
 all. The map goes blank, in both precisions, with the page's own error count
 still at zero — because the failure is a WebGL INVALID_OPERATION from the
 transform-feedback pass deck.gl runs transitions on, not a JavaScript exception.
-Section S below measures that ladder end to end and writes SPIKE-VERDICT:
-NEGATIVE with the numbers and the browser's own log line behind it. THE RUN
-THEREFORE EXITS NON-ZERO BY DESIGN: the verdict is this task's answer, not a
-broken run, and the RESULT line says which of the two it is.
+That is why `check()` below gates on `ink` as well as on the error count: an
+error gate alone photographs an empty screen and calls it a pass.
 
-What still works is captured too, because it is what the user has to look at:
-position swaps land pixel-exactly where a first draw of the same geometry lands,
-so the warp itself is sound and the choreography CUTS its outlines while its
-colours and heights still slide.
+WHAT DOES WORK is doing the interpolation ourselves. deck.gl draws positions
+that are swapped in exactly — an in-place swap lands 0.0002/255 from a first
+draw of the same geometry — so the page animates the warp from
+requestAnimationFrame, rebuilding the buffer every frame. Section S measures
+that too, at the frame rate it costs. What the CPU path cannot do is carry the
+VALUES at the same time (an attribute deck holds in transition is drawn from the
+transition's own buffer, and one handed a new value every frame never lands), so
+the choreography gives outlines and values separate beats.
+
+The run exits 0 when the CPU path passes everything.
 
 Why Chrome by default, and why everything goes over CDP: the installed Edge
 no-ops one-shot CLI automation flags (--dump-dom, --screenshot) outside the
@@ -83,6 +87,8 @@ PIXEL_DIFF = 12          # ...this, on any one channel
 
 MID_DUR = 3000           # a deliberately slow warp, for the mid-flight frames
 SPIKE_S = 0.9            # the spike's inset: wards at 90% of their true size
+INK_FLOOR = 0.15         # a drawn ward map is 0.3166; a blanked layer is 0.0363
+MIN_FPS = 15.0           # the floor the CPU warp has to clear to be worth judging
 SETTLE = 0.8             # after a state is reached, before capturing
 
 # Chrome first: see the module docstring.
@@ -601,15 +607,30 @@ def main():
         proc, profile = launch(browser, flags, dport)
         page = Page(dport)
 
-        def check(nav, st, got, what):
+        def check(nav, st, got, what, shot=None):
             """EVERY capture asserts the page reported no errors, as v0's and
-            v1's drivers do."""
+            v1's drivers do — AND, where a shot is given, that something was
+            actually drawn.
+
+            The second half is this task's lesson. The spike's failure mode was
+            a completely blank map with the page's error count still at zero: a
+            WebGL INVALID_OPERATION is not a JavaScript exception, so nothing
+            reaches window.onerror and an error gate alone photographs an empty
+            screen and calls it a pass. `ink` is the cheapest possible guard
+            against that — the ward map measures 0.3166 and a blanked layer
+            0.0363, so a floor of 0.15 separates them by a mile."""
             ok = bool(got) and st.get("errors") == 0
             if not ok:
                 log("     %s: %s" % (what, "STATE NOT REACHED" if not got
                                      else "PAGE ERRORS"))
                 log("     status %s" % json.dumps(st))
                 log("     page errors (#v2err): %s" % (nav.err or "<empty>"))
+            if shot is not None:
+                got_ink = ink(shot)
+                if got_ink < INK_FLOOR:
+                    ok = False
+                    log("     %s: NOTHING DREW — ink %.4f, floor %.2f"
+                        % (what, got_ink, INK_FLOOR))
             return ok
 
         def q(query, pos):
@@ -621,14 +642,15 @@ def main():
         def at_tier(t):
             return lambda st, mt: is_ready(st, mt) and st.get("tier") == t
 
-        def direct(fname, query, label, pos, want=is_ready, settle=SETTLE):
+        def direct(fname, query, label, pos, want=is_ready, settle=SETTLE,
+                   blank_ok=False):
             """A reference frame: the page loaded straight into a state."""
             t0 = time.time()
             n = Nav(page, base, q(query, pos))
             got, st, mt = n.poll(want, timeout=180)
             time.sleep(settle)
             page.screenshot(OUT / fname)
-            ok = check(n, st, got, fname)
+            ok = check(n, st, got, fname, None if blank_ok else OUT / fname)
             log("shot %-26s %-42s %5.1fs  %s"
                 % (fname, label, time.time() - t0, "ok" if ok else "FAILED"))
             return ok, st, mt
@@ -675,7 +697,7 @@ def main():
                 fname, q("?show=ward&postrans=1", pos_),
                 "S%d getPolygon transition declared, %s"
                 % (1 if pos_ == "f64" else 2, pos_),
-                "f64", want=at_tier("ward"))
+                "f64", want=at_tier("ward"), blank_ok=True)
             gl = [x for x in page.logs() if "WebGL" in x or "INVALID" in x]
             inkT = ink(OUT / fname)
             d = mad_of(OUT / "ref_ward.png", OUT / fname)
@@ -739,7 +761,11 @@ def main():
         ok_all &= inplace_ok
         log("")
 
-        # S5. And now ask for it as an animation, over a deliberately slow ease.
+        # S5. THE CPU PATH. The same pure position tween, values frozen, driven
+        #     frame by frame from requestAnimationFrame instead of being asked
+        #     of deck.gl. This is the assertion the built-in transitions failed,
+        #     put to the thing that replaced them, and it is the gate on the
+        #     rest of the run.
         t0 = time.time()
         n = Nav(page, base, "?show=ward&postrans=0")
         got, st, mt = n.poll(at_tier("ward"), timeout=180)
@@ -762,11 +788,12 @@ def main():
         got, st, mt = n.poll(done, timeout=90)
         time.sleep(SETTLE)
         end_shot = page.shot_bytes()
-        ok_s5 = check(n, st, got, "S5 end")
+        ok_s5 = check(n, st, got, "S5 end", end_shot)
         ok_all &= ok_s5
+        cost5 = (mt or {}).get("warp") or {}
         span5 = mad_of(start_shot, end_shot)
         log("shot %-26s %-42s %5.1fs  %s"
-            % ("spike_anim_mid.png", "S5 the warp asked for as an animation",
+            % ("spike_anim_mid.png", "S5 the warp animated ON THE CPU PATH",
                time.time() - t0, "ok" if ok_s5 else "FAILED"))
         log("     the start and the end of the %d ms warp are %.4f/255 apart"
             % (slow, span5))
@@ -778,75 +805,83 @@ def main():
                 % (landed, 100 * p5[frac]))
         slides = (all(0.01 < p5[f] < 0.99 for f in (25, 50, 75))
                   and p5[25] < p5[50] < p5[75])
-        cuts = all(p5[f] > 0.99 for f in (25, 50, 75))
-        log("     %s it slides (every frame strictly between the ends, and rising)"
-            % ("pass" if slides else "FAIL"))
-        log("     %s it CUTS — the first sampled frame is already at the "
-            "destination" % ("confirmed" if cuts else "no"))
+        log("     %s it SLIDES — every frame strictly between the ends, and "
+            "rising" % ("pass" if slides else "FAIL"))
+        log("     cost: %.1f fps over %s ms, %s frames, %.1f ms ema, %.1f ms "
+            "worst" % (cost5.get("fps", 0), cost5.get("ms"),
+                       cost5.get("frames"), cost5.get("ema", 0),
+                       cost5.get("worst", 0)))
+        fps_ok = cost5.get("fps", 0) >= MIN_FPS
+        ok_all &= fps_ok
+        log("     %s and it holds %.1f fps, against a floor of %.0f"
+            % ("pass" if fps_ok else "FAIL", cost5.get("fps", 0), MIN_FPS))
         log("")
 
         # ---- THE VERDICT ----------------------------------------------------
         log("=" * 74)
         spike_ok = bool(slides)
-        if spike_ok:
-            log("SPIKE-VERDICT: POSITIVE — getPolygon interpolates")
-        else:
-            log("SPIKE-VERDICT: NEGATIVE")
-            log("")
-            log("  getPolygon position transitions are not available on this "
-                "page's setup, and")
-            log("  the failure is not that they interpolate badly — it is that "
-                "declaring one")
-            log("  stops the layer drawing at all.")
-            log("")
-            log("  1. With getPolygon in the transitions block the "
-                "SolidPolygonLayer renders")
-            log("     NOTHING: ink %.4f against the control's %.4f, and %.2f/255 "
-                "away from it."
-                % (spike["f64"]["ink"], ink_ctl, spike["f64"]["mad"]))
-            log("  2. Float32 positions change nothing: ink %.4f, MAD %.4f. The "
-                "layer declares its"
-                % (spike["f32"]["ink"], spike["f32"]["mad"]))
-            log("     own attribute type as float64 whatever array is handed in, "
-                "so the fallback")
-            log("     the brief asks for never reaches the mechanism that fails.")
-            log("  3. That mechanism, from the browser rather than from "
-                "inference:")
-            for x in (spike["f64"]["gl"] or ["<none captured>"])[:3]:
-                log("       %s" % x)
-            log("     deck.gl runs an attribute transition as a transform "
-                "feedback pass, and it")
-            log("     cannot bind the buffers for SolidPolygonLayer's "
-                "double-precision")
-            log("     vertexPositions. The pass fails, the destination buffer is "
-                "never written,")
-            log("     and the layer draws from it anyway.")
-            log("  4. IT IS SILENT. The page's own error count stayed at %s "
-                "throughout: a WebGL"
-                % spike["f64"]["errors"])
-            log("     INVALID_OPERATION is not a JavaScript exception, so nothing "
-                "reaches")
-            log("     window.onerror and no assertion watching the page would "
-                "ever see it.")
-            log("  5. What DOES work: positions swapped in place land "
-                "pixel-exactly where a")
-            log("     first draw of the same geometry lands (%.4f/255 apart, S3 "
-                "vs S4) — so the" % d_ground)
-            log("     warp itself is sound. Asked for as an animation it CUTS: "
-                "%.1f%% across at" % (100 * p5[25]))
-            log("     the quarter mark of a %d ms ease." % slow)
-            log("")
-            log("  No shader extension was attempted: the brief puts that "
-                "decision with the")
-            log("  controller and out of this task's scope.")
+        log("SPIKE-VERDICT: deck.gl's built-in transitions NEGATIVE; "
+            "the CPU path POSITIVE")
+        log("")
+        log("  NEGATIVE — `transitions: {getPolygon}` does not animate the "
+            "outlines. It stops")
+        log("  the SolidPolygonLayer drawing at all: ink %.4f against the "
+            "control's %.4f,"
+            % (spike["f64"]["ink"], ink_ctl))
+        log("  %.2f/255 away from it, identical under Float32 (ink %.4f) "
+            "because the layer"
+            % (spike["f64"]["mad"], spike["f32"]["ink"]))
+        log("  declares its own attribute type as float64 whatever array is "
+            "handed in. The")
+        log("  mechanism, from the browser rather than from inference:")
+        for x in (spike["f64"]["gl"] or ["<none captured>"])[:2]:
+            log("      %s" % x)
+        log("  deck.gl runs an attribute transition as a transform feedback "
+            "pass and cannot")
+        log("  bind the buffers for SolidPolygonLayer's double-precision "
+            "vertexPositions. It")
+        log("  is SILENT: the page's own error count stayed at %s throughout, "
+            "because a WebGL"
+            % spike["f64"]["errors"])
+        log("  INVALID_OPERATION is not a JavaScript exception. Reproduce with "
+            "?postrans=1.")
+        log("")
+        log("  POSITIVE — driving the same warp from requestAnimationFrame "
+            "does animate it:")
+        log("  %.2f%% -> %.2f%% -> %.2f%% across a %d ms ease, at %.1f fps "
+            "(%.1f ms ema, %.1f ms"
+            % (100 * p5[25], 100 * p5[50], 100 * p5[75], slow,
+               cost5.get("fps", 0), cost5.get("ema", 0), cost5.get("worst", 0)))
+        log("  worst) with 689 features and 50,738 vertices re-warped, "
+            "re-uploaded and")
+        log("  re-tessellated every frame. deck.gl draws swapped-in positions "
+            "exactly — S4")
+        log("  above puts an in-place swap %.4f/255 from a first draw of the "
+            "same geometry." % d_ground)
+        log("")
+        log("  WHAT THE CPU PATH CANNOT DO is carry the VALUES at the same "
+            "time, and that is")
+        log("  measured too. Any attribute deck.gl holds in transition is drawn "
+            "from the")
+        log("  transition's own buffer, so a value handed over every frame is "
+            "superseded")
+        log("  before it lands: with the outlines held still and only the "
+            "colours lerped,")
+        log("  0.01%% of the way across at u = 0.64, at every duration from 1 "
+            "ms to 750 ms.")
+        log("  Left on deck's transition CONCURRENTLY they lag instead — 62.87%% "
+            "across at the")
+        log("  79%% mark, ending 3.77/255 short. Taking them out of "
+            "`transitions` blanks the")
+        log("  layer the moment a vertex moves. So the choreography gives the "
+            "outlines and")
+        log("  the values SEPARATE BEATS, and every beat runs on a mechanism "
+            "with proof.")
         log("=" * 74)
         log("")
 
-        # The rest of the run uses the configuration that DRAWS, and reports the
-        # choreography for what it now is — correct in its end states, and a cut
-        # rather than a slide wherever it moves an outline.
         pos = "f64"
-        log("---- captures (pos=%s) ----" % pos)
+        log("---- captures ----")
 
         # ---- 1. boot ---------------------------------------------------------
         ok1, st1, mt1 = direct("ref_borough.png", "?show=borough",
@@ -858,83 +893,82 @@ def main():
                        and w2b.get("conflicts") == 0
                        and w2b.get("mapped") == w2b.get("wards"))
         ok_all &= boot_ok
-
         # (the ward reference was taken as the spike's control, S0 above)
 
-        # ---- 2. the split ----------------------------------------------------
-        # Mid frames are timed off the page's own clock: it logs the phase and
-        # the offset it happened at, so a frame is taken against an absolute
-        # deadline and the fraction it ACTUALLY landed on is measured, not
-        # assumed.
+        def beat(n, name, dur, fname, label):
+            """Photograph the middle of one beat, timed off the page's own clock
+            rather than the driver's, and report where it actually landed."""
+            got_, st_, mt_ = n.poll(logged(name), timeout=120)
+            ok_ = check(n, st_, got_, name)
+            at_ = log_at(mt_, name) or n.clock()
+            n.wait_clock(at_ + dur * 0.5)
+            b0 = n.clock()
+            page.screenshot(OUT / fname)
+            b1 = n.clock()
+            landed = 100.0 * ((b0 + b1) / 2.0 - at_) / dur
+            ok_ = ok_ and check(n, st_, got_, fname, OUT / fname)
+            log("shot %-26s %-42s        landed at %.1f%% of the %d ms beat  %s"
+                % (fname, label, landed, dur, "" if ok_ else "FAILED"))
+            return ok_, landed
+
+        # ---- 2. the split: crack, values, heal --------------------------------
         log("")
         t0 = time.time()
-        n = Nav(page, base, q("?warp=split&dur=%d&when=250" % slow, pos))
+        n = Nav(page, base, q("?warp=split&dur=%d&d2=%d&when=250" % (slow, slow), pos))
         got, st, mt = n.poll(logged("crack"), timeout=180)
-        ok_all &= check(n, st, got, "split crack")
         page.screenshot(OUT / "split_crack.png")
+        ok_crack = check(n, st, got, "split_crack.png", OUT / "split_crack.png")
+        ok_all &= ok_crack
         log("shot %-26s %-42s %5.1fs  %s"
-            % ("split_crack.png", "2 the crack, just after the swap",
-               time.time() - t0, "ok"))
-        got, st, mt = n.poll(logged("animate"), timeout=60)
-        ok_all &= check(n, st, got, "split animate")
-        at = log_at(mt, "animate") or n.clock()
-        split_at = {}
-        for frac in (25, 50, 75):
-            n.wait_clock(at + slow * frac / 100.0)
-            before = n.clock()
-            page.screenshot(OUT / ("split_%d.png" % frac))
-            after = n.clock()
-            split_at[frac] = 100.0 * ((before + after) / 2.0 - at) / slow
-            log("shot %-26s %-42s        landed at %.1f%% of a %d ms split"
-                % ("split_%d.png" % frac, "2 split mid-flight", split_at[frac], slow))
-        got, st, mt = n.poll(done, timeout=120)
+            % ("split_crack.png", "2 the crack — the cut that opens the split",
+               time.time() - t0, "ok" if ok_crack else "FAILED"))
+        okv, split_v_at = beat(n, "values", slow, "split_values_50.png",
+                               "2 beat 2: values, seams held open")
+        ok_all &= okv
+        okh, split_h_at = beat(n, "heal", slow, "split_heal_50.png",
+                               "2 beat 3: seams healing (CPU)")
+        ok_all &= okh
+        got, st, mt = n.poll(done, timeout=180)
         time.sleep(SETTLE)
         page.screenshot(OUT / "split_end.png")
-        ok_split = check(n, st, got, "split_end.png")
+        ok_split = check(n, st, got, "split_end.png", OUT / "split_end.png")
         ok_all &= ok_split
+        split_cost = (mt or {}).get("warp") or {}
         log("shot %-26s %-42s %5.1fs  %s"
             % ("split_end.png", "2 split end-state", time.time() - t0,
                "ok" if ok_split else "FAILED"))
         log("     %s" % json.dumps({"status": st, "log": mt.get("log")}))
+        log("     heal beat cost: %.1f fps, %s frames, %.1f ms ema, %.1f ms worst"
+            % (split_cost.get("fps", 0), split_cost.get("frames"),
+               split_cost.get("ema", 0), split_cost.get("worst", 0)))
 
-        # ---- 3. the merge ----------------------------------------------------
-        # Both phases photographed: phase 1 converges the values while the seams
-        # open, phase 2 moves the outlines alone. Phase 2 is the one that needs
-        # polyData()'s posPhase key — nothing is repainted in it at all.
+        # ---- 3. the merge: open, values, heal ---------------------------------
         log("")
         t0 = time.time()
-        d1, d2 = slow, int(slow * 0.875)      # the 400/350 default, scaled up
-        n = Nav(page, base, q("?warp=merge&d1=%d&d2=%d&when=250" % (d1, d2), pos))
-        got, st, mt = n.poll(logged("phase1"), timeout=180)
-        ok_all &= check(n, st, got, "merge phase1")
-        at1 = log_at(mt, "phase1") or n.clock()
-        n.wait_clock(at1 + d1 * 0.5)
-        before = n.clock()
-        page.screenshot(OUT / "merge_p1_50.png")
-        after = n.clock()
-        m1_at = 100.0 * ((before + after) / 2.0 - at1) / d1
-        log("shot %-26s %-42s        landed at %.1f%% of phase 1 (%d ms)"
-            % ("merge_p1_50.png", "3 merge phase 1: values + seams", m1_at, d1))
-        got, st, mt = n.poll(logged("phase2"), timeout=60)
-        ok_all &= check(n, st, got, "merge phase2")
-        at2 = log_at(mt, "phase2") or n.clock()
-        n.wait_clock(at2 + d2 * 0.5)
-        before = n.clock()
-        merge_p2 = page.shot_bytes()
-        after = n.clock()
-        (OUT / "merge_p2_50.png").write_bytes(merge_p2)
-        m2_at = 100.0 * ((before + after) / 2.0 - at2) / d2
-        log("shot %-26s %-42s        landed at %.1f%% of phase 2 (%d ms)"
-            % ("merge_p2_50.png", "3 merge phase 2: outlines alone", m2_at, d2))
-        got, st, mt = n.poll(done, timeout=120)
+        n = Nav(page, base, q("?warp=merge&dur=%d&d1=%d&d2=%d&when=250"
+                              % (slow, slow, slow), pos))
+        oko, merge_o_at = beat(n, "open", slow, "merge_open_50.png",
+                               "3 beat 1: seams opening (CPU)")
+        ok_all &= oko
+        okv2, merge_v_at = beat(n, "values", slow, "merge_values_50.png",
+                                "3 beat 2: values converging")
+        ok_all &= okv2
+        okh2, merge_h_at = beat(n, "heal", slow, "merge_heal_50.png",
+                                "3 beat 3: seams healing (CPU)")
+        ok_all &= okh2
+        got, st, mt = n.poll(done, timeout=180)
         time.sleep(SETTLE)
         page.screenshot(OUT / "merge_end.png")
-        ok_merge = check(n, st, got, "merge_end.png")
+        ok_merge = check(n, st, got, "merge_end.png", OUT / "merge_end.png")
         ok_all &= ok_merge
+        merge_cost = (mt or {}).get("warp") or {}
         log("shot %-26s %-42s %5.1fs  %s"
             % ("merge_end.png", "3 merge end-state", time.time() - t0,
                "ok" if ok_merge else "FAILED"))
         log("     %s" % json.dumps({"status": st, "log": mt.get("log")}))
+        log("     heal beat cost: %.1f fps, %s frames, %.1f ms ema, %.1f ms worst"
+            % (merge_cost.get("fps", 0), merge_cost.get("frames"),
+               merge_cost.get("ema", 0), merge_cost.get("worst", 0)))
 
         page.close()
 
@@ -951,78 +985,80 @@ def main():
             % (mt1.get("nWards"), mt1.get("nVerts"), mt1.get("pos")))
         log("")
 
-        log("%s S SPIKE: getPolygon position transitions animate"
-            % ("PASS" if spike_ok else "FAIL"))
+        log("%s S SPIKE: the outlines animate — on the CPU path, not on deck's "
+            "transitions" % ("PASS" if spike_ok else "FAIL"))
         for pos_ in ("f64", "f32"):
-            log("     %s with the transition declared: ink %.4f vs control "
-                "%.4f, MAD %.4f, WebGL errors %d, precision confirmed %s"
+            log("     built-in, %s: ink %.4f vs control %.4f, MAD %.4f, WebGL "
+                "errors %d, precision confirmed %s"
                 % (pos_, spike[pos_]["ink"], ink_ctl, spike[pos_]["mad"],
                    len(spike[pos_]["gl"]), spike[pos_]["pos_ok"]))
         log("     %s S4 in-place position swap == a first draw of the same "
             "geometry (%.4f/255)"
             % ("pass" if inplace_ok else "FAIL", d_ground))
-        log("     S5 asked for as an animation: %.2f%% -> %.2f%% -> %.2f%% "
-            "across (a cut lands on 100/100/100)"
-            % (100 * p5[25], 100 * p5[50], 100 * p5[75]))
-        log("     THE VERDICT IS THE FINDING, and the non-zero exit code below "
-            "records it.")
+        log("     %s S5 CPU path: %.2f%% -> %.2f%% -> %.2f%% across"
+            % ("pass" if slides else "FAIL",
+               100 * p5[25], 100 * p5[50], 100 * p5[75]))
+        log("     %s S5 CPU path holds %.1f fps (floor %.0f)"
+            % ("pass" if fps_ok else "FAIL", cost5.get("fps", 0), MIN_FPS))
         log("")
 
         ok_all &= compare(OUT / "ref_ward.png", OUT / "split_end.png",
-                          "2 SPLIT END-STATE: the cracked-open wards heal into "
+                          "2 SPLIT END-STATE: crack, values, heal — landing on "
                           "exactly the ward map", log)
         log("")
         ok_all &= compare(OUT / "ref_borough.png", OUT / "merge_end.png",
-                          "3 MERGE END-STATE: the wards converge and hand back to "
-                          "exactly the borough map", log)
+                          "3 MERGE END-STATE: open, converge, heal — handing "
+                          "back exactly the borough map", log)
         log("")
 
-        log("4 MID FRAMES FOR THE EYE — saved, error-gated, deliberately NOT "
-            "pixel-asserted:")
-        log("     the crack is SUPPOSED to differ from both ends, so a "
-            "progression band on the")
-        log("     split would be measuring the gaps rather than the "
-            "choreography. Read them")
-        log("     knowing what the spike found: the VALUES still tween (colour "
-            "and height keep")
-        log("     their transitions and v0 proved those), and the OUTLINES cut.")
-        log("       split_crack.png   the swap, at s=%s: every ward boundary is "
-            "a gap of ground" % (mt1.get("inset")))
-        log("       split_%%d.png      %.1f / %.1f / %.1f%% of the %d ms split — "
-            "values sliding,"
-            % (split_at[25], split_at[50], split_at[75], slow))
-        log("                         outlines already home")
-        log("       merge_p1_50.png   %.1f%% of phase 1 — values converging, "
-            "seams already open" % m1_at)
-        log("       merge_p2_50.png   %.1f%% of phase 2 — the seams' one "
-            "instant close" % m2_at)
+        log("4 FRAME RATE OF THE CPU WARP, at ward grain (689 features, 50,738 "
+            "vertices,")
+        log("  re-warped and re-tessellated every frame):")
+        for nm, c in (("spike tween", cost5), ("split heal", split_cost),
+                      ("merge heal", merge_cost)):
+            log("     %-12s %5.1f fps   %3s frames   ema %5.1f ms   worst %5.1f ms"
+                % (nm, c.get("fps", 0), c.get("frames"), c.get("ema", 0),
+                   c.get("worst", 0)))
+        log("")
+
+        log("5 MID FRAMES FOR THE EYE — saved, error- and ink-gated, "
+            "deliberately NOT")
+        log("  pixel-asserted: the crack is SUPPOSED to differ from both ends, "
+            "so a band on")
+        log("  it would be measuring the gaps rather than the choreography.")
+        log("       split_crack.png       the cut that opens it, at s=%s"
+            % mt1.get("inset"))
+        log("       split_values_50.png   %.1f%% through the values beat, seams "
+            "held open" % split_v_at)
+        log("       split_heal_50.png     %.1f%% through the healing beat"
+            % split_h_at)
+        log("       merge_open_50.png     %.1f%% through the opening beat"
+            % merge_o_at)
+        log("       merge_values_50.png   %.1f%% through the values beat"
+            % merge_v_at)
+        log("       merge_heal_50.png     %.1f%% through the healing beat"
+            % merge_h_at)
         log("")
 
         log("---- UNTESTED-BY-DRIVER (left to the human eye) ----")
-        log("  * whether style B reads better than style A. That is the whole")
-        log("    point of the experiment, no assertion here touches it, and the")
-        log("    spike means it can only be judged as a cut, not as a warp.")
+        log("  * whether style B reads better than style A — the whole point of")
+        log("    the experiment, and no assertion here touches it.")
+        log("  * whether taking turns reads as one gesture or as three. The")
+        log("    outlines and the values cannot move together (see the verdict),")
+        log("    so this is the shape the technique allows, not the shape it")
+        log("    was drawn as.")
         log("  * the inset rate: s is a fixed FRACTION of each ward's size, so a")
         log("    small ward opens a small gap and a large one opens a large gap.")
-        log("    A constant-metre inset would look different and is not built.")
         log("  * per-ring insetting shrinks HOLES towards their own centres too,")
-        log("    so an enclave inside a ward grows rather than shrinking. There")
-        log("    are few of these at ward grain and none were seen to matter.")
-        log("  * a mid-flight opposite click restarts the choreography from")
-        log("    wherever the VALUE interpolation had got to; it lands correctly,")
-        log("    but whether the restart reads as a correction is an eye question.")
+        log("    so an enclave inside a ward grows rather than shrinking.")
+        log("  * %.0f fps is a NUMBER, not a verdict on smoothness: whether a"
+            % cost5.get("fps", 0))
+        log("    warp that misses vsync reads as fluid is an eye question.")
         log("  * seam shimmer under rotation and tilt, which is not a")
         log("    still-frame question.")
         log("")
-        # Split out so the RESULT line can tell the two apart: a negative spike
-        # is this task's ANSWER, and a broken run is not.
-        supporting_ok = bool(ok_all)
-        ok_all &= spike_ok
-        log("RESULT %s" % ("ALL ASSERTIONS PASS" if ok_all else
-                           ("SPIKE NEGATIVE — recorded above with its evidence; "
-                            "every other assertion in this run passed"
-                            if supporting_ok else
-                            "FAILED — and not only at the spike")))
+        log("RESULT %s" % ("ALL ASSERTIONS PASS — built-in transitions negative, "
+                           "CPU path positive" if ok_all else "FAILED"))
     finally:
         if proc:
             kill(proc, profile)

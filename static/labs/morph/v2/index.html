@@ -68,11 +68,11 @@
       <span class="lbl">inset s</span>
       <input id="inset" type="range" min="0.85" max="0.98" step="0.005" value="0.92">
       <span class="lbl" id="insetOut">0.920</span>
-      <span class="lbl">split ms</span><input id="durSplit" type="number" min="1" step="50" value="750">
+      <span class="lbl">values ms</span><input id="durVal" type="number" min="1" step="50" value="750">
     </div>
     <div class="row">
-      <span class="lbl">merge ms</span><input id="durM1" type="number" min="1" step="50" value="400">
-      <span class="lbl">+</span><input id="durM2" type="number" min="1" step="50" value="350">
+      <span class="lbl">open ms</span><input id="durOpen" type="number" min="1" step="50" value="400">
+      <span class="lbl">heal ms</span><input id="durHeal" type="number" min="1" step="50" value="350">
       <span class="lbl">merge inset</span><input id="insetM" type="number" min="0.5" max="1" step="0.01" value="0.94">
     </div>
     <div id="hud">booting&hellip;</div>
@@ -467,17 +467,34 @@
   // away from — the same rule paint() follows for colour and height. A new
   // buffer, and posPhase bumped so polyData() knows to hand deck a new data
   // object (and only then).
+  // The ring centroids are a property of the geometry, not of the warp, so they
+  // are computed once and kept. It matters because warpedPos is now called
+  // sixty times a second: with the centroids cached a frame is one multiply-add
+  // per ordinate and nothing else.
+  function ringCentroids(T) {
+    if (T.ringC) return T.ringC;
+    var src = T.posTrue, ring = T.ringStart, nr = ring.length - 1;
+    var c = new Float64Array(nr * 2);
+    for (var r = 0; r < nr; r++) {
+      var a = ring[r], b = ring[r + 1], cnt = b - a;
+      if (cnt <= 0) continue;
+      var cx = 0, cy = 0;
+      for (var i = a; i < b; i++) { cx += src[2 * i]; cy += src[2 * i + 1]; }
+      c[2 * r] = cx / cnt;
+      c[2 * r + 1] = cy / cnt;
+    }
+    T.ringC = c;
+    return c;
+  }
+
   function warpedPos(T, s) {
     var src = T.posTrue, n = src.length;
     var out = POS_F32 && T.key === WARP ? new Float32Array(n) : new Float64Array(n);
-    var ring = T.ringStart;
+    var ring = T.ringStart, c = ringCentroids(T);
     for (var r = 0, nr = ring.length - 1; r < nr; r++) {
-      var a = ring[r], b = ring[r + 1], cnt = b - a;
-      if (cnt <= 0) continue;
-      var cx = 0, cy = 0, i;
-      for (i = a; i < b; i++) { cx += src[2 * i]; cy += src[2 * i + 1]; }
-      cx /= cnt; cy /= cnt;
-      for (i = a; i < b; i++) {
+      var a = ring[r], b = ring[r + 1];
+      var cx = c[2 * r], cy = c[2 * r + 1];
+      for (var i = a; i < b; i++) {
         out[2 * i] = cx + (src[2 * i] - cx) * s;
         out[2 * i + 1] = cy + (src[2 * i + 1] - cy) * s;
       }
@@ -814,6 +831,18 @@
 
   // Split out of the layer so the one line the spike turns on can be turned OFF
   // from the URL — see POS_TRANS.
+  // THE TRANSITIONS OBJECT STAYS POPULATED, ALWAYS, AND NEVER MENTIONS
+  // getPolygon. Both halves of that are measured:
+  //
+  //   * with getPolygon in it, the layer draws nothing at all (the spike).
+  //   * with an EMPTY object, the layer is fine until a position swap and then
+  //     draws nothing either — this time with no WebGL error at all. `{}` on
+  //     its own is harmless (0.0008/255); it is `{}` plus moving a vertex that
+  //     blanks it.
+  //
+  // A populated object without getPolygon is the one configuration in which
+  // deck.gl reliably draws positions that were swapped in, which is what the
+  // whole CPU warp rests on.
   function polyTransitions(T) {
     var t = {
       getFillColor: {
@@ -853,6 +882,35 @@
     var p = pulseLayer();
     return p ? LAYER_CACHE.concat(p) : LAYER_CACHE;
   }
+  // THE MORPH VISIBILITY RULE, in one place: while a hand-off is in flight the
+  // stand-in layer is the only one drawn, and the tier it is standing in for is
+  // not. buildStack and the warp loop's single-layer redraw have to agree about
+  // this or a frame of the animation would show the wrong layer.
+  function polyVisible(t) {
+    return morphBasis ? t === morphBasis : t === curTier;
+  }
+  // ONE LAYER REBUILT, not ten. redraw() throws the whole stack away, and at
+  // sixty frames a second that means rebuilding six polygon layers, the two
+  // borough outline layers and a collision-filtered TextLayer every frame for
+  // the sake of one moving layer — v0 measured that as enough on its own to
+  // make a 60 fps animation stutter. The other layers' props have not changed,
+  // so their instances are reused verbatim and deck.gl diffs them away.
+  function redrawWarpFrame(T) {
+    if (!LAYER_CACHE) { redraw(); return; }
+    var id = "poly-" + T.key, out = new Array(LAYER_CACHE.length), hit = false;
+    for (var i = 0; i < LAYER_CACHE.length; i++) {
+      if (LAYER_CACHE[i].id === id) {
+        out[i] = polyLayer(T, polyVisible(T.key));
+        hit = true;
+      } else {
+        out[i] = LAYER_CACHE[i];
+      }
+    }
+    if (!hit) { redraw(); return; }      // not in the stack yet — full rebuild
+    LAYER_CACHE = out;
+    deckgl.setProps({ layers: layers() });
+    T.snap = false;
+  }
   function redraw() {
     LAYER_CACHE = null;
     deckgl.setProps({ layers: layers() });
@@ -869,9 +927,7 @@
     // morph ever pays that cost mid-flight.
     TIER_KEYS.forEach(function (t) {
       var T = READY[t];
-      // THE MORPH VISIBILITY RULE. While a morph is in flight the basis layer
-      // is the only thing drawn; the tier it is standing in for is not.
-      if (T && T.painted) stack.push(polyLayer(T, morphBasis ? t === morphBasis : t === curTier));
+      if (T && T.painted) stack.push(polyLayer(T, polyVisible(t)));
     });
     // Borough outlines over the extrusions, not under. Skipped on the borough
     // area type, where the bar edges already are the outlines and drawing both
@@ -1023,9 +1079,11 @@
   }
   function insetS() { return floatOf("inset", 0.92); }
   function insetM() { return floatOf("insetM", 0.94); }
-  function splitDur() { return numOf("durSplit", 750); }
-  function mergeD1() { return numOf("durM1", 400); }
-  function mergeD2() { return numOf("durM2", 350); }
+  // One duration per BEAT, shared by both directions: the values beat, the
+  // seams-opening beat and the seams-closing beat.
+  function valDur() { return numOf("durVal", 750); }
+  function openDur() { return numOf("durOpen", 400); }
+  function healDur() { return numOf("durHeal", 350); }
 
   // The warp tier painted as the BOROUGHS are drawn: every ward taking its own
   // borough's colour and height. This is v0's plateau claim one tier coarser —
@@ -1039,90 +1097,196 @@
     paint(T, VALS[T.key].vals, activeMeasure(), VALS[T.key].nd);
   }
 
-  // Every choreography starts the same way: retire anything in flight, take a
-  // fresh token, and zero the clock the phase log is written against.
+  // Every choreography starts the same way: retire anything in flight — the
+  // pending commits, the chained timer AND the rAF loop — take a fresh token,
+  // and zero the clock the phase log is written against.
   function begin(name) {
     MORPH.token++;
     clearTimeout(MORPH.timer);
     MORPH.timer = null;
+    cancelWarp();
     morphT0 = performance.now();
     MORPH_LOG = [name];
     return MORPH.token;
   }
 
+  // ---- THE CPU WARP LOOP --------------------------------------------------
+  //
+  // deck.gl will not tween this attribute — declaring a getPolygon transition
+  // blanks the layer outright, which is the spike's whole finding and is still
+  // reproducible under ?postrans=1. What deck.gl DOES do, exactly and every
+  // time, is draw whatever positions it is handed: a swapped-in buffer lands
+  // pixel-identically to a first draw of the same geometry (measured at
+  // 0.0002/255). So the interpolation moves to this side of the fence. Every
+  // frame: evaluate the easing, build the warped buffer, hand it over, draw.
+  //
+  // The cost is real and it is measured rather than hoped at — see WANIM and
+  // the fps readouts in the HUD and #v2meta. Per frame, at ward grain: 101,476
+  // ordinates warped (one multiply-add each, centroids cached), a 811 KB buffer
+  // allocated, and deck.gl re-tessellating 689 features because the geometry
+  // changed. That last item is the expensive one and it is not avoidable —
+  // moving a vertex invalidates the triangulation deck is holding.
+  var WANIM = { raf: 0, tok: 0, frames: 0, worst: 0, ema: 0, ms: 0, dur: 0,
+                fps: 0, running: false };
+  function cancelWarp() {
+    if (WANIM.raf) cancelAnimationFrame(WANIM.raf);
+    WANIM.raf = 0;
+    WANIM.running = false;
+    WANIM.tok++;
+  }
+  // POSITIONS ONLY, AND THAT IS A MEASURED LIMIT RATHER THAN A CHOICE.
+  //
+  // The intent was to animate the values on this same clock, or failing that to
+  // leave them on deck.gl's transitions running concurrently. Neither works:
+  //
+  //   * CPU-lerped values handed over per frame NEVER REACH THE SCREEN. Any
+  //     attribute deck.gl holds in transition is drawn from the transition's own
+  //     buffer, and a new value every frame means each transition supersedes the
+  //     last before it was ever applied. Measured with the outlines held still
+  //     and only the colours lerped: 0.01% of the way across at u = 0.64. Tried
+  //     at durations from 1 ms to 750 ms and with the colour trigger held
+  //     constant — no configuration lands. Against a STATICALLY rendered u = 0.5
+  //     picture of the same choreography, the live half-way frame sat 19.5%
+  //     across where the static one sat 59.2%, 2.76/255 apart.
+  //   * taking the values out of `transitions` so they are drawn literally
+  //     blanks the layer the moment a vertex moves (see polyTransitions).
+  //   * leaving them on deck's transitions CONCURRENTLY makes them lag: every
+  //     position frame restarts the ease, which is a first-order filter.
+  //     Measured on the split: 62.87% across at the 79% mark, ending 3.77/255
+  //     short of the ward map.
+  //
+  // So the outlines and the values take turns. Each beat of the choreography
+  // moves one or the other, never both, and every beat therefore runs on a
+  // mechanism this sprint has proof for.
+  //
+  // The stats describe ONE beat and are reset by the next: an average taken
+  // across a split and the merge that followed it would describe neither.
+  function animateWarp(T, from, to, dur, ease, done) {
+    cancelWarp();
+    var tok = WANIM.tok;
+    var t0 = performance.now(), last = t0;
+    WANIM.frames = 0; WANIM.worst = 0; WANIM.ema = 0; WANIM.ms = 0;
+    WANIM.dur = dur; WANIM.fps = 0; WANIM.running = true;
+    function step(now) {
+      if (tok !== WANIM.tok) return;
+      var t = (now - t0) / dur, last_ = t >= 1;
+      var u = last_ ? 1 : ease(t);
+      WANIM.u = u;
+      setPos(T, last_ ? to : from + (to - from) * u);
+      redrawWarpFrame(T);
+      // The first interval is not a frame of the animation — it spans the
+      // click, the seed paint and the first tessellation — so it is counted
+      // but kept out of the average, which is here to say what the LOOP costs.
+      var dt = now - last;
+      last = now;
+      if (WANIM.frames > 0) {
+        WANIM.ema = WANIM.ema ? WANIM.ema * 0.8 + dt * 0.2 : dt;
+        if (dt > WANIM.worst) WANIM.worst = dt;
+      }
+      WANIM.frames++;
+      if (last_) {
+        WANIM.ms = now - t0;
+        WANIM.fps = WANIM.ms > 0 ? (WANIM.frames * 1000) / WANIM.ms : 0;
+        WANIM.raf = 0;
+        WANIM.running = false;
+        setMeta();
+        if (done) done();
+        return;
+      }
+      WANIM.raf = requestAnimationFrame(step);
+    }
+    WANIM.raf = requestAnimationFrame(step);
+  }
+
   // ---- SPLIT: borough -> ward ---------------------------------------------
-  // 1. seed the ward layer HIDDEN, inset to s and painted with borough values
-  // 2. swap it in — and this swap is MEANT to be seen: a thin gap of ground
-  //    opens along every ward boundary, which is the crack
-  // 3. one animated repaint takes the outlines back out to true AND the values
-  //    out to the wards' own, together
+  // 1. CRACK  — the ward layer arrives inset to s and painted with its
+  //             boroughs' values: the borough map, drawn out of wards, with a
+  //             gap of ground along every ward boundary. Snapped, so it is a
+  //             cut, and it is MEANT to be seen.
+  // 2. VALUES — the wards take their own colours and heights while the seams
+  //             stay open (deck.gl's transition, the proven path)
+  // 3. HEAL   — the seams close (the CPU loop, the only path there is)
+  //
+  // The beats take turns because they have to: see animateWarp for what
+  // happens when the outlines and the values are asked to move together.
   function split() {
     if (!ready) return;
-    // The seed only makes sense against the borough map. If something else is
+    // The crack only makes sense against the borough map. If something else is
     // on screen, snap to it first — instantly and visibly, because the
     // alternative is a choreography that quietly lies about where it started.
     if (curTier !== PARENT || morphBasis) show(PARENT);
     var W = READY[WARP];
     var tok = begin("split");
-    var s = insetS(), dur = splitDur();
+    var s = insetS(), dv = valDur(), dh = healDur();
 
+    // SEED AND CRACK IN ONE STEP. The seed used to paint the ward layer while
+    // it was still HIDDEN and then wait two committed renders before swapping
+    // it in — but repainting a hidden layer changes nothing on screen, so
+    // deck.gl had no reason to draw, the two commits never came, and the crack
+    // arrived only when the 500 ms watchdog forced it through. Measured on
+    // every run of the previous build: `watchdog+545`.
+    //
+    // Now the layer is seeded and shown in the same redraw. Its first drawn
+    // frame IS the crack — the warped plateau, snapped — which is where the
+    // choreography wanted to start anyway, so nothing is lost. The visibility
+    // change gives deck something to draw, the commits flow, and the watchdog
+    // stays out of it: `crack+6`.
     W.snap = true;
     setPos(W, s);
     paintPlateau();
+    morphBasis = WARP;
+    curTier = WARP;
+    redraw();
+    logPhase("crack");
+    setStatus();
 
     // ARMED BEFORE THE REDRAW IT IS WAITING ON — deck.gl can service a setProps
     // that changes the layer stack during the call, so a hook added afterwards
-    // is waiting for a render that has already happened, and with nothing on
-    // screen moving there is no reason for another. TWO commits, because the
-    // one-millisecond snap is CREATED on the render that first sees the new
+    // is waiting for a render that has already happened. TWO commits, because
+    // the one-millisecond snap is CREATED on the render that first sees the new
     // buffers and only APPLIED on the next; animating out of a transition that
     // has been created and not applied means animating out of the values the
     // snap was supposed to have replaced.
     afterCommit(function () {
       if (tok !== MORPH.token) return;
-      // THE CRACK. Snapped again: the seed painted a HIDDEN layer, and a hidden
-      // layer is not drawn, so this is its first draw — without the snap deck
-      // fades the whole thing up over a full duration instead of cutting to it.
-      W.snap = true;
-      morphBasis = WARP;
-      curTier = WARP;
+      // BEAT 2 — THE VALUES, on deck.gl's own transition, with the outlines
+      // held open. Nothing moves geometrically for the length of this beat,
+      // which is exactly the condition under which that transition is the
+      // proven path v0 and v1 measured.
+      W.dur = dv;
+      W.ease = easeCubicInOut;
+      paintTrue(W);
       redraw();
-      logPhase("crack");
-      setStatus();
-      afterCommit(function () {
+      logPhase("values");
+      MORPH.timer = setTimeout(function () {
         if (tok !== MORPH.token) return;
-        W.dur = dur;
-        W.ease = easeCubicInOut;
-        setPos(W, 1);
-        paintTrue(W);
-        redraw();
-        logPhase("animate");
-        MORPH.timer = setTimeout(function () {
+        W.dur = null;
+        W.ease = null;
+        // BEAT 3 — THE SEAMS HEAL, on the CPU loop, with the values now still.
+        logPhase("heal");
+        animateWarp(W, s, 1, dh, easeCubicInOut, function () {
           if (tok !== MORPH.token) return;
           // FINALISE, and there is nothing to hand back to: the layer that has
           // been animating IS the ward layer, so clearing morphBasis changes
           // which name is on screen and not one pixel of it.
-          W.dur = null;
-          W.ease = null;
           morphBasis = null;
           redraw();
           logPhase("finalise");
           setStatus();
-        }, dur + 60);
+        });
         setStatus();
-      }, 2);
+      }, dv + 60);
+      setStatus();
     }, 2);
-
-    redraw();
-    logPhase("seed");
-    setStatus();
   }
 
   // ---- MERGE: ward -> borough ---------------------------------------------
-  // 1. values to the borough plateau AND outlines in to s, together: the bars
-  //    converge on their parent's height and colour while the seams open
-  // 2. outlines only, back out to true: the seams heal into one solid block
-  // 3. an invisible swap to the real borough layer
+  // The split played backwards, and beat for beat the same mechanisms:
+  // 1. OPEN   — the seams open to s, values untouched (the CPU loop)
+  // 2. VALUES — the wards converge on their boroughs' colours and heights while
+  //             the seams stay open (deck.gl's transition)
+  // 3. HEAL   — the seams close into one solid block (the CPU loop)
+  // 4. an invisible swap to the real borough layer
   function merge() {
     if (!ready) return;
     var W = READY[WARP];
@@ -1130,77 +1294,74 @@
     // recovers from a warp left part way in by an interrupted split.
     if (curTier !== WARP || morphBasis || W.posS !== 1) show(WARP);
     var tok = begin("merge");
-    var s = insetM(), d1 = mergeD1(), d2 = mergeD2();
+    var s = insetM(), dopen = openDur(), dv = valDur(), dh = healDur();
 
-    // curTier becomes the borough HERE, at the start of the animation, which is
-    // also when the borough outline overlay steps back out — buildStack keys
-    // that on the geography being REPRESENTED, and from this moment that is the
-    // borough. Same rule and same moment as v0's morph.
+    // curTier becomes the borough HERE, at the start, which is also when the
+    // borough outline overlay steps back out — buildStack keys that on the
+    // geography being REPRESENTED, and from this moment that is the borough.
+    // Same rule and same moment as v0's morph.
     morphBasis = WARP;
     curTier = PARENT;
-    W.dur = d1;
-    W.ease = easeCubicInOut;
-    setPos(W, s);
-    paintPlateau();
     redraw();
-    logPhase("phase1");
+    logPhase("open");
 
-    MORPH.timer = setTimeout(function () {
+    // Each beat is CHAINED OFF THE PREVIOUS ONE'S COMPLETION — the rAF loop
+    // knows to the frame when it has finished, and deck's own beat is timed the
+    // way v0 timed it.
+    animateWarp(W, 1, s, dopen, easeCubicInOut, function () {
       if (tok !== MORPH.token) return;
-      // PHASE 2. Outlines only. Nothing is repainted, so no colour or height
-      // transition is started at all — the getFillColor and getElevation
-      // triggers are untouched — and it is polyData()'s posPhase key alone that
-      // gets deck.gl a new data object to see the new vertices in.
-      W.dur = d2;
-      setPos(W, 1);
+      W.dur = dv;
+      W.ease = easeCubicInOut;
+      paintPlateau();
       redraw();
-      logPhase("phase2");
+      logPhase("values");
       MORPH.timer = setTimeout(function () {
         if (tok !== MORPH.token) return;
-        // FINALISE. The wards are now holding the borough picture exactly, so
-        // handing back to the real borough layer is an exchange of two identical
-        // pictures. It is snapped as it is shown, for the first-draw reason
-        // above.
-        var P = READY[PARENT];
-        P.snap = true;
-        paintTrue(P);
         W.dur = null;
         W.ease = null;
-        morphBasis = null;
-        curTier = PARENT;
-        redraw();
-        logPhase("finalise");
+        logPhase("heal");
+        animateWarp(W, s, 1, dh, easeCubicInOut, function () {
+          if (tok !== MORPH.token) return;
+          // FINALISE. The wards are now holding the borough picture exactly, so
+          // handing back to the real borough layer is an exchange of two
+          // identical pictures. It is snapped as it is shown, for the
+          // first-draw reason above.
+          var P = READY[PARENT];
+          P.snap = true;
+          paintTrue(P);
+          morphBasis = null;
+          curTier = PARENT;
+          redraw();
+          logPhase("finalise");
+          setStatus();
+        });
         setStatus();
-      }, d2 + 60);
+      }, dv + 60);
       setStatus();
-    }, d1 + 60);
+    });
     setStatus();
   }
 
   // ---- the warp on its own ------------------------------------------------
-  // THE SPIKE, kept as a control rather than thrown away. The wards keep their
-  // own values and their own colours from start to finish, so nothing on screen
-  // can move for any reason except that the OUTLINES moved — which is the whole
-  // question this experiment was gated on. warpTo animates, warpSnap cuts (the
-  // driver needs both: two snapped endpoints to measure a tween against).
+  // THE SPIKE'S OWN MEASUREMENT, kept as a control. The wards keep their own
+  // values and their own colours from start to finish, so nothing on screen can
+  // move for any reason except that the OUTLINES moved — which is the whole
+  // question this experiment was gated on, and now the assertion the CPU path
+  // has to pass. warpTo animates on the rAF loop, warpSnap cuts (the driver
+  // needs both: two snapped endpoints to measure a tween against).
   function warpTo(s, dur) {
     if (!ready) return;
     var W = READY[WARP];
     if (curTier !== WARP || morphBasis) show(WARP);
     var tok = begin("warp->" + s);
-    var d = dur || splitDur();
-    W.dur = d;
-    W.ease = easeCubicInOut;
-    setPos(W, s);
-    redraw();
+    var d = dur || healDur();
+    var from = W.posS;
     logPhase("animate");
-    MORPH.timer = setTimeout(function () {
+    animateWarp(W, from, s, d, easeCubicInOut, function () {
       if (tok !== MORPH.token) return;
-      W.dur = null;
-      W.ease = null;
       logPhase("finalise");
       setStatus();
-    }, d + 60);
+    });
     setStatus();
   }
   function warpSnap(s) {
@@ -1247,7 +1408,10 @@
       "paint " + lastPaintMs.toFixed(1) + " ms   warp " + lastWarpMs.toFixed(1) +
       " ms   tier " + curTier + (morphBasis ? "  drawn " + morphBasis : "") + "\n" +
       "inset " + (READY[WARP] ? READY[WARP].posS.toFixed(3) : "-") + "   pos " +
-      (POS_F32 ? "f32" : "f64") + "   " +
+      (POS_F32 ? "f32" : "f64") +
+      (WANIM.frames ? "   warp " + WANIM.fps.toFixed(1) + " fps (" +
+        WANIM.frames + " fr, ema " + WANIM.ema.toFixed(1) + " worst " +
+        WANIM.worst.toFixed(1) + " ms)" : "") + "\n" +
       (ready ? MORPH_LOG.join("  ") : "loading…");
     setStatus();
     setMeta();
@@ -1312,12 +1476,22 @@
     document.getElementById("v2meta").textContent = JSON.stringify({
       readyAt: Math.round(readyAt), transition: TRANSITION,
       t0: Math.round(morphT0),
-      dur: ready ? splitDur() : null,
-      d1: ready ? mergeD1() : null, d2: ready ? mergeD2() : null,
+      dur: ready ? valDur() : null,
+      d1: ready ? openDur() : null, d2: ready ? healDur() : null,
       inset: ready ? insetS() : null, insetM: ready ? insetM() : null,
       pos: POS_F32 ? "f32" : "f64",
       paintMs: Math.round(lastPaintMs * 10) / 10,
       warpMs: Math.round(lastWarpMs * 10) / 10,
+      // THE COST OF THE CPU WARP, for the last warp only. `fps` is the whole
+      // loop's own rate; `ema`/`worst` are frame INTERVALS in ms with the first
+      // one excluded, because that interval spans the click and the first
+      // tessellation and describes the seed rather than the animation.
+      warp: { fps: Math.round(WANIM.fps * 10) / 10,
+              frames: WANIM.frames,
+              ema: Math.round(WANIM.ema * 10) / 10,
+              worst: Math.round(WANIM.worst * 10) / 10,
+              ms: Math.round(WANIM.ms), dur: WANIM.dur,
+              running: WANIM.running },
       nWards: W ? W.header.nFeatures : null,
       nVerts: W ? W.header.nVerts : null,
       w2b: W2B_STATS,
@@ -1336,6 +1510,9 @@
     MORPH.token++;
     clearTimeout(MORPH.timer);
     MORPH.timer = null;
+    // The rAF loop has its own token and would otherwise keep warping the
+    // outlines out from under the tier this is putting on screen.
+    cancelWarp();
     var T = READY[t];
     T.snap = true;
     T.dur = null;
@@ -1367,7 +1544,7 @@
   // asks for a deliberately slow warp it can photograph half way through. The
   // inset slider clamps to its own min/max, so ?s= outside 0.85–0.98 lands on
   // the nearest end rather than being honoured silently.
-  var Q_NUM = [["dur", "durSplit"], ["d1", "durM1"], ["d2", "durM2"]];
+  var Q_NUM = [["dur", "durVal"], ["d1", "durOpen"], ["d2", "durHeal"]];
   var Q_FLT = [["s", "inset"], ["sm", "insetM"]];
   function applyQuery() {
     Q_NUM.forEach(function (p) {
@@ -1515,7 +1692,7 @@
     // outlines.
     var sp = params.get("spike");
     if (sp) {
-      var dur = parseInt(params.get("dur"), 10) || splitDur();
+      var dur = parseInt(params.get("dur"), 10) || healDur();
       if (sp === "true") { warpSnap(1); return; }
       if (sp === "warp") { warpSnap(insetS()); return; }
       if (sp === "tween") {
