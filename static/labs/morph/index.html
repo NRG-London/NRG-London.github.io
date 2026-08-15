@@ -20,7 +20,7 @@
 <ul>
   <li><a href="v0/"><code>v0/</code></a> — minimal harness: split/merge value-morph on the OA basis (buttons, duration/easing controls, HUD)</li>
   <li><a href="v1/"><code>v1/</code></a> — full census map with the curtain replaced by the morph (<code>?morph=0</code> restores the curtain; <code>?hud=1</code> overlay)</li>
-  <li><a href="v2/"><code>v2/</code></a> — boundary-warp experiment (ward↔borough vertex morph)</li>
+  <li><a href="v2/"><code>v2/</code></a> — boundary-warp experiment (ward↔borough vertex morph). <strong>The spike came back negative:</strong> deck.gl cannot tween <code>getPolygon</code> here — declaring the transition blanks the layer outright (<a href="v2/?postrans=1"><code>?postrans=1</code></a> reproduces it), so the outlines <em>cut</em> while the colours and heights still slide. The warp itself is fine as a still: <a href="v2/?s0=0.92"><code>?s0=0.92</code></a>, <a href="v2/?s0=0.8"><code>?s0=0.8</code></a>. Numbers in <code>tools/morph-lab/captures/v2/RESULTS.txt</code>.</li>
 </ul>
 <section id="notes">
 <h2>Checklist notes</h2>
