@@ -1,20 +1,21 @@
 driver     capture_v2.py
 browser    C:\Program Files\Google\Chrome\Application\chrome.exe
-serving    C:\Users\neilg\OneDrive\Documents\neilgarratt.com\Neil_Garratt_Hugo_Site\static  ->  http://127.0.0.1:55381/labs/morph/v2/
+serving    C:\Users\neilg\OneDrive\Documents\neilgarratt.com\Neil_Garratt_Hugo_Site\static  ->  http://127.0.0.1:58399/labs/morph/v2/
 viewport   1400x950, comparing everything OUTSIDE the 420x260 control-panel corner
 slow runs  3000 ms, so a mid-flight frame is a photograph and not a guess
 
 probe [real GPU                              ] boot  {"ready": true, "errors": 0, "tier": "borough", "drawn": null, "s": 0.92, "posPhase": 1, "w2b": true}
-                                             split ["split", "seed+4", "crack+172", "animate+199", "finalise+1010"]
+                                             split ["split", "seed+3", "crack+142", "animate+165", "finalise+976"]
 
 PASS probe  boots and completes a split under [real GPU]
 
 ---- S. the spike: can the outlines warp, and can the warp be tweened? ----
 
-shot ref_ward.png               S0 control: ward map, no getPolygon transition   4.2s  ok
+shot ref_ward.png               S0 control: ward map, no getPolygon transition   4.3s  ok
      ink 0.3166 of the map area — the control, and what the ward extrusions look like
 
-shot spike_trans_f64.png        S1 getPolygon transition declared, f64       1.8s  ok
+shot spike_trans_f64.png        S1 getPolygon transition declared, f64       1.9s  ok
+     pass the page really built its ward positions as f64 (it reports f64)
      ink 0.0363 (control 0.3166)   MAD vs the control 16.9966/255
      the page's own error count: 0 — nothing was thrown
      browser log: WebGL: INVALID_OPERATION: beginTransformFeedback: not enough transform feedback buffers bound
@@ -23,7 +24,8 @@ shot spike_trans_f64.png        S1 getPolygon transition declared, f64       1.8
      browser log: WebGL: INVALID_OPERATION: endTransformFeedback: transform feedback is not active
      MEASURED: the layer is BLANK with getPolygon in transitions (f64)
 
-shot spike_trans_f32.png        S2 getPolygon transition declared, f32       1.9s  ok
+shot spike_trans_f32.png        S2 getPolygon transition declared, f32       1.7s  ok
+     pass the page really built its ward positions as f32 (it reports f32)
      ink 0.0363 (control 0.3166)   MAD vs the control 16.9966/255
      the page's own error count: 0 — nothing was thrown
      browser log: WebGL: INVALID_OPERATION: beginTransformFeedback: not enough transform feedback buffers bound
@@ -33,16 +35,16 @@ shot spike_trans_f32.png        S2 getPolygon transition declared, f32       1.9
      MEASURED: the layer is BLANK with getPolygon in transitions (f32)
 
 shot spike_ground.png           S3 ground truth: inset 0.90 before the first draw   2.4s  ok
-     ink 0.3045   MAD vs the control 1.8981/255 — THIS is how big a 0.90 inset is
+     ink 0.3045   MAD vs the control 1.8983/255 — THIS is how big a 0.90 inset is
 
-shot spike_inplace.png          S4 the same inset, applied in place          2.9s  ok
-     ink 0.3045   MAD vs the GROUND TRUTH 0.0004/255   browser WebGL errors: 0
+shot spike_inplace.png          S4 the same inset, applied in place          3.0s  ok
+     ink 0.3045   MAD vs the GROUND TRUTH 0.0002/255   browser WebGL errors: 0
      pass an in-place position swap lands exactly where a first draw of the same geometry does
 
-shot spike_anim_mid.png         S5 the warp asked for as an animation        6.3s  ok
+shot spike_anim_mid.png         S5 the warp asked for as an animation        6.0s  ok
      the start and the end of the 3000 ms warp are 1.8981/255 apart
      frame at  27.1% of the ease  ->  100.00% across
-     frame at  51.9% of the ease  ->  100.00% across
+     frame at  52.0% of the ease  ->  100.00% across
      frame at  77.0% of the ease  ->  100.00% across
      FAIL it slides (every frame strictly between the ends, and rising)
      confirmed it CUTS — the first sampled frame is already at the destination
@@ -71,7 +73,7 @@ SPIKE-VERDICT: NEGATIVE
      INVALID_OPERATION is not a JavaScript exception, so nothing reaches
      window.onerror and no assertion watching the page would ever see it.
   5. What DOES work: positions swapped in place land pixel-exactly where a
-     first draw of the same geometry lands (0.0004/255 apart, S3 vs S4) — so the
+     first draw of the same geometry lands (0.0002/255 apart, S3 vs S4) — so the
      warp itself is sound. Asked for as an animation it CUTS: 100.0% across at
      the quarter mark of a 3000 ms ease.
 
@@ -80,19 +82,19 @@ SPIKE-VERDICT: NEGATIVE
 ==========================================================================
 
 ---- captures (pos=f64) ----
-shot ref_borough.png            1 borough map, loaded directly               1.8s  ok
+shot ref_borough.png            1 borough map, loaded directly               1.7s  ok
 
 shot split_crack.png            2 the crack, just after the swap             2.0s  ok
-shot split_25.png               2 split mid-flight                                landed at 26.9% of a 3000 ms split
-shot split_50.png               2 split mid-flight                                landed at 51.9% of a 3000 ms split
-shot split_75.png               2 split mid-flight                                landed at 77.3% of a 3000 ms split
-shot split_end.png              2 split end-state                            5.9s  ok
-     {"status": {"ready": true, "errors": 0, "tier": "ward", "drawn": null, "s": 1, "posPhase": 2, "w2b": true}, "log": ["split", "seed+4", "watchdog+539", "crack+539", "animate+569", "finalise+3633"]}
+shot split_25.png               2 split mid-flight                                landed at 28.9% of a 3000 ms split
+shot split_50.png               2 split mid-flight                                landed at 52.2% of a 3000 ms split
+shot split_75.png               2 split mid-flight                                landed at 77.2% of a 3000 ms split
+shot split_end.png              2 split end-state                            5.8s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "ward", "drawn": null, "s": 1, "posPhase": 2, "w2b": true}, "log": ["split", "seed+5", "watchdog+545", "crack+546", "animate+580", "finalise+3641"]}
 
-shot merge_p1_50.png            3 merge phase 1: values + seams                   landed at 52.0% of phase 1 (3000 ms)
-shot merge_p2_50.png            3 merge phase 2: outlines alone                   landed at 51.6% of phase 2 (2625 ms)
+shot merge_p1_50.png            3 merge phase 1: values + seams                   landed at 51.9% of phase 1 (3000 ms)
+shot merge_p2_50.png            3 merge phase 2: outlines alone                   landed at 51.7% of phase 2 (2625 ms)
 shot merge_end.png              3 merge end-state                            7.9s  ok
-     {"status": {"ready": true, "errors": 0, "tier": "borough", "drawn": null, "s": 1, "posPhase": 2, "w2b": true}, "log": ["merge", "phase1+4", "phase2+3067", "finalise+5756"]}
+     {"status": {"ready": true, "errors": 0, "tier": "borough", "drawn": null, "s": 1, "posPhase": 2, "w2b": true}, "log": ["merge", "phase1+6", "phase2+3072", "finalise+5762"]}
 
 ---- assertions ----
 PASS 1 BOOT: ready, errors 0, and the ward->borough mapping was CHECKED, not assumed
@@ -100,15 +102,15 @@ PASS 1 BOOT: ready, errors 0, and the ward->borough mapping was CHECKED, not ass
      ward tier: 689 features, 50738 vertices; positions f64
 
 FAIL S SPIKE: getPolygon position transitions animate
-     f64 with the transition declared: ink 0.0363 vs control 0.3166, MAD 16.9966, WebGL errors 12
-     f32 with the transition declared: ink 0.0363 vs control 0.3166, MAD 16.9966, WebGL errors 12
-     pass S4 in-place position swap == a first draw of the same geometry (0.0004/255)
+     f64 with the transition declared: ink 0.0363 vs control 0.3166, MAD 16.9966, WebGL errors 12, precision confirmed True
+     f32 with the transition declared: ink 0.0363 vs control 0.3166, MAD 16.9966, WebGL errors 12, precision confirmed True
+     pass S4 in-place position swap == a first draw of the same geometry (0.0002/255)
      S5 asked for as an animation: 100.00% -> 100.00% -> 100.00% across (a cut lands on 100/100/100)
      THE VERDICT IS THE FINDING, and the non-zero exit code below records it.
 
 PASS ref_ward.png vs split_end.png
      2 SPLIT END-STATE: the cracked-open wards heal into exactly the ward map
-     MAD 0.0001/255 (limit 2.0)   pixels >12/255: 1 of 1220800 = 0.0001% (limit 0.5%)   max channel diff 25
+     MAD 0.0004/255 (limit 2.0)   pixels >12/255: 23 of 1220800 = 0.0019% (limit 0.5%)   max channel diff 33
 
 PASS ref_borough.png vs merge_end.png
      3 MERGE END-STATE: the wards converge and hand back to exactly the borough map
@@ -120,10 +122,10 @@ PASS ref_borough.png vs merge_end.png
      knowing what the spike found: the VALUES still tween (colour and height keep
      their transitions and v0 proved those), and the OUTLINES cut.
        split_crack.png   the swap, at s=0.92: every ward boundary is a gap of ground
-       split_%d.png      26.9 / 51.9 / 77.3% of the 3000 ms split — values sliding,
+       split_%d.png      28.9 / 52.2 / 77.2% of the 3000 ms split — values sliding,
                          outlines already home
-       merge_p1_50.png   52.0% of phase 1 — values converging, seams already open
-       merge_p2_50.png   51.6% of phase 2 — the seams' one instant close
+       merge_p1_50.png   51.9% of phase 1 — values converging, seams already open
+       merge_p2_50.png   51.7% of phase 2 — the seams' one instant close
 
 ---- UNTESTED-BY-DRIVER (left to the human eye) ----
   * whether style B reads better than style A. That is the whole

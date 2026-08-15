@@ -680,8 +680,18 @@ def main():
             inkT = ink(OUT / fname)
             d = mad_of(OUT / "ref_ward.png", OUT / fname)
             blank = inkT < ink_ctl / 4.0
+            # THE PRECISION ARM HAS TO PROVE IT RAN. Both arms of this loop
+            # produce a blank map, and a blank map is a blank map whatever the
+            # positions are made of — so identical numbers are exactly what a
+            # ?pos=f32 that never took effect would also produce. The page
+            # publishes which buffer type it actually built; this reads it back.
+            got_pos = mtT.get("pos")
+            pos_ok = got_pos == pos_
             spike[pos_] = {"ink": inkT, "mad": d, "blank": blank, "gl": gl,
-                           "errors": stT.get("errors")}
+                           "errors": stT.get("errors"), "pos_ok": pos_ok}
+            ok_all &= pos_ok
+            log("     %s the page really built its ward positions as %s (it "
+                "reports %s)" % ("pass" if pos_ok else "FAIL", pos_, got_pos))
             log("     ink %.4f (control %.4f)   MAD vs the control %.4f/255"
                 % (inkT, ink_ctl, d))
             log("     the page's own error count: %s — nothing was thrown"
@@ -943,14 +953,11 @@ def main():
 
         log("%s S SPIKE: getPolygon position transitions animate"
             % ("PASS" if spike_ok else "FAIL"))
-        log("     f64 with the transition declared: ink %.4f vs control %.4f, "
-            "MAD %.4f, WebGL errors %d"
-            % (spike["f64"]["ink"], ink_ctl, spike["f64"]["mad"],
-               len(spike["f64"]["gl"])))
-        log("     f32 with the transition declared: ink %.4f vs control %.4f, "
-            "MAD %.4f, WebGL errors %d"
-            % (spike["f32"]["ink"], ink_ctl, spike["f32"]["mad"],
-               len(spike["f32"]["gl"])))
+        for pos_ in ("f64", "f32"):
+            log("     %s with the transition declared: ink %.4f vs control "
+                "%.4f, MAD %.4f, WebGL errors %d, precision confirmed %s"
+                % (pos_, spike[pos_]["ink"], ink_ctl, spike[pos_]["mad"],
+                   len(spike[pos_]["gl"]), spike[pos_]["pos_ok"]))
         log("     %s S4 in-place position swap == a first draw of the same "
             "geometry (%.4f/255)"
             % ("pass" if inplace_ok else "FAIL", d_ground))
