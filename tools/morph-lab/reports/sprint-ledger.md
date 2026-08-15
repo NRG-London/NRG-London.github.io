@@ -48,3 +48,6 @@
 - Task 4: complete (commits ff6ca18..fd1c97c, review clean after 1 fix round — built-in transitions NEGATIVE proven at mechanism level; CPU warp POSITIVE, three-beat choreography, ward↔borough only)
 - Task 5 (added, plan "Done" definition): hub page checklist + variant summaries. Dispatched.
 - Task 2: fix round 1/5 RESULT (commit 35df68f): PROGRESSION 33.55→72.70→97.72% (morph slides), endpoints 0–5 px, plateau 0.0445/255. Learnings for V1: SNAP_MS=1 (deck 9 treats duration:0 as UNSET → full-length animation); afterCommit must wait TWO commits (created ≠ applied); destination layer needs snap at FINALISE (hidden-painted layer's first draw otherwise fades up); residual 211 ms worst-frame at seed (basis attr upload on visibility flip); progression metric has ~24% floor from borough outlines flipping on at ANIMATE (metric artifact). Implementer withdrew always-visible-basis pivot. Proceeding to full task review (base a9d0baf).
+
+- Task 5: complete (hub driving guide + eye checklist, commit 81cd914; final-review fix wave 5933572 verified — all items ADDRESSED)
+- FINAL: whole-branch review READY TO MERGE (no Criticals; fix wave clean). Branch c59aa9c..5933572, working tree clean except user's own content/_index.md edit. Workspace deleted; record preserved at tools/morph-lab/reports/.
