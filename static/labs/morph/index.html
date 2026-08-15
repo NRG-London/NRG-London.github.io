@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>[LAB] Geography-morph workbench</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body{background:#12151a;color:#d7dae0;font:16px/1.5 system-ui,sans-serif;max-width:38em;margin:2em auto;padding:0 1em}
+  h1{color:#fff;font-size:1.4em}
+  a{color:#7ab8ff}
+  li{margin-bottom:.6em}
+  code{background:#1e232b;padding:.1em .3em;border-radius:3px}
+  section{margin-top:2em;border-top:1px solid #2a303a;padding-top:1em}
+  h3{color:#fff;font-size:1.05em;margin-bottom:.3em}
+  label{display:block;margin-bottom:.4em}
+  .ev{color:#9aa2ad;font-size:.92em;margin:.2em 0 .8em}
+</style>
+</head>
+<body>
+<h1>Geography-morph workbench</h1>
+<p>This is a temporary prototype workbench for morphing between geography levels on the census map.</p>
+<ul>
+  <li><a href="v0/"><code>v0/</code></a> — minimal harness: split/merge value-morph on the OA basis (buttons, duration/easing controls, HUD)</li>
+  <li><a href="v1/"><code>v1/</code></a> — full census map with the curtain replaced by the morph (<code>?morph=0</code> restores the curtain; <code>?hud=1</code> overlay)</li>
+  <li><a href="v2/"><code>v2/</code></a> — boundary-warp experiment: wards crack apart out of a borough block and heal back. <strong>Two verdicts.</strong> deck.gl's own transitions cannot tween <code>getPolygon</code> here — declaring one blanks the layer outright, silently (<a href="v2/?postrans=1"><code>?postrans=1</code></a> reproduces it). Driving the warp from <code>requestAnimationFrame</code> instead <em>does</em> animate it, at ~25&ndash;46&nbsp;fps. Outlines and values cannot move at the same time, so each choreography plays them as separate beats. Stills of the crack: <a href="v2/?s0=0.92"><code>?s0=0.92</code></a>, <a href="v2/?s0=0.8"><code>?s0=0.8</code></a>. Numbers in <code>tools/morph-lab/captures/v2/RESULTS.txt</code>.</li>
+</ul>
+<section id="notes">
+<h2>Driving guide</h2>
+<p>The three prototypes are built and self-verified. What's left is aesthetic — judgment calls only a human eye can make. Drive each page from the links below, then work the checklist underneath.</p>
+
+<h3>v0 — minimal harness</h3>
+<p>Buttons, duration, and easing controls over a bare split/merge value-morph on the OA basis.</p>
+<p class="ev">Morph proven to slide, not snap: mid-flight progression 33.8% &rarr; 73.3% &rarr; 98.0%, endpoints land &le;1&nbsp;px off, plateau (OA painted with borough values vs. the true borough map) MAD 0.045/255.</p>
+<p class="ev">Zooming mid-morph in v0 (only) restarts the transition &mdash; v0 predates the polyData fix that v1 carries. Judge that behaviour in v1, not v0.</p>
+<p><a href="v0/"><code>v0/</code></a></p>
+
+<h3>v1 — full map, morph replaces the curtain</h3>
+<p>The production census map with the loading curtain swapped for the morph. 12/12 driver assertions pass.</p>
+<p class="ev"><code>?morph=0</code> restores the original curtain for a side-by-side A/B; <code>?hud=1</code> overlays a frame-time HUD.</p>
+<p>
+  <a href="v1/"><code>v1/</code></a> &middot;
+  <a href="v1/?morph=0"><code>v1/?morph=0</code></a> &middot;
+  <a href="v1/?hud=1"><code>v1/?hud=1</code></a>
+</p>
+
+<h3>v2 — boundary warp, ward&harr;borough</h3>
+<p>Wards crack apart out of a borough block and heal back, instead of a value-only morph.</p>
+<p class="ev">deck.gl's built-in position transitions BLANK the layer outright (repro preserved at <code>?postrans=1</code>). The CPU-driven warp works instead: ~25&ndash;46&nbsp;fps, but outlines and values can't move together, so the choreography plays as three separate beats (crack &rarr; values &rarr; heal).</p>
+<p>
+  <a href="v2/"><code>v2/</code></a> &middot;
+  <a href="v2/?postrans=1"><code>v2/?postrans=1</code></a>
+</p>
+
+<h2>Eye checklist</h2>
+<p>No persistence — just work down the list on each page.</p>
+
+<h3>v1</h3>
+<label><input type="checkbox"> Borough &rarr; ward and back: does the split/merge read as one map refining, or as a wipe?</label>
+<label><input type="checkbox"> Are the two swap frames (seed / finalise) actually invisible, or can you catch a flash?</label>
+<label><input type="checkbox"> Plateau seam shimmer: do the coplanar solids' shared edges sparkle while rotating/tilting?</label>
+<label><input type="checkbox"> pcon &harr; gla (non-nested): does the churn read as legible, or just noisy?</label>
+<label><input type="checkbox"> Zoom across ~12.6 in Census Areas mode: does the auto lsoa&harr;oa morph feel right as a gesture?</label>
+<label><input type="checkbox"> Rapid pill-clicking: any stutter, stuck state, or visual glitch?</label>
+<label><input type="checkbox"> Rotate/zoom the camera mid-morph: does it hold up?</label>
+<label><input type="checkbox"> <code>?morph=0</code> side by side: morph vs. curtain &mdash; which wins?</label>
+
+<h3>v2</h3>
+<label><input type="checkbox"> Does the crack/heal read as one continuous gesture, or as three visible beats?</label>
+<label><input type="checkbox"> Is the ~1.1s split too slow?</label>
+<label><input type="checkbox"> Inset slider: where's the sweet spot for the crack gap?</label>
+<label><input type="checkbox"> Overall verdict: style A (v1, value-morph) vs. style B (v2, boundary-warp) &mdash; which one ships?</label>
+
+<h2>How to run</h2>
+<p><code>hugo server</code> from the repo root, then <a href="http://localhost:1313/labs/morph/">http://localhost:1313/labs/morph/</a> &mdash; the data must be served over HTTP, <code>file://</code> won't load it.</p>
+
+<p class="ev">Everything on this page is throwaway lab work on branch <code>labs/morph</code>. It goes live only if and when <code>labs/morph</code> is merged to <code>main</code> &mdash; until then, and even after, this page stays unlinked and noindexed.</p>
+</section>
+</body>
+</html>

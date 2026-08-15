@@ -1,0 +1,156 @@
+driver     capture_v1.py
+browser    C:\Program Files\Google\Chrome\Application\chrome.exe
+serving    C:\Users\neilg\OneDrive\Documents\neilgarratt.com\Neil_Garratt_Hugo_Site\static  ->  http://127.0.0.1:63217/labs/morph/v1/
+viewport   1400x950, FULL-FRAME comparison — no crop, because the lab's status nodes are
+           display:none and the HUD is off unless ?hud=1
+settle     1.6s before every committed capture, which outlasts the 1.01s peak pulse
+
+probe [real GPU                              ] boot  {"ready": true, "errors": 0, "tier": "borough", "morphBasis": null, "switching": false, "morphReady": true}
+                                             morph ["borough->ward", "seed+6", "animate+251", "finalise+1064"]
+
+PASS probe  boots and morphs to finalise under [real GPU]
+
+---- captures ----
+shot a1_ref_borough.png       A1 boot ?morph=0, curtain build sanity         4.9s  ok
+shot a2_ref_ward.png          A2 ward, loaded directly                       2.3s  ok
+shot a2_morph_ward.png        A2 default boot -> ward, morphed               3.6s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "ward", "morphBasis": null, "switching": false, "morphReady": true}, "log": ["lsoa->ward", "seed+5", "animate+160", "finalise+972"]}
+shot a3_ref_gla.png           A3 gla, loaded directly                        2.2s  ok
+shot a3_morph_gla.png         A3 pcon -> gla (non-nested)                    3.6s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "gla", "morphBasis": null, "switching": false, "morphReady": true}, "log": ["pcon->gla", "seed+4", "animate+179", "finalise+991"]}
+shot a3_morph_borough.png     A3 ward -> borough (merge)                     3.5s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "borough", "morphBasis": null, "switching": false, "morphReady": true}, "log": ["ward->borough", "seed+2", "animate+146", "finalise+958"]}
+
+shot a4_from.png              A4 seed frame — the honest zero                1.3s  ok
+shot a4_mid25.png             A4 mid-flight                                       landed at 26.9% of a 3000 ms morph
+shot a4_mid50.png             A4 mid-flight                                       landed at 52.3% of a 3000 ms morph
+shot a4_mid75.png             A4 mid-flight                                       landed at 77.4% of a 3000 ms morph
+
+shot a5_interrupt_ward.png    A5 borough->pcon, retargeted to ward           3.7s  ok
+     at +300 ms: {"ready": false, "errors": 0, "tier": "pcon", "morphBasis": "oa", "switching": true, "morphReady": true}
+     final:      {"ready": true, "errors": 0, "tier": "ward", "morphBasis": null, "switching": false, "morphReady": true}
+     log:        ["pcon->ward", "seed+0", "animate+17", "finalise+829"]
+
+shot a6_meas_mid/end.png      A6 measure change after a morph                5.7s  ok
+     three frames sampled at 120, 260, 480 ms into the 750 ms ease
+
+shot a7_ref_oa.png            A7 oa / resident_under5y, loaded directly      2.5s  ok
+shot a7_morph_oa.png          A7 lsoa -> oa under suppression                3.6s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "oa", "morphBasis": null, "switching": false, "morphReady": true}, "log": ["lsoa->oa", "seed+4", "animate+153", "finalise+975"]}
+
+shot a8_ref_change.png        A8 ward change view, loaded directly           2.2s  ok
+shot a8_morph_change.png      A8 change view, borough -> ward                3.5s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "ward", "morphBasis": null, "switching": false, "morphReady": true}, "log": ["borough->ward", "seed+2", "animate+165", "finalise+976"]}
+
+shot -                        A9 street mode keeps the curtain               3.7s  ok
+     130 state samples across the switch, morphActive true in 0
+
+shot a10_zoom_mid75.png       A10 zoom during morph                          5.8s  ok
+     curElevScale 1 -> 0.11323210104515069 -> 1 across the nudge; frame landed at 77.2% of the morph
+     log: ["borough->ward", "seed+3", "animate+183", "finalise+3246"]
+
+shot -                        A11 reduced motion switches instantly          2.4s  ok
+     TRANSITION=0  MORPH_DUR=0  94 samples, morphActive true in 0
+
+shot -                        A12 morph with an unpainted basis              4.4s  ok
+     READY.oa.painted cleared to null; 78 samples across the switch, morphActive true in 31
+     log: ["borough->ward", "seed+3", "animate+167", "finalise+980"]
+
+---- assertions ----
+PASS A1 boot with ?morph=0: page ready, errors 0 (curtain build sanity)
+
+PASS a2_ref_ward.png vs a2_morph_ward.png
+     A2 endpoint: the default view morphed to ward through the real pill path lands on the ward map
+     MAD 0.0002/255 (limit 2.0)   pixels >12/255: 16 of 1330000 = 0.0012% (limit 0.5%)   max channel diff 33
+
+PASS a3_ref_gla.png vs a3_morph_gla.png
+     A3 endpoint, non-nested: pcon -> gla lands on the Assembly-seat map
+     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1330000 = 0.0000% (limit 0.5%)   max channel diff 1
+
+PASS a1_ref_borough.png vs a3_morph_borough.png
+     A3 endpoint, merge direction: ward -> borough lands on the borough map, borough outlines stepping back out
+     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1330000 = 0.0000% (limit 0.5%)   max channel diff 1
+
+A4 mid-flight progression: does the morph SLIDE?
+     the seed frame and the ward map are 4.4052/255 apart
+     a4_mid25   0.3422 from the seed,  4.1943 from the ward end  ->   7.77% across   (frame landed at 26.9%)
+     a4_mid50   2.4152 from the seed,  2.5582 from the ward end  ->  54.82% across   (frame landed at 52.3%)
+     a4_mid75   4.1844 from the seed,  0.3957 from the ward end  ->  94.99% across   (frame landed at 77.4%)
+     pass strictly increasing
+     pass p25 >= 1.0%
+     pass p50 within 10-90%
+     pass p75 <= 99.9%
+PASS A4 the morph interpolates: 7.77% -> 54.82% -> 94.99%
+
+PASS a2_ref_ward.png vs a5_interrupt_ward.png
+     A5 interrupt: borough->pcon retargeted to ward 300 ms in, landing exactly on the ward map
+     MAD 0.0003/255 (limit 2.0)   pixels >12/255: 19 of 1330000 = 0.0014% (limit 0.5%)   max channel diff 33
+     pass a morph really was in flight when the second pill was clicked
+     pass no stuck morphBasis and no stuck switching afterwards
+
+A6 a measure change AFTER a morph still animates (the snap-poisoning regression)
+     zero is the settled ward map on the OLD measure, so the chrome the change rewrites
+     (title, legend, active pill) is a fixed part of every number below — which is why
+     the claim is that they INCREASE, not that any one of them equals the easing.
+        120 ms after the change  ->   45.66% across
+        260 ms after the change  ->   57.12% across
+        480 ms after the change  ->   92.22% across
+     pass the first frame is strictly between the two ends (>2% and <98%)
+     pass the three frames strictly increase — so it slides rather than cutting or stalling
+PASS A6 the measure change after a morph still animates
+
+PASS a7_ref_oa.png vs a7_morph_oa.png
+     A7 suppression: lsoa -> oa on resident_under5y, whose denominator suppresses 294 output areas and none at any coarser grain
+     MAD 0.0001/255 (limit 2.0)   pixels >12/255: 3 of 1330000 = 0.0002% (limit 0.5%)   max channel diff 27
+
+PASS a8_ref_change.png vs a8_morph_change.png
+     A8 change view: 2011->2021 at borough, morphed to ward, landing on the directly loaded change view
+     MAD 0.0003/255 (limit 2.0)   pixels >12/255: 24 of 1330000 = 0.0018% (limit 0.5%)   max channel diff 26
+
+PASS A9 street mode never morphed: morphActive false in all 130 samples across the switch, errors 0
+
+PASS a2_ref_ward.png vs <a10 final frame, in memory>
+     A10 endpoint after a mid-flight zoom still lands on the ward map
+     MAD 0.0003/255 (limit 2.0)   pixels >12/255: 18 of 1330000 = 0.0014% (limit 0.5%)   max channel diff 35
+     pass elevationScale really did move and come back (1 -> 0.11323210104515069 -> 1)
+     a10_zoom_mid75 is 95.00% across, against a4_mid75's 94.99% (drift 0.02 pts, limit 15)
+     A RESTART WOULD SHOW HERE, and did before the fix: this frame came in at 36.39%
+     against a4_mid75's 94.99%, a drift of 58.6 points. The cause was NOT the scale — a
+     bare redraw() with no scale change at all did the same damage (91% -> 37% at the
+     70% mark) — it was polyLayer handing deck.gl a fresh data.attributes object on every
+     redraw, which it reads as the attributes having changed. polyData() now caches that
+     object per tier, keyed on the paint counter.
+PASS A10 the in-flight transition survived the elevationScale redraws
+
+PASS A11 reduced motion: TRANSITION 0, no morph in 94 samples, the switch lands instantly
+
+PASS a2_ref_ward.png vs <a12 final frame, in memory>
+     A12 a morph started with an UNPAINTED basis still lands on the ward map
+     MAD 0.0002/255 (limit 2.0)   pixels >12/255: 8 of 1330000 = 0.0006% (limit 0.5%)   max channel diff 33
+     pass it really morphed rather than falling back to the curtain (morphActive true in 31 of 78 samples)
+     WITH morphReady() REQUIRING B.painted THIS CURTAINED: morphActive
+     stayed false for the whole switch and for every switch after it,
+     while #v1status.morphReady — the field this driver gates on — said true.
+PASS A12 an unpainted basis is a morph that pays its own tessellation, not a dead one
+
+---- UNTESTED-BY-DRIVER (left to the human eye) ----
+  * the real zoom-gesture lsoa<->oa auto-switch, AS A GESTURE. This
+    driver forces the tier through __setArea and elevationScale
+    through __applyZoom, so how crossing the threshold mid-drag feels
+    is unjudged. (A7 does morph lsoa->oa, just not by dragging.)
+  * plateau seam shimmer under rotation and tilt. The plateau is
+    26,369 coplanar solids; whether their shared edges sparkle as the
+    camera moves is not a still-frame question.
+  * overall aesthetics: whether a split reads as one map refining
+    rather than as a wipe, and whether 750 ms is the right length.
+  * the ~210 ms seed frame v0 measured, AS FELT on a click. It is
+    still there — ?hud=1 shows it — and whether it reads as lag on
+    the click is a judgement no assertion here makes.
+  * street mode keeps the curtain deliberately; whether that is the
+    right call over a pale basemap is a design question, not a bug.
+  * the borough outlines coming on at t=0 of a borough->ward switch.
+    That is inherited production behaviour (the curtain does it too),
+    and A4 measures against it rather than around it — but whether it
+    reads as a pop is an eye question.
+
+RESULT ALL ASSERTIONS PASS
