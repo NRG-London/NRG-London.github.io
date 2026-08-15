@@ -1,15 +1,19 @@
 {{- /*
-  London Population — embeds the deck.gl 3D census map: 54 measures from the
-  2021 census across 8 thematic groups, over six selectable area types —
-  Assembly seats, boroughs, constituencies, wards, and census neighbourhoods
-  refining to 26,369 output areas as you zoom in.
+  London Population — embeds the deck.gl 3D census map: 54 measures across 8
+  thematic groups, over six selectable area types — Assembly seats, boroughs,
+  constituencies, wards, and census neighbourhoods refining to 26,369 output
+  areas as you zoom in — at BOTH the 2021 and 2011 censuses (48 of the 54),
+  with a change view between them. 2011 is counted on 2021 boundaries, so a
+  year switch changes the numbers and never the shapes.
 
   Sibling of crime-skyline / crime-hotspots / yorkshire-hotspots — same frame,
   fallback and full-screen machinery. One important difference:
 
     THIS EMBED FETCHES ITS DATA. The other three inline everything into one
-    HTML (crime-hotspots is ~10 MB); this page is ~150 KB and pulls binary
-    payloads from /interactive/london-population/d/ as you use it. So it is
+    HTML (crime-hotspots is ~10 MB); this page is ~225 KB and pulls binary
+    payloads from /interactive/london-population/d/ as you use it — one year,
+    one area type and one theme at a time, so the second census costs a reader
+    nothing unless they ask for it. So it is
     NOT loading="lazy" — at this size there is nothing to defer, and eager
     loading means the map is ready by the time the reader scrolls to it.
 
@@ -50,13 +54,13 @@
 </style>
 <figure class="london-population" id="london-population">
   <div class="cs-box">
-    <img src="/images/charts/london-population/london-population-hero.jpg?v=8"
+    <img src="/images/charts/london-population/london-population-hero.jpg?v=9"
          alt="3D map of degree-level qualifications across London's 75 parliamentary constituencies from the 2021 census — pale, taller seats in the south-west and inner west, darker and lower ones towards the outer east."
          loading="lazy">
     <button type="button" class="cs-btn cs-close">&#10005;&nbsp;Close</button>
   </div>
   <div class="cs-bar">
-    <span>Mapping London's population &mdash; Census 2021, shown by constituency, borough, Assembly seat, ward, or census areas that refine to 26,369 output areas as you zoom in &mdash; drag to rotate and tilt; pick an area type, then a theme and a measure, and hover anywhere for its figures &mdash; including where it ranks. The highest areas ping when you pick a measure; click the same measure again to replay it. Switch the base to a street map, or hide the data, to get your bearings.</span>
+    <span>Mapping London's population &mdash; the 2011 and 2021 censuses, shown by constituency, borough, Assembly seat, ward, or census areas that refine to 26,369 output areas as you zoom in &mdash; drag to rotate and tilt; pick a year, an area type, then a theme and a measure, and hover anywhere for both censuses' figures and where the area ranks. Choose Change to map the movement between them. The highest areas ping when you pick a measure; click the same measure again to replay it. Switch the base to a street map, or hide the data, to get your bearings.</span>
     <button type="button" class="cs-btn cs-expand" hidden>&#10530;&nbsp;Full screen</button>
   </div>
 </figure>
@@ -72,8 +76,8 @@
     // No loading="lazy": the page itself is ~150 KB and fetches its data on
     // demand, so there is no heavy embed to defer — and loading it eagerly
     // means the geometry is resident before the reader arrives.
-    f.src='/interactive/london-population/?v=8';
-    f.title="Interactive 3D map of London's population from the 2021 census";
+    f.src='/interactive/london-population/?v=9';
+    f.title="Interactive 3D map of London's population from the 2011 and 2021 censuses";
     f.setAttribute('scrolling','no'); f.setAttribute('allow','fullscreen'); f.setAttribute('allowfullscreen','');
     box.insertBefore(f, box.firstChild);
     box.querySelector('img').style.display='none';
