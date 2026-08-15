@@ -358,7 +358,8 @@ def kill(p, profile):
 STATE_JS = """JSON.stringify({
   q: location.search,
   s: (document.getElementById('v0status')||{}).textContent || '',
-  m: (document.getElementById('v0meta')||{}).textContent || ''
+  m: (document.getElementById('v0meta')||{}).textContent || '',
+  e: (document.getElementById('v0err')||{}).textContent || ''
 })"""
 
 _nav_seq = [0]
@@ -375,21 +376,25 @@ def nav(page, base, query):
 
 def poll(page, token, want, timeout=180, every=0.05):
     """Poll the page's own state until `want(status, meta)` is true on the
-    document identified by `token`."""
+    document identified by `token`. Also returns the page's #v0err text as it
+    stood at the last read, so callers can report a page error even when
+    `want` itself never keyed off it."""
     end = time.time() + timeout
     st = mt = {}
+    err = ""
     while time.time() < end:
         try:
             raw = json.loads(page.evaluate(STATE_JS) or "{}")
             if token in (raw.get("q") or ""):
                 st = json.loads(raw.get("s") or "{}")
                 mt = json.loads(raw.get("m") or "{}")
+                err = raw.get("e") or ""
                 if want(st, mt):
-                    return True, st, mt
+                    return True, st, mt, err
         except Exception:
             pass
         time.sleep(every)
-    return False, st, mt
+    return False, st, mt, err
 
 
 def is_ready(st, mt):
@@ -525,8 +530,10 @@ def main():
             try:
                 pg = Page(dport)
                 tok = nav(pg, base, "?morph=borough:ward&when=%d" % WHEN)
-                got, st2, mt2 = poll(pg, tok, finalised, timeout=120)
+                got, st2, mt2, err2 = poll(pg, tok, finalised, timeout=120)
                 log("morph probe [%-38s] %s" % (name, json.dumps(mt2)[:220]))
+                if err2:
+                    log("            page errors: %s" % err2)
                 pg.close()
             finally:
                 kill(p, prof)
@@ -557,13 +564,17 @@ def main():
                 path.unlink()
             t0 = time.time()
             tok = nav(page, base, query)
-            got, st, mt = poll(page, tok, wait_for, timeout=180)
+            got, st, mt, err = poll(page, tok, wait_for, timeout=180)
             time.sleep(settle)
             page.screenshot(path)
+            ok = got and st.get("errors") == 0
+            status_word = "ok" if ok else ("STATE NOT REACHED" if not got else "PAGE ERROR")
             log("shot %-28s %-34s %5.1fs  %s"
-                % (fname, label, time.time() - t0, "ok" if got else "STATE NOT REACHED"))
+                % (fname, label, time.time() - t0, status_word))
             log("     %s" % json.dumps({"status": st, "log": mt.get("log")}))
-            return got
+            if not ok:
+                log("     page errors (#v0err): %s" % (err or "<empty>"))
+            return ok
 
         ok_all &= shot("s1_show_borough.png", "?show=borough", is_ready, "borough tier, true values")
         ok_all &= shot("s2_plateau_oa_borough.png", "?plateau=oa:borough", is_ready,
@@ -588,13 +599,19 @@ def main():
                 path.unlink()
             t0 = time.time()
             tok = nav(page, base, "?morph=borough:ward&when=%d&dur=%d" % (WHEN, MID_DUR))
-            got, st, mt = poll(page, tok, lambda s, m: any(
+            got, st, mt, err = poll(page, tok, lambda s, m: any(
                 x.startswith("animate") for x in (m.get("log") or [])), timeout=180)
             time.sleep(max(0.0, frac * MID_DUR / 1000.0 - 0.10))
             page.screenshot(path)
+            ok = got and st.get("errors") == 0
+            ok_all &= ok
+            status_word = "ok" if ok else ("ANIMATE NOT REACHED" if not got else "PAGE ERROR")
             log("shot %-28s %-34s %5.1fs  %s"
                 % (fname, "%d%% of a %d ms morph" % (frac * 100, MID_DUR),
-                   time.time() - t0, "ok" if got else "ANIMATE NOT REACHED"))
+                   time.time() - t0, status_word))
+            if not ok:
+                log("     %s" % json.dumps({"status": st, "log": mt.get("log")}))
+                log("     page errors (#v0err): %s" % (err or "<empty>"))
 
         page.close()
 
