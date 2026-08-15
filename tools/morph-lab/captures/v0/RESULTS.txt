@@ -1,0 +1,48 @@
+driver     capture_v0.py
+browser    C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe
+serving    C:\Users\neilg\OneDrive\Documents\neilgarratt.com\Neil_Garratt_Hugo_Site\static  ->  http://127.0.0.1:64698/labs/morph/v0/
+
+boot probe  [real GPU                              ] {"ready":true,"errors":0,"tier":"borough","morphBasis":null}  (4.5s)
+morph probe [real GPU                              ] {"readyAt": 1339, "transition": 750, "dur": 750, "paintMs": 6.4, "now": 4051, "renders": 75, "ticks": 101, "queued": 0, "log": ["borough->ward", "seed+4", "commit+825", "animate+836", "finalise+1649"]}
+
+PASS boot   --dump-dom of ?show=borough -> {"ready":true,"errors":0,"tier":"borough","morphBasis":null}
+PASS frames a morph reaches finalise under [real GPU]
+
+shot s1_show_borough.png          borough tier, true values            3.3s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "borough", "morphBasis": null}, "log": []}
+shot s2_plateau_oa_borough.png    OA basis, borough values             1.4s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "borough", "morphBasis": "oa"}, "log": []}
+shot s3_show_ward.png             ward tier, true values               1.6s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "ward", "morphBasis": null}, "log": []}
+shot s4_morph_borough_ward.png    borough->ward, after finalise        2.9s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "ward", "morphBasis": null}, "log": ["borough->ward", "seed+6", "commit+253", "animate+258", "finalise+1071"]}
+shot s5_show_gla.png              gla tier, true values                1.4s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "gla", "morphBasis": null}, "log": []}
+shot s6_morph_pcon_gla.png        pcon->gla, after finalise            2.7s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "gla", "morphBasis": null}, "log": ["pcon->gla", "seed+5", "commit+228", "animate+230", "finalise+1043"]}
+shot mid_25.png                   25% of a 3000 ms morph               2.4s  ok
+shot mid_50.png                   50% of a 3000 ms morph               3.2s  ok
+shot mid_75.png                   75% of a 3000 ms morph               3.9s  ok
+
+---- assertions ----
+PASS s1_show_borough.png vs s2_plateau_oa_borough.png
+     the plateau claim: 26,369 output areas painted with their borough's value == the 33-borough map
+     MAD 0.0445/255 (limit 2.0)   pixels >12/255: 419 of 1220800 = 0.0343% (limit 0.5%)   max channel diff 99
+
+PASS s3_show_ward.png vs s4_morph_borough_ward.png
+     nested pair: borough->ward morph lands exactly on the ward map
+     MAD 0.0003/255 (limit 2.0)   pixels >12/255: 15 of 1220800 = 0.0012% (limit 0.5%)   max channel diff 37
+
+PASS s5_show_gla.png vs s6_morph_pcon_gla.png
+     non-nested pair: pcon->gla morph lands exactly on the Assembly-seat map
+     MAD 0.0001/255 (limit 2.0)   pixels >12/255: 4 of 1220800 = 0.0003% (limit 0.5%)   max channel diff 26
+
+---- mid-flight position: a diagnostic, not an assertion ----
+Where each mid-flight frame sits between the two endpoints. A morph
+that INTERPOLATES would put them near 25/50/75% of the way across.
+     borough and ward are 6.2071/255 apart
+     mid_25.png  6.2235 from the borough start,  0.0310 from the ward end   -> 100.3% across
+     mid_50.png  6.2235 from the borough start,  0.0310 from the ward end   -> 100.3% across
+     mid_75.png  6.2235 from the borough start,  0.0310 from the ward end   -> 100.3% across
+
+RESULT ALL ASSERTIONS PASS
