@@ -437,6 +437,45 @@ def compare(path_a, path_b, label, log):
     return ok
 
 
+# The endpoint assertions prove the morph LANDS in the right place. They would
+# pass just as well if it teleported there, which is exactly what an earlier
+# build did. This is the assertion that the morph SLIDES: three frames sampled
+# across one transition have to sit strictly between the two endpoints and in
+# order. Progress is measured in pixel space — how far each frame has travelled
+# from the borough map towards the ward map — which is not linear in the value
+# space the easing acts on, hence the generous bands.
+P25_FLOOR = 0.01        # by a quarter of the way through, something has moved
+P50_BAND = (0.15, 0.85)  # half way through, genuinely part way across
+P75_CEIL = 0.999        # three quarters through, not already finished
+
+
+def progression(log):
+    start, end = OUT / "s1_show_borough.png", OUT / "s3_show_ward.png"
+    span = mad_of(start, end)
+    log("---- mid-flight progression: does the morph SLIDE? ----")
+    log("     borough and ward are %.4f/255 apart" % span)
+    p = {}
+    for frac in (25, 50, 75):
+        f = OUT / ("mid_%d.png" % frac)
+        da, db = mad_of(f, start), mad_of(f, end)
+        p[frac] = da / span if span else 0.0
+        log("     mid_%d  %7.4f from the borough start, %7.4f from the ward end"
+            "   -> %6.2f%% across" % (frac, da, db, 100 * p[frac]))
+    checks = [
+        ("strictly increasing", p[25] < p[50] < p[75]),
+        ("p25 >= %.1f%%" % (100 * P25_FLOOR), p[25] >= P25_FLOOR),
+        ("p50 within %.0f-%.0f%%" % (100 * P50_BAND[0], 100 * P50_BAND[1]),
+         P50_BAND[0] <= p[50] <= P50_BAND[1]),
+        ("p75 <= %.1f%%" % (100 * P75_CEIL), p[75] <= P75_CEIL),
+    ]
+    ok = all(c[1] for c in checks)
+    for name, good in checks:
+        log("     %s %s" % ("pass" if good else "FAIL", name))
+    log("%s the morph interpolates: %.2f%% -> %.2f%% -> %.2f%%"
+        % ("PASS" if ok else "FAIL", 100 * p[25], 100 * p[50], 100 * p[75]))
+    return ok
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--browser", help="path to msedge.exe / chrome.exe")
@@ -538,9 +577,10 @@ def main():
                        "?morph=pcon:gla&when=%d" % WHEN, finalised,
                        "pcon->gla, after finalise")
 
-        # Mid-flight frames, for the eye only — no assertion. Run at a
-        # deliberately slow MID_DUR so that the capture round trip (~0.2 s) is a
-        # small share of the transition and the sampled fractions mean something.
+        # Mid-flight frames — the evidence for the progression assertion, and
+        # the only pictures here a human would enjoy. Run at a deliberately slow
+        # MID_DUR so the capture round trip (~0.2 s) is a small share of the
+        # transition and the sampled fractions mean something.
         for frac in (0.25, 0.50, 0.75):
             fname = "mid_%d.png" % int(frac * 100)
             path = OUT / fname
@@ -572,16 +612,7 @@ def main():
                           "non-nested pair: pcon->gla morph lands exactly on the "
                           "Assembly-seat map", log)
         log("")
-        log("---- mid-flight position: a diagnostic, not an assertion ----")
-        log("Where each mid-flight frame sits between the two endpoints. A morph")
-        log("that INTERPOLATES would put them near 25/50/75% of the way across.")
-        start, end = OUT / "s1_show_borough.png", OUT / "s3_show_ward.png"
-        span = mad_of(start, end)
-        log("     borough and ward are %.4f/255 apart" % span)
-        for f in ("mid_25.png", "mid_50.png", "mid_75.png"):
-            da, db = mad_of(OUT / f, start), mad_of(OUT / f, end)
-            log("     %-10s %7.4f from the borough start, %7.4f from the ward end"
-                "   -> %5.1f%% across" % (f, da, db, 100 * da / span if span else 0))
+        ok_all &= progression(log)
         log("")
         log("RESULT %s" % ("ALL ASSERTIONS PASS" if ok_all else "FAILED"))
     finally:

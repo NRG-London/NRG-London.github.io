@@ -559,6 +559,14 @@
   }
   var curElevScale = 1;
 
+  // How long a snapped paint takes. ONE millisecond, not zero: deck.gl 9 treats
+  // a zero duration as "unset" and substitutes its own default, so `duration: 0`
+  // is not a snap at all — it is a full-length animation wearing a snap's
+  // clothes, and the morph then slides out of whatever the seed was supposed to
+  // have replaced. One millisecond is a real duration, so it is honoured, and it
+  // completes on the frame after the one that starts it.
+  var SNAP_MS = 1;
+
   function polyLayer(T, visible) {
     var m = activeMeasure();
     return new deck.SolidPolygonLayer({
@@ -590,42 +598,39 @@
         getFillColor: T.key + ":" + m.key + ":" + (T.phase || 0),
         getElevation: T.key + ":" + m.key + ":" + (T.phase || 0)
       },
-      // SNAP. `duration: T.dur || TRANSITION` means a caller cannot ask for an
-      // instant paint by setting T.dur = 0 — zero is falsy and it silently
-      // animates over the full 750 ms instead. The seed and the finalise of a
-      // morph are both meant to be invisible exchanges, so they need a real
-      // way to say "no transition": T.snap removes the transitions block
-      // altogether, and redraw() clears it once the layer that consumed it has
-      // been built.
+      // SNAP, AND IT IS A ZERO-DURATION TRANSITION RATHER THAN NO TRANSITION.
+      // The seed and the finalise of a morph are both meant to be invisible
+      // exchanges, so they need a way to say "put this on screen now". Two ways
+      // to say it, and only one of them works:
       //
-      // KNOWN DEFECT, MEASURED, NOT YET SOLVED. In deck.gl 9 these attributes
-      // are supplied as binary buffers through `data.attributes`, and such a
-      // buffer only reaches the GPU when the layer is actually DRAWN. Two
-      // consequences, and between them they trap the morph:
+      //   * `transitions: {}` — no transitions object at all. The paint lands
+      //     instantly and looks perfect, and it costs the attribute its
+      //     transition state: the NEXT paint of that attribute does not
+      //     interpolate either, so the morph cuts to its destination instead of
+      //     sliding to it. Measured, and it is silent — the map ends up exactly
+      //     right, just instantly.
+      //   * `duration: 0` inside the normal transitions object — the shape of
+      //     the prop never changes, so deck.gl keeps tracking the attribute and
+      //     keeps the buffer it will interpolate FROM. The seed still lands in
+      //     one frame, and the animate that follows starts from the seeded
+      //     values, which is the whole trick.
       //
-      //   * A layer painted while hidden does not upload. When it is shown, an
-      //     update with transitions live interpolates out of an EMPTY buffer —
-      //     the whole tier lies flat on the ground and grows back.
-      //   * An update issued with `transitions: {}` uploads directly and looks
-      //     perfect, but the NEXT update of that attribute does not interpolate
-      //     either. It cuts.
+      // So T.snap swaps the duration, not the object. `duration: T.dur ||
+      // TRANSITION` is kept for the animated case, and is exactly why a caller
+      // cannot ask for an instant paint through T.dur: zero is falsy there and
+      // would silently animate over the full 750 ms. redraw() clears T.snap
+      // once the layer that consumed it has been built.
       //
-      // The seed needs the first behaviour and the animate needs the second, so
-      // as it stands the morph lands on exactly the right picture (all three
-      // pixel assertions pass) but gets there in a cut rather than a slide.
-      // The same code animates correctly when the seed paint is skipped — a
-      // morph starting at the output areas, where the basis is already both
-      // visible and the source. That points at the fix for v1: the basis layer
-      // must never be hidden and must never be snapped. Since the plateau is
-      // pixel-identical to the real tier's own layer (0.04/255 mean difference,
-      // measured), the basis can simply BE the map, with the per-tier layers
-      // kept only as the reference this harness compares against.
-      transitions: (TRANSITION && !T.snap) ? {
+      // (A layer painted while HIDDEN is fine — production seeds its incoming
+      // area type hidden and its rise animates. It is only the empty
+      // transitions object that breaks the chain.)
+      transitions: TRANSITION ? {
         getFillColor: {
-          duration: T.dur || TRANSITION,
+          duration: T.snap ? SNAP_MS : (T.dur || TRANSITION),
           easing: T.fadeLate ? easeLateFade : (T.ease || easeCubicInOut)
         },
-        getElevation: { duration: T.dur || TRANSITION, easing: T.ease || easeCubicInOut }
+        getElevation: { duration: T.snap ? SNAP_MS : (T.dur || TRANSITION),
+                        easing: T.ease || easeCubicInOut }
       } : {}
     });
   }
@@ -733,16 +738,27 @@
   // renderCount is not decoration: a headless browser can leave this page with
   // a live JS clock and no animation frames at all, and "renders stopped at 3"
   // is the only thing that says so out loud.
+  // `frames` is how many committed renders to wait for, and it defaults to one.
+  // A SNAPPED paint needs TWO. deck.gl creates the zero-duration transition on
+  // the render that first sees the new values, and a transition that has only
+  // been created has not yet been applied — its current value is still the OLD
+  // one. Handing a second paint to the layer at that moment makes the new
+  // transition interpolate from the value the snap was supposed to have
+  // replaced, which for the morph means sliding out of the raw output-area map
+  // rather than out of the plateau. One more frame and the snap has landed.
   var COMMIT_Q = [];
   var renderCount = 0;
-  function afterCommit(cb) { COMMIT_Q.push(cb); }
+  function afterCommit(cb, frames) { COMMIT_Q.push([cb, frames || 1]); }
   function onRendered() {
     renderCount++;
     if (!COMMIT_Q.length) return;
     var q = COMMIT_Q;
     COMMIT_Q = [];
     requestAnimationFrame(function () {
-      for (var i = 0; i < q.length; i++) q[i]();
+      for (var i = 0; i < q.length; i++) {
+        if (--q[i][1] > 0) COMMIT_Q.push(q[i]);
+        else q[i][0]();
+      }
     });
   }
 
@@ -796,11 +812,9 @@
     // is mid-animation, in which case the new one simply retargets it from
     // wherever it has got to.
     //
-    // The snap here is what makes the exchange unseeable, and — see the note on
-    // the transitions block in polyLayer — it is also what stops the ANIMATE
-    // step below from interpolating. Both halves of that are measured; the
-    // captures in tools/morph-lab/captures/v0 are the evidence, and resolving
-    // it is the first job of the next version.
+    // The snap is a ZERO-DURATION transition, not an absent one — see the note
+    // on the transitions block in polyLayer. That is what leaves the basis able
+    // to interpolate on the very next paint, which is the whole morph.
     if (fromKey !== BASIS && morphBasis !== BASIS) {
       B.snap = true;
       paintBasisAs(fromKey);
@@ -815,6 +829,10 @@
     // morph stops dead at the seed with no error anywhere: the map holds a
     // borough picture built out of output areas and never animates. Two lines
     // apart, and the difference between a working morph and a frozen one.
+    //
+    // TWO frames, not one: the seed's zero-duration transition is created on
+    // the first and applied on the second, and the animate has to start from
+    // the applied value or it slides out of the wrong picture.
     afterCommit(function () {
       if (tok !== MORPH.token) return;
       logPhase("commit");
@@ -843,12 +861,17 @@
       MORPH.timer = setTimeout(function () {
         if (tok !== MORPH.token) return;
         // ---- FINALISE. Hand back to the real layer. The basis is holding the
-        // identical picture, so this is invisible. The destination layer was
-        // snap-painted at ANIMATE and must NOT be snapped again here: doing so
-        // rebuilds its attribute with the transitions removed and it comes back
-        // empty. (Measured: it turned both morph assertions from a 0.0002/255
-        // match into a 17/255 miss.)
+        // identical picture, so this is invisible.
+        //
+        // The destination is snapped AGAIN here. It was painted at ANIMATE, but
+        // it was hidden then and a hidden layer is not drawn, so the paint has
+        // not reached the screen; the draw it gets at this moment is its first,
+        // and without the snap deck.gl gives it a full-length transition and the
+        // tier we just morphed to fades up over three quarters of a second.
+        // Measured before this line existed: the two end-state assertions came
+        // in at 0.98 and 1.85 of 255 instead of 0.0001.
         morphBasis = null;
+        if (READY[toKey]) READY[toKey].snap = true;
         B.dur = null;
         B.ease = null;
         redraw();
@@ -856,7 +879,7 @@
         setStatus();
       }, dur + 60);
       setStatus();
-    });
+    }, 2);
 
     // Always a redraw, even when the seed paint above was skipped: it is what
     // guarantees the render the armed callback is hanging on.
@@ -1067,25 +1090,43 @@
       if (!pa) throw new Error("no parents for " + t);
       if (pa.length !== n) throw new Error(t + ": " + pa.length + " parents for " + n + " OAs");
     });
-    // All six painted once, snapped, so that the first time any of them is
-    // drawn the values go straight to the GPU rather than being animated out
-    // of an empty buffer.
+    // All six painted once and snapped, and all six left in the layer stack
+    // from here on with only their visibility flipped, so deck.gl keeps the
+    // tessellation and a morph is a uniform flip rather than a rebuild.
     var m = activeMeasure();
     TIER_KEYS.forEach(function (t) {
       var T = READY[t];
       T.snap = true;
       paint(T, VALS[t].vals, m, VALS[t].nd);
     });
-    curTier = "borough";
+
+    // WARM THE BASIS: one drawn frame, alone, snapped so nothing moves.
+    // Painting a layer is cheap; DRAWING it for the first time is not, because
+    // that is when deck.gl tessellates it and uploads its buffers — a few
+    // hundred milliseconds for 26,369 output areas. Left to itself that bill
+    // arrives on the seed frame of the first morph, which is the one frame of
+    // the whole interaction that must not stutter. Paying it here costs the
+    // load one frame and nobody sees it.
+    var B0 = READY[BASIS];
+    B0.snap = true;
+    curTier = BASIS;
     morphBasis = null;
+    afterCommit(function () {
+      READY["borough"].snap = true;
+      curTier = "borough";
+      morphBasis = null;
+      afterCommit(function () {
+        readyAt = performance.now();
+        ready = true;
+        window.__v0.ready = true;
+        buttons.forEach(function (b) { b.disabled = false; });
+        setStatus();
+        setMeta();
+        autoMode();
+      }, 2);
+      redraw();
+    }, 2);
     redraw();
-    readyAt = performance.now();
-    ready = true;
-    window.__v0.ready = true;
-    buttons.forEach(function (b) { b.disabled = false; });
-    setStatus();
-    setMeta();
-    autoMode();
   }).catch(function (e) {
     noteError(e);
     hudEl.textContent = "FAILED: " + String((e && e.message) || e);
