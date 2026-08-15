@@ -23,7 +23,7 @@
 <ul>
   <li><a href="v0/"><code>v0/</code></a> — minimal harness: split/merge value-morph on the OA basis (buttons, duration/easing controls, HUD)</li>
   <li><a href="v1/"><code>v1/</code></a> — full census map with the curtain replaced by the morph (<code>?morph=0</code> restores the curtain; <code>?hud=1</code> overlay)</li>
-  <li><a href="v2/"><code>v2/</code></a> — boundary-warp experiment: wards crack apart out of a borough block and heal back. <strong>Two verdicts.</strong> deck.gl's own transitions cannot tween <code>getPolygon</code> here — declaring one blanks the layer outright, silently (<a href="v2/?postrans=1"><code>?postrans=1</code></a> reproduces it). Driving the warp from <code>requestAnimationFrame</code> instead <em>does</em> animate it, at ~42&nbsp;fps. Outlines and values cannot move at the same time, so each choreography plays them as separate beats. Stills of the crack: <a href="v2/?s0=0.92"><code>?s0=0.92</code></a>, <a href="v2/?s0=0.8"><code>?s0=0.8</code></a>. Numbers in <code>tools/morph-lab/captures/v2/RESULTS.txt</code>.</li>
+  <li><a href="v2/"><code>v2/</code></a> — boundary-warp experiment: wards crack apart out of a borough block and heal back. <strong>Two verdicts.</strong> deck.gl's own transitions cannot tween <code>getPolygon</code> here — declaring one blanks the layer outright, silently (<a href="v2/?postrans=1"><code>?postrans=1</code></a> reproduces it). Driving the warp from <code>requestAnimationFrame</code> instead <em>does</em> animate it, at ~25&ndash;46&nbsp;fps. Outlines and values cannot move at the same time, so each choreography plays them as separate beats. Stills of the crack: <a href="v2/?s0=0.92"><code>?s0=0.92</code></a>, <a href="v2/?s0=0.8"><code>?s0=0.8</code></a>. Numbers in <code>tools/morph-lab/captures/v2/RESULTS.txt</code>.</li>
 </ul>
 <section id="notes">
 <h2>Driving guide</h2>
@@ -32,6 +32,7 @@
 <h3>v0 — minimal harness</h3>
 <p>Buttons, duration, and easing controls over a bare split/merge value-morph on the OA basis.</p>
 <p class="ev">Morph proven to slide, not snap: mid-flight progression 33.8% &rarr; 73.3% &rarr; 98.0%, endpoints land &le;1&nbsp;px off, plateau (OA painted with borough values vs. the true borough map) MAD 0.045/255.</p>
+<p class="ev">Zooming mid-morph in v0 (only) restarts the transition &mdash; v0 predates the polyData fix that v1 carries. Judge that behaviour in v1, not v0.</p>
 <p><a href="v0/"><code>v0/</code></a></p>
 
 <h3>v1 — full map, morph replaces the curtain</h3>
@@ -73,7 +74,7 @@
 <h2>How to run</h2>
 <p><code>hugo server</code> from the repo root, then <a href="http://localhost:1313/labs/morph/">http://localhost:1313/labs/morph/</a> &mdash; the data must be served over HTTP, <code>file://</code> won't load it.</p>
 
-<p class="ev">Everything on this page is throwaway lab work on branch <code>labs/morph</code>. None of it is deployed.</p>
+<p class="ev">Everything on this page is throwaway lab work on branch <code>labs/morph</code>. It goes live only if and when <code>labs/morph</code> is merged to <code>main</code> &mdash; until then, and even after, this page stays unlinked and noindexed.</p>
 </section>
 </body>
 </html>
