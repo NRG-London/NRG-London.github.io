@@ -2056,15 +2056,28 @@
   }
 
   // Can this hand-off be morphed rather than curtained? The basis has to be
-  // resident, warm and crosswalked; both ends have to be reachable from it; and
-  // the outgoing values have to be the ones the outgoing tier was actually
-  // drawn with — a length that does not match its feature count means an
-  // earlier apply() is still in flight and the plateau would be built from the
-  // wrong numbers, so the curtain takes it instead.
+  // resident and crosswalked; both ends have to be reachable from it; and the
+  // outgoing values have to be the ones the outgoing tier was actually drawn
+  // with — a length that does not match its feature count means an earlier
+  // apply() is still in flight and the plateau would be built from the wrong
+  // numbers, so the curtain takes it instead.
   function morphReady(fromT, toKey, fromVals) {
     if (!morphEnabled || !morphWarm || !MORPH_DUR) return false;
     var B = READY[BASIS];
-    if (!B || !B.painted) return false;
+    if (!B) return false;
+    // NOT `!B.painted`, and the difference is a whole session's worth of
+    // morphing. The SEED paints the basis itself, so an unpainted basis is
+    // merely a morph that pays its own tessellation — exactly what the warm-up
+    // says it is handing over when it bails out. Requiring `painted` here made
+    // that bail-out permanent: nothing else ever paints the basis unless the
+    // reader visits the output-area tier, so one click landing in the ~1 s
+    // warm-up window put the page back on the curtain for good, while the
+    // status node went on reporting morphReady true.
+    //
+    // It IS a genuine precondition in one case: a morph that starts AT the
+    // basis is the one the SEED skips, because the basis is already what is on
+    // screen — and it can only be that if something has already painted it.
+    if (fromT.key === BASIS && !B.painted) return false;
     if (fromT.key !== BASIS && !PARENTS[fromT.key]) return false;
     if (toKey !== BASIS && !PARENTS[toKey]) return false;
     return !!fromVals && fromVals.length === fromT.header.nFeatures;
@@ -2212,9 +2225,12 @@
 
         var T = READY[tier], m = activeMeasure();
         // Nothing safe to stand in for at this instant — the reader has moved
-        // on, or is mid-switch. The basis is loaded and crosswalked, which is
-        // all a morph strictly NEEDS; it will pay the tessellation on its own
-        // first seed instead of here.
+        // on, or is mid-switch, and painting the basis as a tier that is not on
+        // screen would make the warm frame visible instead of invisible. The
+        // basis is loaded and crosswalked, which is all a morph strictly NEEDS;
+        // it pays the tessellation on its own first seed instead of here.
+        // morphReady() is written to mean exactly that — see the note there on
+        // why it must not require B.painted.
         if (morphBasis || !T || !T.painted || !CURRENT_VALS ||
             CURRENT_VALS.length !== T.header.nFeatures ||
             (tier !== BASIS && !PARENTS[tier])) {

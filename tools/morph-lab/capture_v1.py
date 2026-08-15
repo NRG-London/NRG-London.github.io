@@ -914,6 +914,48 @@ def main():
                sum(1 for x in rm_seen if x)))
         page.reduced_motion(False)
 
+        # A12. THE UNPAINTED BASIS. warmMorph bails out without painting the
+        #      basis whenever it resolves while a tier switch is in flight —
+        #      reachable by any click landing in the ~1 s warm-up window — and
+        #      hands the tessellation to the morph's own seed. That is only
+        #      true if morphReady() lets a morph start with an unpainted basis;
+        #      when it required B.painted, the bail-out was permanent and the
+        #      page fell back to the curtain for the whole session while
+        #      #v1status.morphReady went on saying true.
+        #
+        #      Racing the real window from out here is fiddly and flaky — the
+        #      warm-up's own fetches gate __NG_DONE__, so "ready" already
+        #      implies they have landed. Reproducing the STATE is deterministic
+        #      and tests the same predicate: clearing READY.oa.painted leaves
+        #      exactly what the bail-out leaves — basis resident, crosswalked,
+        #      never painted, absent from the layer stack.
+        log("")
+        t0 = time.time()
+        n12 = Nav(page, base, "?tier=borough")
+        got, st, mt = n12.poll(morph_capable, timeout=180)
+        ok_all &= check(n12, st, got, "a12 boot")
+        cleared = n12.js("READY.oa.painted = null; String(READY.oa.painted)")
+        n12.set_area("ward")
+        a12_seen = []
+        end = time.time() + 2.0
+        while time.time() < end:
+            s, m = n12.read()
+            if s is not None:
+                a12_seen.append(bool(s.get("morphBasis")))
+            time.sleep(0.02)
+        got, st12, mt12 = n12.poll(done_morphing, timeout=120)
+        time.sleep(SETTLE)
+        a12_end = page.shot_bytes()
+        a12_morphed = any(a12_seen)
+        a12_ok = check(n12, st12, got, "a12 switch") and a12_morphed
+        log("shot %-24s %-44s %5.1fs  %s"
+            % ("-", "A12 morph with an unpainted basis", time.time() - t0,
+               "ok" if a12_ok else "FAILED"))
+        log("     READY.oa.painted cleared to %s; %d samples across the switch, "
+            "morphActive true in %d" % (cleared, len(a12_seen),
+                                        sum(1 for x in a12_seen if x)))
+        log("     log: %s" % json.dumps(mt12.get("log")))
+
         page.close()
 
         # ---- assertions -----------------------------------------------------
@@ -1050,6 +1092,24 @@ def main():
         ok_all &= rm_ok
         log("%s A11 reduced motion: TRANSITION 0, no morph in %d samples, the "
             "switch lands instantly" % ("PASS" if rm_ok else "FAIL", len(rm_seen)))
+        log("")
+
+        # ---- A12 unpainted basis
+        a12_land_ok = compare(OUT / "a2_ref_ward.png", a12_end,
+                              "A12 a morph started with an UNPAINTED basis still lands "
+                              "on the ward map", log,
+                              name_b="<a12 final frame, in memory>")
+        a12_all = a12_ok and a12_land_ok
+        ok_all &= a12_all
+        log("     %s it really morphed rather than falling back to the curtain "
+            "(morphActive true in %d of %d samples)"
+            % ("pass" if a12_morphed else "FAIL",
+               sum(1 for x in a12_seen if x), len(a12_seen)))
+        log("     WITH morphReady() REQUIRING B.painted THIS CURTAINED: morphActive")
+        log("     stayed false for the whole switch and for every switch after it,")
+        log("     while #v1status.morphReady — the field this driver gates on — said true.")
+        log("%s A12 an unpainted basis is a morph that pays its own tessellation, "
+            "not a dead one" % ("PASS" if a12_all else "FAIL"))
 
         log("")
         log("---- UNTESTED-BY-DRIVER (left to the human eye) ----")
