@@ -4,7 +4,7 @@ hero_intro: "<strong>Representing Croydon and Sutton</strong>,<br>Chair of the B
 photo_caption: "At the London Assembly, City Hall"
 sections: ["featured", "campaigns", "activity", "newsletter", "about"]
 featured:
-  - tag: "Featured · Interactive Map"
+  - tag: "Featured · Interactive Journey Map"
     tab: "OLAT journey map"
     headline: "One map that explains London transport"
     text: "Journey times from every corner of London — and why the two halves of the city travel so differently. Pick your own borough and explore."
@@ -19,6 +19,14 @@ featured:
     cta: "Explore the crime skyline"
     link: "/campaigns/crime-concentration/"
     image: "/images/crime-feature.jpg"
+    tone: "dark"
+  - tag: "Featured · Mapping London's Population"
+    tab: "3D London Census"
+    headline: "Who lives in London, and how has it changed?"
+    text: "Explore London’s census. View 62 measures across 9 categories: population, age, households, origins, religion, migration & language, health & care, work & study, and housing. Compare 2011 and 2021 censuses to see what changed."
+    cta: "Explore the Census"
+    link: "https://neilgarratt.com/campaigns/mapping-londons-population/"
+    image: "/images/campaigns/population-card.jpg"
     tone: "dark"
 newsletter_title: "The View from City Hall"
 newsletter_description: "A regular look at what's really happening in London government — the stories the Mayor would rather you didn't read. Data, detail, and the occasional dry observation."
