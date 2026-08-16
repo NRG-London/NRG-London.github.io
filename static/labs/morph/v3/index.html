@@ -405,7 +405,15 @@
       warpReady: typeof warpWarm === "undefined" ? false : !!warpWarm,
       staged: typeof stageDone === "undefined" ? false : !!stageDone,
       warp: typeof WARP === "undefined" ? 0
-            : Math.round(WARP.amount * 100000) / 100000
+            : Math.round(WARP.amount * 100000) / 100000,
+      // WHICH TIER THE CRACK IS ON, and how many tiers are holding a frozen
+      // one. Both are new with the all-pairs policy: the basis moves per
+      // gesture now, and a frozen crack left standing on an idle page is a
+      // defect no endpoint assertion could see.
+      wtier: typeof WARP_TIER === "undefined" ? null : WARP_TIER,
+      wbeat: typeof WARP === "undefined" ? "" : WARP.beat,
+      wfroz: typeof WARP_FROZEN === "undefined" ? 0
+             : Object.keys(WARP_FROZEN).length
     });
     if (s !== lastStatus) { lastStatus = s; el.textContent = s; }
   }
@@ -436,7 +444,9 @@
         fps: Math.round(WARP.fps * 10) / 10,
         worst: Math.round(WARP.worst * 10) / 10,
         frames: WARP.frames.length,
-        centMs: Math.round(lastCentMs * 10) / 10
+        centMs: Math.round(lastCentMs * 10) / 10,
+        tier: WARP_TIER, parent: WARP_PARENT,
+        frozen: Object.keys(WARP_FROZEN).length
       },
       w2b: typeof W2B_STATS === "undefined" ? null : W2B_STATS
     });
@@ -453,6 +463,7 @@
   // Read here, consumed in loadTier. See the note there: it is the lab's CPU
   // ground truth for the shader warp and has no part in any morph.
   var CPU_WARP = parseFloat(params.get("cpuwarp"));
+  var CPU_WARP_TIER = params.get("cwtier") || "ward";
   // AUTO is the pair the zoom switch drives, coarse first. Everything else is
   // pinned from the area pill row (or ?tier=, which the screenshot driver and
   // any deep link both use).
@@ -721,7 +732,11 @@
       // second code path the morph can take. (The ring centroids are unchanged
       // by it — scaling a ring about its own centroid leaves that centroid
       // where it was — so the two arms warp about exactly the same points.)
-      if (t === WARP_TIER && isFinite(CPU_WARP) && CPU_WARP > 0 && CPU_WARP < 1) {
+      // ?cwtier= names the tier, defaulting to the boot value of WARP_TIER —
+      // which is a fixed string and not the live basis, because that one moves
+      // per gesture now and a geometry decode arriving mid-gesture must not
+      // silently warp a different tier than the one asked for.
+      if (t === CPU_WARP_TIER && isFinite(CPU_WARP) && CPU_WARP > 0 && CPU_WARP < 1) {
         var rs = ringStart;
         for (var r = 0, nr = rs.length - 1; r < nr; r++) {
           var a = rs[r], b = rs[r + 1], cnt = b - a;
@@ -1072,12 +1087,22 @@
   // own `geometry.worldPosition` is the float32 high half of deck's fp64 split
   // and carries the same 0.68 m quantisation regardless.)
   var warpEnabled = params.get("warp") !== "0";
-  // The finer tier of the warpable pair, and its parent. The warp is a property
-  // of the DRAWN geometry, so the basis is always the finer of the two: the
-  // wards are what crack apart. Any nested pair can follow by adding its finer
-  // tier here and a crosswalk beside WARD2BOROUGH.
+  // THE TIER THE CRACK IS CURRENTLY RUNNING ON, and the tier it is standing in
+  // for (null when the basis is standing in for nothing, which is what an
+  // OA-basis shatter does). Both are now WRITTEN PER GESTURE, from the one
+  // policy table — see WARP_POLICY_TABLE at the top of the morph section, which
+  // is the only place that decides which ordered pair warps and on what basis.
+  // These two are LIVE STATE, not policy. They start on ward/borough because
+  // that is the pair the boot warm-up prepares and the one ?bench=1, ?stage=
+  // and ?cpuwarp= drive by hand.
   var WARP_TIER = "ward";
   var WARP_PARENT = "borough";
+  // A basis a retarget has moved OFF, still drawn for the warm window, keeps
+  // the crack it had — frozen at the value the new gesture's envelope is
+  // carrying, so the swap between the two bases happens at one crack width and
+  // nothing snaps. Cleared by retireWarp() and by every handBack(). See
+  // setWarpBasis.
+  var WARP_FROZEN = {};
   // How far a ring steps back at full crack. v2's default, judged by eye there.
   var WARP_INSET = 0.92;
   var qInset = parseFloat(params.get("s"));
@@ -1106,6 +1131,15 @@
   // instead of shrinking. c is the plain vertex mean, which is stable under the
   // ring's closing duplicate vertex because that vertex is scaled with
   // everything else and the ring stays closed.
+  //
+  // ONE PASS PER TIER, CACHED ON THE TIER, AND BUILT AT MOST ONCE. Every tier
+  // that can be a warp basis needs its own array, and the output areas are the
+  // expensive one: 26,435 rings over ~350k vertices against the wards' 731 over
+  // 50,738. It is still one linear pass with no allocation per ring, and the
+  // cost is measured and published per tier (T.mcentMs, __v3.centroids()), so
+  // the claim is a reading rather than an argument. It is kept OFF the
+  // interaction path by the two warm-ups: warmWarp() builds the ward array and
+  // warmMorph() builds the output-area array, both on the boot's own time.
   function morphCentroids(T) {
     if (T.mcent) return T.mcent;
     var t0 = performance.now();
@@ -1119,7 +1153,7 @@
       var cx = sx / cnt, cy = sy / cnt;
       for (i = a; i < b; i++) { out[2 * i] = cx; out[2 * i + 1] = cy; }
     }
-    lastCentMs = performance.now() - t0;
+    lastCentMs = T.mcentMs = performance.now() - t0;
     return (T.mcent = out);
   }
   var lastCentMs = 0;
@@ -1265,7 +1299,45 @@
     worst: 0,
     beat: ""
   };
-  function warpAmount() { return WARP.amount; }
+  // THE AMOUNT IS PER LAYER, NOT PER PAGE, AND THAT IS NOT TIDINESS. Four
+  // tiers carry the extension now (see WARP_BASIS_TIERS), and the extension
+  // reads its uniform through this function on every committed render. A single
+  // global would crack all four at once — including the ghost commits, where a
+  // layer really is drawn — so the layer being warped has to be named. It is
+  // named by ID rather than by a closure per tier because deck.gl compares
+  // props between rebuilds and a fresh closure on every buildStack() would
+  // report a changed prop on every redraw for no reason.
+  //
+  // A tier that is NOT the live basis reads its frozen crack, which is zero for
+  // every tier except one a retarget has just moved off. See setWarpBasis.
+  function warpAmount(layer) {
+    var id = layer && layer.props && layer.props.id;
+    if (!id) return 0;
+    if (id === "poly-" + WARP_TIER) return WARP.amount;
+    return WARP_FROZEN[id.slice(5)] || 0;
+  }
+
+  // MOVE THE CRACK ONTO A DIFFERENT TIER, mid-gesture if need be.
+  //
+  // A retarget can change the BASIS as well as the destination: interrupt a
+  // borough -> ward split with Output areas and the crack has to leave the
+  // wards and continue on the output areas. The two are not drawn on the same
+  // frame — the new basis is seeded and warmed as a ghost while the old one is
+  // still the picture — so the old one is FROZEN at the crack it has, and
+  // runWarp's carry opens the new one from that same value. The reader sees one
+  // crack width across the swap and no snap, which is the promise this page
+  // makes everywhere else.
+  //
+  // The frozen entry is cleared when the tier becomes the live basis again, by
+  // retireWarp(), and by every handBack(). A stale one would draw a permanently
+  // cracked map, so it is published in the status node and gated by the driver.
+  function setWarpBasis(t, p) {
+    if (WARP_TIER !== t && WARP.amount > 0) WARP_FROZEN[WARP_TIER] = WARP.amount;
+    delete WARP_FROZEN[t];
+    WARP_TIER = t;
+    WARP_PARENT = p || null;
+  }
+  function clearFrozen() { WARP_FROZEN = {}; }
 
   // THE ENVELOPE: crack open, then heal, as ONE curve over the whole gesture.
   //
@@ -1364,7 +1436,30 @@
     // monotone in neither direction and never exceeds a full crack. In the
     // ordinary case a0 is 0 and every line of this is a no-op.
     var a0 = WARP.amount;
-    var carrySpan = dur > 0 ? RELEASE_MS / dur : 1;
+    // Published, because "the crack was carried across the interrupt" is a
+    // claim about this number and the driver could not otherwise see it: by the
+    // time anything can be read back the carry has already blended away.
+    WARP.a0 = a0;
+    // AND THE CARRY IS CLOCKED FROM THE FIRST FRAME IT ACTUALLY DRAWS, not
+    // from t0. This is a blend for the reader's eye, and the reader's eye sees
+    // FRAMES: a window that has expired before a single one is drawn has not
+    // blended anything, it has snapped.
+    //
+    // Measured, on this build, at output-area grain. A retarget onto the OA
+    // basis has to repaint 350k vertices and hand deck.gl the new buffers, and
+    // that blocks the main thread: WARP.t0 at 8051 ms, first executed frame at
+    // 8452 — 400 ms with nothing drawn, against a 180 ms carry. Clocked from
+    // t0 the whole window was gone, and the first frame the reader saw dropped
+    // the crack from 0.08000 to 0.01409 in one step, then reopened it. Clocked
+    // from the first frame the same interrupt blends 0.08 down over the next
+    // 180 ms of DRAWN frames while the new envelope climbs underneath it.
+    //
+    // The ENVELOPE itself stays on the wall clock, deliberately: deck.gl's own
+    // attribute transition is wall-clocked too (its timeline takes the frame
+    // timestamp), so a stall carries both forward together and the crack stays
+    // in step with the values. Only the carry — which exists to cover exactly
+    // this kind of discontinuity — is measured in frames.
+    var carryT0 = 0;
     function tick() {
       if (tok !== WARP.token) { WARP.raf = null; return; }
       var now = performance.now();
@@ -1387,9 +1482,13 @@
         return;
       }
       var want = (1 - WARP_INSET) * warpEnv(u);
-      if (a0 > 0 && u < carrySpan) {
-        var carry = a0 * (1 - easeCubicInOut(u / carrySpan));
-        if (carry > want) want = carry;
+      if (a0 > 0) {
+        if (!carryT0) carryT0 = now;
+        var cu = (now - carryT0) / RELEASE_MS;
+        if (cu < 1) {
+          var carry = a0 * (1 - easeCubicInOut(cu));
+          if (carry > want) want = carry;
+        }
       }
       setWarp(want);
       WARP.raf = requestAnimationFrame(tick);
@@ -1415,11 +1514,24 @@
   // not a reason to break it. The ease cannot outlive the interrupt: it takes
   // the token with it, so the next gesture's envelope blends whatever is left.
   function retireWarp() {
+    clearFrozen();
     releaseWarp();
     var WB = B_WARP;
     B_WARP = null;
     if (WB) { WB.dur = null; WB.ease = null; WB.noPick = false; }
     WARP.beat = "";
+  }
+
+  // Hand the crack from one basis to another WITHOUT retiring the gesture: the
+  // tier the crack is leaving keeps its frozen displacement (setWarpBasis) but
+  // must not keep the morph's own state — a stale `dur`/`ease` would run the
+  // next transition on that tier at the wrong speed and `noPick` would leave it
+  // unpickable for the life of the page. That is the W6 defect one tier along,
+  // and it is reachable now that a retarget can change the basis: it could not
+  // happen when there was only ever one.
+  function releaseBasis(T) {
+    if (!T) return;
+    T.dur = null; T.ease = null; T.noPick = false;
   }
 
   // Close whatever crack is open, over RELEASE_MS, and land on exactly zero.
@@ -1592,10 +1704,15 @@
         getFillColor: { value: T.col, size: 4, normalized: true },
         getElevation: { value: T.elev, size: 1 }
       };
-      // Only on the tier that can be a warp basis. Handing the extension no
-      // centroids would fall back to its accessor default of [0,0] and pull
-      // every vertex towards null island, so the extension and this attribute
-      // are attached together or not at all (see polyLayer).
+      // Only on a tier that can be a warp basis — which is now four of the six
+      // and not one (see WARP_BASIS_TIERS). Handing the extension no centroids
+      // would fall back to its accessor default of [0,0] and pull every vertex
+      // towards null island, so the extension and this attribute are attached
+      // together or not at all (see polyLayer). That invariant is why the array
+      // is built HERE, when the layer is first built, rather than when the tier
+      // first warps: a layer carrying the extension must carry real centroids
+      // from its first draw. Both expensive tiers are pre-built by the warm-ups
+      // so this call is a cache hit on the interaction path.
       if (warpsOn(T)) attrs.getMorphCentroid = { value: morphCentroids(T), size: 2 };
       T.data = {
         length: T.header.nRings,
@@ -1605,7 +1722,16 @@
     }
     return T.data;
   }
-  function warpsOn(T) { return warpEnabled && !!WARP_EXT && T.key === WARP_TIER; }
+  // STATIC FOR THE LIFE OF THE PAGE, and it has to be: attaching or detaching
+  // an extension rebuilds the layer's models and invalidates every attribute
+  // (see polyLayer), so this cannot key on the tier the crack happens to be on
+  // right now. It keys on the policy instead — every tier that ANY line of
+  // WARP_POLICY_TABLE can put the crack on — and the crack is switched between
+  // them by the uniform alone. WARP_BASIS_TIERS is derived from the table once,
+  // below; this function is only ever called from a layer build, long after.
+  function warpsOn(T) {
+    return warpEnabled && !!WARP_EXT && !!WARP_BASIS_TIERS[T.key];
+  }
 
   // THE WARM (GHOST) DRAW. `depthCompare: "never"` fails every fragment, so a
   // layer carrying these parameters is fully drawn — deck.gl updates its
@@ -1634,8 +1760,9 @@
     // on every attribute — a full re-tessellation and re-upload. Doing that at
     // the start of a gesture would cost exactly the stall the whole design
     // exists to avoid, and doing it at the end would throw away the transition
-    // still settling. So the ward layer always carries it, and the warp is off
-    // simply because the uniform is zero.
+    // still settling. So every tier the policy can crack always carries it, and
+    // the warp is off simply because the uniform is zero — which is also how
+    // the crack moves between bases mid-gesture without rebuilding anything.
     var warp = warpsOn(T);
     return new deck.SolidPolygonLayer({
       id: "poly-" + T.key,
@@ -1787,87 +1914,268 @@
   // oa.parents.json says which of its 26,369 rows belongs to which parent.
   var BASIS = "oa";
 
-  // ---- the warp basis and its crosswalk -----------------------------------
+  // ---- THE TRANSITION POLICY TABLE ----------------------------------------
+  //
+  // ONE LINE PER ORDERED PAIR, AND EVERY ORDERED PAIR IS HERE. Six area types
+  // make thirty ordered pairs; all thirty are listed, so "what does this
+  // transition do?" is answered by reading one line rather than by working out
+  // which rule a pair falls under. Demoting a pair to the plain V1 morph is
+  // editing the third column of its line to "none", and nothing else.
+  //
+  // THE THREE MODES.
+  //
+  //   "finer"  the crack runs on the FINER TIER OF THE PAIR, which for a nested
+  //            pair is one of the two endpoints. A split (coarse -> fine) seeds
+  //            the finer tier with the coarser one's plateau and cracks it open
+  //            as the values arrive; a merge (fine -> coarse) cracks the finer
+  //            tier, lets the values converge, and heals into the coarser map.
+  //            Only legal where the finer tier NESTS exactly inside the coarser
+  //            one, because the plateau has to be the coarser map pixel for
+  //            pixel — the crosswalk below asserts that and throws if it fails.
+  //
+  //   "oa"     THE SHATTER. The pair does not nest, so there is no plateau on
+  //            either endpoint's geometry and no seam of the reader's to crack.
+  //            V1's morph already draws these transitions on the OUTPUT AREAS —
+  //            the one geometry every tier was dissolved from — painted with
+  //            the source's values and eased to the destination's. This is that
+  //            morph with the same envelope driven on THAT layer: the whole
+  //            city crazes along output-area boundaries while the values flow,
+  //            then heals into the destination. Same machinery, different basis.
+  //
+  //   "none"   V1's plain morph, no warp. The per-pair revert lever.
+  //
+  // WHICH PAIRS NEST, and it is not obvious enough to leave implicit. From the
+  // build: oa sits inside every other tier; lsoa and ward each sit inside
+  // borough, and borough inside gla. lsoa and ward do NOT nest in each other,
+  // and pcon (2024 parliamentary boundaries, best-fit) nests in nothing but
+  // takes the output areas — so every pcon pairing except oa<->pcon is a
+  // shatter. The crosswalks are derived from oa.parents.json and THROW rather
+  // than approximate, so a "finer" line on a pair that does not really nest
+  // fails loudly at the first attempt instead of drawing a wrong plateau.
+  var WARP_POLICY_TABLE = [
+    // ---- NESTED: the crack runs on the finer tier of the pair --------------
+    ["borough", "ward",    "finer"],  // split: wards crack out of the borough plateau
+    ["ward",    "borough", "finer"],  // merge: wards crack, converge, heal into boroughs
+    ["gla",     "ward",    "finer"],  // split: wards out of an Assembly seat
+    ["ward",    "gla",     "finer"],  // merge: wards into an Assembly seat
+    ["gla",     "borough", "finer"],  // split: boroughs out of an Assembly seat
+    ["borough", "gla",     "finer"],  // merge: boroughs into an Assembly seat
+    ["borough", "lsoa",    "finer"],  // split: neighbourhoods out of a borough
+    ["lsoa",    "borough", "finer"],  // merge: neighbourhoods into a borough
+    ["gla",     "lsoa",    "finer"],  // split: neighbourhoods out of an Assembly seat
+    ["lsoa",    "gla",     "finer"],  // merge: neighbourhoods into an Assembly seat
+    ["lsoa",    "oa",      "finer"],  // split: THE ZOOM PATH — output areas out of a neighbourhood
+    ["oa",      "lsoa",    "finer"],  // merge: THE ZOOM PATH — output areas into a neighbourhood
+    ["ward",    "oa",      "finer"],  // split: output areas out of a ward
+    ["oa",      "ward",    "finer"],  // merge: output areas into a ward
+    ["borough", "oa",      "finer"],  // split: output areas out of a borough
+    ["oa",      "borough", "finer"],  // merge: output areas into a borough
+    ["gla",     "oa",      "finer"],  // split: output areas out of an Assembly seat
+    ["oa",      "gla",     "finer"],  // merge: output areas into an Assembly seat
+    ["pcon",    "oa",      "finer"],  // split: output areas out of a constituency (best-fit, but exact in the shipped geometry)
+    ["oa",      "pcon",    "finer"],  // merge: output areas into a constituency
+    // ---- NOT NESTED: the shatter, on the output-area basis -----------------
+    ["ward",    "lsoa",    "oa"],     // wards and neighbourhoods cut across each other
+    ["lsoa",    "ward",    "oa"],     // ditto, the other way
+    ["pcon",    "gla",     "oa"],     // constituencies cut across Assembly seats
+    ["gla",     "pcon",    "oa"],     // ditto, the other way
+    ["pcon",    "borough", "oa"],     // constituencies cut across boroughs
+    ["borough", "pcon",    "oa"],     // ditto, the other way
+    ["pcon",    "ward",    "oa"],     // constituencies cut across wards
+    ["ward",    "pcon",    "oa"],     // ditto, the other way
+    ["pcon",    "lsoa",    "oa"],     // constituencies cut across neighbourhoods
+    ["lsoa",    "pcon",    "oa"]      // ditto, the other way
+  ];
+
+  // The table, as a lookup, plus the ?warpmode= override the driver uses to
+  // photograph a demoted pair without editing the file — "a>b:none,c>d:finer".
+  // It is a LAB affordance and it is validated: an unknown tier or mode is a
+  // page error rather than a silently ignored query string.
+  var WARP_POLICY = {};
+  WARP_POLICY_TABLE.forEach(function (r) {
+    WARP_POLICY[r[0] + ">" + r[1]] = r[2];
+  });
+  var WARP_MODE_Q = params.get("warpmode") || "";
+  WARP_MODE_Q.split(",").forEach(function (s) {
+    if (!s) return;
+    var bits = s.split(":"), pair = bits[0], mode = bits[1];
+    if (!(pair in WARP_POLICY) || ["finer", "oa", "none"].indexOf(mode) < 0) {
+      noteError("?warpmode: cannot read '" + s + "'");
+      return;
+    }
+    WARP_POLICY[pair] = mode;
+  });
+
+  // EVERY TIER THE POLICY CAN PUT THE CRACK ON, derived from the table rather
+  // than written out again — demote the last "finer" line naming a tier and it
+  // stops carrying the extension, with no second place to remember. Read by
+  // warpsOn(), which decides which layers carry the extension and the centroid
+  // attribute for the life of the page.
+  var WARP_BASIS_TIERS = {};
+  function finerOf(a, b) {
+    // The finer tier of a pair is the one with more areas in it. True of every
+    // nested pair here by construction — a tier cannot contain another and have
+    // fewer areas than it — and it is read from the manifest rather than from a
+    // hand-kept order, so it cannot drift away from the data.
+    return MANIFEST.tiers[a].n >= MANIFEST.tiers[b].n ? a : b;
+  }
+  Object.keys(WARP_POLICY).forEach(function (k) {
+    var mode = WARP_POLICY[k];
+    if (mode === "none") return;
+    var ab = k.split(">");
+    WARP_BASIS_TIERS[mode === "oa" ? BASIS : finerOf(ab[0], ab[1])] = true;
+  });
+
+  // ---- the crosswalks ------------------------------------------------------
   // V1 animates everything on the OUTPUT AREAS, because they are the one
   // geometry every tier was dissolved from and so the one that can stand in for
-  // any pair. That is exactly wrong for a warp: insetting 26,369 output-area
-  // rings cracks the map along output-area boundaries, which is not the seam
-  // the reader is being shown. A warp has to crack along the boundaries of the
-  // tier being revealed, so its basis is the FINER TIER OF THE PAIR — and for a
-  // nested pair that tier is one of the two endpoints, which makes the whole
-  // dance shorter than V1's: the basis IS the destination on a split and IS the
-  // source on a merge, so one of the two hand-offs disappears.
+  // any pair. That is exactly right for a pair that does not nest — which is
+  // what the shatter mode above keeps — and exactly wrong for one that does:
+  // insetting 26,369 output-area rings to show a borough splitting into wards
+  // cracks the map along boundaries that are not the ones the reader is being
+  // shown. So a nested pair cracks along the boundaries of the tier being
+  // revealed, and its basis is the FINER TIER OF THE PAIR — one of the two
+  // endpoints, which makes the whole dance shorter than V1's: the basis IS the
+  // destination on a split and IS the source on a merge, so one of the two
+  // hand-offs disappears.
   //
-  // Ported from v2, including its refusal to trust the labels file: the
-  // crosswalk is derived only from oa.parents.json, one pass over the output
-  // areas setting wardToBorough[parents.ward[i]] = parents.borough[i]. It
-  // THROWS on a conflicting borough for a ward, on an out-of-range row at
-  // either end, and if any ward finishes unmapped — because a ward that does
-  // not nest inside exactly one borough would make the plateau, and therefore
-  // the "pixel-identical" swap the whole morph rests on, quietly wrong.
+  // Ported from v2, including its refusal to trust the labels file — whose
+  // `lad[]` is not a borough row index and would be wrong here in a way nothing
+  // would catch. EVERY crosswalk is composed through oa.parents.json instead,
+  // one pass over the output areas setting map[parents[finer][i]] =
+  // parents[coarser][i]. It THROWS on a conflicting parent for a child, on an
+  // out-of-range row at either end, and if any child finishes unmapped —
+  // because a child that does not nest inside exactly one parent would make the
+  // plateau, and therefore the "pixel-identical" swap the whole morph rests on,
+  // quietly wrong. That is also what makes a wrong line in the table above a
+  // loud failure rather than a subtly bad picture.
+  //
+  // The output areas are the special case and not a special case: their
+  // "crosswalk" to any tier IS oa.parents.json's own column, so it is used
+  // directly and nothing is composed.
+  var XWALK = {};          // "finer>coarser" -> Int32Array | null (failed)
+  var XWALK_STATS = {};    // the same keys -> what the build saw
+  // Kept for the existing __v3.w2b() surface and the meta node: the ward ->
+  // borough crosswalk is now one of ten, but it is the one every V3 assertion
+  // written before this change reads.
   var W2B_STATS = { wards: 0, mapped: 0, oas: 0, conflicts: 0, ok: false };
   var WARD2BOROUGH = null;
-  function buildWardToBorough(parents, nWards, nBoroughs) {
-    var w = parents.ward, b = parents.borough;
-    if (!w || !b) throw new Error("crosswalk has no ward/borough parents");
-    if (w.length !== b.length) throw new Error("ward/borough parent lengths differ");
-    var out = new Int32Array(nWards);
-    for (var i = 0; i < nWards; i++) out[i] = -1;
+
+  function buildXwalk(finerKey, coarserKey, nFiner, nCoarser) {
+    var f = PARENTS[finerKey], c = PARENTS[coarserKey];
+    if (!c) throw new Error("no " + coarserKey + " column in oa.parents");
+    if (finerKey !== BASIS && !f) {
+      throw new Error("no " + finerKey + " column in oa.parents");
+    }
+    // finer === BASIS: the column IS the map, one row per output area.
+    if (finerKey === BASIS) {
+      if (c.length !== nFiner) {
+        throw new Error(coarserKey + " column is " + c.length + " rows, not " + nFiner);
+      }
+      for (var k = 0; k < c.length; k++) {
+        if (c[k] < 0 || c[k] >= nCoarser) {
+          throw new Error(coarserKey + " row " + c[k] + " out of range at OA " + k);
+        }
+      }
+      return { map: c, mapped: nFiner };
+    }
+    if (f.length !== c.length) {
+      throw new Error(finerKey + "/" + coarserKey + " parent lengths differ");
+    }
+    var out = new Int32Array(nFiner);
+    for (var i = 0; i < nFiner; i++) out[i] = -1;
     var mapped = 0;
-    for (var j = 0; j < w.length; j++) {
-      var wr = w[j], br = b[j];
-      if (wr < 0 || wr >= nWards) throw new Error("ward row " + wr + " out of range at OA " + j);
-      if (br < 0 || br >= nBoroughs) throw new Error("borough row " + br + " out of range at OA " + j);
-      if (out[wr] === -1) { out[wr] = br; mapped++; }
-      else if (out[wr] !== br) {
-        W2B_STATS.conflicts++;
-        throw new Error("ward " + wr + " maps to boroughs " + out[wr] + " and " +
-                        br + " (OA row " + j + ") — wards must nest");
+    for (var j = 0; j < f.length; j++) {
+      var fr = f[j], cr = c[j];
+      if (fr < 0 || fr >= nFiner) {
+        throw new Error(finerKey + " row " + fr + " out of range at OA " + j);
+      }
+      if (cr < 0 || cr >= nCoarser) {
+        throw new Error(coarserKey + " row " + cr + " out of range at OA " + j);
+      }
+      if (out[fr] === -1) { out[fr] = cr; mapped++; }
+      else if (out[fr] !== cr) {
+        throw new Error(finerKey + " " + fr + " maps to " + coarserKey + " " +
+                        out[fr] + " and " + cr + " (OA row " + j + ") — " +
+                        finerKey + " must nest inside " + coarserKey);
       }
     }
-    W2B_STATS = { wards: nWards, mapped: mapped, oas: w.length,
-                  conflicts: 0, ok: mapped === nWards };
-    if (mapped !== nWards) {
-      throw new Error("only " + mapped + " of " + nWards + " wards got a borough");
+    if (mapped !== nFiner) {
+      throw new Error("only " + mapped + " of " + nFiner + " " + finerKey +
+                      " rows got a " + coarserKey);
     }
-    return out;
+    return { map: out, mapped: mapped };
   }
 
-  // Built on demand rather than at boot, because v1 loads tiers lazily and
-  // neither of these two is guaranteed to be resident until a morph wants it.
-  // A failure is recorded and the pair falls back to V1's morph rather than
-  // being drawn wrong — but it is recorded as a page ERROR, because a
-  // crosswalk that does not hold means the plateau is not the borough map and
-  // the "pixel-identical" swap this whole design rests on is a lie.
-  function ensureW2B() {
-    if (WARD2BOROUGH) return WARD2BOROUGH;
-    var W = READY[WARP_TIER], C = READY[WARP_PARENT];
-    if (!W || !C || !PARENTS[WARP_TIER] || !PARENTS[WARP_PARENT]) return null;
+  // Built on demand rather than at boot, because tiers load lazily and neither
+  // end of a pair is guaranteed to be resident until a morph wants it. A
+  // failure is recorded and the pair falls back to V1's morph rather than being
+  // drawn wrong — but it is recorded as a page ERROR, because a crosswalk that
+  // does not hold means the plateau is not the coarser map and the
+  // "pixel-identical" swap this whole design rests on is a lie.
+  function ensureXwalk(finerKey, coarserKey) {
+    var key = finerKey + ">" + coarserKey;
+    if (key in XWALK) return XWALK[key];
+    var F = READY[finerKey], C = READY[coarserKey];
+    if (!F || !C || !PARENTS[coarserKey]) return null;
+    if (finerKey !== BASIS && !PARENTS[finerKey]) return null;
+    var nF = F.header.nFeatures, nC = C.header.nFeatures;
     try {
-      WARD2BOROUGH = buildWardToBorough(
-        { ward: PARENTS[WARP_TIER], borough: PARENTS[WARP_PARENT] },
-        W.header.nFeatures, C.header.nFeatures);
+      var r = buildXwalk(finerKey, coarserKey, nF, nC);
+      XWALK[key] = r.map;
+      XWALK_STATS[key] = { n: nF, mapped: r.mapped,
+                           oas: (PARENTS[coarserKey] || []).length,
+                           conflicts: 0, ok: true };
     } catch (e) {
-      noteError("ward->borough crosswalk: " + ((e && e.message) || e));
-      W2B_STATS.ok = false;
-      WARD2BOROUGH = null;
+      noteError(key + " crosswalk: " + ((e && e.message) || e));
+      XWALK[key] = null;
+      XWALK_STATS[key] = { n: nF, mapped: 0,
+                           oas: (PARENTS[coarserKey] || []).length,
+                           conflicts: 1, ok: false };
     }
-    return WARD2BOROUGH;
+    if (key === "ward>borough") {
+      WARD2BOROUGH = XWALK[key];
+      W2B_STATS = { wards: nF, mapped: XWALK_STATS[key].mapped,
+                    oas: XWALK_STATS[key].oas,
+                    conflicts: XWALK_STATS[key].conflicts,
+                    ok: XWALK_STATS[key].ok };
+    }
+    return XWALK[key];
   }
+  // The one the ?stage= reference and the spike legs drive by hand.
+  function ensureW2B() { return ensureXwalk("ward", "borough"); }
 
-  // Does this hand-off get the warp? The finer tier is the warp tier and the
-  // coarser is its parent, both are resident, and the crosswalk holds.
-  // Everything else — every non-nested pair, every pair the warp has no basis
-  // for, and the whole page under ?warp=0 — takes V1's morph unchanged.
-  function warpPair(fromKey, toKey) {
-    if (!warpEnabled || !WARP_EXT) return null;
-    var dir = fromKey === WARP_PARENT && toKey === WARP_TIER ? "split"
-            : fromKey === WARP_TIER && toKey === WARP_PARENT ? "merge"
-            : null;
-    if (!dir) return null;
-    if (!READY[WARP_TIER] || !READY[WARP_PARENT]) return null;
-    if (!ensureW2B()) return null;
-    return dir;
+  // WHAT DOES THIS HAND-OFF DO? The single question the policy table answers,
+  // asked once per area-type change, in apply(). Returns null for "V1's plain
+  // morph" — which is the whole page under ?warp=0, any pair the table demotes,
+  // and any pair whose basis or crosswalk is not there to be had — or a plan:
+  //
+  //   { mode: "finer", finer, coarser, dir, xw }   crack the finer tier
+  //   { mode: "oa",    finer: "oa", coarser: null, dir, xw: null }   shatter
+  //
+  // `dir` is "split" when the destination is the finer tier of the two and
+  // "merge" when it is the coarser, for both modes: the shatter has no finer
+  // endpoint but the choreography still reads better named than numbered, and
+  // the beat is logged under it.
+  function warpBasisFor(fromKey, toKey) {
+    if (!warpEnabled || !WARP_EXT || fromKey === toKey) return null;
+    var mode = WARP_POLICY[fromKey + ">" + toKey] || "none";
+    if (mode === "none") return null;
+    var finer = finerOf(fromKey, toKey);
+    var dir = toKey === finer ? "split" : "merge";
+    if (mode === "oa") {
+      // The shatter runs on V1's own basis, over V1's own morph. It needs
+      // exactly what that morph needs — nothing extra — plus the centroids.
+      var B = READY[BASIS];
+      if (!B || !WARP_BASIS_TIERS[BASIS]) return null;
+      return { mode: "oa", finer: BASIS, coarser: null, dir: dir, xw: null };
+    }
+    var coarser = finer === fromKey ? toKey : fromKey;
+    if (!READY[finer] || !READY[coarser]) return null;
+    if (!WARP_BASIS_TIERS[finer]) return null;
+    var xw = ensureXwalk(finer, coarser);
+    if (!xw) return null;
+    return { mode: "finer", finer: finer, coarser: coarser, dir: dir, xw: xw };
   }
 
   var morphBasis = null;  // the tier actually DRAWN, when it is not `tier`
@@ -2771,7 +3079,16 @@
   // OUTGOING tier's values, captured in apply() before CURRENT_VALS is
   // reassigned; CURRENT_VALS/CURRENT_ND are already the incoming tier's by the
   // time this runs, and so is the global `tier`.
-  function morphTier(fromT, toT, m, fromVals, fromNd) {
+  //
+  // `shatter` is the policy table's "oa" mode and it adds exactly one thing to
+  // this function: the same envelope, on the same span, driven on the basis
+  // this morph was already animating. A pair that does not nest has no plateau
+  // on either endpoint and no seam of the reader's to crack — but it is drawn
+  // on the output areas either way, and cracking THOSE is a city-wide craze
+  // while the values flow, healing shut into the destination. Everything else
+  // below is untouched, which is the point: the shatter is a warp on V1's
+  // morph, not a second morph.
+  function morphTier(fromT, toT, m, fromVals, fromNd, shatter) {
     var B = READY[BASIS], fromKey = fromT.key, toKey = toT.key;
     // Captured, not read live at ANIMATE. Nothing can change them without
     // retiring this morph's token first — every path through apply() either
@@ -2782,8 +3099,24 @@
     var tok = MORPH.token;
     clearTimeout(MORPH.timer);
     MORPH.timer = null;
+    // NOT setWarp(0), for the same reason morphWarpTier does not: a retarget
+    // landing mid-gesture hands whatever crack is open to the new envelope,
+    // which blends it out. A retarget from a nested pair to a non-nested one
+    // also MOVES the crack — from the finer tier onto the output areas — so the
+    // tier it leaves is frozen at that width and released of the morph state it
+    // was carrying. Under ?warp=0, and for a pair the table demotes to "none",
+    // not one line of this runs and the function is V1's exactly.
+    var wtok = WARP.token;
+    if (shatter) {
+      stopWarp();
+      wtok = WARP.token;
+      if (B_WARP && B_WARP !== B) releaseBasis(B_WARP);
+      setWarpBasis(BASIS, null);
+      WARP.beat = "shatter";
+      B_WARP = B;
+    }
     morphT0 = performance.now();
-    MORPH_LOG = [fromKey + "->" + toKey];
+    MORPH_LOG = [fromKey + "->" + toKey + (shatter ? " (shatter)" : "")];
 
     // ---- SEED. Swap the real `from` layer for the basis painted with `from`'s
     // values. Pixel-identical, so nothing is seen to happen. Skipped when the
@@ -2809,7 +3142,13 @@
     if (fromKey !== BASIS && morphBasis !== BASIS) {
       B.snap = true;
       paintFrom(B, fromT, fromVals, fromNd, m, PARENTS[fromKey]);
-      if (ghostWarm) morphSeed = fromKey;
+      // THE TIER TO KEEP DRAWING UNTIL THE BASIS HAS WARMED, which is whatever
+      // is on screen at this instant and only usually `fromKey`. A retarget off
+      // a WARP gesture is looking at that gesture's basis (morphBasis), and one
+      // that lands inside a warm window is looking at a third tier (morphSeed,
+      // carried below and never clobbered). Both are new: before every pair
+      // warped, the only basis this function could interrupt was its own.
+      if (ghostWarm) morphSeed = morphSeed || morphBasis || fromKey;
     }
     // A RETARGET LANDING INSIDE THE PREVIOUS MORPH'S WARM WINDOW CARRIES THE
     // WARM SEQUENCE OVER, and this branch is not defensive: `morphSeed` is
@@ -2854,6 +3193,14 @@
       notDone();
       redraw();
       logPhase("animate");
+      // THE SHATTER, on the same span, from the same instant — the one line
+      // this mode adds. deck.gl's attribute transition, started by the paint
+      // above, runs untouched beside it; nothing here touches the geometry
+      // deck.gl holds, so there is nothing to restart. The envelope lands the
+      // uniform back at exactly zero one committed frame before the finalise
+      // below fires, so the hand-off is an exchange of two true-geometry
+      // pictures exactly as it always was.
+      if (shatter) runWarp(MORPH_DUR, wtok, function () { logPhase("healed"); });
 
       MORPH.timer = setTimeout(function () {
         if (tok !== MORPH.token) return;
@@ -2901,6 +3248,7 @@
     // and the destination has had its warm commit, so this is invisible.
     function handBack() {
       morphBasis = null;
+      if (shatter) { B_WARP = null; clearFrozen(); }
       if (toKey !== BASIS && READY[toKey]) READY[toKey].snap = true;
       B.dur = null;
       B.ease = null;
@@ -2986,8 +3334,9 @@
   // and its watchdog, the warm-commit ghost reveals, the interrupt token, the
   // polyData cache. This function is a second route through the same
   // machinery, not a second machinery.
-  function morphWarpTier(fromT, toT, m, fromVals, fromNd, dir) {
-    var W = READY[WARP_TIER], P = READY[WARP_PARENT];
+  function morphWarpTier(fromT, toT, m, fromVals, fromNd, plan) {
+    var dir = plan.dir, XW = plan.xw;
+    var W = READY[plan.finer], P = READY[plan.coarser];
     var fromKey = fromT.key, toKey = toT.key;
     var toVals = CURRENT_VALS, toNd = CURRENT_ND;
     MORPH.token++;
@@ -2998,6 +3347,13 @@
     // the new gesture's envelope, which blends it out. See runWarp.
     stopWarp();
     var wtok = WARP.token;
+    // A RETARGET CAN CHANGE THE BASIS, which could not happen when one pair
+    // warped: interrupt a borough -> ward split with Output areas and the crack
+    // has to move from the wards to the output areas. The tier it leaves keeps
+    // its crack (setWarpBasis freezes it, and the carry above opens the new one
+    // at the same width) but must NOT keep the morph's own state.
+    if (B_WARP && B_WARP !== W) releaseBasis(B_WARP);
+    setWarpBasis(plan.finer, plan.coarser);
     morphT0 = performance.now();
     MORPH_LOG = [fromKey + "->" + toKey + " (warp)"];
     WARP.beat = dir;
@@ -3009,13 +3365,13 @@
       W.dur = MORPH_DUR;
       W.ease = easeCubicInOut;
       if (dir === "split") {
-        // The wards' own values. deck.gl interpolates every vertex from the
-        // plateau it is holding to this, over MORPH_DUR.
+        // The finer tier's own values. deck.gl interpolates every vertex from
+        // the plateau it is holding to this, over MORPH_DUR.
         paint(W, toVals, m, toNd);
       } else {
-        // The borough plateau, which is the borough map with its internal
-        // edges buried inside the solid.
-        paintFrom(W, P, toVals, toNd, m, WARD2BOROUGH);
+        // The coarser tier's plateau, which is its map with the internal edges
+        // buried inside the solid.
+        paintFrom(W, P, toVals, toNd, m, XW);
         // The real destination is seeded HIDDEN, snapped, at its true values,
         // so the finalising swap is an exchange of two identical pictures.
         // Exactly V1's animate().
@@ -3072,6 +3428,10 @@
     function handBack() {
       morphBasis = null;
       B_WARP = null;
+      // Nothing may be left holding a crack: the redraw below rebuilds every
+      // layer, and a frozen entry surviving it would draw a permanently
+      // cracked tier the next time that one came back on screen.
+      clearFrozen();
       if (dir === "merge" && READY[toKey]) READY[toKey].snap = true;
       W.dur = null;
       W.ease = null;
@@ -3083,35 +3443,60 @@
       setStatus();
     }
 
-    if (dir === "merge") {
-      // NO SEED. The ward layer is already the picture on screen and already
-      // holds its own values; `tier` is borough by now, so all that is needed
-      // is to tell buildStack to keep drawing the ward layer. Straight into the
-      // gesture — which is why a merge here is a beat shorter than V2's, where
+    // WHAT IS ON SCREEN AT THIS INSTANT, which is not always `fromKey`. A
+    // retarget can land on a gesture that is still warming its own basis, in
+    // which case a THIRD tier is the picture (morphSeed), or on one that is
+    // already drawing a basis that is not either endpoint of this pair
+    // (morphBasis). Both are ordinary now that every pair warps and a retarget
+    // can change the basis; neither could happen when one pair did.
+    var picture = morphSeed || morphBasis || fromKey;
+
+    if (picture === plan.finer) {
+      // NO SEED, NO REVEAL. The basis is already the picture holding its own
+      // values: the ordinary merge — `tier` is the coarser one by now, so all
+      // that is needed is to tell buildStack to keep drawing the finer layer —
+      // and also a retarget onto the basis already running. Straight into the
+      // gesture, which is why a merge here is a beat shorter than V2's, where
       // the crack had to be opened before the values could start.
-      morphBasis = WARP_TIER;
+      //
+      // morphSeed is CLEARED rather than left: it can only be standing here if
+      // it names this same layer, so clearing it changes nothing on screen —
+      // and leaving it would strand it, because this gesture has taken the
+      // token and the reveal that would have cleared it will never run. That is
+      // the A5b defect exactly, one path along.
+      morphSeed = null;
+      morphBasis = plan.finer;
       gesture();
       return;
     }
 
-    // ---- SPLIT: seed the basis with the plateau, warm it, reveal it, go.
+    // ---- SEED the basis with the picture, warm it, reveal it, go.
     //
-    // The seed is snapped and the basis is HIDDEN at this point (the borough
+    // The seed is snapped and the basis is HIDDEN at this point (the coarser
     // layer is still the picture), so it is drawn as a GHOST for one commit —
     // colour and depth writes off — which is both V1's flicker fix and, on a
-    // cold ward tier, the frame that pays the tessellation. Without the ghost
+    // cold basis, the frame that pays the tessellation. Without the ghost
     // deck.gl would have no reason to draw at all and the two-commit wait would
     // be satisfied only by the watchdog, 500 ms late. (That is exactly the
     // failure v2 recorded as its concern 2.)
+    //
+    // A MERGE CAN NEED THIS TOO, which the single-pair version never did: if
+    // the finer layer is not the picture then it is holding whatever it last
+    // held, and going straight into the gesture would reveal that for a frame.
+    // Its own values are the seed there — `fromKey` IS the finer tier on a
+    // merge — so it is a plain paint rather than a plateau.
     W.snap = true;
-    paintFrom(W, P, fromVals, fromNd, m, WARD2BOROUGH);
+    if (dir === "split") paintFrom(W, P, fromVals, fromNd, m, XW);
+    else paint(W, fromVals, m, fromNd);
     var warmSeed = false;
     if (ghostWarm) {
-      morphSeed = fromKey;
+      // The tier to keep drawing until the basis has warmed — which is the
+      // picture, not `fromKey`. They are the same thing in the ordinary case.
+      morphSeed = picture;
       W.ghost = true;
       warmSeed = true;
     }
-    morphBasis = WARP_TIER;
+    morphBasis = plan.finer;
 
     // ARMED BEFORE THE REDRAW IT IS WAITING ON — V1's invariant, and the
     // difference between a working morph and a frozen one.
@@ -3171,6 +3556,15 @@
         Object.keys(j.parents).forEach(function (k) { PARENTS[k] = j.parents[k]; });
         READY[BASIS] = B;
         B.bases[year] = r[1];
+        // THE OUTPUT-AREA CENTROIDS, HERE AND NOT ON A CLICK. This is the big
+        // one — 26,435 rings over ~350k vertices against the wards' 731 over
+        // 50,738 — and it is now needed by two thirds of the policy table: the
+        // zoom path cracks the output areas, so does every oa<->coarser pair,
+        // and so does every shatter. One linear pass, paid on the boot's own
+        // time alongside the basis it belongs to, and cached on the tier for
+        // the life of the page. The cost is published per tier rather than
+        // asserted to be small (T.mcentMs, __v3.centroids()).
+        if (warpEnabled && WARP_EXT && WARP_BASIS_TIERS[BASIS]) morphCentroids(B);
 
         var T = READY[tier], m = activeMeasure();
         // Nothing safe to stand in for at this instant — the reader has moved
@@ -3239,6 +3633,14 @@
     if (!warpEnabled || !WARP_EXT || !TRANSITION) {
       warpWarm = true; setStatus(); return;
     }
+    // Every OTHER warp-capable tier that happens to be resident already gets
+    // its centroids here too, for the same reason: the array is wanted the
+    // moment that tier is first drawn, and boot time is cheaper than a click.
+    // The tiers that are not resident pay for their own on their first build,
+    // which for everything but the output areas is a fraction of a millisecond.
+    Object.keys(WARP_BASIS_TIERS).forEach(function (k) {
+      if (k !== WARP_TIER && READY[k]) morphCentroids(READY[k]);
+    });
     var W = READY[WARP_TIER];
     if (tier === WARP_TIER || (W && W.painted)) {
       if (W) morphCentroids(W);
@@ -3330,31 +3732,42 @@
         var doMorph = crossFade && morphEnabled && mode !== "street" &&
                       morphReady(from, tier, fromVals);
         // THE WARP FORK, and it is deliberately the last decision taken: a pair
-        // that cannot be warped falls through to V1's morph having changed
-        // nothing, which is what makes ?warp=0 and every non-nested pair
-        // V1-identical rather than V1-shaped.
-        var warpDir = doMorph ? warpPair(from.key, tier) : null;
+        // the policy table demotes, or one whose basis or crosswalk is not
+        // there to be had, falls through to V1's morph having changed nothing —
+        // which is what makes ?warp=0 and every "none" line V1-identical rather
+        // than V1-shaped.
+        var plan = doMorph ? warpBasisFor(from.key, tier) : null;
         // Any path NOT continuing the morph retires it first: both branches
         // below paint `T` and redraw, and a live morphBasis would keep the
         // basis layer as the only thing drawn and hide the result.
         if (morphBasis && !doMorph) endMorph();
-        // A WARP GESTURE RETARGETED ONTO A PAIR THAT DOES NOT WARP — mid-split,
-        // click Constituencies or Neighbourhoods. `doMorph` is true, so the
-        // guard above does not fire, and V1's morphTier takes over: it sets
-        // morphBasis to the OUTPUT AREAS, so the ward layer stops being drawn
+        // A WARP GESTURE RETARGETED ONTO A PAIR THAT DOES NOT WARP AT ALL —
+        // which since the policy table means a pair carrying "none", or one the
+        // page could not build a basis for. `doMorph` is true, so the guard
+        // above does not fire, and V1's morphTier takes over: it sets
+        // morphBasis to the OUTPUT AREAS, so the warped layer stops being drawn
         // and the open crack leaves the screen on one frame. Meanwhile nothing
         // has bumped WARP.token, so the envelope's rAF loop keeps running —
         // detached, driving the uniform on a retired gesture's timeline against
-        // a layer nobody can see — and the ward layer keeps `noPick` and a
-        // stale `dur`/`ease` until some unrelated later endMorph happens to
-        // clear them. All three are this one line.
-        else if (doMorph && !warpDir && B_WARP) retireWarp();
-        if (doMorph && warpDir) {
+        // a layer nobody can see — and that layer keeps `noPick` and a stale
+        // `dur`/`ease` until some unrelated later endMorph happens to clear
+        // them. All three are this one line.
+        //
+        // THE SET IT GUARDS HAS SHRUNK, and that is worth saying rather than
+        // leaving to be discovered: with every pair now warping in one mode or
+        // the other, the only routes through here are a demoted pair, a
+        // ?warpmode= override, and a failed crosswalk. The two cases it used to
+        // cover on its own — a retarget that changes the basis, and one that
+        // moves between the two modes — are handled INSIDE morphWarpTier and
+        // morphTier instead (releaseBasis + setWarpBasis), because those must
+        // hand the crack over rather than retire it.
+        else if (doMorph && !plan && B_WARP) retireWarp();
+        if (doMorph && plan && plan.mode === "finer") {
           switching = true;
-          morphWarpTier(from, T, m, fromVals, fromNd, warpDir);
+          morphWarpTier(from, T, m, fromVals, fromNd, plan);
         } else if (doMorph) {
           switching = true;
-          morphTier(from, T, m, fromVals, fromNd);
+          morphTier(from, T, m, fromVals, fromNd, !!(plan && plan.mode === "oa"));
         } else if (crossFade) {
           // CURTAIN DOWN, then UP. The outgoing areas sink to ground on their
           // own, and only once they are flat do the incoming ones rise. The
@@ -3850,6 +4263,16 @@
     },
     // The raw uniform, for the endpoint-identity assertions.
     setWarpAmount: function (a) { stopWarp(); setWarp(+a || 0); return WARP.amount; },
+    // POINT THE SCRUB AT A DIFFERENT TIER. setWarpT drives whichever tier the
+    // crack is currently on, which is ward until a gesture moves it — so
+    // judging an output-area crack by hand, at rest, needs this first. It is
+    // the gesture's own function: a basis with no crack open freezes nothing.
+    setWarpBasis: function (t, p) {
+      stopWarp();
+      setWarpBasis(t, p || null);
+      redraw();
+      return WARP_TIER;
+    },
     warpInfo: function () {
       var T = READY[WARP_TIER], L = WARP.live["poly-" + WARP_TIER];
       return {
@@ -3866,6 +4289,9 @@
         feats: T ? T.header.nFeatures : 0,
         cent: !!(T && T.mcent),
         centMs: Math.round(lastCentMs * 10) / 10,
+        tierMs: T && T.mcentMs !== undefined
+                ? Math.round(T.mcentMs * 10) / 10 : null,
+        frozen: Object.keys(WARP_FROZEN).length,
         // What deck.gl thinks it has, read off the LIVE layer rather than off
         // our own props: an attribute that silently failed to bind would
         // otherwise be indistinguishable from one that worked.
@@ -3895,7 +4321,49 @@
       runWarp(dur || 1500, tok, null);
       return true;
     },
-    w2b: function () { return W2B_STATS; }
+    w2b: function () { return W2B_STATS; },
+
+    // ---- the all-pairs surface --------------------------------------------
+    // The policy AS THE PAGE HOLDS IT, not as the driver believes it to be:
+    // the table plus any ?warpmode= override, so a leg can assert the mode it
+    // is about to photograph rather than assume it.
+    policy: function (fromKey, toKey) {
+      if (fromKey) return WARP_POLICY[fromKey + ">" + toKey] || "none";
+      return { table: WARP_POLICY, bases: Object.keys(WARP_BASIS_TIERS) };
+    },
+    // What each warp-capable tier cost to prepare, and whether it is prepared.
+    // The output areas are the one worth reading: ~350k vertices.
+    centroids: function () {
+      var out = {};
+      Object.keys(WARP_BASIS_TIERS).forEach(function (k) {
+        var T = READY[k];
+        out[k] = !T ? null
+               : { verts: T.header.nVerts, rings: T.header.nRings,
+                   feats: T.header.nFeatures, built: !!T.mcent,
+                   ms: T.mcentMs === undefined ? null
+                       : Math.round(T.mcentMs * 10) / 10 };
+      });
+      return out;
+    },
+    // Every crosswalk the page has actually built, and what it saw building it.
+    xwalks: function () { return XWALK_STATS; },
+    // Frozen cracks, which must be empty whenever the page is idle: a tier left
+    // holding one would draw permanently cracked the next time it came back.
+    frozen: function () { return WARP_FROZEN; },
+    // MOVE THE CAMERA, for the beauty shots and the zoom-path legs. The reset
+    // button already does exactly this and has to re-sync the tier by hand,
+    // because a programmatic camera move does not go through
+    // onViewStateChange — so this does the same, which makes it the real zoom
+    // path minus the pointer.
+    setZoom: function (z, dur) {
+      deckgl.setProps({
+        initialViewState: Object.assign({}, CAMERA, {
+          zoom: +z, transitionDuration: dur === undefined ? 0 : +dur
+        })
+      });
+      applyZoom(+z);
+      return +z;
+    }
   };
 
   // ---- the spike bench ----------------------------------------------------

@@ -622,3 +622,250 @@ scrub (worst frame 12.3 ms) and 178.9 fps across the gesture (worst 16.5 ms), th
 3. `WARP.beat` is left holding the last beat's name after a completed gesture (`"merge"` in
    W4b's idle read-back). It is a HUD label only and is not gated, but it is state that
    `retireWarp` clears and a normal finish does not.
+
+---
+
+# All-pairs extension
+
+V3 shipped warping exactly one pair, ward ↔ borough, with `WARP_TIER` and `WARP_PARENT` as two
+constants and a note saying "any nested pair can follow by adding its finer tier here". This
+round takes that note up for **all thirty ordered pairs** of the six area types, under one
+policy table, and replaces the constants with live state the table writes per gesture.
+
+**The amendment is folded in.** The task as first written had every non-nested pair keep the
+plain V1 morph. The owner then asked for those to warp as well — an **OA-basis shatter** — on
+the reasoning that V1 already draws those transitions on the output areas, so the same envelope
+on that same layer is a city-wide craze while the values flow. That is what is built: three
+modes, not two, and the "plain V1 morph" is now the *revert lever* rather than the default for
+anything.
+
+## The policy table
+
+`static/labs/morph/v3/index.html`, at the top of the morph section, immediately after
+`var BASIS = "oa"` — `WARP_POLICY_TABLE`. Thirty rows, one per ordered pair, one comment per
+row, third column is the mode:
+
+| mode | what it does | pairs |
+| --- | --- | --- |
+| `finer` | the crack runs on the **finer tier of the pair**, which for a nested pair is one of the two endpoints. Split: the finer tier is seeded with the coarser one's plateau and cracks open as the values arrive. Merge: the finer tier cracks, the values converge, and it heals into the coarser map. | 20 — the ten nested pairs, both directions |
+| `oa` | **the shatter.** No plateau exists on either endpoint, so the morph is V1's — drawn on the output areas — with the envelope on that layer. | 10 — lsoa↔ward and every pcon pairing except oa↔pcon |
+| `none` | V1's plain morph, no warp. | 0 by default |
+
+Demoting a pair is editing its third column and nothing else: `WARP_BASIS_TIERS` — which
+decides which layers carry the extension for the life of the page — is *derived* from the
+table, so there is no second place to remember. `warpBasisFor(fromKey, toKey)` is the single
+question `apply()` asks, and it returns either null (V1's morph) or a plan naming the basis,
+its parent, the direction and the crosswalk.
+
+There is also a **URL override**, `?warpmode=ward>pcon:none,…`, validated against the table and
+reported as a page error if it cannot be read. It exists because the driver needs to photograph
+a demoted pair without editing the file — see X3 and W5 below.
+
+### Which pairs nest, and how that is established
+
+`oa` sits inside every other tier; `lsoa` and `ward` each sit inside `borough`, and `borough`
+inside `gla`. `lsoa` and `ward` do **not** nest in each other, and `pcon` nests in nothing but
+takes the output areas. Every crosswalk is composed through `oa.parents.json` — never through
+the labels file, whose `lad[]` is not a borough row index — by the generalised `buildXwalk`,
+which **throws** on a conflicting parent, an out-of-range row at either end, or any unmapped
+child. `WARD2BOROUGH` and `W2B_STATS` survive as the ward→borough entry, because the existing
+`__v3.w2b()` surface and the `?stage=plateau` reference read them.
+
+X0 builds all ten from a page with every tier resident, and prints what each one saw:
+
+```
+ward>borough      689 of 689    rows mapped, 0 conflicts, over 26369 output areas
+ward>gla          689 of 689    rows mapped, 0 conflicts
+borough>gla        33 of 33     rows mapped, 0 conflicts
+lsoa>borough     4994 of 4994   rows mapped, 0 conflicts
+lsoa>gla         4994 of 4994   rows mapped, 0 conflicts
+oa>lsoa         26369 of 26369  rows mapped, 0 conflicts
+oa>ward         26369 of 26369  rows mapped, 0 conflicts
+oa>borough      26369 of 26369  rows mapped, 0 conflicts
+oa>gla          26369 of 26369  rows mapped, 0 conflicts
+oa>pcon         26369 of 26369  rows mapped, 0 conflicts
+```
+
+That is the nesting claim tested rather than restated: a `finer` line on a pair that does not
+really nest fails here, loudly, instead of drawing a plateau that is not the coarser map.
+`oa>pcon` is the one worth naming — pcon is a best-fit assignment in the build, and it comes
+back exact in the shipped geometry, which is what makes `oa ↔ pcon` a legal `finer` line.
+
+## What had to change, beyond the table
+
+* **The crack is now per layer.** Four tiers carry the extension (`ward`, `borough`, `lsoa`,
+  `oa`), so a single global uniform would crack all four at once, ghost commits included.
+  `warpAmount(layer)` names the live basis by layer id — one stable function rather than a
+  closure per tier, because deck.gl compares props between rebuilds.
+* **`warpsOn()` is static.** Attaching or detaching an extension rebuilds a layer's models and
+  invalidates every attribute, so the attach set cannot key on the tier the crack happens to be
+  on right now. It keys on the table.
+* **Centroids per tier**, cached on the tier, built at most once, with the cost published per
+  tier (`__v3.centroids()`). The two expensive ones are pre-built off the interaction path:
+  `warmMorph` builds the output-area array (26,435 rings / 350,538 vertices, **2–4 ms** across
+  runs) alongside the basis it belongs to, and `warmWarp` keeps building the ward one plus any
+  other resident warp-capable tier.
+* **A retarget can now change the basis**, which was impossible before. The tier the crack
+  *leaves* is (a) **released** of `dur`/`ease`/`noPick` — that is the W6 defect one tier along —
+  and (b) **frozen** at the crack it had, for the warm window in which it is still the picture,
+  so the swap between two bases happens at one crack width. `WARP_FROZEN` is cleared by
+  `retireWarp()` and by both `handBack()`s, published in the status node, and gated by the
+  driver's idle read-back.
+* **`morphSeed` now means "the tier actually on screen"**, not "`fromKey`". With every pair
+  warping, a retarget can land on a gesture that is drawing a third tier, and the old expression
+  would have kept drawing a layer that was not the picture. Both morph functions now take
+  `morphSeed || morphBasis || fromKey` and never clobber a standing seed. The same change closes
+  a latent stuck-seed path on the warp merge (the A5b defect shape): a merge whose basis is
+  already the picture now clears `morphSeed` instead of stranding it.
+* **A merge can need a seed.** The single-pair version went straight into the gesture because
+  the finer layer was always the picture; now it may not be, so the seed/ghost/reveal preamble
+  is shared by both directions and gated on `picture === plan.finer`.
+* **`retireWarp`'s guard set has shrunk** and the comment in `apply()` says so: with every pair
+  warping by default, `doMorph && !plan && B_WARP` is now reached only by a demoted pair, a
+  `?warpmode=` override, or a failed crosswalk. The two cases that used to fall through it — a
+  basis change, and a move between modes — are handled inside the two morph functions, because
+  those must *hand the crack over* rather than retire it.
+
+## One defect found, and it was in the shipped carry
+
+`runWarp` carries an open crack into the new envelope so an interrupt blends rather than snaps.
+It measured that blend from the envelope's `t0`, in wall-clock time.
+
+Retargeting onto the output-area basis repaints 350k vertices and hands deck.gl new buffers,
+which **blocks the main thread for ~400 ms** — X6's tape shows the gap between two drawn frames.
+So the whole 180 ms carry window expired before a single frame was drawn, and the first frame
+the reader actually saw dropped the crack **from 0.08000 to 0.01409 in one step** and then
+reopened it. Measured, on the tape, before the fix:
+
+```
+8029  oa  0.08000   <- last frame before the block
+8452  oa  0.08000   <- 423 ms later, still nothing drawn in between
+8456  oa  0.01409   <- JUMP -0.06590
+```
+
+The carry is now clocked from **the first frame it draws**, which is the right clock for a blend
+meant for the reader's eye: a window that expires before anything is drawn has not blended, it
+has snapped. The envelope itself stays on the wall clock, deliberately, because deck.gl's
+attribute transition is wall-clocked too and the crack has to stay in step with the values. The
+same fix also improves the ordinary same-basis interrupt, which was losing ~85 ms of its 180 ms
+window to the retarget's own paint.
+
+X6 gates it: the steepest one-frame fall anywhere in the hand-over, limit 0.03 of a 0.08 crack.
+Committed run: **0.00707**. The pre-fix defect was 0.0659.
+
+## Verification — the X arms
+
+All of A1–A13, A0, S and W1–W6 stay green, unchanged in substance. W5 keeps its own scenario by
+demoting its pair for that page only (`?warpmode=ward>pcon:none`), since ward → pcon is a
+shatter now; that also makes it the one leg exercising a demoted pair end to end.
+
+New, and every endpoint against a directly loaded reference:
+
+| leg | what | result |
+| --- | --- | --- |
+| X0 | the table as the page holds it; 30 pairs, modes as expected; extension on exactly `borough, lsoa, oa, ward`; all ten crosswalks build | pass |
+| X1a | ward → gla, crack on the wards | MAD 0.0000/255, 0 pixels past 12/255 |
+| X1b | borough → gla, crack on the boroughs | MAD 0.0000/255, 0 pixels |
+| X1c | lsoa → borough, 4,994 LSOAs cracking | MAD 0.0000/255, 0 pixels |
+| X1d | oa → lsoa, 26,369 output areas cracking | MAD 0.0002/255, 13 pixels (0.0010%) |
+| X2a | pcon → gla **shatter**, and it engaged (basis `oa`, uniform 0.08 at the peak) | MAD 0.0000/255, 0 pixels |
+| X2b | lsoa → ward **shatter**, same | MAD 0.0002/255, 8 pixels (0.0006%) |
+| X3 | ward → pcon **demoted to `none`**: uniform 0.00000 at the peak, no basis held, nothing frozen | MAD 0.0000/255, 0 pixels |
+| X4 | borough → oa at **OA grain**, 26,435 rings | MAD 0.0000/255, 0 pixels |
+| X5 | the **zoom auto-switch** at 12.6, camera moved, against the same route under `?morph=0` | MAD 0.0014/255, 81 pixels (0.0061%) |
+| X5b | the zoom-warp **interrupted** by a pill click | idle read-back clean |
+| X6 | a retarget **moving the crack between bases** | MAD 0.0001/255, 6 pixels |
+
+The idle read-back now covers **every resident tier** rather than the two the single-pair build
+could reach, plus `WARP_FROZEN` — a tier left holding a frozen crack would draw permanently
+cracked the next time it was shown, and no endpoint assertion could see it.
+
+The endpoint identity of a shatter is worth one sentence: it cannot distinguish a shatter from
+V1, because the whole design is that the geometry is true again before the hand-off. X2's
+mid-flight read is what separates them, and it reads the **basis** as well as the uniform — a
+crack open on the wrong layer would pass a test that only asked whether the uniform was
+non-zero.
+
+### Frame rate at OA grain — reported, not gated
+
+Committed run: **168.6 fps over 100 frames, worst 28 ms** for the borough → oa gesture. Across
+the runs of this driver during this task the same leg measured **62.7, 93.3 and 168.6 fps**, and
+the ward-grain legs moved with it (W3's gesture 141.9–178.9 fps, S's scrub 90.6–179.9). That
+spread is machine contention rather than the build: the state and pixel gates did not move at
+all between those runs. The two gated frame rates keep their floor of 55, which v2's CPU path
+could not reach at ward grain under any load. `RESULTS.txt` carries this caveat in its header.
+
+The per-frame cost of the warp does not depend on grain — it is one uniform write either way,
+which is exactly the claim v2's CPU path could not make. What scales is the centroid array,
+built once, off the interaction path, and measured.
+
+## The aesthetics, and the zoom-scaled inset question
+
+Four frames are committed for the owner's eye and asserted by nothing:
+`beauty_oa_lsoa_crack.png`, `beauty_lsoa_borough_crack.png`,
+`beauty_pcon_gla_shatter_z10.png`, `beauty_pcon_gla_shatter_z12p5.png`. All four are caught at
+the envelope's peak, where cubic-in-out is stationary, and take `?shield=0` so the embed prompt
+is not sitting across the map.
+
+Beside them is a measurement, because "does an output-area crack read at all when the whole city
+is in frame?" is an eye question but *how much of the picture it moves* is not. Two settled
+frames of the same output-area map, uniform scrubbed from 0 to a full crack, nothing else
+changing:
+
+| view | MAD | pixels past 12/255 |
+| --- | --- | --- |
+| whole city (zoom ~10) | 1.3384/255 | **5.81%** of the frame |
+| zoomed in (zoom 12.5) | 4.8229/255 | **15.40%** of the frame |
+
+**The reading.** At 12.5 the shatter is unmistakable — the city crazes like a glaze, and it
+reads as intent. At the default whole-city view it is not invisible, but it reads as a fine
+texture or etching rather than as cracks, because at ~33 m per pixel most output-area gaps are
+sub-pixel. So a zoom-scaled inset — deeper `s` when zoomed out — is a *plausible* lever, and the
+ratio above (2.65x more of the frame moves when zoomed in) is the size of the gap it would be
+closing. **It is not implemented**, per instruction. Two things argue for thinking before adding
+it: the endpoint is exact because the inset returns to zero and not because of its depth, so a
+zoom-dependent depth is safe on that count — but a deeper crack at whole-city view also eats a
+larger share of each area's *visible* footprint, and at 0.08 the plateau silhouette is already
+visibly nibbled at the city edge. The honest position is that the z10 shatter is
+legible-but-subtle and the decision is the owner's.
+
+## Deviations
+
+1. **Centroids are built when a tier's layer is first BUILT, not when it first warps.** The
+   brief asked for lazy-on-first-warp. The page's own stated invariant is that the extension and
+   the centroid attribute are "attached together or not at all" — a layer carrying the extension
+   with no centroids would fall back to `[0,0]` and pull every vertex towards null island the
+   instant the uniform moved. Honouring that is worth more than strict laziness, so `polyData`
+   builds the array for a warp-capable tier, cached, and the two warm-ups pre-build the
+   expensive ones so the interaction path only ever hits the cache. The intent of the
+   instruction — no OA-grain pass on a click — is met and measured.
+2. **The shatter reuses `morphTier` rather than `morphWarpTier`.** The amendment describes it as
+   V1's morph with the envelope on the OA layer, and that is literally what it is: one `runWarp`
+   call in `animate()` and the basis bookkeeping at the top. A second copy of the choreography
+   would have been a second thing to keep in step.
+3. **One page fix outside the brief**: the carry clock, above. It was found by the new X6 leg,
+   it is four lines, and leaving it would have shipped a one-frame crack collapse in the middle
+   of every retarget onto the OA basis.
+4. **Two lab hooks added** to `window.__v3`: `setZoom` (moves the camera and re-syncs
+   `applyZoom` by hand, exactly as the reset button does) and `setWarpBasis` (points the at-rest
+   scrub at a tier other than ward). Both are additive; every production hook is unchanged.
+   `?cwtier=` was added beside `?cpuwarp=` so the CPU-truth reference names its tier explicitly
+   rather than reading a `WARP_TIER` that now moves per gesture.
+
+## Concerns
+
+1. **The ~400 ms main-thread block when a retarget repaints the output-area basis is real and is
+   not fixed.** It is V1's cost, not the warp's — the same two paints happen on every non-nested
+   morph in the shipped build — but the warp makes it *legible*, because a frozen crack is more
+   obviously frozen than a frozen map. X6's tape prints the gap. Nothing here says how it feels.
+2. **The shatter at whole-city zoom is subtle**, quantified above, and whether that is the right
+   amount of subtle is unjudged. The revert lever is one line per pair.
+3. **X6 and X5b pass on the first run after the code that makes them pass was written**, which
+   is the same shape as the standing W5/W6 concern. Only the carry gate has been seen red — its
+   pre-fix numbers are in this report.
+4. **`?warpmode=` is a lab affordance that reaches production behaviour.** It validates its
+   input and reports a page error on anything it cannot read, but it is a query string that
+   changes how the map animates, and it should be considered when this page is ported.
+5. **`WARP.beat` is still left holding the last beat's name after a completed gesture** —
+   unchanged from the previous round's concern 3, and now reading `"shatter"` as well as
+   `"split"` and `"merge"`.
