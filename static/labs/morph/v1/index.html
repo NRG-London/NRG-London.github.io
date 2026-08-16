@@ -1212,10 +1212,10 @@
       // milliseconds and deck.gl caches it, so switching back to an area type
       // already seen is a uniform flip rather than a rebuild.
       //
-      // During a switch TWO are visible at once: the outgoing one sinking to
-      // ground and fading out while the incoming one rises. That overlap is
-      // what makes it a dissolve rather than a curtain coming down and going
-      // back up.
+      // EXACTLY ONE area type is ever visible for its pixels — see the
+      // hand-off note below — but a second can be in the stack as a GHOST,
+      // drawn with colour and depth writes off so that deck.gl uploads its
+      // buffers on a frame nobody sees. That is the only overlap there is.
       Object.keys(MANIFEST.tiers).forEach(function (t) {
         var T = READY[t];
         // While an area type is on its way OUT it is the only one drawn.
@@ -2180,21 +2180,37 @@
     // invisible whenever the basis last held this same map and a flash of a
     // different one whenever it did not: a measure, year or change-view switch
     // repaints only the tier on screen, so the first morph after any of them
-    // left the basis a whole measure out of date. Measured at 46,642 of
-    // 196,608 sampled pixels moving a luminance bucket in one frame and back
-    // the next; see the investigation report. So the seed commit draws the
+    // left the basis a whole measure out of date. Measured at an L1 histogram
+    // distance of 46,642 over a 196,608-pixel region — roughly 23,000 pixels
+    // changing luminance bucket for one frame and changing back on the next;
+    // see the investigation report. So the seed commit draws the
     // basis as a GHOST, with the outgoing tier still on screen, and the reveal
     // waits for the commit after — no extra frames overall, because the two
     // commits the animate already had to wait for are these two.
-    var warmSeed = false;
     if (fromKey !== BASIS && morphBasis !== BASIS) {
       B.snap = true;
       paintFrom(B, fromT, fromVals, fromNd, m, PARENTS[fromKey]);
-      if (ghostWarm) {
-        B.ghost = true;
-        morphSeed = fromKey;
-        warmSeed = true;
-      }
+      if (ghostWarm) morphSeed = fromKey;
+    }
+    // A RETARGET LANDING INSIDE THE PREVIOUS MORPH'S WARM WINDOW CARRIES THE
+    // WARM SEQUENCE OVER, and this branch is not defensive: `morphSeed` is
+    // still standing exactly when the basis has been painted and not yet
+    // drawn, and the test above skips the seed on any retarget because
+    // morphBasis is already BASIS. Clearing morphSeed here instead would
+    // reveal a basis whose buffer has not been uploaded — the very frame this
+    // mechanism exists to remove — because the previous morph's warm commit
+    // may not have rendered yet (two pill clicks in one task is enough).
+    // Leaving it alone was worse still: nothing re-set or cleared it, the
+    // previous morph's reveal was retired by the token, and buildStack went on
+    // resolving `shown` to a tier the reader had already left. Measured on the
+    // unfixed build: morphSeed stuck at "borough" for the life of the page,
+    // four committed renders for the whole 750 ms morph because nothing on
+    // screen was moving, the watchdog forcing the animate through at +693 ms,
+    // and the map still showing boroughs at the end of a morph to wards.
+    var warmSeed = false;
+    if (ghostWarm && morphSeed) {
+      B.ghost = true;
+      warmSeed = true;
     }
     morphBasis = BASIS;
     B.noPick = true;

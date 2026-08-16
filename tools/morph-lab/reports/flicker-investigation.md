@@ -1,7 +1,15 @@
 # The one-frame flash at the end of a morph — investigation and fix
 
 **Status: FIXED.** Branch `labs/flicker-fix`. `python tools/morph-lab/capture_v1.py`
-exits 0 with 13/13 assertions, A13 being new.
+exits 0 with 14/14 assertions (A1-A13 plus the new A5b).
+
+> **Fix round 1** at the end of this document is the current state: one CRITICAL review
+> finding fixed (a retarget landing inside the seed's warm window stranded `morphSeed`),
+> one probe-liveness gap closed, and two paths that this report had declared clean by
+> argument measured instead. §1–§9 have been corrected in place where they were wrong —
+> the histogram metric is L1 and was described as a pixel count, §3's attribution of the
+> seed residual to the borough outlines was wrong, §5's "a hidden paint never reaches the
+> GPU" was too strong, and §6's latency figure was a guess and is now an A/B.
 
 **Root cause in one sentence.** Both swaps in a morph reveal a poly layer on the same
 committed render that first hands deck.gl that layer's new attribute values, and on that
@@ -80,9 +88,18 @@ was checked the other way instead:
 ## 2. Phase 1 — the frame, caught
 
 The discriminating matrix from the brief, driven through the real `__setArea` pill path
-with each step settled before the next, on a fresh load. `d(prev)` / `d(next)` are
-histogram distances in pixels-moved-a-bucket, out of 196,608; a **one-frame anomaly** is a
+with each step settled before the next, on a fresh load. A **one-frame anomaly** is a
 frame further from *both* neighbours than they are from each other.
+
+**What the distances are.** `d(a, b)` is the **L1 distance between the two eight-bucket
+luminance histograms**, over a 196,608-pixel region. A pixel that changes bucket
+decrements one bucket and increments another, so **L1 is about twice the number of pixels
+that moved** — 46,642 of L1 is roughly 23,300 pixels, about 11.9% of the region. Every
+number below, and every limit in A13, is in L1 units; where a share of the region is
+quoted it is the L1 ratio, so halve it to read it as a share of pixels. (An earlier
+draft of this report described the L1 figures as pixel counts. The assertions are
+unaffected — limits and measurements are in the same units — but the prose overstated the
+pixel counts twofold.)
 
 Before the fix (`probe_p3`, 964 committed frames signed; reproduced identically in an
 earlier run, `probe_p2`):
@@ -105,10 +122,10 @@ Read as one-frame **excess** (`min(d(prev), d(next)) − d(prev,next)`), the who
 top of the table is:
 
 ```
-  46,258 px  23.53% of the region   s5 SEED       redraw[vis=oa mb=oa sw=1 snap=oa] phase:seed
-  16,328 px   8.30% of the region   s5 FINALISE   redraw[vis=borough mb=- sw=0 snap=borough]
-     196 px   0.10%                 boot
-      60 px   0.03%                 noise floor
+  L1 46,258   23.53% of the region (~11.8% of its pixels)   s5 SEED
+  L1 16,328    8.30% of the region (~ 4.2% of its pixels)   s5 FINALISE
+  L1    196    0.10%                                        boot
+  L1     60    0.03%                                        noise floor
 ```
 
 Answers to the brief's four cases, directly:
@@ -142,11 +159,24 @@ earlier), and **50,178** away from the correct borough map under the new measure
 (`hh_density`, n=582, the very next frame). The hand-off frame is the old measure's map,
 to within antialiasing noise.
 
-**s5 SEED (n=488).** 20,810 away from the settled ward map under the previous measure —
-and 20,810 is the constant that every borough hand-off in the table shows, because it is
-the borough outlines switching on and off. The seed frame is therefore *the previous
-measure's ward map, plus the outlines the seed turns on*: the basis's stale buffer,
-exactly. Against its own correct picture one frame later it is 46,978 away.
+**s5 SEED (n=488).** Identified by scanning the whole run for its nearest neighbour rather
+than by reasoning, which is just as well, because the reasoning in the first draft of this
+report was wrong. It sits at **distance 0** from six frames in three earlier steps —
+n=97, n=102, n=103, n=104, n=281, n=282 — and all six are the basis drawn as the
+**borough** plateau under the *previous* measure. Against its own correct picture one
+frame later it is 46,978 away, and against the ward plateau the basis was actually last
+animated to (n=379, the end of s3) it is 51,744 away.
+
+So the seed's out-of-date frame is not simply "the paint before this one": it is an older
+resident buffer still — the plateau the basis held two morphs earlier, before the
+transition that ended on wards. That makes it unambiguously a stale GPU buffer rather than
+any kind of partial or blended draw, and it is why the reader's report is of a *coherent
+wrong map* rather than of tearing.
+
+*(The first draft attributed the residual to the borough outlines switching on. That was
+wrong and is retracted: `buildStack` keeps the outlines up both before the click, because
+`tier` is ward, and during the morph, because `switching` is true, so nothing about them
+changes across this frame. The nearest-neighbour scan above replaces the guess.)*
 
 Visually: the seed frame shows a smooth, low-contrast map; the frame after it shows the
 same geography at full ward detail. Nothing is half-drawn and nothing is blank — it is a
@@ -168,19 +198,28 @@ a brief redraw of polygons in a slow system".
 
 ## 5. Root cause
 
-Three measured facts about deck.gl 9.3.7 (with luma.gl 9.3.3 in the bundle), stacked:
+Two measured facts about deck.gl 9.3.7 (with luma.gl 9.3.3 in the bundle):
 
 1. **deck.gl does not draw `visible: false` layers at all.** In the bundle,
    `_shouldDrawLayer` returns false immediately on `!layer.props.visible`.
-2. **A paint issued to a hidden layer therefore never reaches the GPU.** The morph paints
-   the destination at ANIMATE while it is hidden; 750 ms later, at FINALISE, that update
-   has still not been applied. It is not a race that more waiting fixes.
-3. **On the render that first sees new attribute values, deck.gl still holds the old
-   ones.** This is not new — it is exactly the fact the two-commit `afterCommit` encodes
-   ("a transition that has only been created has not yet been applied"), recorded in
-   task-2's fix round 1. What was not noticed is that *the layer is drawn on that render*.
-   When the layer is hidden that costs nothing. When the same commit also reveals it, the
-   reader gets a frame of the old buffer.
+2. **On the render that first DRAWS a layer after it has been repainted while hidden,
+   deck.gl draws an out-of-date value. The frame after is correct.** This is the fact the
+   two-commit `afterCommit` already encodes one level down ("a transition that has only
+   been created has not yet been applied", task-2 fix round 1). What was not noticed is
+   that the layer is *drawn* on that render. While it stays hidden that costs nothing;
+   when the same commit also reveals it, the reader gets a frame of the old picture.
+
+   The out-of-date value is **not reliably the paint immediately before**: §3 measured the
+   seed's stale frame as the plateau the basis held two morphs earlier, at distance 0 from
+   six independent frames. Nothing here depends on pinning that down further, and this
+   report deliberately does not — the load-bearing claims are that the frame is coherent,
+   out of date, corrected on the next render, and removable by giving the layer a drawn
+   but pixel-free commit first. All four are measured.
+
+   *(An earlier draft stated a third "fact" — that a paint issued to a hidden layer never
+   reaches the GPU at all. That is too strong, and the curtain measurement below is what
+   disproves it: `paintFlat` is issued to a hidden layer and its value is exactly what the
+   curtain's reveal frame draws 380 ms later. Retracted.)*
 
 Both swaps in `morphTier` did exactly that:
 
@@ -196,9 +235,39 @@ entering or leaving the change view — paints `T`, the tier on screen, and noth
 Every other tier, and the basis, keep the buffers they were last drawn with. Hence: first
 arrival at each area type after a measure change flashes; the second does not.
 
-Nothing here is morph-specific in principle, but the curtain never meets it: its incoming
-layer is rendered flat (`paintFlat`) for a full frame before it rises, so its first drawn
-frame is the flat baseline it wanted anyway.
+### The two other paths that reveal-and-repaint on one commit — measured, both clean
+
+Nothing about the mechanism is morph-specific, so the two other places in this page that
+reveal a layer on the same commit that repaints it were measured rather than reasoned
+about. Both are clean, and both are now assertions (A13 legs 3 and 4).
+
+**A measure, year or change-view switch landing MID-MORPH.** `apply()`'s plain-paint
+branch does `endMorph(); paint(T); redraw();`, and `T` is the morph's hidden destination —
+exactly the same shape as the two swaps. Worst one-frame excess over the switch: **0.00%**
+in the standalone measurement and **0.01%** in the committed driver run, in both the
+measure and the change-view variants; every marked frame is a clean step (negative
+excess). The reveal frame does draw an out-of-date value — measured at mean
+luminance 94.107, which is the tier's own map on the **old** measure — but that is
+precisely where the 750 ms measure ease is supposed to start from. It is a legitimate
+animation start, not a wrong frame, and warm-committing it would delete the animation.
+**No fix, on the evidence.**
+
+**The curtain, under `?morph=0`.** Its rise is `fading = null; T.dur = FADE_UP;
+paint(T, …); redraw();` — reveal and repaint on one commit, with `paintFlat(T)` having been
+issued 380 ms earlier while `T` was hidden. Measured on the same route (a repeat area
+switch after a measure change, so `T`'s buffer is a whole measure out of date): worst
+one-frame excess **0.00%**, and the reveal frame is **flat** — mean luminance 11.575 with
+170,940 of 196,608 sampled pixels in the darkest bucket, `d(prev) = 0` — followed by a
+smooth rise (11.575 → 11.588 → 11.686 → 11.849 → 12.48 → 13.53 → …) to the settled ward
+map at 89.138.
+
+So the curtain does **not** flash, and there is **no production ticket here** — but it is
+clean for a different reason than this report first claimed. It is not that `paintFlat`
+gives the incoming layer "a full frame" (it is hidden for that frame, and hidden layers
+are not drawn). It is that the out-of-date value its reveal frame draws *is* the flat
+baseline `paintFlat` established. The page's own comment on that line — "it does not have
+to be VISIBLE to acquire one" — turns out to be exactly right, and now we know why it
+works rather than only that it does.
 
 ---
 
@@ -228,11 +297,35 @@ later. `morphBasis` is set immediately, as before, so `apply()`'s `if (morphBasi
 **FINALISE** now snaps and ghosts the destination, commits, and hands back one commit
 later.
 
-**Commit counts are unchanged where it matters.** The animate used to wait two commits of
-an already-revealed basis; it now waits the warm commit and the reveal — the same two, the
-same contract (created on the first, applied on the second), and no extra latency before
-the animation starts. The morph log gains one entry, `reveal+N`, between `seed` and
-`animate`. FINALISE gains exactly one commit, which is ~6–16 ms with nothing moving.
+**Commit counts are unchanged where it matters, and the cost was A/B'd rather than
+argued.** The animate used to wait two commits of an already-revealed basis; it now waits
+the warm commit and the reveal — the same two, the same contract (created on the first,
+applied on the second). The morph log gains one entry, `reveal+N`, between `seed` and
+`animate`, and FINALISE gains one commit.
+
+Measured over **24 morphs on each setting, alternating borough↔ward inside one browser
+session** (`?ghost=0` versus the fixed page, interleaved twice so browser warm-up cannot
+favour either):
+
+```
+                        seed -> animate            finalise+                hand-off frame
+?ghost=0    round 1     174.9 ms (150-240)         990.4 ms (966-1060)      56.6 ms (36.8-65.4)
+ghosts on   round 1     162.9 ms (151-181)         989.8 ms (976-1009)       7.6 ms ( 5.4-10.7)
+?ghost=0    round 2     158.8 ms (149-172)         974.1 ms (963- 989)      56.4 ms (51.1-60.1)
+ghosts on   round 2     158.5 ms (151-168)         988.9 ms (976-1000)      11.1 ms ( 5.6-15.7)
+
+                delta   -6.1 ms                    +7.1 ms                  -47 ms
+```
+
+**No measurable added latency before the animation starts** (−6.1 ms, inside the noise),
+**+7.1 ms to the whole morph** for the extra hand-off commit, and the hand-off frame itself
+**47 ms shorter**, because the destination's expensive first draw now lands on the
+invisible warm commit instead of on the frame the reader sees.
+
+*A note for anyone tempted to read this off `RESULTS.txt` instead:* don't. The per-capture
+morph logs there vary by ±100 ms between whole-driver runs depending on browser state, and
+comparing a pre-fix run against a post-fix run that way suggests a +75 to +195 ms
+regression that the controlled A/B above shows is not there.
 
 **Bounding the ghost.** `redraw()` clears `ghost` alongside `snap`, after the stack has
 been built — so a ghost lasts exactly one commit and no path can leave a layer drawing
@@ -308,43 +401,57 @@ cannot tell a fix from a probe that has stopped looking.
 ```
 A13 the one-frame flash: the first arrival at an area type after a
     measure change, signed frame by frame from inside the render loop
-     region [500, 226, 512, 384] of [1400, 950], 98/97 committed frames signed
-     pass fixed page      worst one-frame excess   0.00%  (limit 1.00%)
-     pass ?ghost=0 control worst one-frame excess  14.28%  (floor 5.00%)
+     region [500, 226, 512, 384] of [1400, 950]
+     pass fixed page, first arrival after a measure change    0.00%  (limit 1.00%,  81 frames)
+     pass ?ghost=0 control, the same route                   14.27%  (floor 5.00%,  86 frames)
           the control's spike is at redraw[vis=ward mb=- sw=0 snap=ward ghost=-] phase:finalise
+     pass measure change landing MID-MORPH                    0.01%  (limit 1.00%, 108 frames)
+     pass the CURTAIN under ?morph=0, the same route          0.01%  (limit 1.00%, 161 frames)
 PASS A13 no committed frame shows a picture its neighbours do not
 ```
+
+**Every leg asserts the probe was alive** — `info.on`, no `info.dead`, and at least 30
+committed frames signed. Without that the fixed leg would pass loudest when the probe had
+stopped looking altogether: `spike_of` returns 0.0 for a log shorter than three samples,
+`__flicker.log()` returns `[]` when the probe never initialised, and `probeSample()` retires
+itself into `PROBE.dead` rather than throwing, so the page's own errors gate would not catch
+it either.
+
+Legs 3 and 4 are the two paths §5 measured and did not change, asserted so that a future
+deck.gl cannot quietly break them.
 
 `?highlight=off` for the same reason A6 uses it: the peak pulse is a second animation over
 the hand-off, and this metric is about what one frame does that its neighbours do not.
 
 Across the full ten-step matrix rather than A13's single switch, the worst one-frame excess
-anywhere in 973 committed frames on the fixed page is **42 px, 0.02%** — against 46,258 px,
+anywhere in 973 committed frames on the fixed page is **L1 42, 0.02%** (about 21 pixels) — against L1 46,258,
 **23.53%**, on the unfixed one. Three orders of magnitude, with the limits in the gap.
 
 ---
 
 ## 8. Full re-run
 
-`python tools/morph-lab/capture_v1.py`, no arguments, **exit 0, 13/13**. Every
+`python tools/morph-lab/capture_v1.py`, no arguments, **exit 0, 14/14**. Every
 pre-existing number is stable within run-to-run noise, and `RESULTS.txt` plus all 18 PNGs
 are regenerated in place.
 
 ```
-                              after the fix       fix round 1 (before)
-A2  default -> ward           0.0001/255   6px    0.0002/255  16px
+                              this run            task 3, fix round 1 (before any of this)
+A2  default -> ward           0.0003/255  18px    0.0002/255  16px
 A3  pcon -> gla               0.0000/255   0px    0.0000/255   0px
 A3  ward -> borough           0.0000/255   0px    0.0000/255   0px
-A4  progression        7.90% -> 54.93% -> 95.08%   7.77% -> 54.82% -> 94.99%
-A5  interrupt                 0.0001/255   6px    0.0003/255  19px
-A6  measure change     45.7% -> 56.8% -> 93.3%    45.7% -> 57.1% -> 92.2%
-A7  suppression               0.0000/255   1px    0.0001/255   3px
-A8  change view               0.0002/255  16px    0.0003/255  24px
-A9  street mode        0 of 132 samples           0 of 130 samples
+A4  progression        7.92% -> 54.82% -> 94.96%   7.77% -> 54.82% -> 94.99%
+A5  interrupt                 0.0003/255  18px    0.0003/255  19px
+A5b retarget inside the seed's warm window
+                              0.0002/255   9px    (new)
+A6  measure change     46.0% -> 58.3% -> 92.5%    45.7% -> 57.1% -> 92.2%
+A7  suppression               0.0001/255   2px    0.0001/255   3px
+A8  change view               0.0001/255   5px    0.0003/255  24px
+A9  street mode        0 of 129 samples           0 of 130 samples
 A10 zoom during morph  drift 0.00 pts             drift 0.02 pts
-A11 reduced motion     0 of  94 samples           0 of  94 samples
-A12 unpainted basis           0.0001/255   6px    0.0002/255   8px
-A13 one-frame flash    0.00% fixed / 14.28% control        (new)
+A11 reduced motion     0 of  93 samples          0 of  94 samples
+A12 unpainted basis           0.0003/255  20px    0.0002/255   8px
+A13 one-frame flash    0.00 / 14.27 / 0.01 / 0.01%          (new, four legs)
 ```
 
 ---
@@ -378,11 +485,12 @@ A13 one-frame flash    0.00% fixed / 14.28% control        (new)
    Worth a production ticket — one `redraw()` in the `document.fonts.ready` handler — but
    it is not this change's to make.
 
-4. **The FINALISE hand-off now costs one extra committed frame.** ~6–16 ms with nothing on
-   screen moving, and it is more than paid for by the hand-off frame itself dropping from
-   58.3 ms to 8.5 ms. But it is one more commit that a future interrupt has to be able to
-   land inside; the token guard covers it and A5 still passes, and `endMorph()` clearing
-   ghosts is what makes an interrupt inside the window safe rather than blank.
+4. **The FINALISE hand-off now costs one extra committed frame.** A/B'd at **+7.1 ms** on
+   the whole morph, with **no measurable change (−6.1 ms) before the animation starts** and
+   the hand-off frame itself **47 ms shorter** (§6). But it is one more commit that an
+   interrupt has to be able to land inside. That is now asserted — A5b drives a retarget
+   into the warm window deliberately — and it is where fix round 1's critical finding
+   lived.
 
 5. **`depthCompare: "never"` is a deck.gl/luma.gl-version-sensitive constant**, in the same
    way `SNAP_MS = 1` is. If a future build stopped honouring per-layer `parameters`, the
@@ -391,11 +499,161 @@ A13 one-frame flash    0.00% fixed / 14.28% control        (new)
    catch it.
 
 6. **The mechanism is latent everywhere a deck.gl layer is revealed and repainted in one
-   commit,** not just here. Nothing in the shipped map does it today — the curtain's
-   `paintFlat` accidentally avoids it — but anyone adding a hidden-then-shown layer to that
-   page will meet it, and it is invisible in code review because the wrong frame is
-   perfectly coherent.
+   commit,** not just here. Two such paths in this page were measured (§5) and both are
+   clean — the mid-morph repaint because the out-of-date value is where its transition
+   wants to start, the curtain because the out-of-date value is the flat baseline
+   `paintFlat` established. Neither is clean by design; both are clean by luck, and both
+   are now under assertion. Anyone adding a hidden-then-shown layer to this page or to the
+   shipped map will meet the same thing, and it is invisible in code review because the
+   wrong frame is perfectly coherent.
 
 7. **What is still left to the eye.** Whether the fixed hand-off *feels* seamless on a real
    60 Hz display, and whether the ~1.4 s of first-morph tessellation still reads as lag on
    the click. Neither is a still-frame question and neither is asserted here.
+
+---
+
+# Fix round 1 — three review findings
+
+**Status: DONE.** All three fixed or measured to scope; `capture_v1.py` exits 0 with 14/14,
+`RESULTS.txt` and the PNGs regenerated in place. Two of the three turned out to need the
+opposite of what was asked, and both are argued from measurement below.
+
+## Finding 1 (CRITICAL) — a retarget inside the seed's warm window stranded `morphSeed`
+
+The reviewer is right, and it is worse than the description: it is not just a stale
+`shown`, it is a page that stops drawing.
+
+**Reproduced before fixing.** The warm window is one committed render wide, so it cannot be
+raced from outside with a timer — a retarget at +300 ms lands well past it, which is why
+the first attempt at this test saw nothing. Both pill clicks issued in **one task** puts
+the second `morphTier` in front of the first morph's warm commit deterministically, because
+`apply()`'s promises resolve in microtasks and the render does not. Against the unfixed
+build:
+
+```
+log        ["pcon->ward", "seed+0", "watchdog+693", "animate+702", "finalise+1521"]
+morphSeed after everything settles:  "borough"      (morphBasis null, switching false)
+committed renders across the whole 750 ms morph:  4
+final picture vs the pre-click borough map:  MAD 1.579   (control, ?ghost=0:  5.840)
+```
+
+Four renders for a 750 ms animation, because the layer being animated was not the layer
+being drawn; the watchdog forcing the animate through at +693 ms, because with a static
+picture on screen deck.gl had no reason to draw a second frame for `afterCommit(…, 2)` to
+count; and `morphSeed` still `"borough"` for the life of the page, so `buildStack` went on
+resolving `shown` to a tier the reader had left. The endpoint alone would never have caught
+it — FINALISE reveals the destination either way.
+
+**The fix is not the suggested one, and the difference matters.** Clearing
+`morphSeed = null` at `morphTier` entry is correct only if the previous morph's warm commit
+has already *rendered*. In the reproduction above it has not — that is precisely how the
+window is entered — so clearing it would reveal a basis whose buffer has not been uploaded:
+the flash this whole mechanism exists to remove, reintroduced on the interrupt path.
+
+Instead the warm sequence is **carried over**. `morphSeed` is left standing, and a second
+predicate re-ghosts the basis and re-arms the reveal:
+
+```js
+if (fromKey !== BASIS && morphBasis !== BASIS) {
+  B.snap = true;
+  paintFrom(B, fromT, fromVals, fromNd, m, PARENTS[fromKey]);
+  if (ghostWarm) morphSeed = fromKey;
+}
+var warmSeed = false;
+if (ghostWarm && morphSeed) { B.ghost = true; warmSeed = true; }
+```
+
+`morphSeed` is non-null exactly while the basis has been painted and not yet drawn, which
+is the invariant the whole mechanism needs, and this morph's reveal clears it. The
+outgoing tier — still the picture on screen, since nothing revealed the basis — stays
+drawn for the carried-over warm commit. After the fix, the same reproduction:
+
+```
+log        ["pcon->ward", "seed+0", "reveal+167", "animate+178", "finalise+1003"]
+morphSeed after everything settles:  null
+committed renders across the morph:  20+ and climbing continuously
+final picture vs the pre-click borough map:  MAD 5.840   — identical to the control
+```
+
+**New assertion A5b.** A5 fires at +300 ms, past both warm windows, so it asserted nothing
+about them. A5b pre-visits ward, pcon and borough so every layer carries a drawn buffer,
+then issues both clicks in one task and asserts four things at once: the endpoint is the
+ward map (MAD 0.0002/255, 9 px of 1,330,000), `morphSeed` is clear afterwards, the morph
+was actually *drawn* (at least 30 committed renders — it logged 267), and no watchdog entry
+appears in the morph log. Stranding fails three of the four.
+
+## Finding 2 (IMPORTANT) — A13's fixed leg passed if the probe never ran
+
+Correct, and it was the worst possible failure mode: the leg asserting the page is clean
+returning its loudest pass when the probe had stopped looking. `spike_of` returns 0.0 for a
+log shorter than three samples, `__flicker.log()` returns `[]` when `PROBE` is null, and
+`probeSample()` deliberately swallows a throw into `PROBE.dead` (so that a diagnostic
+cannot fail a run through the page's own errors gate) — which meant nothing anywhere would
+have noticed.
+
+Every A13 leg now folds `info.on && !info.dead && len(flog) >= 30` into its own `ok`, and
+prints all three so a failure says which one it was. The committed run signs 81 / 86 / 108 /
+161 frames across the four legs.
+
+## Finding 3 — the two other reveal-and-repaint paths: measured, both clean, neither fixed
+
+Both were measured with the same probe and metric before touching anything, and the
+measurements say there is nothing to fix. Fixing either on the strength of the code shape
+alone would have been exactly the blind fix this investigation is not allowed to make. Both
+are now A13 legs so the finding cannot rot.
+
+**(a) A measure / year / change-view switch landing mid-morph.** `endMorph(); paint(T);
+redraw();` really does reveal the hidden destination on the same commit that first hands it
+new values. Worst one-frame excess across the switch: **0.00%** standalone and **0.01%** in
+the committed driver run, in both the measure and the change-view variants — every marked
+frame is a clean step, with negative excess. The
+reveal frame *does* draw an out-of-date value (mean luminance 94.107, the tier's own map on
+the old measure), but that is where the 750 ms measure ease is supposed to start. Warm-
+committing it would land the new measure instantly and delete the animation, which is a
+worse page, not a better one. **No change made.**
+
+**(b) The curtain, under `?morph=0`.** Section 5's original claim — that `paintFlat` gives
+the incoming layer a clean frame — was wrong in its reasoning, and the reviewer was right to
+challenge it: `paintFlat` runs while the layer is hidden, and hidden layers are not drawn.
+But the conclusion survives measurement. On the same route (repeat area switch after a
+measure change, so the incoming layer's buffer is a whole measure out of date):
+
+```
+worst one-frame excess    0.00% standalone / 0.01% over 161 frames in the driver run
+the FADE_UP reveal frame                   mean luminance 11.575, d(prev) = 0,
+                                           170,940 of 196,608 pixels in the darkest bucket
+the frames after it   11.575 -> 11.588 -> 11.686 -> 11.849 -> 12.480 -> 13.530 -> ...
+the settled ward map                       mean luminance 89.138
+```
+
+The rise starts **flat** and climbs smoothly. **The curtain does not flash, there is no
+production ticket #5, and the shipped map does not have this defect** — but it is clean for
+a different reason than first written down: the out-of-date value its reveal frame draws
+*is* the flat baseline `paintFlat` established while it was hidden. The page's own comment
+on that line ("it does not have to be VISIBLE to acquire one") turns out to be exactly
+right. Sections 5 and 9.6 are corrected in place, and this measurement is what retracts the
+too-strong "a hidden paint never reaches the GPU" claim in section 5.
+
+## The smaller corrections from the review
+
+- **The histogram metric is L1, and was described as a pixel count.** A pixel that changes
+  bucket moves two counters, so L1 is about twice the number of pixels. Section 2 now
+  defines it, quotes both, and says the assertions are unaffected because limits and
+  measurements are in the same units. The same correction is in the page comment and in the
+  A13 output.
+- **Section 3's attribution of the seed residual to the borough outlines was wrong** —
+  `buildStack` keeps them up both before the click (`tier` is ward) and during (`switching`
+  is true), so nothing about them changes across that frame. Replaced with a
+  nearest-neighbour scan of the whole run, which puts the frame at **distance 0** from six
+  frames in three earlier steps, all of them the basis holding the *borough* plateau under
+  the previous measure. Not the paint before this one; an older resident buffer still.
+- **Section 6's "+6-16 ms" was a guess.** Replaced with an A/B of 24 morphs on each setting
+  inside one browser session: **-6.1 ms** to the animation start, **+7.1 ms** to the whole
+  morph, and the hand-off frame **47 ms shorter**. The section also warns against reading
+  this off `RESULTS.txt`, whose per-capture logs vary by ±100 ms between whole-driver runs
+  and suggest a +75 to +195 ms regression that the controlled A/B shows is not there.
+- **The A13 single-region caveat is now printed in `RESULTS.txt`**, not only in section 9.2.
+- **The "During a switch TWO are visible at once" comment above `buildStack` was already
+  false and is now more so.** Rewritten: exactly one area type is ever visible for its
+  pixels, and a second may be in the stack as a ghost, which is the only overlap there is.

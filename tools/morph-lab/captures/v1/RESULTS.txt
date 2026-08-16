@@ -1,75 +1,87 @@
 driver     capture_v1.py
 browser    C:\Program Files\Google\Chrome\Application\chrome.exe
-serving    C:\Users\neilg\OneDrive\Documents\neilgarratt.com\morph-flicker-fix\static  ->  http://127.0.0.1:51291/labs/morph/v1/
+serving    C:\Users\neilg\OneDrive\Documents\neilgarratt.com\morph-flicker-fix\static  ->  http://127.0.0.1:59405/labs/morph/v1/
 viewport   1400x950, FULL-FRAME comparison — no crop, because the lab's status nodes are
            display:none and the HUD is off unless ?hud=1
 settle     1.6s before every committed capture, which outlasts the 1.01s peak pulse
 
 probe [real GPU                              ] boot  {"ready": true, "errors": 0, "tier": "borough", "morphBasis": null, "switching": false, "morphReady": true}
-                                             morph ["borough->ward", "seed+4", "reveal+177", "animate+190", "finalise+1011"]
+                                             morph ["borough->ward", "seed+4", "reveal+163", "animate+174", "finalise+996"]
 
 PASS probe  boots and morphs to finalise under [real GPU]
 
 ---- captures ----
-shot a1_ref_borough.png       A1 boot ?morph=0, curtain build sanity         5.1s  ok
-shot a2_ref_ward.png          A2 ward, loaded directly                       2.3s  ok
+shot a1_ref_borough.png       A1 boot ?morph=0, curtain build sanity         4.8s  ok
+shot a2_ref_ward.png          A2 ward, loaded directly                       2.2s  ok
 shot a2_morph_ward.png        A2 default boot -> ward, morphed               3.7s  ok
-     {"status": {"ready": true, "errors": 0, "tier": "ward", "morphBasis": null, "switching": false, "morphReady": true}, "log": ["lsoa->ward", "seed+5", "reveal+149", "animate+164", "finalise+984"]}
+     {"status": {"ready": true, "errors": 0, "tier": "ward", "morphBasis": null, "switching": false, "morphReady": true}, "log": ["lsoa->ward", "seed+6", "reveal+152", "animate+166", "finalise+990"]}
 shot a3_ref_gla.png           A3 gla, loaded directly                        2.2s  ok
-shot a3_morph_gla.png         A3 pcon -> gla (non-nested)                    3.7s  ok
-     {"status": {"ready": true, "errors": 0, "tier": "gla", "morphBasis": null, "switching": false, "morphReady": true}, "log": ["pcon->gla", "seed+3", "reveal+169", "animate+177", "finalise+1000"]}
+shot a3_morph_gla.png         A3 pcon -> gla (non-nested)                    3.8s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "gla", "morphBasis": null, "switching": false, "morphReady": true}, "log": ["pcon->gla", "seed+4", "reveal+183", "animate+193", "finalise+1017"]}
 shot a3_morph_borough.png     A3 ward -> borough (merge)                     3.6s  ok
-     {"status": {"ready": true, "errors": 0, "tier": "borough", "morphBasis": null, "switching": false, "morphReady": true}, "log": ["ward->borough", "seed+2", "reveal+154", "animate+167", "finalise+996"]}
+     {"status": {"ready": true, "errors": 0, "tier": "borough", "morphBasis": null, "switching": false, "morphReady": true}, "log": ["ward->borough", "seed+4", "reveal+164", "animate+172", "finalise+991"]}
 
 shot a4_from.png              A4 seed frame — the honest zero                1.3s  ok
-shot a4_mid25.png             A4 mid-flight                                       landed at 27.1% of a 3000 ms morph
-shot a4_mid50.png             A4 mid-flight                                       landed at 52.4% of a 3000 ms morph
-shot a4_mid75.png             A4 mid-flight                                       landed at 77.4% of a 3000 ms morph
+shot a4_mid25.png             A4 mid-flight                                       landed at 27.2% of a 3000 ms morph
+shot a4_mid50.png             A4 mid-flight                                       landed at 52.5% of a 3000 ms morph
+shot a4_mid75.png             A4 mid-flight                                       landed at 77.2% of a 3000 ms morph
 
-shot a5_interrupt_ward.png    A5 borough->pcon, retargeted to ward           3.9s  ok
+
+shot -                        A5b retarget inside the seed warm window       6.4s  ok
+     both pills clicked in one task; log: ["pcon->ward", "seed+0", "reveal+137", "animate+145", "finalise+968"]
+     after it settles: morphSeed=None morphBasis=None switching=False tier='ward'; 267 committed renders across the morph
+shot a5_interrupt_ward.png    A5 borough->pcon, retargeted to ward           6.4s  ok
      at +300 ms: {"ready": false, "errors": 0, "tier": "pcon", "morphBasis": "oa", "switching": true, "morphReady": true}
      final:      {"ready": true, "errors": 0, "tier": "ward", "morphBasis": null, "switching": false, "morphReady": true}
-     log:        ["pcon->ward", "seed+0", "animate+22", "finalise+847"]
+     log:        ["pcon->ward", "seed+0", "animate+18", "finalise+840"]
 
 shot a6_meas_mid/end.png      A6 measure change after a morph                5.8s  ok
-     three frames sampled at 124, 260, 486 ms into the 750 ms ease
+     three frames sampled at 129, 265, 478 ms into the 750 ms ease
 
 shot a7_ref_oa.png            A7 oa / resident_under5y, loaded directly      2.5s  ok
-shot a7_morph_oa.png          A7 lsoa -> oa under suppression                3.7s  ok
-     {"status": {"ready": true, "errors": 0, "tier": "oa", "morphBasis": null, "switching": false, "morphReady": true}, "log": ["lsoa->oa", "seed+3", "reveal+146", "animate+160", "finalise+991"]}
+shot a7_morph_oa.png          A7 lsoa -> oa under suppression                3.6s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "oa", "morphBasis": null, "switching": false, "morphReady": true}, "log": ["lsoa->oa", "seed+5", "reveal+150", "animate+165", "finalise+989"]}
 
 shot a8_ref_change.png        A8 ward change view, loaded directly           2.2s  ok
 shot a8_morph_change.png      A8 change view, borough -> ward                3.6s  ok
-     {"status": {"ready": true, "errors": 0, "tier": "ward", "morphBasis": null, "switching": false, "morphReady": true}, "log": ["borough->ward", "seed+2", "reveal+150", "animate+162", "finalise+987"]}
+     {"status": {"ready": true, "errors": 0, "tier": "ward", "morphBasis": null, "switching": false, "morphReady": true}, "log": ["borough->ward", "seed+4", "reveal+173", "animate+185", "finalise+1007"]}
 
 shot -                        A9 street mode keeps the curtain               3.7s  ok
-     132 state samples across the switch, morphActive true in 0
+     129 state samples across the switch, morphActive true in 0
 
 shot a10_zoom_mid75.png       A10 zoom during morph                          5.8s  ok
      curElevScale 1 -> 0.11323210104515069 -> 1 across the nudge; frame landed at 77.4% of the morph
-     log: ["borough->ward", "seed+2", "reveal+158", "animate+171", "finalise+3243"]
+     log: ["borough->ward", "seed+3", "reveal+169", "animate+180", "finalise+3253"]
 
-shot -                        A11 reduced motion switches instantly          2.4s  ok
-     TRANSITION=0  MORPH_DUR=0  94 samples, morphActive true in 0
+shot -                        A11 reduced motion switches instantly          2.5s  ok
+     TRANSITION=0  MORPH_DUR=0  93 samples, morphActive true in 0
 
 shot -                        A12 morph with an unpainted basis              4.5s  ok
-     READY.oa.painted cleared to null; 80 samples across the switch, morphActive true in 32
-     log: ["borough->ward", "seed+3", "reveal+154", "animate+164", "finalise+986"]
+     READY.oa.painted cleared to null; 77 samples across the switch, morphActive true in 31
+     log: ["borough->ward", "seed+2", "reveal+158", "animate+170", "finalise+996"]
 
 shot -                        A13 fixed page: warm commits on                4.6s  ok
-     region [500, 226, 512, 384] of canvas [1400, 950], 98 committed frames signed
-     worst one-frame excess 0.00% of the region  at t=4109 ms, no mark
+     pass probe alive: on=True dead='' 81 committed frames signed (need >= 30), region [500, 226, 512, 384] of [1400, 950]
+     worst one-frame excess 0.00% of the region  at t=4096 ms, no mark
 
 shot -                        A13 ?ghost=0 control: warm commits off         4.6s  ok
-     region [500, 226, 512, 384] of canvas [1400, 950], 97 committed frames signed
-     worst one-frame excess 14.28% of the region  at t=4118 ms, redraw[vis=ward mb=- sw=0 snap=ward ghost=-] phase:finalise
+     pass probe alive: on=True dead='' 86 committed frames signed (need >= 30), region [500, 226, 512, 384] of [1400, 950]
+     worst one-frame excess 14.27% of the region  at t=4165 ms, redraw[vis=ward mb=- sw=0 snap=ward ghost=-] phase:finalise
+
+shot -                        A13 measure change landing MID-MORPH           3.6s  ok
+     pass probe alive: on=True dead='' 108 committed frames signed (need >= 30), region [500, 226, 512, 384] of [1400, 950]
+     worst one-frame excess 0.01% of the region  at t=3168 ms, no mark
+
+shot -                        A13 the CURTAIN, ?morph=0, same route          5.0s  ok
+     pass probe alive: on=True dead='' 161 committed frames signed (need >= 30), region [500, 226, 512, 384] of [1400, 950]
+     worst one-frame excess 0.01% of the region  at t=4082 ms, no mark
 
 ---- assertions ----
 PASS A1 boot with ?morph=0: page ready, errors 0 (curtain build sanity)
 
 PASS a2_ref_ward.png vs a2_morph_ward.png
      A2 endpoint: the default view morphed to ward through the real pill path lands on the ward map
-     MAD 0.0001/255 (limit 2.0)   pixels >12/255: 6 of 1330000 = 0.0005% (limit 0.5%)   max channel diff 35
+     MAD 0.0003/255 (limit 2.0)   pixels >12/255: 18 of 1330000 = 0.0014% (limit 0.5%)   max channel diff 36
 
 PASS a3_ref_gla.png vs a3_morph_gla.png
      A3 endpoint, non-nested: pcon -> gla lands on the Assembly-seat map
@@ -77,51 +89,65 @@ PASS a3_ref_gla.png vs a3_morph_gla.png
 
 PASS a1_ref_borough.png vs a3_morph_borough.png
      A3 endpoint, merge direction: ward -> borough lands on the borough map, borough outlines stepping back out
-     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1330000 = 0.0000% (limit 0.5%)   max channel diff 0
+     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1330000 = 0.0000% (limit 0.5%)   max channel diff 1
 
 A4 mid-flight progression: does the morph SLIDE?
-     the seed frame and the ward map are 4.4057/255 apart
-     a4_mid25   0.3479 from the seed,  4.1900 from the ward end  ->   7.90% across   (frame landed at 27.1%)
-     a4_mid50   2.4200 from the seed,  2.5537 from the ward end  ->  54.93% across   (frame landed at 52.4%)
-     a4_mid75   4.1888 from the seed,  0.3901 from the ward end  ->  95.08% across   (frame landed at 77.4%)
+     the seed frame and the ward map are 4.4053/255 apart
+     a4_mid25   0.3491 from the seed,  4.1892 from the ward end  ->   7.92% across   (frame landed at 27.2%)
+     a4_mid50   2.4152 from the seed,  2.5582 from the ward end  ->  54.82% across   (frame landed at 52.5%)
+     a4_mid75   4.1831 from the seed,  0.3973 from the ward end  ->  94.96% across   (frame landed at 77.2%)
      pass strictly increasing
      pass p25 >= 1.0%
      pass p50 within 10-90%
      pass p75 <= 99.9%
-PASS A4 the morph interpolates: 7.90% -> 54.93% -> 95.08%
+PASS A4 the morph interpolates: 7.92% -> 54.82% -> 94.96%
 
 PASS a2_ref_ward.png vs a5_interrupt_ward.png
      A5 interrupt: borough->pcon retargeted to ward 300 ms in, landing exactly on the ward map
-     MAD 0.0001/255 (limit 2.0)   pixels >12/255: 6 of 1330000 = 0.0005% (limit 0.5%)   max channel diff 35
+     MAD 0.0003/255 (limit 2.0)   pixels >12/255: 18 of 1330000 = 0.0014% (limit 0.5%)   max channel diff 33
      pass a morph really was in flight when the second pill was clicked
      pass no stuck morphBasis and no stuck switching afterwards
+
+PASS a2_ref_ward.png vs <a5b final frame, in memory>
+     A5b a retarget landing INSIDE the seed's warm window still lands exactly on the ward map
+     MAD 0.0002/255 (limit 2.0)   pixels >12/255: 9 of 1330000 = 0.0007% (limit 0.5%)   max channel diff 33
+     pass morphSeed is cleared afterwards, not stranded on the tier the reader left
+     pass the morph was actually DRAWN (267 committed renders, need >= 30)
+     pass no watchdog: the commit chain never stalled
+     STRANDING SHOWS IN ALL THREE AT ONCE, and did before the fix:
+     morphSeed stayed "borough" for the life of the page, the whole
+     750 ms morph took four committed renders because the layer being
+     animated was not the one being drawn, and the watchdog forced the
+     animate through at +693 ms. The endpoint alone would not have
+     caught it — FINALISE reveals the destination either way.
+PASS A5b a retarget inside the warm window is an ordinary interrupt
 
 A6 a measure change AFTER a morph still animates (the snap-poisoning regression)
      zero is the settled ward map on the OLD measure, so the chrome the change rewrites
      (title, legend, active pill) is a fixed part of every number below — which is why
      the claim is that they INCREASE, not that any one of them equals the easing.
-        124 ms after the change  ->   45.74% across
-        260 ms after the change  ->   56.84% across
-        486 ms after the change  ->   93.32% across
+        129 ms after the change  ->   46.02% across
+        265 ms after the change  ->   58.34% across
+        478 ms after the change  ->   92.52% across
      pass the first frame is strictly between the two ends (>2% and <98%)
      pass the three frames strictly increase — so it slides rather than cutting or stalling
 PASS A6 the measure change after a morph still animates
 
 PASS a7_ref_oa.png vs a7_morph_oa.png
      A7 suppression: lsoa -> oa on resident_under5y, whose denominator suppresses 294 output areas and none at any coarser grain
-     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 1 of 1330000 = 0.0001% (limit 0.5%)   max channel diff 13
+     MAD 0.0001/255 (limit 2.0)   pixels >12/255: 2 of 1330000 = 0.0002% (limit 0.5%)   max channel diff 29
 
 PASS a8_ref_change.png vs a8_morph_change.png
      A8 change view: 2011->2021 at borough, morphed to ward, landing on the directly loaded change view
-     MAD 0.0002/255 (limit 2.0)   pixels >12/255: 16 of 1330000 = 0.0012% (limit 0.5%)   max channel diff 26
+     MAD 0.0001/255 (limit 2.0)   pixels >12/255: 5 of 1330000 = 0.0004% (limit 0.5%)   max channel diff 37
 
-PASS A9 street mode never morphed: morphActive false in all 132 samples across the switch, errors 0
+PASS A9 street mode never morphed: morphActive false in all 129 samples across the switch, errors 0
 
 PASS a2_ref_ward.png vs <a10 final frame, in memory>
      A10 endpoint after a mid-flight zoom still lands on the ward map
-     MAD 0.0002/255 (limit 2.0)   pixels >12/255: 11 of 1330000 = 0.0008% (limit 0.5%)   max channel diff 35
+     MAD 0.0002/255 (limit 2.0)   pixels >12/255: 9 of 1330000 = 0.0007% (limit 0.5%)   max channel diff 33
      pass elevationScale really did move and come back (1 -> 0.11323210104515069 -> 1)
-     a10_zoom_mid75 is 95.03% across, against a4_mid75's 95.08% (drift 0.04 pts, limit 15)
+     a10_zoom_mid75 is 94.96% across, against a4_mid75's 94.96% (drift 0.00 pts, limit 15)
      A RESTART WOULD SHOW HERE, and did before the fix: this frame came in at 36.39%
      against a4_mid75's 94.99%, a drift of 58.6 points. The cause was NOT the scale — a
      bare redraw() with no scale change at all did the same damage (91% -> 37% at the
@@ -130,30 +156,44 @@ PASS a2_ref_ward.png vs <a10 final frame, in memory>
      object per tier, keyed on the paint counter.
 PASS A10 the in-flight transition survived the elevationScale redraws
 
-PASS A11 reduced motion: TRANSITION 0, no morph in 94 samples, the switch lands instantly
+PASS A11 reduced motion: TRANSITION 0, no morph in 93 samples, the switch lands instantly
 
 PASS a2_ref_ward.png vs <a12 final frame, in memory>
      A12 a morph started with an UNPAINTED basis still lands on the ward map
-     MAD 0.0001/255 (limit 2.0)   pixels >12/255: 6 of 1330000 = 0.0005% (limit 0.5%)   max channel diff 35
-     pass it really morphed rather than falling back to the curtain (morphActive true in 32 of 80 samples)
+     MAD 0.0003/255 (limit 2.0)   pixels >12/255: 20 of 1330000 = 0.0015% (limit 0.5%)   max channel diff 33
+     pass it really morphed rather than falling back to the curtain (morphActive true in 31 of 77 samples)
      WITH morphReady() REQUIRING B.painted THIS CURTAINED: morphActive
      stayed false for the whole switch and for every switch after it,
      while #v1status.morphReady — the field this driver gates on — said true.
 PASS A12 an unpainted basis is a morph that pays its own tessellation, not a dead one
 
-A13 the one-frame flash: the first arrival at an area type after a
-    measure change, signed frame by frame from inside the render loop
-     region [500, 226, 512, 384] of [1400, 950], 98/97 committed frames signed
-     pass fixed page      worst one-frame excess   0.00%  (limit 1.00%)
-     pass ?ghost=0 control worst one-frame excess  14.28%  (floor 5.00%)
+A13 the one-frame flash: a layer revealed on the same commit that first
+    hands deck.gl its new values, signed frame by frame from inside the
+    render loop. The excess below is an L1 histogram distance over the
+    sampled region, so it is about TWICE the share of pixels that changed
+    luminance bucket: 23.5% here is roughly 11.8% of the region's pixels.
+     region [500, 226, 512, 384] of [1400, 950]
+     pass fixed page, first arrival after a measure change    0.00%  (limit 1.00%, 81 frames)
+     pass ?ghost=0 control, the same route                   14.27%  (floor 5.00%, 86 frames)
           the control's spike is at redraw[vis=ward mb=- sw=0 snap=ward ghost=-] phase:finalise
+     pass measure change landing MID-MORPH                    0.01%  (limit 1.00%, 108 frames)
+     pass the CURTAIN under ?morph=0, the same route          0.01%  (limit 1.00%, 161 frames)
      THE CONTROL LEG IS THE ASSERTION THAT THIS PROBE CAN STILL FAIL.
      Under ?ghost=0 the seed and the hand-off each reveal a layer on the
      same commit that first gives deck.gl its new values, and deck.gl
-     draws the values it last had. The frame either side agrees with the
+     draws an out-of-date one. The frames either side agree with each
      other, so the excess is the whole of the difference between two
-     measures - 23.5% of the region at the seed and 8.3% at the hand-off
-     when this was first caught. With the warm commits on, 0.02%.
+     measures - L1 23.5% of the region at the seed and 8.3% at the
+     hand-off when this was first caught, against 0.02% with the warm
+     commits on.
+     The last two legs are paths this fix does NOT touch, measured rather
+     than assumed. Both reveal a layer and repaint it on one commit, and
+     both are clean, because the out-of-date value each one draws is
+     already the value that frame wanted: the start of the measure ease
+     in one case, the flat baseline paintFlat established in the other.
+     CAVEAT: one 512x384 region of a 1400x950 canvas. A defect that only
+     moved pixels outside it would pass. The rect is settable with
+     ?fpx/?fpy/?fpw/?fph; this leg uses the default.
 PASS A13 no committed frame shows a picture its neighbours do not
 
 ---- UNTESTED-BY-DRIVER (left to the human eye) ----
