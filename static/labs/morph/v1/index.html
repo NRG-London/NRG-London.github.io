@@ -1240,18 +1240,15 @@
         }
       });
     }
-    // Borough outlines over the extrusions, not under. Skipped on the borough
-    // area type, where the bar edges already are the outlines and drawing both
-    // gives every borough a doubled, slightly offset border.
-    //
-    // But NOT while an area-type hand-off is in flight. The bars are at or near
-    // ground for most of that second, and dropping the outlines too left the
-    // reader looking at a bare Thames and a scatter of place names with no
-    // London around them. The outlines are the one thing that should persist
-    // through the curtain.
-    if (tier !== "borough" || !areasShow || switching) {
-      stack.push(boroughCasing(), boroughLayer());
-    }
+    // Borough outlines over the extrusions, not under. Originally skipped on
+    // the borough area type, on the reasoning that the bar edges already are
+    // the outlines and drawing both gives every borough a doubled, slightly
+    // offset border. But the smooth morph made that skip read as a fault: the
+    // ink visibly vanishing and popping back as the tier changed was a worse
+    // artefact than the doubled border it was avoiding — judged by eye in the
+    // lab. So the outlines are now permanent, drawn unconditionally in every
+    // tier and through every hand-off.
+    stack.push(boroughCasing(), boroughLayer());
     if (mode !== "street") stack.push(boroughLabels());
     return stack;
   }
