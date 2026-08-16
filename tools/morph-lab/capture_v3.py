@@ -524,6 +524,61 @@ class Nav:
         self.js('window.__setArea("%s").then(function(){},function(){}); 0' % t)
 
 
+# ---- the interrupted-state probe -------------------------------------------
+# WHAT AN ENDPOINT ASSERTION CANNOT SEE.
+#
+# Every interrupt arm in this file already proves the map LANDS in the right
+# place. None of them could see the regression this driver's own run 3 exposed:
+# `endMorph` had stopped resetting the output-area basis, so an interrupted V1
+# morph left that basis carrying `dur`, `ease` and `noPick` for the life of the
+# page — the next morph on it would have run at a stale duration and the layer
+# would never have become pickable again. The picture at the end of the
+# interrupt was perfect throughout. It was found by reading code.
+#
+# So the interrupts now read the state back. Both bases, every time: `dur` must
+# be cleared, `noPick` must be false, the warp uniform must be exactly zero,
+# B_WARP must be released and no morph may still think it is in flight.
+IDLE_JS = """JSON.stringify({
+  oa:   typeof READY === 'undefined' || !READY.oa   ? null
+        : [READY.oa.dur   === undefined ? null : READY.oa.dur,   !!READY.oa.noPick],
+  ward: typeof READY === 'undefined' || !READY.ward ? null
+        : [READY.ward.dur === undefined ? null : READY.ward.dur, !!READY.ward.noPick],
+  warp:  typeof WARP === 'undefined' ? 0 : WARP.amount,
+  bwarp: typeof B_WARP === 'undefined' ? false : !!B_WARP,
+  beat:  typeof WARP === 'undefined' ? '' : WARP.beat,
+  mb: morphBasis, seed: morphSeed, sw: switching
+})"""
+
+
+def idle_clean(nav, what, log):
+    """Read both bases back after an interrupt and gate on them."""
+    try:
+        st = json.loads(nav.js(IDLE_JS) or "{}")
+    except Exception as e:
+        log("     FAIL %s: could not read the idle state (%s)" % (what, e))
+        return False
+
+    def pair_ok(v):
+        # Absent is fine (the tier was never resident); present must be clean.
+        return v is None or ((v[0] is None or v[0] == 0) and v[1] is False)
+
+    checks = [
+        ("READY.oa   dur/noPick clear", pair_ok(st.get("oa"))),
+        ("READY.ward dur/noPick clear", pair_ok(st.get("ward"))),
+        ("the warp uniform is exactly 0", (st.get("warp") or 0) == 0),
+        ("no warp basis still held (B_WARP)", not st.get("bwarp")),
+        ("no morphBasis / morphSeed / switching left standing",
+         not st.get("mb") and not st.get("seed") and st.get("sw") is False),
+    ]
+    ok = all(c[1] for c in checks)
+    log("     %s IDLE STATE after %s: %s"
+        % ("pass" if ok else "FAIL", what, json.dumps(st)))
+    for name, good in checks:
+        if not good:
+            log("          FAIL %s" % name)
+    return ok
+
+
 def is_ready(st, mt):
     return bool(st.get("ready"))
 
@@ -910,6 +965,7 @@ def main():
         log("     log:        %s" % json.dumps(mt5.get("log")))
         a5_mid_was_morphing = bool((mid_st or {}).get("morphBasis"))
         a5_clean = (not st5.get("morphBasis")) and (st5.get("switching") is False)
+        a5_idle = idle_clean(n5, "A5 (borough->pcon retargeted to ward)", log)
 
         # A5b. INTERRUPT INSIDE THE SEED WARM WINDOW. A5 above fires at +300 ms,
         #      which is past both warm commits, so it asserts nothing about them.
@@ -964,6 +1020,7 @@ def main():
                                   for x in (mt5b.get("log") or []))
         a5b_renders = (a5b_state.get("renders") or 0) - r_before
         a5b_drew = a5b_renders >= 30      # a 750 ms morph that is actually drawn
+        a5b_idle = idle_clean(n5b, "A5b (retarget inside the warm window)", log)
         log("shot %-24s %-44s %5.1fs  %s"
             % ("-", "A5b retarget inside the seed warm window", time.time() - t0b,
                "ok" if ok_5b else "FAILED"))
@@ -1327,6 +1384,14 @@ def main():
         a13_fix_ok, a13_fix, a13_fix_at, a13_fix_n, a13_info = flicker_leg(
             "", "fixed page: warm commits on", route_first_arrival)
         log("")
+        # AND THE SAME LEG ON V1'S PATH. The route above ends on borough->ward,
+        # which V3 warps — so with only that leg, "V1's seed and reveal are
+        # flash-free with the warm commits ON" is asserted nowhere, even though
+        # this task touched endMorph. Gated exactly like the leg above.
+        a13_v1_ok, a13_v1, a13_v1_at, a13_v1_n, _ = flicker_leg(
+            "&warp=0", "fixed page on V1's path: ?warp=0, warm commits on",
+            route_first_arrival)
+        log("")
         # THE CONTROL LEG IS PINNED TO ?warp=0. Its whole job is to prove this
         # probe can still SEE the defect, and the defect is a property of V1's
         # seed/reveal — which is the path ?warp=0 takes. Measured on the WARP
@@ -1351,7 +1416,7 @@ def main():
         a13_cur_ok, a13_cur, a13_cur_at, a13_cur_n, _ = flicker_leg(
             "&morph=0", "the CURTAIN, ?morph=0, same route", route_curtain)
         ok_all &= a13_fix_ok and a13_old_ok and a13_mid_ok and a13_cur_ok
-        ok_all &= a13_wg_ok
+        ok_all &= a13_wg_ok and a13_v1_ok
 
         # =====================================================================
         # THE W ARMS — V3's own claim
@@ -1553,6 +1618,7 @@ def main():
         w4_int_end = page.shot_bytes()
         (OUT / "w4_interrupt_end.png").write_bytes(w4_int_end)
         w4_int_rest = st5.get("warp")
+        w4_idle = idle_clean(n_w5, "W4b (warp gesture interrupted at 35%)", log)
         log("shot %-24s %-44s %5.1fs  %s"
             % ("w4_*.png", "W4 zoom and interrupt inside the gesture",
                time.time() - t0, "ok" if ok_w4 else "FAILED"))
@@ -1560,6 +1626,82 @@ def main():
             "uniform %.5f, settled at %s"
             % (float(w4_zoom_amt or 0), w4_zoom_fps, float(w4_int_amt or 0),
                w4_int_rest))
+
+        # ---- W5. A WARP GESTURE RETARGETED ONTO A PAIR THAT DOES NOT WARP.
+        #
+        #      The hole this arm exists to cover. `doMorph` is true and
+        #      `warpDir` is null, so apply()'s `morphBasis && !doMorph` guard
+        #      does NOT fire and V1's morphTier takes over a page with a warp
+        #      gesture still running. Before the fix that left three things
+        #      behind at once: the envelope's rAF loop running detached (nothing
+        #      had bumped WARP.token), the ward layer holding `noPick` and a
+        #      stale `dur`/`ease`, and the crack leaving the screen on the frame
+        #      morphTier switched the drawn basis to the output areas. The
+        #      endpoint was fine throughout — which is exactly why this leg
+        #      gates on the state and not only on the picture.
+        log("")
+        t0 = time.time()
+        ok_all &= direct("w_ref_pcon.png", "?tier=pcon&morph=0&highlight=off",
+                         "W5 pcon reference, ?highlight=off chrome")
+        n_w6 = Nav(page, base, "?tier=borough&morphdur=%d&highlight=off" % slow)
+        got, st, mt = n_w6.poll(morph_capable, timeout=180)
+        ok_w5 = check(n_w6, st, got, "W5 boot")
+        n_w6.set_area("ward")
+        got, st, mt = n_w6.poll(logged("gesture"), timeout=60)
+        ok_w5 &= check(n_w6, st, got, "W5 gesture")
+        g6 = log_at(mt, "gesture") or n_w6.clock()
+        n_w6.wait_clock(g6 + slow * 0.35)
+        w5_amt_mid = n_w6.js("WARP.amount")
+        w5_state_mid = json.loads(n_w6.js(IDLE_JS) or "{}")
+        n_w6.set_area("pcon")                 # ward -> pcon: NOT a warped pair
+        got, st6, mt6 = n_w6.poll(done_morphing, timeout=120)
+        ok_w5 &= check(n_w6, st6, got, "W5 endpoint")
+        time.sleep(SETTLE)
+        w5_end = page.shot_bytes()
+        (OUT / "w5_nonwarp_retarget_end.png").write_bytes(w5_end)
+        w5_idle = idle_clean(n_w6, "W5 (warp gesture retargeted to a non-warp pair)",
+                             log)
+        log("shot %-24s %-44s %5.1fs  %s"
+            % ("w5_*.png", "W5 warp retargeted onto a non-warp pair",
+               time.time() - t0, "ok" if ok_w5 else "FAILED"))
+        log("     the crack was %.5f open when the second pill was clicked "
+            "(basis then: %s)"
+            % (float(w5_amt_mid or 0), (w5_state_mid or {}).get("mb")))
+        log("     log: %s" % json.dumps(mt6.get("log")))
+
+        # ---- W6. A MEASURE CHANGE LANDING MID-MORPH ON V1'S PATH.
+        #
+        #      ?warp=0, so this is endMorph() on a plain V1 morph — the exact
+        #      shape of the regression run 3 exposed and the one no assertion in
+        #      this file could see. apply()'s plain-paint branch calls endMorph
+        #      with the output-area basis mid-animation, holding dur, ease and
+        #      noPick.
+        log("")
+        t0 = time.time()
+        ok_all &= direct("w6_ref_ward_m2.png",
+                         "?tier=ward&m=%s&morph=0&highlight=off" % MEAS2,
+                         "W6 ward/%s reference, loaded directly" % MEAS2)
+        n_w7 = Nav(page, base,
+                   "?tier=borough&morphdur=%d&warp=0&highlight=off" % slow)
+        got, st, mt = n_w7.poll(morph_capable, timeout=180)
+        ok_w6 = check(n_w7, st, got, "W6 boot")
+        n_w7.set_area("ward")
+        got, st, mt = n_w7.poll(logged("animate"), timeout=60)
+        ok_w6 &= check(n_w7, st, got, "W6 animate")
+        a7 = log_at(mt, "animate") or n_w7.clock()
+        n_w7.wait_clock(a7 + slow * 0.35)
+        w6_mb_mid = (n_w7.read()[0] or {}).get("morphBasis")
+        n_w7.js('window.__setMeasure("%s").then(function(){},function(){}); 0' % MEAS2)
+        got, st7, mt7 = n_w7.poll(settled, timeout=120)
+        ok_w6 &= check(n_w7, st7, got, "W6 endpoint")
+        time.sleep(SETTLE)
+        w6_end = page.shot_bytes()
+        (OUT / "w6_measure_mid_morph_end.png").write_bytes(w6_end)
+        w6_idle = idle_clean(n_w7, "W6 (measure change mid-morph, ?warp=0)", log)
+        log("shot %-24s %-44s %5.1fs  %s"
+            % ("w6_*.png", "W6 measure change mid V1 morph (?warp=0)",
+               time.time() - t0, "ok" if ok_w6 else "FAILED"))
+        log("     morphBasis was %r when the measure changed" % w6_mb_mid)
 
         gl_all = page.gl_errors()
         page.close()
@@ -1615,12 +1757,14 @@ def main():
         ok_all &= compare(OUT / "a2_ref_ward.png", OUT / "a5_interrupt_ward.png",
                           "A5 interrupt: borough->pcon retargeted to ward 300 ms in, "
                           "landing exactly on the ward map", log)
-        a5_ok = a5_mid_was_morphing and a5_clean
+        a5_ok = a5_mid_was_morphing and a5_clean and a5_idle
         ok_all &= a5_ok
         log("     %s a morph really was in flight when the second pill was clicked"
             % ("pass" if a5_mid_was_morphing else "FAIL"))
         log("     %s no stuck morphBasis and no stuck switching afterwards"
             % ("pass" if a5_clean else "FAIL"))
+        log("     %s and NOTHING IS LEFT ON EITHER BASIS — see the idle line above"
+            % ("pass" if a5_idle else "FAIL"))
         log("")
 
         # ---- A5b retarget inside the seed warm window
@@ -1628,7 +1772,8 @@ def main():
                            "A5b a retarget landing INSIDE the seed's warm window "
                            "still lands exactly on the ward map", log,
                            name_b="<a5b final frame, in memory>")
-        a5b_all = ok_5b and a5b_land and a5b_seed_clear and a5b_no_watchdog and a5b_drew
+        a5b_all = (ok_5b and a5b_land and a5b_seed_clear and a5b_no_watchdog
+                   and a5b_drew and a5b_idle)
         ok_all &= a5b_all
         log("     %s morphSeed is cleared afterwards, not stranded on the tier the "
             "reader left" % ("pass" if a5b_seed_clear else "FAIL"))
@@ -1636,6 +1781,8 @@ def main():
             % ("pass" if a5b_drew else "FAIL", a5b_renders))
         log("     %s no watchdog: the commit chain never stalled"
             % ("pass" if a5b_no_watchdog else "FAIL"))
+        log("     %s and NOTHING IS LEFT ON EITHER BASIS"
+            % ("pass" if a5b_idle else "FAIL"))
         log("     STRANDING SHOWS IN ALL THREE AT ONCE, and did before the fix:")
         log("     morphSeed stayed \"borough\" for the life of the page, the whole")
         log("     750 ms morph took four committed renders because the layer being")
@@ -1746,8 +1893,9 @@ def main():
         a13_seen = a13_old >= FLICKER_FLOOR
         a13_mid_clean = a13_mid <= FLICKER_LIMIT
         a13_cur_clean = a13_cur <= FLICKER_LIMIT
+        a13_v1_clean = a13_v1 <= FLICKER_LIMIT
         a13_all = (a13_fix_ok and a13_old_ok and a13_mid_ok and a13_cur_ok
-                   and a13_wg_ok
+                   and a13_wg_ok and a13_v1_ok and a13_v1_clean
                    and a13_clean and a13_seen and a13_mid_clean and a13_cur_clean)
         ok_all &= a13_all
         log("A13 the one-frame flash: a layer revealed on the same commit that first")
@@ -1761,6 +1909,10 @@ def main():
             "(limit %.2f%%, %d frames)"
             % ("pass" if a13_clean else "FAIL", 100 * a13_fix,
                100 * FLICKER_LIMIT, a13_fix_n))
+        log("     %s fixed page on V1'S PATH, ?warp=0                  %6.2f%%  "
+            "(limit %.2f%%, %d frames)"
+            % ("pass" if a13_v1_clean else "FAIL", 100 * a13_v1,
+               100 * FLICKER_LIMIT, a13_v1_n))
         log("     %s ?ghost=0 control, the same route                  %6.2f%%  "
             "(floor %.2f%%, %d frames)"
             % ("pass" if a13_seen else "FAIL", 100 * a13_old,
@@ -2038,10 +2190,54 @@ def main():
         log("        open crack to the next gesture's envelope, or eases it shut "
             "over 180 ms if")
         log("        there is no next gesture — it is never snapped.")
-        w4_all = ok_w4 and w4_zoom_ok and w4_int_ok and w4_rest_ok
+        w4_all = ok_w4 and w4_zoom_ok and w4_int_ok and w4_rest_ok and w4_idle
         ok_all &= w4_all
         log("%s W4 the gesture survives a zoom and an interrupt"
             % ("PASS" if w4_all else "FAIL"))
+        log("")
+
+        # ---- W5 the non-warp retarget
+        log("")
+        w5_land = compare(OUT / "w_ref_pcon.png",
+                          OUT / "w5_nonwarp_retarget_end.png",
+                          "W5 a warp gesture retargeted onto a NON-warp pair "
+                          "(ward -> pcon, mid-split) lands on exactly the "
+                          "constituency map — no stale crack left in the picture",
+                          log)
+        w5_was_open = float(w5_amt_mid or 0) > 0
+        log("     %s the crack really was open when the retarget fired (%.5f)"
+            % ("pass" if w5_was_open else "FAIL", float(w5_amt_mid or 0)))
+        log("     BEFORE THE FIX THIS LEG LEFT THREE THINGS BEHIND AND THE")
+        log("     PICTURE STILL LANDED: apply()'s endMorph guard is")
+        log("     `morphBasis && !doMorph`, and a retarget onto a non-warp pair")
+        log("     is a morph — so nothing bumped WARP.token, the envelope's rAF")
+        log("     loop ran on detached against a layer morphTier had stopped")
+        log("     drawing, and the ward layer kept noPick and a stale dur/ease.")
+        log("     retireWarp() is now called from apply() as well as endMorph().")
+        w5_all = ok_w5 and w5_land and w5_was_open and w5_idle
+        ok_all &= w5_all
+        log("%s W5 a warp retargeted onto a non-warp pair retires cleanly"
+            % ("PASS" if w5_all else "FAIL"))
+        log("")
+
+        # ---- W6 the V1-path measure change mid-morph
+        w6_land = compare(OUT / "w6_ref_ward_m2.png",
+                          OUT / "w6_measure_mid_morph_end.png",
+                          "W6 a measure change landing mid V1 morph (?warp=0) "
+                          "lands on the directly loaded ward map for that measure",
+                          log)
+        w6_was_morphing = bool(w6_mb_mid)
+        log("     %s a V1 morph really was in flight when the measure changed "
+            "(basis %r)" % ("pass" if w6_was_morphing else "FAIL", w6_mb_mid))
+        log("     THIS IS THE SHAPE OF THE REGRESSION RUN 3 EXPOSED, and the")
+        log("     reason this arm exists: endMorph() had stopped resetting the")
+        log("     OUTPUT-AREA basis, so an interrupted V1 morph left it holding")
+        log("     dur, ease and noPick for the life of the page. Every endpoint")
+        log("     in this file was still perfect. Only the idle read-back sees it.")
+        w6_all = ok_w6 and w6_land and w6_was_morphing and w6_idle
+        ok_all &= w6_all
+        log("%s W6 endMorph on a plain V1 morph leaves both bases clean"
+            % ("PASS" if w6_all else "FAIL"))
         log("")
 
         # ---- THE INK GATE, over every committed frame

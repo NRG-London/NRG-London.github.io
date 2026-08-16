@@ -481,3 +481,129 @@ output areas, 0 conflicts** (a conflict throws at boot).
 
 12. **`content/` and `.superpowers/` were never staged.** Only `static/labs/morph/` and
     `tools/morph-lab/` are in the commits.
+
+---
+
+# Fix round 1
+
+Both review Importants fixed and both cheap Minors folded in. Driver re-run end to end:
+**exit 0**, `RESULT ALL ASSERTIONS PASS`, evidence regenerated in place (40 PNGs).
+
+## Important 1 — a warp gesture interrupted by a NON-warp morph
+
+`apply()`'s guard for retiring a morph is `morphBasis && !doMorph`. A retarget **is** a morph,
+so mid-split clicks on Constituencies, Assembly seats, Neighbourhoods or Output areas set
+`doMorph = true, warpDir = null` and fell straight through it into V1's `morphTier`, which
+knows nothing about the warp. Three things were left behind at once, and the endpoint was
+perfect throughout:
+
+* `morphTier` sets `morphBasis` to the **output areas**, so the ward layer stopped being
+  drawn and the open crack left the screen on one frame — a snap, which is the one thing this
+  page promises the crack never does;
+* nothing bumped `WARP.token`, so the envelope's `requestAnimationFrame` loop **kept running,
+  detached**, driving the uniform on a retired gesture's timeline against a layer nobody could
+  see;
+* the ward layer kept `noPick` and a stale `dur`/`ease` until some unrelated later `endMorph`
+  happened to clear them.
+
+`endMorph`'s two-basis reset is now split. **`retireWarp()`** retires the warp and nothing
+else — it eases the crack shut through `releaseWarp()` (taking `WARP.token` with it, so the
+loop stops and any later gesture blends whatever is left), clears `B_WARP`, and clears the warp
+basis's `dur`/`ease`/`noPick`. It is called from `endMorph()` as before, and now also from
+`apply()` on exactly the path above:
+
+```js
+if (morphBasis && !doMorph) endMorph();
+else if (doMorph && !warpDir && B_WARP) retireWarp();
+```
+
+The crack is **eased**, not dropped — the nice-to-have rather than the acceptable minimum.
+Measured live in the new W5 leg: the uniform is 0.07984 (a full crack) when the second pill is
+clicked, and 0.0017 a tenth of a second later with `B_WARP` already released.
+
+## Important 2 — the interrupted-state assertion
+
+Run 3's regression class would have passed the old driver: every interrupt arm proved the map
+**landed** correctly, and the defect was in what was left behind. There is now an `idle_clean()`
+read-back that gates on both bases at once —
+
+```
+{oa: [READY.oa.dur, READY.oa.noPick], ward: [READY.ward.dur, READY.ward.noPick],
+ warp: WARP.amount, bwarp: !!B_WARP, mb: morphBasis, seed: morphSeed, sw: switching}
+```
+
+— all of which must be null / false / zero. It runs after **A5**, **A5b**, **W4b** and both new
+legs. Committed results, verbatim:
+
+```
+pass IDLE STATE after A5  (borough->pcon retargeted to ward)
+pass IDLE STATE after A5b (retarget inside the warm window)
+pass IDLE STATE after W4b (warp gesture interrupted at 35%)
+pass IDLE STATE after W5  (warp gesture retargeted to a non-warp pair)
+pass IDLE STATE after W6  (measure change mid-morph, ?warp=0)
+     {"oa": [null, false], "ward": [null, false], "warp": 0, "bwarp": false,
+      "mb": null, "seed": null, "sw": false}
+```
+
+Two new legs:
+
+| leg | what | result |
+|---|---|---|
+| **W5** | a warp gesture retargeted onto a non-warp pair (ward→pcon, mid-split) — Important 1 | endpoint **MAD 0.0000/255**, 0 px; crack **0.07984** open when the retarget fired; idle clean |
+| **W6** | a measure change landing mid V1 morph under `?warp=0` — `endMorph` on a plain V1 morph, the exact shape of run 3's regression | endpoint **MAD 0.0003/255**, 20 px; `morphBasis` was `'oa'` at the moment of the change; idle clean |
+
+W5 asserts the crack really was open before the retarget, so a version of the fix that simply
+never opened one could not pass it.
+
+## Minor 3 — the hub quoted run-2-era numbers
+
+`static/labs/morph/index.html` said ~169 fps, 0.0034 and a 50–60 ms worst frame while linking a
+`RESULTS.txt` that said otherwise. It now quotes the committed run (178–180 fps, 0.0029, value
+progress 31.4%) and states the worst-frame spread across runs explicitly rather than quoting one
+end of it.
+
+## Minor 4 — A13's ghost-on leg on V1's path
+
+The fixed-page leg's route ends on borough→ward, which V3 warps — so "V1's seed and reveal are
+flash-free with the warm commits on" was asserted nowhere, despite this task touching
+`endMorph`. The leg now runs a second time under `&warp=0`, gated on the same 1% limit:
+
+```
+pass fixed page, first arrival after a measure change    0.00%  (limit 1.00%, 139 frames)
+pass fixed page on V1'S PATH, ?warp=0                    0.00%  (limit 1.00%,  80 frames)
+pass ?warp=0&ghost=0 control, the same route            14.28%  (floor 5.00%,  80 frames)
+pass measure change landing MID-MORPH                    0.00%  (limit 1.00%, 129 frames)
+pass the CURTAIN under ?morph=0, the same route          0.01%  (limit 1.00%, 149 frames)
+.... ?ghost=0 on the WARP path                           0.00%  (REPORTED,     93 frames)
+```
+
+## The rest of the committed run
+
+Unchanged in substance from the previous one; the headline figures on this run are 176.8 fps
+scrub (worst frame 12.3 ms) and 178.9 fps across the gesture (worst 16.5 ms), the shader warp
+0.0033/255 from the CPU ground truth, value progress 29.76% at a 99.76% crack, split endpoint
+0.0003/255 and merge endpoint 0.0000/255, zero WebGL errors, and the ink gate passing on all
+40 frames.
+
+## Deferred, on the review's instruction
+
+* A13 noise diagnosability — dumping the probe's neighbourhood when a leg exceeds its limit.
+  The legs still range widely between runs (concern 3) and a failure is still reported as a
+  bare percentage, so a future limit-exceed is still awkward to diagnose.
+* `warmWarp` returning its promise, and a comment on the `afterCommit` / `forceFrame`
+  re-entrancy contract.
+
+## Concerns from this round
+
+1. **W5 and W6 both pass on the first run after the fix, which means neither has been seen to
+   fail against the bug it covers.** W5's mechanism was reproduced by hand before the fix (the
+   detached loop, the stale `noPick`) but not captured as a red run; W6 covers a regression that
+   was already repaired. Both gate on state that was demonstrably wrong at some point in this
+   task's history, but "this assertion can fail" is argued here, not measured.
+2. `retireWarp()` eases over 180 ms while V1's `morphTier` is simultaneously animating the
+   output-area basis. Both are proven to land (W5 endpoint 0.0000/255) and the ward layer is
+   hidden for most of it, so the ease is largely invisible — which also means the *quality* of
+   that hand-over is unjudged by anything except the eye.
+3. `WARP.beat` is left holding the last beat's name after a completed gesture (`"merge"` in
+   W4b's idle read-back). It is a HUD label only and is not gated, but it is state that
+   `retireWarp` clears and a normal finish does not.

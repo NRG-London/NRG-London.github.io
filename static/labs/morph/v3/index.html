@@ -1401,6 +1401,27 @@
     if (WARP.raf) cancelAnimationFrame(WARP.raf);
     WARP.raf = null;
   }
+  // RETIRE A WARP GESTURE, and nothing else.
+  //
+  // Split out of endMorph because there is one path that must retire the warp
+  // while explicitly NOT retiring the morph: a warp gesture retargeted onto a
+  // pair that does not warp. endMorph's own guard in apply() is
+  // `morphBasis && !doMorph`, which does not fire there — the retarget IS a
+  // morph — so V1's morphTier would take over knowing nothing about the warp.
+  // See the call site for what that left behind.
+  //
+  // The crack is EASED shut rather than dropped, because "the crack is never
+  // snapped" is a promise this page makes everywhere else and an interrupt is
+  // not a reason to break it. The ease cannot outlive the interrupt: it takes
+  // the token with it, so the next gesture's envelope blends whatever is left.
+  function retireWarp() {
+    releaseWarp();
+    var WB = B_WARP;
+    B_WARP = null;
+    if (WB) { WB.dur = null; WB.ease = null; WB.noPick = false; }
+    WARP.beat = "";
+  }
+
   // Close whatever crack is open, over RELEASE_MS, and land on exactly zero.
   // Used by every path that retires a morph without finishing it.
   var RELEASE_MS = 180;
@@ -2717,18 +2738,18 @@
     // discontinuity in the VALUES — the retarget is the point — but the
     // geometry has no reason to be one, and 180 ms of ease-out costs nothing
     // and cannot outlive the interrupt (a new gesture takes the token with it).
-    releaseWarp();
-    // BOTH bases, and the second one is not an addition to V1 but a repair of
-    // this file: an earlier draft replaced V1's reset of the output-area basis
-    // with a reset of the warp basis, which left every V1 morph that was ever
+    retireWarp();
+    // AND THE OUTPUT-AREA BASIS. This is V1's own line, and restoring it was a
+    // repair rather than an addition: an earlier draft of this file replaced it
+    // with a reset of the WARP basis, which left every V1 morph that was ever
     // INTERRUPTED with a basis still carrying dur, ease and noPick. Nothing
     // else clears them, so the next morph on that basis would have run at a
-    // stale duration and the layer would have stayed unpickable for the life
-    // of the page.
-    var B = READY[BASIS], WB = B_WARP;
-    B_WARP = null;
+    // stale duration and the layer would have stayed unpickable for the life of
+    // the page. The two bases are now retired by two separate calls, because
+    // there is one caller that has to retire the warp WITHOUT retiring
+    // everything else — see apply().
+    var B = READY[BASIS];
     if (B) { B.dur = null; B.ease = null; B.noPick = false; }
-    if (WB && WB !== B) { WB.dur = null; WB.ease = null; WB.noPick = false; }
     morphBasis = null;
     morphSeed = null;
     // Ghosts are cleared HERE as well as in redraw(), and that is not
@@ -3317,6 +3338,17 @@
         // below paint `T` and redraw, and a live morphBasis would keep the
         // basis layer as the only thing drawn and hide the result.
         if (morphBasis && !doMorph) endMorph();
+        // A WARP GESTURE RETARGETED ONTO A PAIR THAT DOES NOT WARP — mid-split,
+        // click Constituencies or Neighbourhoods. `doMorph` is true, so the
+        // guard above does not fire, and V1's morphTier takes over: it sets
+        // morphBasis to the OUTPUT AREAS, so the ward layer stops being drawn
+        // and the open crack leaves the screen on one frame. Meanwhile nothing
+        // has bumped WARP.token, so the envelope's rAF loop keeps running —
+        // detached, driving the uniform on a retired gesture's timeline against
+        // a layer nobody can see — and the ward layer keeps `noPick` and a
+        // stale `dur`/`ease` until some unrelated later endMorph happens to
+        // clear them. All three are this one line.
+        else if (doMorph && !warpDir && B_WARP) retireWarp();
         if (doMorph && warpDir) {
           switching = true;
           morphWarpTier(from, T, m, fromVals, fromNd, warpDir);
