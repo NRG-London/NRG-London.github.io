@@ -939,15 +939,13 @@
       var T = READY[t];
       if (T && T.painted) stack.push(polyLayer(T, polyVisible(t)));
     });
-    // Borough outlines over the extrusions, not under. Skipped on the borough
-    // area type, where the bar edges already are the outlines and drawing both
-    // gives every borough a doubled, slightly offset border.
-    //
-    // Keyed on curTier — the geography being REPRESENTED — not on the layer
-    // actually drawn. That is what makes the seed swap invisible: an OA basis
-    // painted with borough values is a borough map and must lose the outlines
-    // exactly as the borough layer does.
-    if (curTier !== "borough") stack.push(boroughCasing(), boroughLayer());
+    // Borough outlines over the extrusions, not under. Originally skipped on
+    // the borough area type — bar edges already are the outlines, and drawing
+    // both gave every borough a doubled, slightly offset border — but the
+    // smooth morph turned that skip into the worse artefact: the ink visibly
+    // vanishing and popping back as curTier changed, judged by eye in the lab.
+    // Now permanent, drawn unconditionally regardless of curTier.
+    stack.push(boroughCasing(), boroughLayer());
     stack.push(boroughLabels());
     return stack;
   }
