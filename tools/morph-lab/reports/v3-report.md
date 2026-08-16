@@ -558,9 +558,16 @@ never opened one could not pass it.
 ## Minor 3 — the hub quoted run-2-era numbers
 
 `static/labs/morph/index.html` said ~169 fps, 0.0034 and a 50–60 ms worst frame while linking a
-`RESULTS.txt` that said otherwise. It now quotes the committed run (178–180 fps, 0.0029, value
-progress 31.4%) and states the worst-frame spread across runs explicitly rather than quoting one
-end of it.
+`RESULTS.txt` that said otherwise.
+
+It was then re-pointed at the committed run — and that was still the wrong shape of fix, because
+**the evidence regenerates on every driver run**, so any point figure in the hub goes stale the
+next time anyone runs the driver, and the sentence attributing it to `RESULTS.txt` goes from
+true to false without anyone touching it. The hub now quotes **ranges across runs** throughout
+(values ~30–31% at a ~99.8% crack, shader-vs-CPU ≤0.0034/255, ~175–180 fps, split endpoint
+≤0.0004/255, extension at rest ≤0.0001/255, worst frame 8.4–50.4 ms) and points at
+`RESULTS.txt` for the committed run's own figures rather than reproducing them. The only point
+figure left is the merge endpoint's 0.0000/255, which has been exactly that in every run.
 
 ## Minor 4 — A13's ghost-on leg on V1's path
 
@@ -592,11 +599,19 @@ scrub (worst frame 12.3 ms) and 178.9 fps across the gesture (worst 16.5 ms), th
   bare percentage, so a future limit-exceed is still awkward to diagnose.
 * `warmWarp` returning its promise, and a comment on the `afterCommit` / `forceFrame`
   re-entrancy contract.
+* **Making W5's falsifiability measured rather than argued** — concern 1 below. The driver
+  already reads the state back mid-flight into `w5_state_mid`, at the instant the second pill
+  is clicked and before `retireWarp()` has finished easing. The review's suggestion is to gate
+  that read as **DIRTY**: the ward pair non-clean and `B_WARP` true, i.e. assert that there
+  really was something live to retire. That would turn "this assertion can fail" from an
+  argument into a measurement on every run, and it is the single cheapest thing left on this
+  page. Deferred on instruction, not on merit.
 
 ## Concerns from this round
 
 1. **W5 and W6 both pass on the first run after the fix, which means neither has been seen to
-   fail against the bug it covers.** W5's mechanism was reproduced by hand before the fix (the
+   fail against the bug it covers.** (The deferred item above is the fix for the W5 half of
+   this, and it is deferred rather than dismissed.) W5's mechanism was reproduced by hand before the fix (the
    detached loop, the stale `noPick`) but not captured as a red run; W6 covers a regression that
    was already repaired. Both gate on state that was demonstrably wrong at some point in this
    task's history, but "this assertion can fail" is argued here, not measured.
