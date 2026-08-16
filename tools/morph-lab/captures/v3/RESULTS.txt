@@ -1,0 +1,417 @@
+driver     capture_v3.py
+browser    C:\Program Files\Google\Chrome\Application\chrome.exe
+serving    C:\Users\neilg\AppData\Local\Temp\claude\c--Users-neilg-OneDrive-Documents-neilgarratt-com\1e654b94-37c6-4cc6-86c0-a58827f30917\scratchpad\v3-wt\static  ->  http://127.0.0.1:65114/labs/morph/v3/
+viewport   1400x950, FULL-FRAME comparison — no crop, because the lab's status nodes are
+           display:none and the HUD is off unless ?hud=1
+settle     1.6s before every committed capture, which outlasts the 1.01s peak pulse
+
+probe [real GPU                              ] boot  {"ready": true, "errors": 0, "tier": "borough", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0}
+                                             morph ["borough->ward (warp)", "seed+5", "reveal+519", "gesture+531", "healed+1286", "finalise+1346"]
+
+PASS probe  boots and morphs to finalise under [real GPU]
+
+---- captures ----
+shot a1_ref_borough.png       A1 boot ?morph=0, curtain build sanity         6.6s  ok
+shot a2_ref_ward.png          A2 ward, loaded directly                       2.6s  ok
+shot a2_morph_ward.png        A2 default boot -> ward, morphed               4.0s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "ward", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0}, "log": ["lsoa->ward", "seed+6", "reveal+162", "animate+174", "finalise+996"]}
+shot a3_ref_gla.png           A3 gla, loaded directly                        2.6s  ok
+shot a3_morph_gla.png         A3 pcon -> gla (non-nested)                    3.9s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "gla", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0}, "log": ["pcon->gla", "seed+3", "reveal+184", "animate+194", "finalise+1020"]}
+shot a3_morph_borough.png     A3 ward -> borough (merge)                     3.8s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "borough", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0}, "log": ["ward->borough (warp)", "gesture+4", "healed+758", "finalise+828"]}
+
+shot a4_from.png              A4 seed frame — the honest zero                1.4s  ok
+shot a4_mid25.png             A4 mid-flight                                       landed at 27.2% of a 3000 ms morph
+shot a4_mid50.png             A4 mid-flight                                       landed at 53.0% of a 3000 ms morph
+shot a4_mid75.png             A4 mid-flight                                       landed at 77.2% of a 3000 ms morph
+
+shot a5_interrupt_ward.png    A5 borough->pcon, retargeted to ward           4.1s  ok
+     at +300 ms: {"ready": false, "errors": 0, "tier": "pcon", "morphBasis": "oa", "switching": true, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0}
+     final:      {"ready": true, "errors": 0, "tier": "ward", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0}
+     log:        ["pcon->ward", "seed+0", "animate+17", "finalise+841"]
+     pass IDLE STATE after A5 (borough->pcon retargeted to ward): {"oa": [null, false], "ward": [null, false], "warp": 0, "bwarp": false, "beat": "", "mb": null, "seed": null, "sw": false}
+
+     pass IDLE STATE after A5b (retarget inside the warm window): {"oa": [null, false], "ward": [null, false], "warp": 0, "bwarp": false, "beat": "", "mb": null, "seed": null, "sw": false}
+shot -                        A5b retarget inside the seed warm window       6.6s  ok
+     both pills clicked in one task; log: ["pcon->ward", "seed+4", "reveal+157", "animate+166", "finalise+992"]
+     after it settles: morphSeed=None morphBasis=None switching=False tier='ward'; 253 committed renders across the morph
+
+shot a6_meas_mid/end.png      A6 measure change after a morph                6.0s  ok
+     three frames sampled at 156, 330, 484 ms into the 750 ms ease
+
+shot a7_ref_oa.png            A7 oa / resident_under5y, loaded directly      2.7s  ok
+shot a7_morph_oa.png          A7 lsoa -> oa under suppression                3.9s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "oa", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0}, "log": ["lsoa->oa", "seed+4", "reveal+164", "animate+175", "finalise+1003"]}
+
+shot a8_ref_change.png        A8 ward change view, loaded directly           2.5s  ok
+shot a8_morph_change.png      A8 change view, borough -> ward                3.8s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "ward", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0}, "log": ["borough->ward (warp)", "seed+6", "reveal+44", "gesture+55", "healed+806", "finalise+867"]}
+
+shot -                        A9 street mode keeps the curtain               4.0s  ok
+     129 state samples across the switch, morphActive true in 0
+
+shot a10_zoom_mid75.png       A10 zoom during morph                          6.0s  ok
+     curElevScale 1 -> 0.11323210104515069 -> 1 across the nudge; frame landed at 77.8% of the morph
+     log: ["borough->ward", "seed+2", "reveal+154", "animate+165", "finalise+3241"]
+
+shot -                        A11 reduced motion switches instantly          2.8s  ok
+     TRANSITION=0  MORPH_DUR=0  86 samples, morphActive true in 0
+
+shot -                        A12 morph with an unpainted basis              5.0s  ok
+     READY.oa.painted cleared to null; 71 samples across the switch, morphActive true in 29
+     log: ["borough->ward", "seed+3", "reveal+192", "animate+209", "finalise+1037"]
+
+shot -                        A13 fixed page: warm commits on                5.8s  ok
+     pass probe alive: on=True dead='' 139 committed frames signed (need >= 30), region [500, 226, 512, 384] of [1400, 950]
+     worst one-frame excess 0.00% of the region  at t=5314 ms, no mark
+
+shot -                        A13 fixed page on V1's path: ?warp=0, warm commits on   4.7s  ok
+     pass probe alive: on=True dead='' 80 committed frames signed (need >= 30), region [500, 226, 512, 384] of [1400, 950]
+     worst one-frame excess 0.00% of the region  at t=4218 ms, no mark
+
+shot -                        A13 ?warp=0&ghost=0 control: warm commits off   4.8s  ok
+     pass probe alive: on=True dead='' 80 committed frames signed (need >= 30), region [500, 226, 512, 384] of [1400, 950]
+     worst one-frame excess 14.28% of the region  at t=4317 ms, redraw[vis=ward mb=- sw=0 snap=ward ghost=-] phase:finalise
+
+shot -                        A13 ?ghost=0 on the WARP path (reported, not gated)   5.0s  ok
+     pass probe alive: on=True dead='' 93 committed frames signed (need >= 30), region [500, 226, 512, 384] of [1400, 950]
+     worst one-frame excess 0.00% of the region
+
+shot -                        A13 measure change landing MID-MORPH           4.3s  ok
+     pass probe alive: on=True dead='' 129 committed frames signed (need >= 30), region [500, 226, 512, 384] of [1400, 950]
+     worst one-frame excess 0.00% of the region
+
+shot -                        A13 the CURTAIN, ?morph=0, same route          5.4s  ok
+     pass probe alive: on=True dead='' 149 committed frames signed (need >= 30), region [500, 226, 512, 384] of [1400, 950]
+     worst one-frame excess 0.01% of the region  at t=4419 ms, no mark
+
+shot a0_*.png                 A0 v1 vs v3 ?warp=0, same route                7.6s  ok
+
+shot s_*.png                  S the spike: injection, truth, fps            16.6s  ok
+     warpInfo at boot: {"on": true, "err": "", "tier": "ward", "parent": "borough", "inset": 0.92, "peak": 0.38, "geom": true, "amount": 0, "t": 0, "live": true, "attached": true, "verts": 50738, "rings": 731, "feats": 689, "cent": true, "centMs": 1.3, "attr": {"size": 2, "type": "float32", "step": "dynamic", "bytes": 101476, "external": true}, "fps": 0, "worst": 0, "frames": 0, "beat": ""}
+shot w_ref_ward.png           W ward reference, ?highlight=off chrome        2.4s  ok
+shot w_ref_borough.png        W borough reference, ?highlight=off chrome     2.6s  ok
+
+shot w1_split_end.png         W1 borough -> ward (warped split)              3.8s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "ward", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0}, "log": ["borough->ward (warp)", "seed+4", "reveal+49", "gesture+62", "healed+814", "finalise+872"]}
+shot w1_merge_end.png         W1 ward -> borough (warped merge)              3.7s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "borough", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0}, "log": ["ward->borough (warp)", "gesture+4", "healed+754", "finalise+831"]}
+
+shot w2_ref_plateau_cracked.png W2 ref: plateau values, live crack                  ok
+shot w2_ref_ward_cracked.png  W2 ref: ward values, live crack                     ok
+shot w2_ref_plateau_flat.png  W2 ref: plateau values, no crack                    ok
+shot w2_ref_ward_flat.png     W2 ref: ward values, no crack                       ok
+shot w2_*.png                 W2 concurrency, sampled at the peak           17.3s  ok
+     uniform 0.07981 -> morphT 0.9976 (inset 0.92, peak 0.38); log ["borough->ward (warp)", "seed+6", "reveal+57", "gesture+78", "healed+3083", "finalise+3142"]
+
+     pass IDLE STATE after W4b (warp gesture interrupted at 35%): {"oa": [null, false], "ward": [null, false], "warp": 0, "bwarp": false, "beat": "merge", "mb": null, "seed": null, "sw": false}
+shot w4_*.png                 W4 zoom and interrupt inside the gesture      13.3s  ok
+     zoom: uniform 0.07324 mid-gesture, 180.3 fps; interrupt fired at uniform 0.07986, settled at 0
+
+shot w_ref_pcon.png           W5 pcon reference, ?highlight=off chrome       2.6s  ok
+     pass IDLE STATE after W5 (warp gesture retargeted to a non-warp pair): {"oa": [null, false], "ward": [null, false], "warp": 0, "bwarp": false, "beat": "", "mb": null, "seed": null, "sw": false}
+shot w5_*.png                 W5 warp retargeted onto a non-warp pair        9.9s  ok
+     the crack was 0.07984 open when the second pill was clicked (basis then: ward)
+     log: ["ward->pcon", "seed+3", "reveal+156", "animate+169", "finalise+3241"]
+
+shot w6_ref_ward_m2.png       W6 ward/hh_density reference, loaded directly   2.5s  ok
+     pass IDLE STATE after W6 (measure change mid-morph, ?warp=0): {"oa": [null, false], "ward": [null, false], "warp": 0, "bwarp": false, "beat": "", "mb": null, "seed": null, "sw": false}
+shot w6_*.png                 W6 measure change mid V1 morph (?warp=0)       6.4s  ok
+     morphBasis was 'oa' when the measure changed
+
+---- assertions ----
+PASS A1 boot with ?morph=0: page ready, errors 0 (curtain build sanity)
+
+PASS a2_ref_ward.png vs a2_morph_ward.png
+     A2 endpoint: the default view morphed to ward through the real pill path lands on the ward map
+     MAD 0.0001/255 (limit 2.0)   pixels >12/255: 3 of 1330000 = 0.0002% (limit 0.5%)   max channel diff 35
+
+PASS a3_ref_gla.png vs a3_morph_gla.png
+     A3 endpoint, non-nested: pcon -> gla lands on the Assembly-seat map
+     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1330000 = 0.0000% (limit 0.5%)   max channel diff 1
+
+PASS a1_ref_borough.png vs a3_morph_borough.png
+     A3 endpoint, merge direction: ward -> borough lands on the borough map, borough outlines stepping back out
+     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1330000 = 0.0000% (limit 0.5%)   max channel diff 0
+
+A4 mid-flight progression: does the morph SLIDE?
+     the seed frame and the ward map are 4.4048/255 apart
+     a4_mid25   0.3401 from the seed,  4.1954 from the ward end  ->   7.72% across   (frame landed at 27.2%)
+     a4_mid50   2.4101 from the seed,  2.5625 from the ward end  ->  54.72% across   (frame landed at 53.0%)
+     a4_mid75   4.1826 from the seed,  0.3974 from the ward end  ->  94.95% across   (frame landed at 77.2%)
+     pass strictly increasing
+     pass p25 >= 1.0%
+     pass p50 within 10-90%
+     pass p75 <= 99.9%
+PASS A4 the morph interpolates: 7.72% -> 54.72% -> 94.95%
+
+PASS a2_ref_ward.png vs a5_interrupt_ward.png
+     A5 interrupt: borough->pcon retargeted to ward 300 ms in, landing exactly on the ward map
+     MAD 0.0001/255 (limit 2.0)   pixels >12/255: 4 of 1330000 = 0.0003% (limit 0.5%)   max channel diff 35
+     pass a morph really was in flight when the second pill was clicked
+     pass no stuck morphBasis and no stuck switching afterwards
+     pass and NOTHING IS LEFT ON EITHER BASIS — see the idle line above
+
+PASS a2_ref_ward.png vs <a5b final frame, in memory>
+     A5b a retarget landing INSIDE the seed's warm window still lands exactly on the ward map
+     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1330000 = 0.0000% (limit 0.5%)   max channel diff 7
+     pass morphSeed is cleared afterwards, not stranded on the tier the reader left
+     pass the morph was actually DRAWN (253 committed renders, need >= 30)
+     pass no watchdog: the commit chain never stalled
+     pass and NOTHING IS LEFT ON EITHER BASIS
+     STRANDING SHOWS IN ALL THREE AT ONCE, and did before the fix:
+     morphSeed stayed "borough" for the life of the page, the whole
+     750 ms morph took four committed renders because the layer being
+     animated was not the one being drawn, and the watchdog forced the
+     animate through at +693 ms. The endpoint alone would not have
+     caught it — FINALISE reveals the destination either way.
+PASS A5b a retarget inside the warm window is an ordinary interrupt
+
+A6 a measure change AFTER a morph still animates (the snap-poisoning regression)
+     zero is the settled ward map on the OLD measure, so the chrome the change rewrites
+     (title, legend, active pill) is a fixed part of every number below — which is why
+     the claim is that they INCREASE, not that any one of them equals the easing.
+        156 ms after the change  ->   46.32% across
+        330 ms after the change  ->   66.68% across
+        484 ms after the change  ->   93.61% across
+     pass the first frame is strictly between the two ends (>2% and <98%)
+     pass the three frames strictly increase — so it slides rather than cutting or stalling
+PASS A6 the measure change after a morph still animates
+
+PASS a7_ref_oa.png vs a7_morph_oa.png
+     A7 suppression: lsoa -> oa on resident_under5y, whose denominator suppresses 294 output areas and none at any coarser grain
+     MAD 0.0002/255 (limit 2.0)   pixels >12/255: 9 of 1330000 = 0.0007% (limit 0.5%)   max channel diff 34
+
+PASS a8_ref_change.png vs a8_morph_change.png
+     A8 change view: 2011->2021 at borough, morphed to ward, landing on the directly loaded change view
+     MAD 0.0001/255 (limit 2.0)   pixels >12/255: 6 of 1330000 = 0.0005% (limit 0.5%)   max channel diff 22
+
+PASS A9 street mode never morphed: morphActive false in all 129 samples across the switch, errors 0
+
+PASS a2_ref_ward.png vs <a10 final frame, in memory>
+     A10 endpoint after a mid-flight zoom still lands on the ward map
+     MAD 0.0001/255 (limit 2.0)   pixels >12/255: 9 of 1330000 = 0.0007% (limit 0.5%)   max channel diff 32
+     pass elevationScale really did move and come back (1 -> 0.11323210104515069 -> 1)
+     a10_zoom_mid75 is 94.98% across, against a4_mid75's 94.95% (drift 0.03 pts, limit 15)
+     A RESTART WOULD SHOW HERE, and did before the fix: this frame came in at 36.39%
+     against a4_mid75's 94.99%, a drift of 58.6 points. The cause was NOT the scale — a
+     bare redraw() with no scale change at all did the same damage (91% -> 37% at the
+     70% mark) — it was polyLayer handing deck.gl a fresh data.attributes object on every
+     redraw, which it reads as the attributes having changed. polyData() now caches that
+     object per tier, keyed on the paint counter.
+PASS A10 the in-flight transition survived the elevationScale redraws
+
+PASS A11 reduced motion: TRANSITION 0, no morph in 86 samples, the switch lands instantly
+
+PASS a2_ref_ward.png vs <a12 final frame, in memory>
+     A12 a morph started with an UNPAINTED basis still lands on the ward map
+     MAD 0.0001/255 (limit 2.0)   pixels >12/255: 4 of 1330000 = 0.0003% (limit 0.5%)   max channel diff 32
+     pass it really morphed rather than falling back to the curtain (morphActive true in 29 of 71 samples)
+     WITH morphReady() REQUIRING B.painted THIS CURTAINED: morphActive
+     stayed false for the whole switch and for every switch after it,
+     while #v3status.morphReady — the field this driver gates on — said true.
+PASS A12 an unpainted basis is a morph that pays its own tessellation, not a dead one
+
+A13 the one-frame flash: a layer revealed on the same commit that first
+    hands deck.gl its new values, signed frame by frame from inside the
+    render loop. The excess below is an L1 histogram distance over the
+    sampled region, so it is about TWICE the share of pixels that changed
+    luminance bucket: 23.5% here is roughly 11.8% of the region's pixels.
+     region [500, 226, 512, 384] of [1400, 950]
+     pass fixed page, first arrival after a measure change    0.00%  (limit 1.00%, 139 frames)
+     pass fixed page on V1'S PATH, ?warp=0                    0.00%  (limit 1.00%, 80 frames)
+     pass ?ghost=0 control, the same route                   14.28%  (floor 5.00%, 80 frames)
+          the control's spike is at redraw[vis=ward mb=- sw=0 snap=ward ghost=-] phase:finalise
+     pass measure change landing MID-MORPH                    0.00%  (limit 1.00%, 129 frames)
+     pass the CURTAIN under ?morph=0, the same route          0.01%  (limit 1.00%, 149 frames)
+     .... ?ghost=0 on the WARP path                       0.00%  (REPORTED, 93 frames)
+     THE WARP PATH DOES NOT REPRODUCE THE DEFECT WITH ITS WARM COMMITS
+     TURNED OFF, and this run does not establish why. The honest
+     statement is the measurement: on V1's path ?ghost=0 shows the
+     flash and on the warp path it does not. The warp split still
+     ships the ghost commit — it is cheap, it is V1's invariant, and
+     an unexplained absence is not a reason to remove a guard. What
+     it does mean is that the warp leg above is NOT evidence that the
+     ghost is working there; only the V1 leg carries that.
+     THE CONTROL LEG IS THE ASSERTION THAT THIS PROBE CAN STILL FAIL.
+     Under ?ghost=0 the seed and the hand-off each reveal a layer on the
+     same commit that first gives deck.gl its new values, and deck.gl
+     draws an out-of-date one. The frames either side agree with each
+     other, so the excess is the whole of the difference between two
+     measures - L1 23.5% of the region at the seed and 8.3% at the
+     hand-off when this was first caught, against 0.02% with the warm
+     commits on.
+     The last two legs are paths this fix does NOT touch, measured rather
+     than assumed. Both reveal a layer and repaint it on one commit, and
+     both are clean, because the out-of-date value each one draws is
+     already the value that frame wanted: the start of the measure ease
+     in one case, the flat baseline paintFlat established in the other.
+     CAVEAT: one 512x384 region of a 1400x950 canvas. A defect that only
+     moved pixels outside it would pass. The rect is settable with
+     ?fpx/?fpy/?fpw/?fph; this leg uses the default.
+PASS A13 no committed frame shows a picture its neighbours do not
+
+PASS a0_v1_ward.png vs a0_v3_warp0_ward.png
+     A0 NO REGRESSION, measured against v1 itself: the same borough -> ward route through v1 and through v3 under ?warp=0 land on the same frame
+     MAD 0.0002/255 (limit 2.0)   pixels >12/255: 9 of 1330000 = 0.0007% (limit 0.5%)   max channel diff 29
+
+S THE SPIKE: does a LayerExtension move a SolidPolygonLayer's vertices at all?
+     v2's verdict on deck.gl's own answer stands and is why this exists: declaring
+     transitions:{getPolygon} does not animate the positions, it BLANKS the layer —
+     ink 0.0363 against a drawn 0.3166, 12 WebGL INVALID_OPERATIONs per frame, and a
+     page error count of 0 throughout. V3 never touches that attribute. It adds one
+     Float32 per-vertex attribute and one float uniform, and injects at
+     vs:DECKGL_FILTER_GL_POSITION — the only one of deck.gl's four declared hooks
+     that can reach position (vs:#decl lands above the attribute declarations and a
+     GLSL `in` is read-only anyway; vs:#main-start lands before props.positions is
+     assigned and vs:#main-end after the vertex is already projected and lit).
+     pass the extension is attached and its attribute BOUND: float32 x2 dynamic, 101476 values for 50738 vertices
+PASS s_no_extension.png vs s_ext_at_rest.png
+     S1 AT REST the extension is invisible: the page carrying it at morphT 0 against the page built without it at all
+     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 1 of 1330000 = 0.0001% (limit 0.5%)   max channel diff 25
+     note and it is EXACT, not merely close (0.0000/255). It has to be: the displacement
+     is (centroid - vertex) * amount, so amount = 0 multiplies the whole of the
+     float32 centroid's error by zero. Every endpoint assertion in this file rests on it.
+
+PASS s_cpu_truth.png vs s_gpu_warp.png
+     S2 the SHADER warp reproduces a CPU warp of the same geometry at inset 0.92 — v2's warp in Float64, applied to the position buffer before the first draw so deck.gl tessellates the inset geography itself
+     MAD 0.0033/255 (limit 2.0)   pixels >12/255: 240 of 1330000 = 0.0180% (limit 0.5%)   max channel diff 51
+     ink 0.2714 (CPU truth) vs 0.2714 (GPU warp); uniform at the shot 0.07999999999999996
+     THIS IS ALSO THE SIDE-WALL ASSERTION. The top faces are drawn from a
+     NON-instanced model and the walls from an INSTANCED one, off the same buffers
+     and through two different vertex shaders; the wall shader interpolates
+     mix(vertexPositions, nextVertexPositions, ...). A displacement that reached the
+     tops and not the walls, or sheared between them, could not come within
+     0.0033/255 of a picture whose walls were tessellated in the warped position.
+     The attribute is the RING CENTROID rather than the displacement for exactly
+     this reason: it is constant along a ring, so mixing it is a no-op and no
+     nextMorphDelta view and no RING_WINDING_ORDER swap is needed.
+
+     pass NO BLANKING: ink 0.2783 at rest and 0.2714 fully warped (floor 0.15, v2's blanked layer 0.0363)
+     pass NO WebGL ERRORS from the browser's own log across rest, full warp and a 2 s scrub (0)
+     pass SCRUB 176.8 fps over 354 frames, worst frame 12.3 ms (floor 55)
+        v2's CPU warp measured 34.5-46.0 fps on this machine, in this harness, at this
+        grain, and could not run a value transition at the same time at any speed.
+        Headless Chrome does not lock rAF to vsync, so the mean is THROUGHPUT and not a
+        claim about a 60 Hz screen. THE WORST FRAME IS NOT SMALL: 12.3 ms here, against
+        8-11 ms measured in isolated probes of the same code. The mean hides it, this
+        line does not, and it is carried into the report as an open concern rather than
+        as a 60 fps claim.
+PASS S the injection reaches position, draws, and is exact at rest
+
+PASS w_ref_ward.png vs w1_split_end.png
+     W1 SPLIT endpoint: borough -> ward as ONE warped gesture lands on exactly the ward map
+     MAD 0.0003/255 (limit 2.0)   pixels >12/255: 18 of 1330000 = 0.0014% (limit 0.5%)   max channel diff 31
+
+PASS w_ref_borough.png vs w1_merge_end.png
+     W1 MERGE endpoint: ward -> borough as ONE warped gesture hands back exactly the borough map
+     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1330000 = 0.0000% (limit 0.5%)   max channel diff 0
+
+W2 CONCURRENCY — the claim V3 exists to make
+     v2 could not do this and measured why: rewriting the position buffer per frame
+     forces deck.gl to re-tessellate, re-tessellation re-reads every attribute, and the
+     colour transition therefore restarted on EVERY frame. Measured live in v2's own
+     driver, every run: the values sat 29.25% across at the 84% mark of the ease,
+     where a working transition is at ~96.6%. That is what forced its three separate
+     beats. V3 never changes the geometry deck.gl holds, so there is nothing to
+     restart and the two can share one timeline.
+     Sampled at the envelope's PEAK, where cubic-in-out is stationary, so the
+     screenshot round trip barely moves the displacement and the references can be
+     staged to match it: uniform 0.07981, i.e. morphT 0.9976 of a 1-0.92 crack.
+     pass the page's own inset/peak match this driver's (0.92, 0.38)
+     the two same-crack references are 4.7964/255 apart
+     the live frame is 1.4276/255 from the plateau end and 3.9620/255 from the ward end
+     pass VALUE PROGRESS 29.76% across, strictly interior (band 10-90%)
+     pass POSITION DISPLACEMENT, from pixels rather than from the page's own report of
+        its uniform: the live frame sits 5.3896/255 from the CRACKED pair and 6.1242/255
+        from the same two states with the crack closed, so it belongs to the cracked
+        family. A frame whose geometry had not moved could not.
+     pass and the page reports the uniform at 0.07981, 99.8% of a full crack
+PASS w_ref_ward.png vs w2_end.png
+     W2 and the gesture still lands exactly on the ward map
+     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 2 of 1330000 = 0.0002% (limit 0.5%)   max channel diff 28
+     pass W3 the gesture held 178.9 fps over 530 frames, worst 16.5 ms (floor 55)
+     phase log: ["borough->ward (warp)", "seed+6", "reveal+57", "gesture+78", "healed+3083", "finalise+3142"]
+PASS W2/W3 the values and the crack move TOGETHER, at 179 fps
+
+PASS w_ref_ward.png vs <w4 zoom final frame, in memory>
+     W4a a zoom landing inside the gesture — two elevationScale layer-stack rebuilds mid-warp — still lands exactly on the ward map
+     MAD 0.0005/255 (limit 2.0)   pixels >12/255: 30 of 1330000 = 0.0023% (limit 0.5%)   max channel diff 36
+     the uniform was 0.07324 when the zoom landed, so the warp really was in flight
+
+PASS w_ref_borough.png vs <w4 interrupt final frame, in memory>
+     W4b an interrupt landing inside the gesture — the opposite pill at 35% — lands exactly on the borough map
+     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1330000 = 0.0000% (limit 0.5%)   max channel diff 1
+     pass the crack is fully closed afterwards (uniform 0): an interrupt hands its
+        open crack to the next gesture's envelope, or eases it shut over 180 ms if
+        there is no next gesture — it is never snapped.
+PASS W4 the gesture survives a zoom and an interrupt
+
+
+PASS w_ref_pcon.png vs w5_nonwarp_retarget_end.png
+     W5 a warp gesture retargeted onto a NON-warp pair (ward -> pcon, mid-split) lands on exactly the constituency map — no stale crack left in the picture
+     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1330000 = 0.0000% (limit 0.5%)   max channel diff 1
+     pass the crack really was open when the retarget fired (0.07984)
+     BEFORE THE FIX THIS LEG LEFT THREE THINGS BEHIND AND THE
+     PICTURE STILL LANDED: apply()'s endMorph guard is
+     `morphBasis && !doMorph`, and a retarget onto a non-warp pair
+     is a morph — so nothing bumped WARP.token, the envelope's rAF
+     loop ran on detached against a layer morphTier had stopped
+     drawing, and the ward layer kept noPick and a stale dur/ease.
+     retireWarp() is now called from apply() as well as endMorph().
+PASS W5 a warp retargeted onto a non-warp pair retires cleanly
+
+PASS w6_ref_ward_m2.png vs w6_measure_mid_morph_end.png
+     W6 a measure change landing mid V1 morph (?warp=0) lands on the directly loaded ward map for that measure
+     MAD 0.0003/255 (limit 2.0)   pixels >12/255: 20 of 1330000 = 0.0015% (limit 0.5%)   max channel diff 37
+     pass a V1 morph really was in flight when the measure changed (basis 'oa')
+     THIS IS THE SHAPE OF THE REGRESSION RUN 3 EXPOSED, and the
+     reason this arm exists: endMorph() had stopped resetting the
+     OUTPUT-AREA basis, so an interrupted V1 morph left it holding
+     dur, ease and noPick for the life of the page. Every endpoint
+     in this file was still perfect. Only the idle read-back sees it.
+PASS W6 endMorph on a plain V1 morph leaves both bases clean
+
+INK GATE: every committed frame shows a drawn map
+     40 PNGs, ink from 0.1975 to 0.3083, floor 0.15
+     v2 spent a sprint with a BLANK map, a clean page error count and nothing in
+     window.onerror, because a WebGL INVALID_OPERATION is not a JavaScript
+     exception. errors==0 is not a drawing assertion; this is.
+PASS INK GATE
+PASS NO WebGL ERRORS anywhere in the run (0), read from the browser's own log over CDP
+
+---- UNTESTED-BY-DRIVER (left to the human eye) ----
+  * the real zoom-gesture lsoa<->oa auto-switch, AS A GESTURE. This
+    driver forces the tier through __setArea and elevationScale
+    through __applyZoom, so how crossing the threshold mid-drag feels
+    is unjudged. (A7 does morph lsoa->oa, just not by dragging.)
+  * plateau seam shimmer under rotation and tilt. The plateau is
+    26,369 coplanar solids; whether their shared edges sparkle as the
+    camera moves is not a still-frame question.
+  * overall aesthetics: whether a split reads as one map refining
+    rather than as a wipe, and whether 750 ms is the right length.
+  * the ~210 ms seed frame v0 measured, AS FELT on a click. It is
+    still there — ?hud=1 shows it — and whether it reads as lag on
+    the click is a judgement no assertion here makes.
+  * street mode keeps the curtain deliberately; whether that is the
+    right call over a pale basemap is a design question, not a bug.
+  * WHETHER THE ONE-GESTURE WARP READS AS ONE GESTURE. This driver
+    proves the crack and the values move together and that the
+    endpoints are exact; whether a 0.38 peak is the right place for
+    the seams to be widest, and whether 750 ms is enough room for
+    the whole shape, are eye questions. ?bench=1 gives a slider
+    straight onto the uniform for judging the inset by hand.
+  * seam shimmer WHILE the crack is open, under rotation. The warp
+    is a per-ring similarity transform so no normal changes, but
+    whether the newly exposed side walls read as walls or as gaps
+    is not a still-frame question.
+  * the warp at OA grain. Nothing here says it looks right at
+    26,369 features — only that the cost of trying would be the
+    same one float, which is what v2's CPU path could not say.
+  * the borough outlines coming on at t=0 of a borough->ward switch.
+    That is inherited production behaviour (the curtain does it too),
+    and A4 measures against it rather than around it — but whether it
+    reads as a pop is an eye question.
+
+RESULT ALL ASSERTIONS PASS
