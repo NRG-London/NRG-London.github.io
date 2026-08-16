@@ -513,6 +513,47 @@ def compare(a, b, label, log, name_a=None, name_b=None):
     return ok
 
 
+# ---- A13: the per-frame signature -------------------------------------------
+# The page's ?flickerprobe=1 reads a fixed 512x384 region of the deck canvas
+# back off the GPU inside every committed render and reduces it to a mean, a
+# standard deviation and an eight-bucket luminance histogram. `spike_of` asks
+# one question of that log: is there a frame that sits further from BOTH its
+# neighbours than they sit from each other?
+#
+# That is the signature of a WRONG frame and of nothing else. A moving picture
+# walks: each frame is close to the one before and the one after, and the
+# neighbours are far apart. A frame that is wrong and immediately corrected is
+# far from both while the neighbours agree, so the excess below is large. A
+# frame that is merely SLOW shows in `dt` and not here at all — which is how
+# the two hypotheses were told apart in the first place.
+#
+# Reported as a share of the sampled region, so the limits do not depend on the
+# region size. Measured: 23.5% on the unfixed page (the seed) and 8.3% (the
+# hand-off); 0.02% on the fixed one. The limits sit in a gap of three orders of
+# magnitude.
+FLICKER_LIMIT = 0.01        # fixed page: no frame may exceed 1% of the region
+FLICKER_FLOOR = 0.05        # ?ghost=0: the probe must SEE at least 5%, or it
+                            # is not looking at anything and proves nothing
+
+
+def spike_of(log):
+    """(worst one-frame excess as a share of the region, that sample)."""
+    if len(log) < 3:
+        return 0.0, None
+    npx = sum(log[0]["h"]) or 1
+
+    def hd(a, b):
+        return sum(abs(x - y) for x, y in zip(a["h"], b["h"]))
+
+    worst, at = 0, None
+    for i in range(1, len(log) - 1):
+        a, e, b = log[i - 1], log[i], log[i + 1]
+        excess = min(hd(a, e), hd(e, b)) - hd(a, b)
+        if excess > worst:
+            worst, at = excess, e
+    return worst / float(npx), at
+
+
 def progress_of(frame, start, end):
     """How far `frame` has travelled from `start` towards `end`, in pixel
     space. Not linear in the value space the easing acts on, hence the generous
@@ -727,6 +768,8 @@ def main():
         page.screenshot(OUT / "a5_interrupt_ward.png")
         ok_a5 = check(n5, st5, got, "a5_interrupt_ward.png")
         ok_all &= ok_a5
+        # Logged HERE, before A5b runs, so the elapsed time below is A5's own and
+        # the two appear in RESULTS in the order they were captured.
         log("shot %-24s %-44s %5.1fs  %s"
             % ("a5_interrupt_ward.png", "A5 borough->pcon, retargeted to ward",
                time.time() - t0, "ok" if ok_a5 else "FAILED"))
@@ -735,6 +778,68 @@ def main():
         log("     log:        %s" % json.dumps(mt5.get("log")))
         a5_mid_was_morphing = bool((mid_st or {}).get("morphBasis"))
         a5_clean = (not st5.get("morphBasis")) and (st5.get("switching") is False)
+
+        # A5b. INTERRUPT INSIDE THE SEED WARM WINDOW. A5 above fires at +300 ms,
+        #      which is past both warm commits, so it asserts nothing about them.
+        #      The window between the seed's warm commit and its reveal is one
+        #      committed render wide, so it is not raced from out here — both
+        #      clicks go out in ONE task instead, which puts the second morphTier
+        #      in front of the first morph's warm commit deterministically.
+        #
+        #      That is the window where morphSeed is standing and the seed block
+        #      is skipped (morphBasis is already BASIS). Getting it wrong strands
+        #      morphSeed: buildStack goes on resolving `shown` to a tier the
+        #      reader has left, the morph animates invisibly, and the map is
+        #      stuck on the wrong layer for the life of the page. Measured on the
+        #      build that had it: morphSeed still "borough" after a morph to
+        #      wards, four committed renders for the whole 750 ms because nothing
+        #      on screen was moving, and the watchdog forcing the animate through
+        #      at +693 ms. All three are asserted below.
+        #
+        #      ONE TASK IS A SUPERSET OF A REAL DOUBLE-CLICK, not a copy of it.
+        #      Two setArea calls with no yield between them leave two apply()
+        #      chains in flight over the same `tier` global, so for the moment
+        #      between them READY[tier] aliases and one buildStack can emit two
+        #      layers carrying the same poly-<key> id. A human double-click
+        #      always has at least one task boundary in it and cannot reach that
+        #      state. It is used anyway because the state it DOES reach — the
+        #      seed's warm window, entered with morphSeed standing — is the one
+        #      under test and is not reachable from out here any other way, and
+        #      because a page that survives the superset survives the subset.
+        log("")
+        t0b = time.time()
+        n5b = Nav(page, base, "?tier=borough")
+        got, st, mt = n5b.poll(morph_capable, timeout=180)
+        ok_5b = check(n5b, st, got, "a5b boot")
+        for area in ("ward", "pcon", "borough"):     # pre-visit, so every tier
+            n5b.set_area(area)                       # carries a drawn buffer
+            got, st, mt = n5b.poll(done_morphing, timeout=120)
+            ok_5b &= check(n5b, st, got, "a5b pre-visit " + area)
+            time.sleep(0.35)
+        r_before = (n5b.read()[1] or {}).get("renders") or 0
+        n5b.js('window.__setArea("pcon").then(function(){},function(){});'
+               'window.__setArea("ward").then(function(){},function(){}); 0')
+        got, st5b, mt5b = n5b.poll(done_morphing, timeout=120)
+        ok_5b &= check(n5b, st5b, got, "a5b retarget")
+        time.sleep(SETTLE)
+        a5b_end = page.shot_bytes()
+        a5b_state = json.loads(n5b.js(
+            "JSON.stringify({seed: typeof morphSeed === 'undefined' ? 'UNDEFINED'"
+            " : morphSeed, mb: morphBasis, sw: switching, tier: tier,"
+            " renders: renderCount})") or "{}")
+        a5b_seed_clear = a5b_state.get("seed") is None
+        a5b_no_watchdog = not any(str(x).startswith("watchdog")
+                                  for x in (mt5b.get("log") or []))
+        a5b_renders = (a5b_state.get("renders") or 0) - r_before
+        a5b_drew = a5b_renders >= 30      # a 750 ms morph that is actually drawn
+        log("shot %-24s %-44s %5.1fs  %s"
+            % ("-", "A5b retarget inside the seed warm window", time.time() - t0b,
+               "ok" if ok_5b else "FAILED"))
+        log("     both pills clicked in one task; log: %s" % json.dumps(mt5b.get("log")))
+        log("     after it settles: morphSeed=%r morphBasis=%r switching=%r tier=%r; "
+            "%d committed renders across the morph"
+            % (a5b_state.get("seed"), a5b_state.get("mb"), a5b_state.get("sw"),
+               a5b_state.get("tier"), a5b_renders))
 
         # A6. A measure change AFTER a morph still animates — the regression
         #     test for snap poisoning, which would leave the just-morphed tier
@@ -956,6 +1061,141 @@ def main():
                                         sum(1 for x in a12_seen if x)))
         log("     log: %s" % json.dumps(mt12.get("log")))
 
+        # A13. THE ONE-FRAME FLASH. Both swaps in a morph reveal a layer on the
+        #      same commit that first hands deck.gl that layer's new values,
+        #      and on that commit deck.gl still holds the previous ones — so
+        #      the revealed layer draws one frame of whatever it was last DRAWN
+        #      with. That is invisible whenever it was last drawn with this
+        #      same map, and a flash of a different one whenever it was not: a
+        #      measure, year or change-view switch repaints only the tier on
+        #      screen, so the first arrival at every other area type after one
+        #      showed the old measure for a frame. No screenshot can catch it,
+        #      so the page is asked instead: ?flickerprobe=1 signs every
+        #      committed frame and this reads the log back.
+        #
+        #      RUN IN BOTH DIRECTIONS, and that is the point. ?ghost=0 puts the
+        #      old swap sequence back, so the same probe, the same route and
+        #      the same metric must SEE the defect on one leg and not on the
+        #      other. A regression probe that has only ever seen the fixed page
+        #      cannot tell a fix from a probe that has stopped looking.
+        #
+        #      ?highlight=off for the same reason A6 uses it: the peak pulse is
+        #      a second animation over the hand-off, and this metric is about
+        #      what one frame does that its neighbours do not.
+        #      EVERY LEG ASSERTS THE PROBE WAS ALIVE. spike_of() returns 0.0 for
+        #      a log shorter than three samples, __flicker.log() returns [] when
+        #      the probe never initialised, and probeSample() retires itself into
+        #      PROBE.dead rather than throwing (so the errors gate would not
+        #      catch it either). Without the liveness check below, the leg that
+        #      is supposed to prove the page is clean would pass loudest when
+        #      the probe had stopped looking altogether.
+        def flicker_leg(extra, what, route):
+            t0 = time.time()
+            n = Nav(page, base, "?shield=0&highlight=off&flickerprobe=1" + extra)
+            got, st, mt = n.poll(morph_capable if "morph=0" not in extra else is_ready,
+                                 timeout=180)
+            ok = check(n, st, got, "a13 boot " + what)
+            ok &= route(n, what)
+            time.sleep(0.4)
+            info = json.loads(n.js("JSON.stringify(window.__flicker.info())") or "{}")
+            raw = n.js("JSON.stringify(window.__flicker.log())")
+            flog = json.loads(raw) if raw else []
+            alive = bool(info.get("on")) and not info.get("dead") and len(flog) >= 30
+            ok &= alive
+            worst, at = spike_of(flog)
+            log("shot %-24s %-44s %5.1fs  %s"
+                % ("-", "A13 " + what, time.time() - t0, "ok" if ok else "FAILED"))
+            log("     %s probe alive: on=%s dead=%r %d committed frames signed "
+                "(need >= 30), region %s of %s"
+                % ("pass" if alive else "FAIL", info.get("on"), info.get("dead") or "",
+                   len(flog), info.get("rect"), info.get("canvas")))
+            log("     worst one-frame excess %.2f%% of the region%s"
+                % (100 * worst,
+                   ("  at t=%.0f ms, %s" % (at["t"], at["ev"] or "no mark"))
+                   if at else ""))
+            return ok, worst, at, len(flog), info
+
+        # The route the defect was found on: paint ward and borough under the
+        # opening measure so both layers have been DRAWN and carry a buffer;
+        # change the measure, which repaints ONLY the tier on screen and leaves
+        # ward and the basis a whole measure out of date; then arrive at ward.
+        def route_first_arrival(n, what):
+            ok = True
+            for area in ("ward", "borough"):
+                n.set_area(area)
+                got, st, mt = n.poll(done_morphing, timeout=120)
+                ok &= check(n, st, got, "a13 %s %s" % (what, area))
+                time.sleep(0.35)
+            n.js('window.__setMeasure("%s").then(function(){},function(){}); 0' % MEAS2)
+            got, st, mt = n.poll(settled, timeout=120)
+            ok &= check(n, st, got, "a13 %s measure" % what)
+            time.sleep(0.35)
+            n.js("window.__flicker.clear(); 0")     # the window is this one switch
+            n.set_area("ward")
+            got, st, mt = n.poll(done_morphing, timeout=120)
+            return ok and check(n, st, got, "a13 %s flash switch" % what)
+
+        # A MEASURE CHANGE LANDING MID-MORPH. apply()'s plain-paint branch calls
+        # endMorph() and then paints and reveals the hidden destination on one
+        # commit — the same shape as the two swaps, so it was worth measuring
+        # rather than assuming. It does NOT flash, and the reason is worth
+        # keeping: the out-of-date value the reveal frame draws is the tier's
+        # own map on the OLD measure, which is exactly where the 750 ms measure
+        # ease is supposed to start from. It is a legitimate animation start,
+        # not a wrong frame, and "fixing" it would delete the animation.
+        def route_mid_morph_measure(n, what):
+            ok = True
+            for area in ("ward", "borough"):
+                n.set_area(area)
+                got, st, mt = n.poll(done_morphing, timeout=120)
+                ok &= check(n, st, got, "a13 %s %s" % (what, area))
+                time.sleep(0.35)
+            n.js("window.__flicker.clear(); 0")
+            n.js('window.__setArea("ward").then(function(){},function(){});'
+                 'setTimeout(function(){window.__setMeasure("%s")'
+                 '.then(function(){},function(){});}, 350); 0' % MEAS2)
+            got, st, mt = n.poll(settled, timeout=120)
+            return ok and check(n, st, got, "a13 %s mid-morph measure" % what)
+
+        # THE CURTAIN, under ?morph=0, on the same route. Its incoming layer is
+        # revealed and repainted on one commit too, so the report's original
+        # claim that paintFlat gives it a clean frame needed measuring rather
+        # than asserting. It is clean — but not for the reason first written
+        # down: the out-of-date value its reveal draws IS the flat baseline
+        # paintFlat established while it was hidden, which is what the rise
+        # wants. Asserted here so a deck.gl change that broke it would show up
+        # as a PRODUCTION defect rather than silently.
+        def route_curtain(n, what):
+            ok = True
+            for area in ("ward", "borough"):
+                n.set_area(area)
+                got, st, mt = n.poll(settled, timeout=120)
+                ok &= check(n, st, got, "a13 %s %s" % (what, area))
+                time.sleep(0.6)
+            n.js('window.__setMeasure("%s").then(function(){},function(){}); 0' % MEAS2)
+            got, st, mt = n.poll(settled, timeout=120)
+            ok &= check(n, st, got, "a13 %s measure" % what)
+            time.sleep(0.6)
+            n.js("window.__flicker.clear(); 0")
+            n.set_area("ward")
+            got, st, mt = n.poll(settled, timeout=120)
+            time.sleep(0.4)
+            return ok and check(n, st, got, "a13 %s curtain switch" % what)
+
+        log("")
+        a13_fix_ok, a13_fix, a13_fix_at, a13_fix_n, a13_info = flicker_leg(
+            "", "fixed page: warm commits on", route_first_arrival)
+        log("")
+        a13_old_ok, a13_old, a13_old_at, a13_old_n, _ = flicker_leg(
+            "&ghost=0", "?ghost=0 control: warm commits off", route_first_arrival)
+        log("")
+        a13_mid_ok, a13_mid, a13_mid_at, a13_mid_n, _ = flicker_leg(
+            "", "measure change landing MID-MORPH", route_mid_morph_measure)
+        log("")
+        a13_cur_ok, a13_cur, a13_cur_at, a13_cur_n, _ = flicker_leg(
+            "&morph=0", "the CURTAIN, ?morph=0, same route", route_curtain)
+        ok_all &= a13_fix_ok and a13_old_ok and a13_mid_ok and a13_cur_ok
+
         page.close()
 
         # ---- assertions -----------------------------------------------------
@@ -1015,6 +1255,29 @@ def main():
             % ("pass" if a5_mid_was_morphing else "FAIL"))
         log("     %s no stuck morphBasis and no stuck switching afterwards"
             % ("pass" if a5_clean else "FAIL"))
+        log("")
+
+        # ---- A5b retarget inside the seed warm window
+        a5b_land = compare(OUT / "a2_ref_ward.png", a5b_end,
+                           "A5b a retarget landing INSIDE the seed's warm window "
+                           "still lands exactly on the ward map", log,
+                           name_b="<a5b final frame, in memory>")
+        a5b_all = ok_5b and a5b_land and a5b_seed_clear and a5b_no_watchdog and a5b_drew
+        ok_all &= a5b_all
+        log("     %s morphSeed is cleared afterwards, not stranded on the tier the "
+            "reader left" % ("pass" if a5b_seed_clear else "FAIL"))
+        log("     %s the morph was actually DRAWN (%d committed renders, need >= 30)"
+            % ("pass" if a5b_drew else "FAIL", a5b_renders))
+        log("     %s no watchdog: the commit chain never stalled"
+            % ("pass" if a5b_no_watchdog else "FAIL"))
+        log("     STRANDING SHOWS IN ALL THREE AT ONCE, and did before the fix:")
+        log("     morphSeed stayed \"borough\" for the life of the page, the whole")
+        log("     750 ms morph took four committed renders because the layer being")
+        log("     animated was not the one being drawn, and the watchdog forced the")
+        log("     animate through at +693 ms. The endpoint alone would not have")
+        log("     caught it — FINALISE reveals the destination either way.")
+        log("%s A5b a retarget inside the warm window is an ordinary interrupt"
+            % ("PASS" if a5b_all else "FAIL"))
         log("")
 
         # ---- A6 measure change after a morph
@@ -1110,6 +1373,60 @@ def main():
         log("     while #v1status.morphReady — the field this driver gates on — said true.")
         log("%s A12 an unpainted basis is a morph that pays its own tessellation, "
             "not a dead one" % ("PASS" if a12_all else "FAIL"))
+        log("")
+
+        # ---- A13 the one-frame flash
+        a13_clean = a13_fix <= FLICKER_LIMIT
+        a13_seen = a13_old >= FLICKER_FLOOR
+        a13_mid_clean = a13_mid <= FLICKER_LIMIT
+        a13_cur_clean = a13_cur <= FLICKER_LIMIT
+        a13_all = (a13_fix_ok and a13_old_ok and a13_mid_ok and a13_cur_ok
+                   and a13_clean and a13_seen and a13_mid_clean and a13_cur_clean)
+        ok_all &= a13_all
+        log("A13 the one-frame flash: a layer revealed on the same commit that first")
+        log("    hands deck.gl its new values, signed frame by frame from inside the")
+        log("    render loop. The excess below is an L1 histogram distance over the")
+        log("    sampled region, so it is about TWICE the share of pixels that changed")
+        log("    luminance bucket: 23.5% here is roughly 11.8% of the region's pixels.")
+        log("     region %s of %s"
+            % (a13_info.get("rect"), a13_info.get("canvas")))
+        log("     %s fixed page, first arrival after a measure change  %6.2f%%  "
+            "(limit %.2f%%, %d frames)"
+            % ("pass" if a13_clean else "FAIL", 100 * a13_fix,
+               100 * FLICKER_LIMIT, a13_fix_n))
+        log("     %s ?ghost=0 control, the same route                  %6.2f%%  "
+            "(floor %.2f%%, %d frames)"
+            % ("pass" if a13_seen else "FAIL", 100 * a13_old,
+               100 * FLICKER_FLOOR, a13_old_n))
+        if a13_old_at:
+            log("          the control's spike is at %s"
+                % (a13_old_at.get("ev") or "an unmarked frame"))
+        log("     %s measure change landing MID-MORPH                  %6.2f%%  "
+            "(limit %.2f%%, %d frames)"
+            % ("pass" if a13_mid_clean else "FAIL", 100 * a13_mid,
+               100 * FLICKER_LIMIT, a13_mid_n))
+        log("     %s the CURTAIN under ?morph=0, the same route        %6.2f%%  "
+            "(limit %.2f%%, %d frames)"
+            % ("pass" if a13_cur_clean else "FAIL", 100 * a13_cur,
+               100 * FLICKER_LIMIT, a13_cur_n))
+        log("     THE CONTROL LEG IS THE ASSERTION THAT THIS PROBE CAN STILL FAIL.")
+        log("     Under ?ghost=0 the seed and the hand-off each reveal a layer on the")
+        log("     same commit that first gives deck.gl its new values, and deck.gl")
+        log("     draws an out-of-date one. The frames either side agree with each")
+        log("     other, so the excess is the whole of the difference between two")
+        log("     measures - L1 23.5% of the region at the seed and 8.3% at the")
+        log("     hand-off when this was first caught, against 0.02% with the warm")
+        log("     commits on.")
+        log("     The last two legs are paths this fix does NOT touch, measured rather")
+        log("     than assumed. Both reveal a layer and repaint it on one commit, and")
+        log("     both are clean, because the out-of-date value each one draws is")
+        log("     already the value that frame wanted: the start of the measure ease")
+        log("     in one case, the flat baseline paintFlat established in the other.")
+        log("     CAVEAT: one 512x384 region of a 1400x950 canvas. A defect that only")
+        log("     moved pixels outside it would pass. The rect is settable with")
+        log("     ?fpx/?fpy/?fpw/?fph; this leg uses the default.")
+        log("%s A13 no committed frame shows a picture its neighbours do not"
+            % ("PASS" if a13_all else "FAIL"))
 
         log("")
         log("---- UNTESTED-BY-DRIVER (left to the human eye) ----")

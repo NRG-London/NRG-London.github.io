@@ -1094,16 +1094,36 @@
     return T.data;
   }
 
+  // THE WARM (GHOST) DRAW. `depthCompare: "never"` fails every fragment, so a
+  // layer carrying these parameters is fully drawn — deck.gl updates its
+  // attributes, uploads its buffers and applies its transitions exactly as for
+  // any other visible layer — and writes not one pixel of colour or depth.
+  // `opacity: 0` is belt and braces: if the parameters were ever dropped the
+  // layer would still contribute nothing to the picture.
+  //
+  // It exists because of a measured deck.gl behaviour: A LAYER'S FIRST DRAW
+  // AFTER A REPAINT ISSUED WHILE IT WAS HIDDEN SHOWS THE BUFFER IT HELD
+  // BEFORE. deck.gl does not draw `visible: false` layers at all, so a paint
+  // issued to a hidden layer is not uploaded; and on the render that first
+  // sees the new values the attribute still holds the old ones (the same fact
+  // the two-commit afterCommit encodes, one level down). Reveal a layer on the
+  // same commit as its repaint and the reader gets one frame of the previous
+  // picture. Give it one ghost commit first and the update lands where nobody
+  // can see it. See tools/morph-lab/reports/flicker-investigation.md.
+  var GHOST_PARAMS = { depthCompare: "never", depthWriteEnabled: false };
+  var NORMAL_PARAMS = {};
+
   function polyLayer(T, visible) {
     var m = activeMeasure();
     return new deck.SolidPolygonLayer({
       id: "poly-" + T.key,
       visible: visible,
       elevationScale: curElevScale,
+      parameters: T.ghost ? GHOST_PARAMS : NORMAL_PARAMS,
       // Semi-transparent over the basemap so the streets read underneath;
       // opaque on ink, where there is nothing to see through and transparency
       // would only mute the data.
-      opacity: CFG.polyOpacity[mode],
+      opacity: T.ghost ? 0 : CFG.polyOpacity[mode],
       data: polyData(T),
       _normalize: false,          // rings are pre-closed and pre-wound at build time
       positionFormat: "XY",
@@ -1174,9 +1194,12 @@
     LAYER_CACHE = null;
     deckgl.setProps({ layers: layers() });
     // Consumed. A snap is a property of ONE paint, not of the tier, and leaving
-    // it set would silently kill the transition on the next repaint.
+    // it set would silently kill the transition on the next repaint. A ghost is
+    // a property of ONE commit for the same reason, and clearing it here is
+    // what bounds it: the redraw that follows a warm commit is the reveal, and
+    // no path can leave a layer drawing invisibly for longer than that.
     Object.keys(MANIFEST.tiers).forEach(function (t) {
-      if (READY[t]) READY[t].snap = false;
+      if (READY[t]) { READY[t].snap = false; READY[t].ghost = false; }
     });
   }
   function buildStack() {
@@ -1189,10 +1212,10 @@
       // milliseconds and deck.gl caches it, so switching back to an area type
       // already seen is a uniform flip rather than a rebuild.
       //
-      // During a switch TWO are visible at once: the outgoing one sinking to
-      // ground and fading out while the incoming one rises. That overlap is
-      // what makes it a dissolve rather than a curtain coming down and going
-      // back up.
+      // EXACTLY ONE area type is ever visible for its pixels — see the
+      // hand-off note below — but a second can be in the stack as a GHOST,
+      // drawn with colour and depth writes off so that deck.gl uploads its
+      // buffers on a frame nobody sees. That is the only overlap there is.
       Object.keys(MANIFEST.tiers).forEach(function (t) {
         var T = READY[t];
         // While an area type is on its way OUT it is the only one drawn.
@@ -1205,8 +1228,15 @@
         // is standing in for — already `tier` by the time apply() runs, because
         // setTier assigns it before it calls — is not.
         if (T && T.painted) {
-          stack.push(polyLayer(T, morphBasis ? t === morphBasis
-                                             : (fading ? t === fading : t === tier)));
+          // `morphSeed` is the one case where a live morph is NOT yet drawing
+          // the basis: between the seed paint and its reveal the basis is
+          // warming invisibly and the outgoing tier is still the picture on
+          // screen. Anything carrying a ghost is drawn on top of the rule, and
+          // contributes nothing.
+          var shown = morphSeed ? morphSeed
+                    : morphBasis ? morphBasis
+                    : (fading ? fading : tier);
+          stack.push(polyLayer(T, t === shown || !!T.ghost));
         }
       });
     }
@@ -1236,6 +1266,9 @@
   // oa.parents.json says which of its 26,369 rows belongs to which parent.
   var BASIS = "oa";
   var morphBasis = null;  // the tier actually DRAWN, when it is not `tier`
+  // The outgoing tier, for the one commit between the seed paint and the seed
+  // reveal: the basis is being warmed invisibly and this is still the picture.
+  var morphSeed = null;
   var morphWarm = false;  // basis resident, crosswalked and drawn once
   // A token, not a boolean: a second click part-way through the first morph
   // must retire the first one's pending callbacks rather than let them fire
@@ -1251,6 +1284,12 @@
   var qMorphDur = parseInt(params.get("morphdur"), 10);
   if (isFinite(qMorphDur) && qMorphDur > 0) MORPH_DUR = TRANSITION ? qMorphDur : 0;
   var hudOn = params.get("hud") === "1";
+  // ?ghost=0 takes the warm commits back out, restoring the swap sequence
+  // exactly as it was before the flicker fix. It exists so the driver can
+  // assert the defect in BOTH directions in one run — a regression probe that
+  // only ever sees the fixed page cannot tell a fix from a probe that has
+  // stopped looking. Not a reader-facing switch.
+  var ghostWarm = params.get("ghost") !== "0";
   var MORPH_LOG = [];
   var morphT0 = 0;
   var lastPaintMs = 0;
@@ -2093,6 +2132,17 @@
     var B = READY[BASIS];
     if (B) { B.dur = null; B.ease = null; B.noPick = false; }
     morphBasis = null;
+    morphSeed = null;
+    // Ghosts are cleared HERE as well as in redraw(), and that is not
+    // belt-and-braces: every caller of endMorph() is on its way to paint the
+    // new tier and redraw, and redraw() clears ghosts only AFTER it has built
+    // the stack. A ghost surviving into that one build would draw the tier the
+    // reader is switching to with colour and depth writes off — a blank frame,
+    // which is a worse artefact than the one this whole mechanism exists to
+    // remove.
+    Object.keys(MANIFEST.tiers).forEach(function (t) {
+      if (READY[t]) READY[t].ghost = false;
+    });
     switching = false;
     setStatus();
   }
@@ -2122,21 +2172,51 @@
     // the output areas, or because a morph is already in flight and the basis
     // is mid-animation, in which case the new one simply retargets it from
     // wherever it has got to, which is the whole of the interrupt handling.
+    //
+    // AND IT IS WARMED BEFORE IT IS REVEALED. The seed paint has to reach the
+    // GPU on a commit where the basis is drawn — deck.gl skips hidden layers
+    // entirely — and on that commit the basis still shows what it last held.
+    // Revealing it there gives one frame of the previous picture, which is
+    // invisible whenever the basis last held this same map and a flash of a
+    // different one whenever it did not: a measure, year or change-view switch
+    // repaints only the tier on screen, so the first morph after any of them
+    // left the basis a whole measure out of date. Measured at an L1 histogram
+    // distance of 46,642 over a 196,608-pixel region — roughly 23,000 pixels
+    // changing luminance bucket for one frame and changing back on the next;
+    // see the investigation report. So the seed commit draws the
+    // basis as a GHOST, with the outgoing tier still on screen, and the reveal
+    // waits for the commit after — no extra frames overall, because the two
+    // commits the animate already had to wait for are these two.
     if (fromKey !== BASIS && morphBasis !== BASIS) {
       B.snap = true;
       paintFrom(B, fromT, fromVals, fromNd, m, PARENTS[fromKey]);
+      if (ghostWarm) morphSeed = fromKey;
+    }
+    // A RETARGET LANDING INSIDE THE PREVIOUS MORPH'S WARM WINDOW CARRIES THE
+    // WARM SEQUENCE OVER, and this branch is not defensive: `morphSeed` is
+    // still standing exactly when the basis has been painted and not yet
+    // REVEALED — it may well have been drawn already, as a ghost, which is the
+    // whole point — and the test above skips the seed on any retarget because
+    // morphBasis is already BASIS. Clearing morphSeed here instead would
+    // reveal a basis whose buffer has not been uploaded — the very frame this
+    // mechanism exists to remove — because the previous morph's warm commit
+    // may not have rendered yet (two pill clicks in one task is enough).
+    // Leaving it alone was worse still: nothing re-set or cleared it, the
+    // previous morph's reveal was retired by the token, and buildStack went on
+    // resolving `shown` to a tier the reader had already left. Measured on the
+    // unfixed build: morphSeed stuck at "borough" for the life of the page,
+    // four committed renders for the whole 750 ms morph because nothing on
+    // screen was moving, the watchdog forcing the animate through at +693 ms,
+    // and the map still showing boroughs at the end of a morph to wards.
+    var warmSeed = false;
+    if (ghostWarm && morphSeed) {
+      B.ghost = true;
+      warmSeed = true;
     }
     morphBasis = BASIS;
     B.noPick = true;
 
-    // ARMED BEFORE THE REDRAW IT IS WAITING ON. deck.gl services a setProps
-    // that changes the layer stack DURING the call — onAfterRender has already
-    // fired by the time setProps returns — so a hook registered afterwards is
-    // waiting for a render that has already happened, and with nothing else on
-    // screen moving deck then has no reason to draw another frame. Two lines
-    // apart, and the difference between a working morph and a frozen one.
-    afterCommit(function () {
-      if (tok !== MORPH.token) return;
+    function animate() {
       // ---- ANIMATE. Repaint the same fixed geometry with the destination's
       // values and let deck.gl interpolate every vertex from the plateau it is
       // holding to the plateau it is going to.
@@ -2158,8 +2238,7 @@
 
       MORPH.timer = setTimeout(function () {
         if (tok !== MORPH.token) return;
-        // ---- FINALISE. Hand back to the real layer. The basis is holding the
-        // identical picture, so this is invisible.
+        // ---- FINALISE, in two commits.
         //
         // The destination is snapped AGAIN here. It was painted at ANIMATE, but
         // it was hidden then and a hidden layer is not drawn, so the draw it
@@ -2170,23 +2249,78 @@
         // instead of 0.0001. Guarded on the destination not being the basis —
         // snapping the layer that has just finished animating is a trap with
         // nothing to gain.
-        morphBasis = null;
-        if (toKey !== BASIS && READY[toKey]) READY[toKey].snap = true;
-        B.dur = null;
-        B.ease = null;
-        B.noPick = false;
-        switching = false;
-        redraw();
-        // Rides the newly arrived areas, as it does on a measure change. Not
-        // before: apply() stopped it at the top, and a wave of pings over a
-        // plateau that is still splitting points at areas that do not exist
-        // yet.
-        startPulse();
-        logPhase("finalise");
-        setStatus();
+        //
+        // AND THAT FIRST DRAW IS A GHOST. It is the same defect as the seed's,
+        // one layer along: the paint the destination was given at ANIMATE
+        // never reached the GPU, because deck.gl does not draw hidden layers,
+        // so the commit that reveals it is also the commit that first sees its
+        // new values — and on that commit the attribute still holds the values
+        // it was last DRAWN with. Those are the values from the last time this
+        // area type was on screen, so the reveal flashed the previous measure
+        // for one frame the first time each area type was shown after any
+        // measure, year or change-view switch: exactly the "first time only,
+        // per measure" the defect was reported as. This commit draws it with
+        // colour and depth writes off, under the basis, which is still holding
+        // the identical picture; the hand-off is the commit after.
+        if (ghostWarm && toKey !== BASIS && READY[toKey]) {
+          READY[toKey].snap = true;
+          READY[toKey].ghost = true;
+          // Armed before the redraw it is waiting on, for the reason above.
+          afterCommit(function () {
+            if (tok !== MORPH.token) return;
+            handBack();
+          }, 1);
+          redraw();
+        } else {
+          handBack();
+        }
       }, MORPH_DUR + 60);
       setStatus();
-    }, 2);
+    }
+
+    // Hand back to the real layer. The basis is holding the identical picture,
+    // and the destination has had its warm commit, so this is invisible.
+    function handBack() {
+      morphBasis = null;
+      if (toKey !== BASIS && READY[toKey]) READY[toKey].snap = true;
+      B.dur = null;
+      B.ease = null;
+      B.noPick = false;
+      switching = false;
+      redraw();
+      // Rides the newly arrived areas, as it does on a measure change. Not
+      // before: apply() stopped it at the top, and a wave of pings over a
+      // plateau that is still splitting points at areas that do not exist
+      // yet.
+      startPulse();
+      logPhase("finalise");
+      setStatus();
+    }
+
+    // ARMED BEFORE THE REDRAW IT IS WAITING ON. deck.gl services a setProps
+    // that changes the layer stack DURING the call — onAfterRender has already
+    // fired by the time setProps returns — so a hook registered afterwards is
+    // waiting for a render that has already happened, and with nothing else on
+    // screen moving deck then has no reason to draw another frame. Two lines
+    // apart, and the difference between a working morph and a frozen one.
+    //
+    // The two commits the animate waits for are now the warm commit and the
+    // reveal, rather than two commits of an already-revealed basis. The
+    // contract is unchanged and so is the count: the snapped seed is created
+    // on the first and applied on the second, and the animate is handed over
+    // only once it has landed.
+    afterCommit(function () {
+      if (tok !== MORPH.token) return;
+      if (!warmSeed) { animate(); return; }
+      morphSeed = null;             // the basis has warmed; show it
+      afterCommit(function () {
+        if (tok !== MORPH.token) return;
+        animate();
+      }, 1);
+      notDone();
+      redraw();
+      logPhase("reveal");
+    }, warmSeed ? 1 : 2);
 
     // Always a redraw, even when the seed paint above was skipped: it is what
     // guarantees the render the armed callback is hanging on.
@@ -2503,6 +2637,206 @@
     if (t !== tier && Math.abs(z - Z.switch) > Z.hysteresis) setTier(t);
   }
 
+  // ---- the flicker probe (?flickerprobe=1) --------------------------------
+  //
+  // A one-frame visual artefact that a 60 fps screen recording does not catch
+  // has to be caught from inside the frame loop. With this flag on, every
+  // COMMITTED RENDER reads a fixed region of the deck canvas back off the GPU
+  // and reduces it to a signature — mean luminance, standard deviation, and an
+  // eight-bucket luminance histogram — stamped with the page clock, the delta
+  // since the previous committed render, and what the morph was doing at that
+  // moment.
+  //
+  // That is enough to separate the two candidate stories about a "flash":
+  //   * a WRONG frame shows as a one-sample step in the signature, with the
+  //     samples either side of it agreeing — a spike or dip, not a trend.
+  //   * a merely LONG frame shows as a spike in `dt` and NO step in the
+  //     signature.
+  //
+  // The read happens inside deck's onAfterRender, which is the only moment the
+  // default framebuffer is guaranteed to still hold the frame just drawn —
+  // nothing here sets preserveDrawingBuffer, so the same read one rAF later
+  // would return a cleared buffer. It is a synchronous readPixels and therefore
+  // a GPU stall: `rd` on every sample records what it cost, so the perturbation
+  // can be quoted rather than assumed. Off by default; nothing in this block
+  // runs, allocates or is hooked when the flag is absent.
+  //
+  // Raw bytes are also kept for a short window around every marked event, so an
+  // anomalous frame can be pulled back out as a PNG and looked at rather than
+  // only measured.
+  var probeOn = params.get("flickerprobe") === "1";
+  var PROBE = null;
+  var PROBE_STASH_MAX = 24;
+  function probeInit() {
+    var host = document.getElementById("map");
+    var cs = host ? host.getElementsByTagName("canvas") : [];
+    var gl = null, cv = null;
+    for (var i = 0; i < cs.length && !gl; i++) {
+      // getContext with the type the context already has returns THAT context;
+      // it does not create a second one. A canvas deck did not make (there is
+      // none here, but be careful anyway) returns null and is skipped.
+      try { gl = cs[i].getContext("webgl2") || cs[i].getContext("webgl"); }
+      catch (e) { gl = null; }
+      if (gl) cv = cs[i];
+    }
+    if (!gl || !cv) return null;
+    var P = { gl: gl, cv: cv, x: 0, y: 0, w: 0, h: 0, cw: -1, ch: -1, buf: null,
+              log: [], stash: [], n: 0, last: 0, stashLeft: 0, dead: "" };
+    probeRect(P);
+    return P;
+  }
+  // RE-DERIVED WHENEVER THE BACKING STORE CHANGES SIZE, and that is not
+  // defensiveness: deck.gl brings its device up asynchronously and the canvas
+  // spends the first render or two at the HTML default of 300x150 before it is
+  // resized to the container. A rect computed once, on the first committed
+  // render, comes out as a 110x61 patch of the bottom-left corner — measured,
+  // on the first run of this probe, and it reads the sky rather than the bars.
+  function probeRect(P) {
+    var cv = P.cv;
+    if (cv.width === P.cw && cv.height === P.ch) return;
+    function q(k, d) {
+      var v = parseInt(params.get(k), 10);
+      return isFinite(v) ? v : d;
+    }
+    // Stated top-left in CSS pixels, over the middle of London where the bars
+    // are tallest and the borough/ward difference is largest.
+    var rx = q("fpx", 500), ry = q("fpy", 340), rw = q("fpw", 512), rh = q("fph", 384);
+    var sx = cv.width / (cv.clientWidth || cv.width);
+    var sy = cv.height / (cv.clientHeight || cv.height);
+    var x = Math.max(0, Math.min(cv.width - 1, Math.round(rx * sx)));
+    var w = Math.max(1, Math.min(cv.width - x, Math.round(rw * sx)));
+    var h = Math.max(1, Math.min(cv.height, Math.round(rh * sy)));
+    // readPixels counts from the BOTTOM left.
+    var y = Math.max(0, Math.min(cv.height - h, cv.height - Math.round((ry + rh) * sy)));
+    P.cw = cv.width; P.ch = cv.height;
+    P.x = x; P.y = y; P.w = w; P.h = h;
+    P.buf = new Uint8Array(w * h * 4);
+    PROBE_PEND.push("probe-rect[" + x + "," + y + " " + w + "x" + h +
+                    " canvas " + cv.width + "x" + cv.height + "]");
+  }
+  // Called from anything that is about to change what is on screen, BEFORE the
+  // setProps that changes it: deck.gl can service a setProps synchronously, so
+  // a mark left afterwards would be attached to the frame after the one it
+  // describes. The queue lives outside PROBE because PROBE is built lazily on
+  // the first committed render — deck.gl brings its device up asynchronously,
+  // so there is no canvas with a context on it at construction time.
+  var PROBE_PEND = [];
+  // WHICH BROWSER FRAME EACH SAMPLE BELONGS TO, and this is the difference
+  // between a defect and a red herring. deck.gl services a setProps
+  // synchronously, so a redraw issued from a promise or a timer draws a frame
+  // OUTSIDE the animation loop; if the loop then draws again before the
+  // compositor takes the buffer, that first draw is overwritten and no reader
+  // ever sees it. Two samples carrying the same `f` are two renders with no
+  // requestAnimationFrame boundary between them, and only the LAST of them was
+  // ever on screen. Two samples with different `f` are two composited frames.
+  var PROBE_FRAME = 0;
+  function probeFrameTick() {
+    PROBE_FRAME++;
+    requestAnimationFrame(probeFrameTick);
+  }
+  function probeMark(s) {
+    if (!probeOn) return;
+    PROBE_PEND.push(s);
+    if (PROBE && PROBE.stashLeft < 8) PROBE.stashLeft = 8;
+  }
+  function probeSample() {
+    if (!probeOn) return;
+    if (!PROBE) {
+      PROBE = probeInit();
+      if (!PROBE) return;          // no context yet; try again next render
+      if (PROBE_PEND.length) PROBE.stashLeft = 8;
+    }
+    if (PROBE.dead) return;
+    try {
+      probeRect(PROBE);
+      var t = performance.now();
+      var g = PROBE.gl, b = PROBE.buf;
+      var prevFb = g.getParameter(g.FRAMEBUFFER_BINDING);
+      g.bindFramebuffer(g.FRAMEBUFFER, null);
+      var r0 = performance.now();
+      g.readPixels(PROBE.x, PROBE.y, PROBE.w, PROBE.h, g.RGBA, g.UNSIGNED_BYTE, b);
+      var rd = performance.now() - r0;
+      if (prevFb) g.bindFramebuffer(g.FRAMEBUFFER, prevFb);
+      var s = 0, s2 = 0, n = b.length >> 2;
+      var h0 = 0, h1 = 0, h2 = 0, h3 = 0, h4 = 0, h5 = 0, h6 = 0, h7 = 0;
+      for (var i = 0; i < b.length; i += 4) {
+        var l = (b[i] * 77 + b[i + 1] * 151 + b[i + 2] * 28) >> 8;
+        s += l; s2 += l * l;
+        switch (l >> 5) {
+          case 0: h0++; break; case 1: h1++; break;
+          case 2: h2++; break; case 3: h3++; break;
+          case 4: h4++; break; case 5: h5++; break;
+          case 6: h6++; break; default: h7++;
+        }
+      }
+      var mean = s / n;
+      var e = {
+        n: PROBE.n++,
+        f: PROBE_FRAME,
+        t: Math.round(t * 100) / 100,
+        dt: PROBE.last ? Math.round((t - PROBE.last) * 100) / 100 : 0,
+        r: renderCount,
+        mean: Math.round(mean * 1000) / 1000,
+        sd: Math.round(Math.sqrt(Math.max(0, s2 / n - mean * mean)) * 1000) / 1000,
+        h: [h0, h1, h2, h3, h4, h5, h6, h7],
+        mb: morphBasis || "",
+        tier: tier,
+        sw: switching ? 1 : 0,
+        rd: Math.round(rd * 100) / 100,
+        ev: PROBE_PEND.length ? PROBE_PEND.join(" ") : ""
+      };
+      PROBE.last = t;
+      PROBE_PEND = [];
+      if (PROBE.stashLeft > 0) {
+        PROBE.stashLeft--;
+        // A ring, not a bucket that fills and then ignores everything after
+        // it: the frames worth looking at are the ones around whichever swap
+        // is being investigated, and that is rarely the first one of a session.
+        PROBE.stash.push({ n: e.n, t: e.t, w: PROBE.w, h: PROBE.h, b: b.slice(0) });
+        if (PROBE.stash.length > PROBE_STASH_MAX) PROBE.stash.shift();
+      }
+      PROBE.log.push(e);
+      if (PROBE.log.length > 2000) PROBE.log.shift();
+    } catch (err) {
+      // A probe that throws would reach window.onerror and fail the driver's
+      // errors === 0 gate, turning a diagnostic into a false negative. It
+      // retires itself and says why instead.
+      PROBE.dead = String((err && err.message) || err);
+    }
+  }
+  window.__flicker = {
+    get on() { return !!PROBE && !PROBE.dead; },
+    info: function () {
+      if (!PROBE) return { on: false, dead: "probe not initialised" };
+      return { on: !PROBE.dead, dead: PROBE.dead,
+               rect: [PROBE.x, PROBE.y, PROBE.w, PROBE.h],
+               canvas: [PROBE.cv.width, PROBE.cv.height],
+               samples: PROBE.log.length, stashed: PROBE.stash.length };
+    },
+    log: function () { return PROBE ? PROBE.log : []; },
+    clear: function () { if (PROBE) { PROBE.log = []; PROBE.stash = []; } },
+    clearStash: function () { if (PROBE) PROBE.stash = []; },
+    // The raw region of one stashed frame, as a PNG data URL. readPixels is
+    // bottom-up, so the rows are flipped back on the way out.
+    frame: function (k) {
+      if (!PROBE || !PROBE.stash[k]) return null;
+      var s = PROBE.stash[k], w = s.w, h = s.h;
+      var c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      var ctx = c.getContext("2d");
+      var im = ctx.createImageData(w, h);
+      for (var y = 0; y < h; y++) {
+        var src = (h - 1 - y) * w * 4, dst = y * w * 4;
+        for (var i = 0; i < w * 4; i++) im.data[dst + i] = s.b[src + i];
+      }
+      ctx.putImageData(im, 0, 0);
+      return c.toDataURL("image/png");
+    },
+    stash: function () {
+      return PROBE ? PROBE.stash.map(function (s) { return { n: s.n, t: s.t }; }) : [];
+    }
+  };
+
   // ---- deck ---------------------------------------------------------------
   var zoomAdj = Math.min(0, Math.log2(window.innerWidth / CFG.baseWidth));
   var CAMERA = Object.assign({}, CFG.camera, { zoom: CFG.camera.zoom + zoomAdj });
@@ -2519,7 +2853,10 @@
     // Unconditional, not guarded on !framed: with the guard, the very first
     // render (before any data has arrived) consumes the transition and no
     // later render can ever re-arm it.
-    onAfterRender: function () { framed = true; settle(); onRendered(); }
+    // probeSample() last, and only when ?flickerprobe=1 asked for it: it reads
+    // the frame just drawn straight off the default framebuffer, which is only
+    // valid from inside this callback.
+    onAfterRender: function () { framed = true; settle(); onRendered(); probeSample(); }
   });
 
   document.getElementById("map").addEventListener("contextmenu", function (e) {
@@ -2657,6 +2994,43 @@
     };
   })(paintFrom);
 
+  // The flicker probe's event marks, wrapped in place for the same reason: the
+  // functions themselves stay exactly as they are, and nothing below runs at
+  // all unless ?flickerprobe=1 asked for it.
+  //
+  // redraw() is the authoritative mark, because it is the call that changes
+  // what is on screen. Each one records the state it is ABOUT to commit —
+  // which tier the visibility rule will draw, whether that tier has ever been
+  // drawn before, and which tiers are carrying a snap — so a frame in the log
+  // can be read against the swap that produced it.
+  var PROBE_SEEN = {};
+  if (probeOn) {
+    redraw = (function (inner) {
+      return function () {
+        var vis = morphSeed ? morphSeed
+                : morphBasis ? morphBasis
+                : (fading ? fading : tier);
+        var snaps = [], ghosts = [];
+        Object.keys(READY).forEach(function (k) {
+          if (READY[k] && READY[k].snap) snaps.push(k);
+          if (READY[k] && READY[k].ghost) ghosts.push(k);
+        });
+        probeMark("redraw[vis=" + vis + (PROBE_SEEN[vis] ? "" : "*FIRSTDRAW") +
+                  " mb=" + (morphBasis || "-") + " sw=" + (switching ? 1 : 0) +
+                  " snap=" + (snaps.join("|") || "-") +
+                  " ghost=" + (ghosts.join("|") || "-") + "]");
+        PROBE_SEEN[vis] = 1;
+        return inner.apply(null, arguments);
+      };
+    })(redraw);
+    logPhase = (function (inner) {
+      return function (name) {
+        probeMark("phase:" + name);
+        return inner.apply(null, arguments);
+      };
+    })(logPhase);
+  }
+
   // ---- boot ---------------------------------------------------------------
   buildModeBar();
   buildYearBar();
@@ -2674,6 +3048,7 @@
 
   if (hudOn) document.body.classList.add("hud-on");
   if (hudOn) requestAnimationFrame(hudTick);
+  if (probeOn) requestAnimationFrame(probeFrameTick);
   setStatus();
   setMeta();
   // Keeps the two machine-readable nodes truthful between renders. They are
