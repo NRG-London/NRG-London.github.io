@@ -513,6 +513,47 @@ def compare(a, b, label, log, name_a=None, name_b=None):
     return ok
 
 
+# ---- A13: the per-frame signature -------------------------------------------
+# The page's ?flickerprobe=1 reads a fixed 512x384 region of the deck canvas
+# back off the GPU inside every committed render and reduces it to a mean, a
+# standard deviation and an eight-bucket luminance histogram. `spike_of` asks
+# one question of that log: is there a frame that sits further from BOTH its
+# neighbours than they sit from each other?
+#
+# That is the signature of a WRONG frame and of nothing else. A moving picture
+# walks: each frame is close to the one before and the one after, and the
+# neighbours are far apart. A frame that is wrong and immediately corrected is
+# far from both while the neighbours agree, so the excess below is large. A
+# frame that is merely SLOW shows in `dt` and not here at all — which is how
+# the two hypotheses were told apart in the first place.
+#
+# Reported as a share of the sampled region, so the limits do not depend on the
+# region size. Measured: 23.5% on the unfixed page (the seed) and 8.3% (the
+# hand-off); 0.02% on the fixed one. The limits sit in a gap of three orders of
+# magnitude.
+FLICKER_LIMIT = 0.01        # fixed page: no frame may exceed 1% of the region
+FLICKER_FLOOR = 0.05        # ?ghost=0: the probe must SEE at least 5%, or it
+                            # is not looking at anything and proves nothing
+
+
+def spike_of(log):
+    """(worst one-frame excess as a share of the region, that sample)."""
+    if len(log) < 3:
+        return 0.0, None
+    npx = sum(log[0]["h"]) or 1
+
+    def hd(a, b):
+        return sum(abs(x - y) for x, y in zip(a["h"], b["h"]))
+
+    worst, at = 0, None
+    for i in range(1, len(log) - 1):
+        a, e, b = log[i - 1], log[i], log[i + 1]
+        excess = min(hd(a, e), hd(e, b)) - hd(a, b)
+        if excess > worst:
+            worst, at = excess, e
+    return worst / float(npx), at
+
+
 def progress_of(frame, start, end):
     """How far `frame` has travelled from `start` towards `end`, in pixel
     space. Not linear in the value space the easing acts on, hence the generous
@@ -956,6 +997,73 @@ def main():
                                         sum(1 for x in a12_seen if x)))
         log("     log: %s" % json.dumps(mt12.get("log")))
 
+        # A13. THE ONE-FRAME FLASH. Both swaps in a morph reveal a layer on the
+        #      same commit that first hands deck.gl that layer's new values,
+        #      and on that commit deck.gl still holds the previous ones — so
+        #      the revealed layer draws one frame of whatever it was last DRAWN
+        #      with. That is invisible whenever it was last drawn with this
+        #      same map, and a flash of a different one whenever it was not: a
+        #      measure, year or change-view switch repaints only the tier on
+        #      screen, so the first arrival at every other area type after one
+        #      showed the old measure for a frame. No screenshot can catch it,
+        #      so the page is asked instead: ?flickerprobe=1 signs every
+        #      committed frame and this reads the log back.
+        #
+        #      RUN IN BOTH DIRECTIONS, and that is the point. ?ghost=0 puts the
+        #      old swap sequence back, so the same probe, the same route and
+        #      the same metric must SEE the defect on one leg and not on the
+        #      other. A regression probe that has only ever seen the fixed page
+        #      cannot tell a fix from a probe that has stopped looking.
+        #
+        #      ?highlight=off for the same reason A6 uses it: the peak pulse is
+        #      a second animation over the hand-off, and this metric is about
+        #      what one frame does that its neighbours do not.
+        def flicker_leg(extra, what):
+            t0 = time.time()
+            n = Nav(page, base, "?shield=0&highlight=off&flickerprobe=1" + extra)
+            got, st, mt = n.poll(morph_capable, timeout=180)
+            ok = check(n, st, got, "a13 boot " + what)
+            info = json.loads(n.js("JSON.stringify(window.__flicker.info())") or "{}")
+            # Paint ward and borough under the opening measure, so both layers
+            # have been DRAWN and carry a buffer...
+            for area in ("ward", "borough"):
+                n.set_area(area)
+                got, st, mt = n.poll(done_morphing, timeout=120)
+                ok &= check(n, st, got, "a13 %s %s" % (what, area))
+                time.sleep(0.35)
+            # ...then change the measure, which repaints ONLY borough and
+            # leaves ward and the basis a whole measure out of date...
+            n.js('window.__setMeasure("%s").then(function(){},function(){}); 0' % MEAS2)
+            got, st, mt = n.poll(settled, timeout=120)
+            ok &= check(n, st, got, "a13 %s measure" % what)
+            time.sleep(0.35)
+            # ...and only now start watching, so the window is this one switch.
+            n.js("window.__flicker.clear(); 0")
+            n.set_area("ward")
+            got, st, mt = n.poll(done_morphing, timeout=120)
+            ok &= check(n, st, got, "a13 %s flash switch" % what)
+            time.sleep(0.4)
+            raw = n.js("JSON.stringify(window.__flicker.log())")
+            flog = json.loads(raw) if raw else []
+            worst, at = spike_of(flog)
+            log("shot %-24s %-44s %5.1fs  %s"
+                % ("-", "A13 " + what, time.time() - t0, "ok" if ok else "FAILED"))
+            log("     region %s of canvas %s, %d committed frames signed"
+                % (info.get("rect"), info.get("canvas"), len(flog)))
+            log("     worst one-frame excess %.2f%% of the region%s"
+                % (100 * worst,
+                   ("  at t=%.0f ms, %s" % (at["t"], at["ev"] or "no mark"))
+                   if at else ""))
+            return ok, worst, at, len(flog), info
+
+        log("")
+        a13_fix_ok, a13_fix, a13_fix_at, a13_fix_n, a13_info = flicker_leg(
+            "", "fixed page: warm commits on")
+        log("")
+        a13_old_ok, a13_old, a13_old_at, a13_old_n, _ = flicker_leg(
+            "&ghost=0", "?ghost=0 control: warm commits off")
+        ok_all &= a13_fix_ok and a13_old_ok
+
         page.close()
 
         # ---- assertions -----------------------------------------------------
@@ -1110,6 +1218,33 @@ def main():
         log("     while #v1status.morphReady — the field this driver gates on — said true.")
         log("%s A12 an unpainted basis is a morph that pays its own tessellation, "
             "not a dead one" % ("PASS" if a12_all else "FAIL"))
+        log("")
+
+        # ---- A13 the one-frame flash
+        a13_clean = a13_fix <= FLICKER_LIMIT
+        a13_seen = a13_old >= FLICKER_FLOOR
+        a13_all = a13_fix_ok and a13_old_ok and a13_clean and a13_seen
+        ok_all &= a13_all
+        log("A13 the one-frame flash: the first arrival at an area type after a")
+        log("    measure change, signed frame by frame from inside the render loop")
+        log("     region %s of %s, %d/%d committed frames signed"
+            % (a13_info.get("rect"), a13_info.get("canvas"), a13_fix_n, a13_old_n))
+        log("     %s fixed page      worst one-frame excess %6.2f%%  (limit %.2f%%)"
+            % ("pass" if a13_clean else "FAIL", 100 * a13_fix, 100 * FLICKER_LIMIT))
+        log("     %s ?ghost=0 control worst one-frame excess %6.2f%%  (floor %.2f%%)"
+            % ("pass" if a13_seen else "FAIL", 100 * a13_old, 100 * FLICKER_FLOOR))
+        if a13_old_at:
+            log("          the control's spike is at %s"
+                % (a13_old_at.get("ev") or "an unmarked frame"))
+        log("     THE CONTROL LEG IS THE ASSERTION THAT THIS PROBE CAN STILL FAIL.")
+        log("     Under ?ghost=0 the seed and the hand-off each reveal a layer on the")
+        log("     same commit that first gives deck.gl its new values, and deck.gl")
+        log("     draws the values it last had. The frame either side agrees with the")
+        log("     other, so the excess is the whole of the difference between two")
+        log("     measures - 23.5% of the region at the seed and 8.3% at the hand-off")
+        log("     when this was first caught. With the warm commits on, 0.02%.")
+        log("%s A13 no committed frame shows a picture its neighbours do not"
+            % ("PASS" if a13_all else "FAIL"))
 
         log("")
         log("---- UNTESTED-BY-DRIVER (left to the human eye) ----")
