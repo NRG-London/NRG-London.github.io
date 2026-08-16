@@ -2195,7 +2195,8 @@
     // A RETARGET LANDING INSIDE THE PREVIOUS MORPH'S WARM WINDOW CARRIES THE
     // WARM SEQUENCE OVER, and this branch is not defensive: `morphSeed` is
     // still standing exactly when the basis has been painted and not yet
-    // drawn, and the test above skips the seed on any retarget because
+    // REVEALED — it may well have been drawn already, as a ghost, which is the
+    // whole point — and the test above skips the seed on any retarget because
     // morphBasis is already BASIS. Clearing morphSeed here instead would
     // reveal a basis whose buffer has not been uploaded — the very frame this
     // mechanism exists to remove — because the previous morph's warm commit

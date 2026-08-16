@@ -402,11 +402,11 @@ cannot tell a fix from a probe that has stopped looking.
 A13 the one-frame flash: the first arrival at an area type after a
     measure change, signed frame by frame from inside the render loop
      region [500, 226, 512, 384] of [1400, 950]
-     pass fixed page, first arrival after a measure change    0.00%  (limit 1.00%,  81 frames)
-     pass ?ghost=0 control, the same route                   14.27%  (floor 5.00%,  86 frames)
+     pass fixed page, first arrival after a measure change    0.00%  (limit 1.00%, 101 frames)
+     pass ?ghost=0 control, the same route                   14.28%  (floor 5.00%,  91 frames)
           the control's spike is at redraw[vis=ward mb=- sw=0 snap=ward ghost=-] phase:finalise
-     pass measure change landing MID-MORPH                    0.01%  (limit 1.00%, 108 frames)
-     pass the CURTAIN under ?morph=0, the same route          0.01%  (limit 1.00%, 161 frames)
+     pass measure change landing MID-MORPH                    0.01%  (limit 1.00%, 112 frames)
+     pass the CURTAIN under ?morph=0, the same route          0.02%  (limit 1.00%, 162 frames)
 PASS A13 no committed frame shows a picture its neighbours do not
 ```
 
@@ -437,21 +437,21 @@ are regenerated in place.
 
 ```
                               this run            task 3, fix round 1 (before any of this)
-A2  default -> ward           0.0003/255  18px    0.0002/255  16px
+A2  default -> ward           0.0002/255   9px    0.0002/255  16px
 A3  pcon -> gla               0.0000/255   0px    0.0000/255   0px
 A3  ward -> borough           0.0000/255   0px    0.0000/255   0px
-A4  progression        7.92% -> 54.82% -> 94.96%   7.77% -> 54.82% -> 94.99%
-A5  interrupt                 0.0003/255  18px    0.0003/255  19px
+A4  progression        7.91% -> 54.23% -> 94.95%   7.77% -> 54.82% -> 94.99%
+A5  interrupt                 0.0002/255  10px    0.0003/255  19px
 A5b retarget inside the seed's warm window
-                              0.0002/255   9px    (new)
-A6  measure change     46.0% -> 58.3% -> 92.5%    45.7% -> 57.1% -> 92.2%
-A7  suppression               0.0001/255   2px    0.0001/255   3px
-A8  change view               0.0001/255   5px    0.0003/255  24px
-A9  street mode        0 of 129 samples           0 of 130 samples
-A10 zoom during morph  drift 0.00 pts             drift 0.02 pts
-A11 reduced motion     0 of  93 samples          0 of  94 samples
-A12 unpainted basis           0.0003/255  20px    0.0002/255   8px
-A13 one-frame flash    0.00 / 14.27 / 0.01 / 0.01%          (new, four legs)
+                              0.0002/255  10px    (new)
+A6  measure change     45.7% -> 57.1% -> 92.7%    45.7% -> 57.1% -> 92.2%
+A7  suppression               0.0000/255   1px    0.0001/255   3px
+A8  change view               0.0003/255  21px    0.0003/255  24px
+A9  street mode        0 of 128 samples           0 of 130 samples
+A10 zoom during morph  drift 0.03 pts             drift 0.02 pts
+A11 reduced motion     0 of  92 samples          0 of  94 samples
+A12 unpainted basis           0.0002/255  12px    0.0002/255   8px
+A13 one-frame flash    0.00 / 14.28 / 0.01 / 0.02%          (new, four legs)
 ```
 
 ---
@@ -564,8 +564,9 @@ var warmSeed = false;
 if (ghostWarm && morphSeed) { B.ghost = true; warmSeed = true; }
 ```
 
-`morphSeed` is non-null exactly while the basis has been painted and not yet drawn, which
-is the invariant the whole mechanism needs, and this morph's reveal clears it. The
+`morphSeed` is non-null exactly while the basis has been painted and not yet REVEALED —
+it may well have been *drawn* by then, as a ghost, which is the whole point — and that is
+the invariant the mechanism needs. This morph's reveal clears it. The
 outgoing tier — still the picture on screen, since nothing revealed the basis — stays
 drawn for the carried-over warm commit. After the fix, the same reproduction:
 
@@ -579,9 +580,18 @@ final picture vs the pre-click borough map:  MAD 5.840   — identical to the co
 **New assertion A5b.** A5 fires at +300 ms, past both warm windows, so it asserted nothing
 about them. A5b pre-visits ward, pcon and borough so every layer carries a drawn buffer,
 then issues both clicks in one task and asserts four things at once: the endpoint is the
-ward map (MAD 0.0002/255, 9 px of 1,330,000), `morphSeed` is clear afterwards, the morph
-was actually *drawn* (at least 30 committed renders — it logged 267), and no watchdog entry
+ward map (MAD 0.0002/255, 10 px of 1,330,000), `morphSeed` is clear afterwards, the morph
+was actually *drawn* (at least 30 committed renders — it logged 256), and no watchdog entry
 appears in the morph log. Stranding fails three of the four.
+
+One task is a **superset** of a real double-click, not a copy of it. Two `setArea` calls
+with no yield between them leave two `apply()` chains in flight over the same `tier`
+global, so for the moment between them `READY[tier]` aliases and one `buildStack` can emit
+two layers carrying the same `poly-<key>` id; a human double-click always has at least one
+task boundary in it and cannot reach that state. It is used anyway, because the state it
+*does* reach — the seed's warm window, entered with `morphSeed` standing — is the one under
+test and is not reachable from outside the page any other way, and because a page that
+survives the superset survives the subset.
 
 ## Finding 2 (IMPORTANT) — A13's fixed leg passed if the probe never ran
 
@@ -593,8 +603,8 @@ cannot fail a run through the page's own errors gate) — which meant nothing an
 have noticed.
 
 Every A13 leg now folds `info.on && !info.dead && len(flog) >= 30` into its own `ok`, and
-prints all three so a failure says which one it was. The committed run signs 81 / 86 / 108 /
-161 frames across the four legs.
+prints all three so a failure says which one it was. The committed run signs 101 / 91 / 112 /
+162 frames across the four legs.
 
 ## Finding 3 — the two other reveal-and-repaint paths: measured, both clean, neither fixed
 
@@ -620,7 +630,7 @@ But the conclusion survives measurement. On the same route (repeat area switch a
 measure change, so the incoming layer's buffer is a whole measure out of date):
 
 ```
-worst one-frame excess    0.00% standalone / 0.01% over 161 frames in the driver run
+worst one-frame excess    0.00% standalone / 0.02% over 162 frames in the driver run
 the FADE_UP reveal frame                   mean luminance 11.575, d(prev) = 0,
                                            170,940 of 196,608 pixels in the darkest bucket
 the frames after it   11.575 -> 11.588 -> 11.686 -> 11.849 -> 12.480 -> 13.530 -> ...

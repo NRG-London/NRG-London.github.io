@@ -768,6 +768,16 @@ def main():
         page.screenshot(OUT / "a5_interrupt_ward.png")
         ok_a5 = check(n5, st5, got, "a5_interrupt_ward.png")
         ok_all &= ok_a5
+        # Logged HERE, before A5b runs, so the elapsed time below is A5's own and
+        # the two appear in RESULTS in the order they were captured.
+        log("shot %-24s %-44s %5.1fs  %s"
+            % ("a5_interrupt_ward.png", "A5 borough->pcon, retargeted to ward",
+               time.time() - t0, "ok" if ok_a5 else "FAILED"))
+        log("     at +300 ms: %s" % json.dumps(mid_st))
+        log("     final:      %s" % json.dumps(st5))
+        log("     log:        %s" % json.dumps(mt5.get("log")))
+        a5_mid_was_morphing = bool((mid_st or {}).get("morphBasis"))
+        a5_clean = (not st5.get("morphBasis")) and (st5.get("switching") is False)
 
         # A5b. INTERRUPT INSIDE THE SEED WARM WINDOW. A5 above fires at +300 ms,
         #      which is past both warm commits, so it asserts nothing about them.
@@ -785,8 +795,19 @@ def main():
         #      wards, four committed renders for the whole 750 ms because nothing
         #      on screen was moving, and the watchdog forcing the animate through
         #      at +693 ms. All three are asserted below.
+        #
+        #      ONE TASK IS A SUPERSET OF A REAL DOUBLE-CLICK, not a copy of it.
+        #      Two setArea calls with no yield between them leave two apply()
+        #      chains in flight over the same `tier` global, so for the moment
+        #      between them READY[tier] aliases and one buildStack can emit two
+        #      layers carrying the same poly-<key> id. A human double-click
+        #      always has at least one task boundary in it and cannot reach that
+        #      state. It is used anyway because the state it DOES reach — the
+        #      seed's warm window, entered with morphSeed standing — is the one
+        #      under test and is not reachable from out here any other way, and
+        #      because a page that survives the superset survives the subset.
         log("")
-        t0 = time.time()
+        t0b = time.time()
         n5b = Nav(page, base, "?tier=borough")
         got, st, mt = n5b.poll(morph_capable, timeout=180)
         ok_5b = check(n5b, st, got, "a5b boot")
@@ -812,21 +833,13 @@ def main():
         a5b_renders = (a5b_state.get("renders") or 0) - r_before
         a5b_drew = a5b_renders >= 30      # a 750 ms morph that is actually drawn
         log("shot %-24s %-44s %5.1fs  %s"
-            % ("-", "A5b retarget inside the seed warm window", time.time() - t0,
+            % ("-", "A5b retarget inside the seed warm window", time.time() - t0b,
                "ok" if ok_5b else "FAILED"))
         log("     both pills clicked in one task; log: %s" % json.dumps(mt5b.get("log")))
         log("     after it settles: morphSeed=%r morphBasis=%r switching=%r tier=%r; "
             "%d committed renders across the morph"
             % (a5b_state.get("seed"), a5b_state.get("mb"), a5b_state.get("sw"),
                a5b_state.get("tier"), a5b_renders))
-        log("shot %-24s %-44s %5.1fs  %s"
-            % ("a5_interrupt_ward.png", "A5 borough->pcon, retargeted to ward",
-               time.time() - t0, "ok" if ok_a5 else "FAILED"))
-        log("     at +300 ms: %s" % json.dumps(mid_st))
-        log("     final:      %s" % json.dumps(st5))
-        log("     log:        %s" % json.dumps(mt5.get("log")))
-        a5_mid_was_morphing = bool((mid_st or {}).get("morphBasis"))
-        a5_clean = (not st5.get("morphBasis")) and (st5.get("switching") is False)
 
         # A6. A measure change AFTER a morph still animates — the regression
         #     test for snap poisoning, which would leave the just-morphed tier
