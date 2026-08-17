@@ -840,6 +840,29 @@ larger share of each area's *visible* footprint, and at 0.08 the plateau silhoue
 visibly nibbled at the city edge. The honest position is that the z10 shatter is
 legible-but-subtle and the decision is the owner's.
 
+> **Addendum, 2026-08-17 — the owner decided, and the numbers above are superseded.**
+> The lever chosen was not zoom-scaling but a **per-basis-tier inset map**, on the reasoning
+> that a crack's gap is proportional to the ring it opens around: `oa 0.80, lsoa 0.92,
+> ward 0.92, borough 0.96`. Boroughs gaped at a shared 0.92 and their crack is halved
+> (borough→gla also has little vertical movement to carry the eye, an Assembly seat being
+> 2–3 similar boroughs); the output areas were deepened to 0.80 for exactly the subtlety this
+> section measured. Re-measured on the same two frames: whole city **MAD 3.0322/255, 11.216%**
+> (was 5.81%), zoom 12.5 **MAD 11.8406/255, 30.468%** (was 15.40%), ratio 2.72x. `?s=` remains
+> a global lever and now overrides all four tiers at once. A zoom-scaled inset is still **not**
+> implemented. Everything else in this report stands as measured at the single 0.92.
+>
+> **One gate moved with it.** X6/X8's "no drawn frame collapses the crack" limit was an
+> absolute 0.03 — quoted throughout §X6 and §X8 below — set when 0.08 was the only depth
+> there was. The carry blends depth `D` to zero over `RELEASE_MS` = 180 ms of drawn-frame
+> time advanced at most `CARRY_STEP_MS` = 33 ms per frame, so an *honest* frame may fall
+> `D × 33/180` = 0.183 D; at the output areas' 0.20 that is **0.037, above the old 0.03**,
+> and the gate would have false-failed correct behaviour on a slow machine. It is now
+> `DROP_LIMIT_FRAC` = 0.375 **of the depth of the basis the frame was on** — the ratio it
+> always had (0.03/0.08), so ward stays 0.03 and oa becomes 0.075, with the same margin at
+> every depth (honest 0.183 D, limit 0.375 D, collapse 1.000 D). Re-measured: X6 0.00723 on
+> the oa arm (10% of its limit), X8 fixed 0.00705 on ward (24%), `?carry=wall` control
+> 0.08000 on ward (**267%** — the control still fails, as it must).
+
 ## Deviations
 
 1. **Centroids are built when a tier's layer is first BUILT, not when it first warps.** The
