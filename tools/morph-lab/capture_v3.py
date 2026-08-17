@@ -31,6 +31,38 @@ THE W ARMS, WHICH ARE THE NEW CLAIM
       displacement.
   W3  Frame rate across the gesture, reported, against v2's CPU path.
   W4  A zoom and an interrupt landing mid-warp still land exactly.
+  W5  A warp gesture retargeted onto a pair that does NOT warp retires cleanly.
+  W6  A measure change landing mid V1 morph leaves both bases clean.
+
+THE X ARMS, WHICH ARE THE ALL-PAIRS POLICY
+------------------------------------------
+W1-W6 prove ONE pair. The page now carries a policy table with a line for every
+one of the thirty ordered pairs of its six area types, in three modes: "finer"
+cracks the finer tier of a nested pair, "oa" SHATTERS a non-nested pair on the
+output-area basis V1 was already drawing it on, and "none" is the plain V1
+morph and the per-pair revert lever. The X arms test the table rather than the
+pair:
+
+  X0  The table AS THE PAGE HOLDS IT, and the nesting claim under it: all ten
+      nested crosswalks composed through oa.parents.json, which throws rather
+      than approximates.
+  X1  Endpoint identity for four more nested pairs, cracking four different
+      geometries — wards, boroughs, LSOAs and output areas.
+  X2  The SHATTER on two non-nested pairs: the endpoint is exact AND the
+      mid-flight read says the crack really was open, on the output areas.
+  X3  A pair demoted to "none" takes V1's morph with nothing cracking — the
+      lever, exercised.
+  X4  The warp at OUTPUT-AREA grain, 26,435 rings, with the frame rate
+      REPORTED rather than gated.
+  X5  The zoom auto-switch at 12.6 (lsoa <-> oa) warps, and survives being
+      interrupted by a pill click.
+  X6  A retarget that moves the crack from one basis to another mid-gesture —
+      impossible when one pair warped, and invisible in any endpoint.
+  X7  Beauty shots of the unseen grains, plus a measurement of how much of the
+      frame an output-area crack actually moves at two zooms.
+  X8  A main-thread stall that outlives the gesture, staged, with a ?carry=wall
+      CONTROL that reproduces the defect — the one arm in this file whose
+      falsifiability is measured on every run rather than argued.
 
 AN INK GATE ON EVERY CAPTURE
 ----------------------------
@@ -122,6 +154,21 @@ WARP_PEAK = 0.38
 # is met with room to spare by the GPU one, so it is a discriminating gate
 # rather than a decorative one.
 MIN_WARP_FPS = 55.0
+# The most of a full crack (1 - WARP_INSET = 0.08) that may disappear between
+# two consecutive DRAWN frames during a retarget. The carry exists so that an
+# interrupt blends the old crack into the new envelope instead of dropping it,
+# and this is the number that says whether it worked: 0.03 is well above the
+# steepest the blend itself reaches (~0.016 on a 16 ms frame) and well below
+# the collapse it was written to catch (0.0659 in one 4 ms frame, measured on
+# the build that clocked the carry from the envelope's t0 rather than from its
+# first drawn frame). See X6.
+X6_DROP_LIMIT = 0.03
+# X8 stages the stall rather than waiting for one: a morph cut to X8_DUR and the
+# main thread blocked for X8_BLOCK, which is longer, so the envelope ends while
+# nothing is being drawn and the interrupt's blend is still owed in full. The
+# block is issued from a timer so it lands between runWarp's t0 and its first
+# executed frame — where the output-area repaint lands it in the wild.
+X8_DUR, X8_BLOCK = 400, 600
 # Seconds after a state is reached before capturing. The peak-marker pulse runs
 # for PULSE_LEAD + PULSE_TOTAL + 60 = 1.01 s after any paint and then draws one
 # clean frame without it; every committed capture waits that out, so the pulse
@@ -538,12 +585,28 @@ class Nav:
 # So the interrupts now read the state back. Both bases, every time: `dur` must
 # be cleared, `noPick` must be false, the warp uniform must be exactly zero,
 # B_WARP must be released and no morph may still think it is in flight.
+#
+# EVERY RESIDENT TIER, not the two the single-pair build could reach. With the
+# all-pairs policy the crack runs on four different bases and a retarget can
+# MOVE it between them mid-gesture, so "the basis is clean" is now a question
+# about whichever tiers the page happens to be holding. `froz` is the new one
+# and it is the state that goes with moving the crack: a tier the crack has
+# left keeps its displacement frozen while it is still on screen, and one left
+# frozen on an idle page would draw permanently cracked the next time it came
+# back. No endpoint assertion could see that either.
 IDLE_JS = """JSON.stringify({
+  tiers: typeof READY === 'undefined' ? {} :
+    Object.keys(READY).reduce(function (o, k) {
+      o[k] = [READY[k].dur === undefined ? null : READY[k].dur, !!READY[k].noPick];
+      return o;
+    }, {}),
   oa:   typeof READY === 'undefined' || !READY.oa   ? null
         : [READY.oa.dur   === undefined ? null : READY.oa.dur,   !!READY.oa.noPick],
   ward: typeof READY === 'undefined' || !READY.ward ? null
         : [READY.ward.dur === undefined ? null : READY.ward.dur, !!READY.ward.noPick],
   warp:  typeof WARP === 'undefined' ? 0 : WARP.amount,
+  froz:  typeof WARP_FROZEN === 'undefined' ? {} : WARP_FROZEN,
+  wtier: typeof WARP_TIER === 'undefined' ? null : WARP_TIER,
   bwarp: typeof B_WARP === 'undefined' ? false : !!B_WARP,
   beat:  typeof WARP === 'undefined' ? '' : WARP.beat,
   mb: morphBasis, seed: morphSeed, sw: switching
@@ -551,7 +614,7 @@ IDLE_JS = """JSON.stringify({
 
 
 def idle_clean(nav, what, log):
-    """Read both bases back after an interrupt and gate on them."""
+    """Read every resident basis back after an interrupt and gate on them."""
     try:
         st = json.loads(nav.js(IDLE_JS) or "{}")
     except Exception as e:
@@ -562,9 +625,14 @@ def idle_clean(nav, what, log):
         # Absent is fine (the tier was never resident); present must be clean.
         return v is None or ((v[0] is None or v[0] == 0) and v[1] is False)
 
+    tiers = st.get("tiers") or {}
+    dirty = sorted(k for k, v in tiers.items() if not pair_ok(v))
     checks = [
         ("READY.oa   dur/noPick clear", pair_ok(st.get("oa"))),
         ("READY.ward dur/noPick clear", pair_ok(st.get("ward"))),
+        ("EVERY resident tier's dur/noPick clear (dirty: %s)"
+         % (", ".join(dirty) or "none"), not dirty),
+        ("no tier left holding a frozen crack", not (st.get("froz") or {})),
         ("the warp uniform is exactly 0", (st.get("warp") or 0) == 0),
         ("no warp basis still held (B_WARP)", not st.get("bwarp")),
         ("no morphBasis / morphSeed / switching left standing",
@@ -766,6 +834,16 @@ def main():
     log("           display:none and the HUD is off unless ?hud=1")
     log("settle     %.1fs before every committed capture, which outlasts the "
         "1.01s peak pulse" % SETTLE)
+    log("fps        REPORTED, AND THIS MACHINE IS NOT A CLEAN ROOM. The frame")
+    log("           rates below are taken on a desktop that may be running a")
+    log("           game at the same time, and the two gated ones (S's scrub")
+    log("           and W3's gesture, floor %.0f) are gated at a level v2's CPU"
+        % MIN_WARP_FPS)
+    log("           path could not reach under any load rather than at a level")
+    log("           this machine can always reach. The OA-grain figure in X4 is")
+    log("           REPORTED ONLY and has been seen to vary by a factor of")
+    log("           three between runs of this same driver on this same build;")
+    log("           the state and pixel gates around it do not move at all.")
     log("")
 
     ok_all = True
@@ -1629,21 +1707,33 @@ def main():
 
         # ---- W5. A WARP GESTURE RETARGETED ONTO A PAIR THAT DOES NOT WARP.
         #
-        #      The hole this arm exists to cover. `doMorph` is true and
-        #      `warpDir` is null, so apply()'s `morphBasis && !doMorph` guard
-        #      does NOT fire and V1's morphTier takes over a page with a warp
-        #      gesture still running. Before the fix that left three things
-        #      behind at once: the envelope's rAF loop running detached (nothing
-        #      had bumped WARP.token), the ward layer holding `noPick` and a
-        #      stale `dur`/`ease`, and the crack leaving the screen on the frame
+        #      The hole this arm exists to cover. `doMorph` is true and the warp
+        #      plan is null, so apply()'s `morphBasis && !doMorph` guard does NOT
+        #      fire and V1's morphTier takes over a page with a warp gesture
+        #      still running. Before the fix that left three things behind at
+        #      once: the envelope's rAF loop running detached (nothing had
+        #      bumped WARP.token), the ward layer holding `noPick` and a stale
+        #      `dur`/`ease`, and the crack leaving the screen on the frame
         #      morphTier switched the drawn basis to the output areas. The
         #      endpoint was fine throughout — which is exactly why this leg
         #      gates on the state and not only on the picture.
+        #
+        #      THE PAIR IT USED IS NO LONGER NON-WARPING. ward -> pcon does not
+        #      nest and so took V1's morph untouched when this leg was written;
+        #      under the all-pairs policy it is an OA-BASIS SHATTER. The
+        #      scenario has not gone away — every "none" line in the table
+        #      reaches it, and that lever is the reason the table exists — so
+        #      the leg keeps its own pair and DEMOTES it for this page only,
+        #      with ?warpmode=ward>pcon:none. That is also the only leg in this
+        #      file that exercises a demoted pair end to end, which is worth
+        #      having on its own: X3 gates on the warp not engaging, this one
+        #      gates on what the retarget leaves behind.
         log("")
         t0 = time.time()
         ok_all &= direct("w_ref_pcon.png", "?tier=pcon&morph=0&highlight=off",
                          "W5 pcon reference, ?highlight=off chrome")
-        n_w6 = Nav(page, base, "?tier=borough&morphdur=%d&highlight=off" % slow)
+        n_w6 = Nav(page, base, "?tier=borough&warpmode=ward%%3Epcon:none"
+                               "&morphdur=%d&highlight=off" % slow)
         got, st, mt = n_w6.poll(morph_capable, timeout=180)
         ok_w5 = check(n_w6, st, got, "W5 boot")
         n_w6.set_area("ward")
@@ -1702,6 +1792,540 @@ def main():
             % ("w6_*.png", "W6 measure change mid V1 morph (?warp=0)",
                time.time() - t0, "ok" if ok_w6 else "FAILED"))
         log("     morphBasis was %r when the measure changed" % w6_mb_mid)
+
+        # =====================================================================
+        # X. THE ALL-PAIRS POLICY.
+        #
+        # W1-W6 prove one pair. These prove the TABLE: that every ordered pair
+        # takes the mode the page says it takes, that the crack lands on the
+        # basis that mode names, and that the endpoint is still the map a direct
+        # load draws — which is the assertion every mode has to pass and the one
+        # a crack on the wrong geometry, or a crosswalk that does not really
+        # nest, would break.
+        # =====================================================================
+
+        # ---- X0. The policy and the crosswalks, read off the page.
+        #
+        #      The crosswalk arm is the nesting claim itself. Every "finer" line
+        #      in the table asserts that one tier nests exactly inside another,
+        #      and the page refuses to approximate: buildXwalk THROWS on a
+        #      conflicting parent, an out-of-range row or an unmapped child. So
+        #      building all ten of them, from a page with every tier resident,
+        #      is the claim tested rather than restated. lsoa<->ward and every
+        #      pcon pairing are absent from that list on purpose — they are the
+        #      shatter's pairs, and asking for their crosswalk is what would
+        #      throw.
+        log("")
+        t0 = time.time()
+        n_x0 = Nav(page, base, "?tier=borough")
+        got, st, mt = n_x0.poll(morph_capable, timeout=180)
+        ok_x0 = check(n_x0, st, got, "X0 boot")
+        policy = json.loads(n_x0.js("JSON.stringify(window.__v3.policy())") or "{}")
+        cents = json.loads(n_x0.js("JSON.stringify(window.__v3.centroids())") or "{}")
+        NESTED = [("ward", "borough"), ("ward", "gla"), ("borough", "gla"),
+                  ("lsoa", "borough"), ("lsoa", "gla"), ("oa", "lsoa"),
+                  ("oa", "ward"), ("oa", "borough"), ("oa", "gla"),
+                  ("oa", "pcon")]
+        xw_js = """
+          Promise.all(["gla","borough","pcon","ward","lsoa","oa"].map(function (k) {
+            return loadTier(k).then(function (T) { READY[k] = T; });
+          })).then(loadParents).then(function (j) {
+            Object.keys(j.parents).forEach(function (k) { PARENTS[k] = j.parents[k]; });
+            var pairs = %s, out = {};
+            pairs.forEach(function (p) {
+              out[p[0] + ">" + p[1]] = !!ensureXwalk(p[0], p[1]);
+            });
+            return JSON.stringify({ built: out, stats: XWALK_STATS,
+                                    errors: LAB_ERRORS.length });
+          })""" % json.dumps([list(p) for p in NESTED])
+        try:
+            xw = json.loads(n_x0.js(xw_js, await_promise=True) or "{}")
+        except Exception as e:
+            xw = {"err": str(e)}
+        log("shot %-24s %-44s %5.1fs  %s"
+            % ("-", "X0 the policy table and its crosswalks",
+               time.time() - t0, "ok" if ok_x0 else "FAILED"))
+        log("     bases carrying the extension: %s"
+            % json.dumps(policy.get("bases")))
+        log("     centroids at boot: %s"
+            % json.dumps({k: (v and {"verts": v["verts"], "rings": v["rings"],
+                                     "ms": v["ms"]})
+                          for k, v in sorted(cents.items())}))
+
+        # ---- X1. Endpoint identity for the NEW nested pairs.
+        log("")
+        ok_all &= direct("x_ref_gla.png", "?tier=gla&morph=0&highlight=off",
+                         "X1 gla reference, ?highlight=off chrome")
+        ok_all &= direct("x_ref_lsoa.png", "?tier=lsoa&morph=0&highlight=off",
+                         "X1 lsoa reference, ?highlight=off chrome")
+        ok_all &= direct("x_ref_oa.png", "?tier=oa&morph=0&highlight=off",
+                         "X1 oa reference, ?highlight=off chrome")
+        ok_x1 = switch("?tier=ward&highlight=off", "gla",
+                       "X1a ward -> gla (merge, crack on the wards)",
+                       "x1a_ward_gla.png")
+        ok_x1 &= switch("?tier=borough&highlight=off", "gla",
+                        "X1b borough -> gla (merge, crack on the boroughs)",
+                        "x1b_borough_gla.png")
+        ok_x1 &= switch("?tier=lsoa&highlight=off", "borough",
+                        "X1c lsoa -> borough (merge, crack on the LSOAs)",
+                        "x1c_lsoa_borough.png")
+        ok_x1 &= switch("?tier=oa&highlight=off", "lsoa",
+                        "X1d oa -> lsoa (merge, crack on the OUTPUT AREAS)",
+                        "x1d_oa_lsoa.png")
+
+        # ---- X2. The SHATTER: two non-nested pairs, and it really engages.
+        #
+        #      This is the amendment's arm. A non-nested pair has no plateau on
+        #      either endpoint, so V1 draws it on the output areas — and the
+        #      shatter is that morph with the envelope on THAT layer. The
+        #      endpoint assertion is the same one every mode takes; the
+        #      mid-flight read is what separates "the shatter ran" from "the
+        #      page quietly fell back to V1", which the picture at the end
+        #      cannot distinguish.
+        log("")
+
+        def shatter_leg(fname, query, area, label, want_basis, expect_warp=True,
+                        phase="animate"):
+            """A morph sampled at the envelope's peak and then at its end."""
+            t0 = time.time()
+            n = Nav(page, base, query + "&morphdur=%d&highlight=off" % slow)
+            got, st, mt = n.poll(morph_capable, timeout=180)
+            ok = check(n, st, got, label + " boot")
+            n.set_area(area)
+            got, st, mt = n.poll(logged(phase), timeout=60)
+            ok &= check(n, st, got, label + " " + phase)
+            at = log_at(mt, phase) or n.clock()
+            n.wait_clock(at + slow * WARP_PEAK)
+            info = json.loads(n.js("JSON.stringify(window.__v3.warpInfo())") or "{}")
+            mid = json.loads(n.js(IDLE_JS) or "{}")
+            got, st2, mt2 = n.poll(done_morphing, timeout=120)
+            ok &= check(n, st2, got, label + " endpoint")
+            time.sleep(SETTLE)
+            page.screenshot(OUT / fname)
+            idle = idle_clean(n, label, log)
+            log("shot %-24s %-44s %5.1fs  %s"
+                % (fname, label, time.time() - t0, "ok" if ok else "FAILED"))
+            log("     mid-flight: basis %r  uniform %.5f  beat %r  drawn basis %r"
+                % (info.get("tier"), float(info.get("amount") or 0),
+                   info.get("beat"), mid.get("mb")))
+            log("     log: %s" % json.dumps(mt2.get("log")))
+            engaged = (info.get("tier") == want_basis
+                       and float(info.get("amount") or 0) > 0
+                       and mid.get("mb") == want_basis)
+            quiet = (float(info.get("amount") or 0) == 0
+                     and not mid.get("bwarp") and not mid.get("froz"))
+            return {"ok": ok, "idle": idle, "engaged": engaged, "quiet": quiet,
+                    "info": info, "mid": mid, "log": mt2.get("log"),
+                    "fps": (mt2.get("warp") or {}).get("fps"),
+                    "worst": (mt2.get("warp") or {}).get("worst")}
+
+        x2a = shatter_leg("x2a_pcon_gla.png", "?tier=pcon", "gla",
+                          "X2a pcon -> gla, the shatter", "oa")
+        x2b = shatter_leg("x2b_lsoa_ward.png", "?tier=lsoa", "ward",
+                          "X2b lsoa -> ward, the shatter", "oa")
+
+        # ---- X3. A DEMOTED PAIR TAKES V1'S MORPH, AND NOTHING CRACKS.
+        #
+        #      The lever the table exists for, exercised rather than described.
+        #      Same pair as X2-shaped ward -> pcon, one query string away from
+        #      the shatter, and the assertion is the inverse: the uniform stays
+        #      at zero for the whole morph and no basis is ever held.
+        log("")
+        x3 = shatter_leg("x3_none_ward_pcon.png",
+                         "?tier=ward&warpmode=ward%3Epcon:none", "pcon",
+                         "X3 ward -> pcon DEMOTED to none", None,
+                         expect_warp=False)
+
+        # ---- X4. OA GRAIN, WITH THE FPS REPORTED.
+        #
+        #      26,435 rings and ~350k vertices cracking at once, against the
+        #      ward pair's 731 and 50,738. The state and pixel gates are the
+        #      assertions; the frame rate is REPORTED and not gated, because
+        #      this machine is not a clean room — see the caveat at the foot of
+        #      this file.
+        log("")
+        t0 = time.time()
+        n_x4 = Nav(page, base, "?tier=borough&highlight=off")
+        got, st, mt = n_x4.poll(morph_capable, timeout=180)
+        ok_x4 = check(n_x4, st, got, "X4 boot")
+        x4_cent = json.loads(n_x4.js("JSON.stringify(window.__v3.centroids())") or "{}")
+        n_x4.set_area("oa")
+        got, st, mt = n_x4.poll(logged("gesture"), timeout=60)
+        ok_x4 &= check(n_x4, st, got, "X4 gesture")
+        g_x4 = log_at(mt, "gesture") or n_x4.clock()
+        n_x4.wait_clock(g_x4 + 750 * WARP_PEAK)
+        x4_info = json.loads(n_x4.js("JSON.stringify(window.__v3.warpInfo())") or "{}")
+        got, st, mt = n_x4.poll(done_morphing, timeout=120)
+        ok_x4 &= check(n_x4, st, got, "X4 endpoint")
+        x4_beat = mt.get("warp") or {}
+        x4_log = mt.get("log")
+        time.sleep(SETTLE)
+        page.screenshot(OUT / "x4_borough_oa.png")
+        x4_idle = idle_clean(n_x4, "X4 (borough -> oa at OA grain)", log)
+        log("shot %-24s %-44s %5.1fs  %s"
+            % ("x4_borough_oa.png", "X4 borough -> oa, the OA-grain warp",
+               time.time() - t0, "ok" if ok_x4 else "FAILED"))
+        log("     basis %r  %s rings / %s verts  centroids %s ms"
+            % (x4_info.get("tier"), x4_info.get("rings"), x4_info.get("verts"),
+               (x4_cent.get("oa") or {}).get("ms")))
+        log("     mid-gesture uniform %.5f; the gesture ran at %s fps over %s "
+            "frames, worst %s ms  (REPORTED, not gated)"
+            % (float(x4_info.get("amount") or 0), x4_beat.get("fps"),
+               x4_beat.get("frames"), x4_beat.get("worst")))
+        log("     log: %s" % json.dumps(x4_log))
+
+        # ---- X5. THE ZOOM PATH, which is the one a reader meets by accident.
+        #
+        #      lsoa <-> oa is the automatic pair: cross zoom 12.6 and the page
+        #      switches area type on its own. That goes through setTier ->
+        #      apply() like every pill, so it should warp — and this is the leg
+        #      that says whether it does. The camera really moves (__v3.setZoom
+        #      does what the reset button does, and re-syncs applyZoom by hand
+        #      because a programmatic move does not fire onViewStateChange); the
+        #      one thing it is not is a pointer drag.
+        #
+        #      The reference is the SAME ROUTE with ?morph=0, so both frames
+        #      carry the same camera, the same elevation scale and the same
+        #      unpinned chrome, and the only difference between them is the
+        #      transition that got there.
+        log("")
+        t0 = time.time()
+
+        def zoom_to_oa(query, fname, label, interrupt=None, boot=morph_capable,
+                       end=done_morphing):
+            # `boot` and `end` are the morph predicates everywhere except the
+            # ?morph=0 reference: that page never warms a basis by design, so
+            # morphReady stays false for its whole life, and the curtain writes
+            # no phase log — so both of the usual predicates would hang on it.
+            n = Nav(page, base, query)
+            got, st, mt = n.poll(boot, timeout=180)
+            ok = check(n, st, got, label + " boot")
+            n.js("window.__v3.setZoom(13); 0")
+            if interrupt:
+                got, st, mt = n.poll(logged("gesture"), timeout=60)
+                ok &= check(n, st, got, label + " gesture")
+                at = log_at(mt, "gesture") or n.clock()
+                n.wait_clock(at + slow * 0.35)
+                amt = n.js("WARP.amount")
+                mid = json.loads(n.js(IDLE_JS) or "{}")
+                n.set_area(interrupt)
+                got, st, mt = n.poll(done_morphing, timeout=120)
+                ok &= check(n, st, got, label + " endpoint")
+                time.sleep(SETTLE)
+                page.screenshot(OUT / fname)
+                return {"ok": ok, "n": n, "st": st, "mt": mt,
+                        "amt": float(amt or 0), "mid": mid}
+            # AND IT MUST HAVE ARRIVED AT `oa`. Waiting on "settled" alone would
+            # be satisfied by the frame before the zoom, which is settled too:
+            # the switch is asynchronous and the page is perfectly still until
+            # it starts. That is the same trap `notDone()` exists for one level
+            # down, and it would photograph the neighbourhood map.
+            got, st, mt = n.poll(lambda s, m: end(s, m) and s.get("tier") == "oa",
+                                 timeout=120)
+            ok &= check(n, st, got, label + " endpoint")
+            time.sleep(SETTLE)
+            page.screenshot(OUT / fname)
+            return {"ok": ok, "n": n, "st": st, "mt": mt, "amt": 0, "mid": {}}
+
+        x5_ref = zoom_to_oa("?morph=0&highlight=off", "x5_ref_oa_z13.png",
+                            "X5 reference: the same zoom under ?morph=0",
+                            boot=is_ready, end=settled)
+        log("shot %-24s %-44s %5.1fs  %s"
+            % ("x5_ref_oa_z13.png", "X5 zoom to 13 with the curtain",
+               time.time() - t0, "ok" if x5_ref["ok"] else "FAILED"))
+        log("     tier %r, log %s"
+            % (x5_ref["st"].get("tier"), json.dumps(x5_ref["mt"].get("log"))))
+
+        t0 = time.time()
+        x5 = zoom_to_oa("?highlight=off", "x5_zoom_oa_end.png",
+                        "X5 the zoom auto-switch, warped")
+        x5_log = x5["mt"].get("log") or []
+        x5_warped = bool(x5_log) and "(warp)" in x5_log[0]
+        x5_idle = idle_clean(x5["n"], "X5 (the zoom auto-switch to oa)", log)
+        log("shot %-24s %-44s %5.1fs  %s"
+            % ("x5_zoom_oa_end.png", "X5 zoom to 13, auto-switch lsoa -> oa",
+               time.time() - t0, "ok" if x5["ok"] else "FAILED"))
+        log("     tier %r, log %s" % (x5["st"].get("tier"), json.dumps(x5_log)))
+
+        # ---- X5b. The zoom-warp INTERRUPTED by a pill click.
+        t0 = time.time()
+        x5b = zoom_to_oa("?morphdur=%d&highlight=off" % slow,
+                         "x5b_zoom_interrupt.png",
+                         "X5b the zoom-warp, interrupted", interrupt="borough")
+        x5b_idle = idle_clean(x5b["n"], "X5b (zoom-warp interrupted by a pill)", log)
+        log("shot %-24s %-44s %5.1fs  %s"
+            % ("x5b_zoom_interrupt.png", "X5b zoom-warp interrupted by Boroughs",
+               time.time() - t0, "ok" if x5b["ok"] else "FAILED"))
+        log("     the crack was %.5f open on basis %r when Boroughs was clicked; "
+            "landed on %r"
+            % (x5b["amt"], (x5b["mid"] or {}).get("wtier"),
+               x5b["st"].get("tier")))
+        log("     log: %s" % json.dumps(x5b["mt"].get("log")))
+
+        # ---- X6. A RETARGET THAT MOVES THE CRACK BETWEEN BASES.
+        #
+        #      New with the policy, and it could not happen before: interrupt a
+        #      borough -> ward split (crack on the wards) with Neighbourhoods,
+        #      and ward -> lsoa is a SHATTER — so the crack has to leave the
+        #      ward layer and continue on the output areas, mid-gesture. The
+        #      tier it leaves keeps its displacement frozen while it is still
+        #      the picture and must be released of everything else; a stale
+        #      dur/ease/noPick there is the W6 defect one tier along, and a
+        #      frozen crack left behind is a permanently cracked map.
+        log("")
+        t0 = time.time()
+        n_x6 = Nav(page, base, "?tier=borough&morphdur=%d&highlight=off" % slow)
+        got, st, mt = n_x6.poll(morph_capable, timeout=180)
+        ok_x6 = check(n_x6, st, got, "X6 boot")
+        n_x6.set_area("ward")
+        got, st, mt = n_x6.poll(logged("gesture"), timeout=60)
+        ok_x6 &= check(n_x6, st, got, "X6 gesture")
+        g_x6 = log_at(mt, "gesture") or n_x6.clock()
+        n_x6.wait_clock(g_x6 + slow * 0.35)
+        x6_pre = json.loads(n_x6.js(IDLE_JS) or "{}")
+        # SAMPLED FROM INSIDE THE FRAME LOOP, because the hand-over is the
+        # thing being tested and it is over in a few frames. A poll from here
+        # would land where it landed; this records every frame of it, and the
+        # three questions it answers cannot be asked any other way: did the
+        # uniform ever go to zero (a snap), did the crack move to the new
+        # basis, and was the tier it left holding a frozen crack while it was
+        # still the picture.
+        n_x6.js("""
+          window.__X6 = [];
+          (function s() {
+            if (window.__X6.length > 400) return;
+            window.__X6.push([Math.round(performance.now()), WARP_TIER,
+                              WARP.amount, Object.keys(WARP_FROZEN).join("+"),
+                              morphSeed, morphBasis]);
+            requestAnimationFrame(s);
+          })(); 0""")
+        n_x6.set_area("lsoa")
+        got, st6, mt6 = n_x6.poll(done_morphing, timeout=120)
+        try:
+            x6_tape = json.loads(n_x6.js("JSON.stringify(window.__X6)") or "[]")
+        except Exception:
+            x6_tape = []
+        ok_x6 &= check(n_x6, st6, got, "X6 endpoint")
+        time.sleep(SETTLE)
+        page.screenshot(OUT / "x6_basis_change_end.png")
+        x6_idle = idle_clean(n_x6, "X6 (retarget moving the crack to a new basis)",
+                             log)
+        log("shot %-24s %-44s %5.1fs  %s"
+            % ("x6_basis_change_end.png",
+               "X6 retarget across a basis change", time.time() - t0,
+               "ok" if ok_x6 else "FAILED"))
+        # Read the tape: everything from the click to the frame the new basis
+        # takes over the picture.
+        x6_moved = [s for s in x6_tape if s[1] != "ward"]
+        x6_switch = x6_tape.index(x6_moved[0]) if x6_moved else -1
+        x6_span = x6_tape[max(0, x6_switch - 4):x6_switch + 5] if x6_switch >= 0 else []
+        # Frames in which the crack has already moved to the new basis while the
+        # OLD one is STILL the picture (morphSeed standing) — the freeze window,
+        # and the only frames in which freezing can be seen to matter.
+        #
+        # OBSERVED-OR-PROVABLY-UNNECESSARY, because the window is measured in
+        # frames and a faster machine may not draw one inside it: the gate is
+        # that EVERY such frame had the old basis frozen, which is vacuously
+        # true when there are none — and when there are none, nothing could have
+        # popped. Gating on "at least one was observed" would have made this
+        # leg fail on a machine that is behaving better than this one.
+        x6_seed_frames = [s for s in x6_tape if s[1] != "ward" and s[4] == "ward"]
+        x6_frozen_live = [s for s in x6_seed_frames if "ward" in (s[3] or "")]
+        # The lowest the uniform ever got between the click and the take-over.
+        x6_dip = min([s[2] for s in x6_tape[:x6_switch + 1]] or [0]) if x6_switch >= 0 else 0
+        # THE STEEPEST ONE-FRAME FALL anywhere in the hand-over, which is what a
+        # collapse looks like from the reader's chair: consecutive samples are
+        # consecutive DRAWN frames, so a big fall between two of them is a fall
+        # the eye sees whole, however long the gap between them was.
+        x6_drop, x6_drop_at = 0.0, 0
+        for i in range(1, len(x6_tape)):
+            d = x6_tape[i - 1][2] - x6_tape[i][2]
+            if d > x6_drop:
+                x6_drop, x6_drop_at = d, x6_tape[i][0]
+        x6_gap = max([x6_tape[i][0] - x6_tape[i - 1][0]
+                      for i in range(1, len(x6_tape))] or [0])
+        log("     before: basis %r uniform %.5f" % (x6_pre.get("wtier"),
+                                                    float(x6_pre.get("warp") or 0)))
+        log("     the hand-over, frame by frame  [t, basis, uniform, frozen, "
+            "seed, drawn]:")
+        for s in x6_span:
+            log("        %8d  %-8s %.5f  froz=%-6s seed=%-8s basis=%s"
+                % (s[0], s[1], s[2], s[3] or "-", s[4] or "-", s[5] or "-"))
+        log("     log: %s" % json.dumps(mt6.get("log")))
+
+        # ---- X8. A STALL LONGER THAN WHAT IS LEFT OF THE ENVELOPE.
+        #
+        #      X6 covers a stall that lands BEFORE the interrupt's blend. This
+        #      is the one that lands ON TOP of it and runs past the end of the
+        #      gesture, which is a different failure and reachable at the
+        #      PRODUCTION duration: the blend starts on the first frame drawn
+        #      after the retarget, so a stall longer than what is left of a
+        #      750 ms gesture leaves the whole 180 ms of it outstanding at
+        #      u = 1 — and an envelope that simply finishes there puts the
+        #      crack from a full 0.08 to 0 in one frame, through the door
+        #      marked "finished".
+        #
+        #      STAGED RATHER THAN WAITED FOR. The morph is cut to 400 ms and the
+        #      main thread is blocked for 600 ms from a TIMER, which fires after
+        #      apply()'s own microtasks — so the block lands squarely between
+        #      runWarp's t0 and the envelope's first executed frame, which is
+        #      exactly where the OA-basis repaint lands it in the wild. Nothing
+        #      about the page is mocked; the only thing this adds is the stall.
+        #
+        #      AND IT HAS A CONTROL. ?carry=wall restores both halves of what
+        #      the fix changed — the clock and the ordering — so the same leg,
+        #      on the same page, is run twice and the defect is asserted to be
+        #      PRESENT in one and absent in the other. The endpoint is asserted
+        #      in both, because the endpoint is exactly what cannot see this.
+        log("")
+        t0 = time.time()
+
+        def stall_leg(tag, extra, fname):
+            n = Nav(page, base, "?tier=borough&morphdur=%d&highlight=off%s"
+                                % (X8_DUR, extra))
+            got, st, mt = n.poll(morph_capable, timeout=180)
+            ok = check(n, st, got, tag + " boot")
+            n.set_area("ward")
+            got, st, mt = n.poll(logged("gesture"), timeout=60)
+            ok &= check(n, st, got, tag + " gesture")
+            at = log_at(mt, "gesture") or n.clock()
+            n.wait_clock(at + X8_DUR * WARP_PEAK)
+            n.js("""
+              window.__T8 = [];
+              (function s() {
+                if (window.__T8.length > 400) return;
+                window.__T8.push([Math.round(performance.now()), WARP.amount]);
+                requestAnimationFrame(s);
+              })(); 0""")
+            amt = n.js("WARP.amount")
+            n.js('window.__setArea("borough").then(function(){},function(){});'
+                 'setTimeout(function () {'
+                 '  var t = performance.now();'
+                 '  while (performance.now() - t < %d) {}'
+                 '}, 0); 0' % X8_BLOCK)
+            got, st2, mt2 = n.poll(done_morphing, timeout=120)
+            ok &= check(n, st2, got, tag + " endpoint")
+            try:
+                tape = json.loads(n.js("JSON.stringify(window.__T8)") or "[]")
+            except Exception:
+                tape = []
+            drop, drop_at = 0.0, 0
+            for i in range(1, len(tape)):
+                d = tape[i - 1][1] - tape[i][1]
+                if d > drop:
+                    drop, drop_at = d, tape[i][0]
+            gap = max([tape[i][0] - tape[i - 1][0]
+                       for i in range(1, len(tape))] or [0])
+            time.sleep(SETTLE)
+            page.screenshot(OUT / fname)
+            idle = idle_clean(n, tag, log)
+            log("shot %-24s %-44s %5.1fs  %s"
+                % (fname, tag, time.time() - t0, "ok" if ok else "FAILED"))
+            log("     crack %.5f at the click; envelope %d ms, block %d ms, "
+                "longest gap between drawn frames %d ms"
+                % (float(amt or 0), X8_DUR, X8_BLOCK, gap))
+            log("     steepest one-frame fall %.5f of a %.5f crack, at t=%d ms"
+                % (drop, 1 - WARP_INSET, drop_at))
+            log("     log: %s" % json.dumps(mt2.get("log")))
+            return {"ok": ok, "idle": idle, "drop": drop, "gap": gap,
+                    "amt": float(amt or 0), "log": mt2.get("log")}
+
+        x8 = stall_leg("X8 a stall past the end of the envelope",
+                       "", "x8_stall_end.png")
+        x8c = stall_leg("X8 CONTROL ?carry=wall, the clock before the fix",
+                        "&carry=wall", "x8_control_wall.png")
+
+        # ---- X7. THE BEAUTY SHOTS, and one measurement to argue about them.
+        #
+        #      Committed for the owner's eye, not gated: these grains have never
+        #      been seen cracked. Each is caught at the envelope's peak, where
+        #      cubic-in-out is stationary and the screenshot round trip barely
+        #      moves the displacement.
+        log("")
+        t0 = time.time()
+
+        def beauty(fname, query, area, label, phase="gesture", zoom=None):
+            # ?shield=0 ONLY HERE. The shield is the iframe-embed click catcher
+            # and it puts "Click or tap to explore in 3D" across the middle of
+            # the map; every assertion frame in this file carries it, on both
+            # sides of every comparison, so it cancels. These four are for the
+            # owner's eye rather than for a diff, so it comes off.
+            n = Nav(page, base,
+                    query + "&morphdur=%d&highlight=off&shield=0" % slow)
+            got, st, mt = n.poll(morph_capable, timeout=180)
+            ok = check(n, st, got, label)
+            if zoom is not None:
+                n.js("window.__v3.setZoom(%s); 0" % zoom)
+                time.sleep(0.6)
+            n.set_area(area)
+            got, st, mt = n.poll(logged(phase), timeout=60)
+            ok &= check(n, st, got, label + " " + phase)
+            at = log_at(mt, phase) or n.clock()
+            n.wait_clock(at + slow * WARP_PEAK)
+            a0 = n.js("WARP.amount")
+            shot = page.shot_bytes()
+            a1 = n.js("WARP.amount")
+            wt = n.js("WARP_TIER")
+            (OUT / fname).write_bytes(shot)
+            amt = (float(a0 or 0) + float(a1 or 0)) / 2.0
+            log("shot %-24s %-44s        %s  basis %r, uniform %.5f"
+                % (fname, label, "ok" if ok else "FAILED", wt, amt))
+            n.poll(done_morphing, timeout=120)
+            return ok
+
+        ok_x7 = beauty("beauty_oa_lsoa_crack.png", "?tier=oa", "lsoa",
+                       "X7 oa -> lsoa, the output areas cracking")
+        ok_x7 &= beauty("beauty_lsoa_borough_crack.png", "?tier=lsoa", "borough",
+                        "X7 lsoa -> borough, the LSOAs cracking")
+        ok_x7 &= beauty("beauty_pcon_gla_shatter_z10.png", "?tier=pcon", "gla",
+                        "X7 pcon -> gla shatter, the default city view",
+                        phase="animate")
+        ok_x7 &= beauty("beauty_pcon_gla_shatter_z12p5.png", "?tier=pcon", "gla",
+                        "X7 pcon -> gla shatter, zoomed to 12.5",
+                        phase="animate", zoom=12.5)
+
+        # AND THE MEASUREMENT BEHIND THE AESTHETIC QUESTION. "Does an
+        # output-area crack read at all when the whole city is in frame?" is an
+        # eye question, but how much of the picture it moves is not. Both frames
+        # below are the SETTLED output-area map with nothing animating, one with
+        # the uniform at zero and one at a full crack, at two zooms. The
+        # difference between them is the crack and nothing else.
+        def crack_visibility(tag, zoom):
+            n = Nav(page, base, "?tier=oa&highlight=off")
+            got, st, mt = n.poll(morph_capable, timeout=180)
+            ok = check(n, st, got, "X7 crack visibility " + tag)
+            if zoom is not None:
+                n.js("window.__v3.setZoom(%s); 0" % zoom)
+                time.sleep(0.8)
+            n.js('window.__v3.setWarpBasis("oa"); 0')
+            n.js("window.__v3.setWarpAmount(0); 0")
+            time.sleep(SETTLE)
+            flat = page.shot_bytes()
+            n.js("window.__v3.setWarpT(1); 0")
+            time.sleep(0.8)
+            amt = n.js("WARP.amount")
+            open_ = page.shot_bytes()
+            n.js("window.__v3.setWarpAmount(0); 0")
+            (OUT / ("x7_crack_%s_flat.png" % tag)).write_bytes(flat)
+            (OUT / ("x7_crack_%s_open.png" % tag)).write_bytes(open_)
+            a, b = img(flat), img(open_)
+            d = np.abs(a - b)
+            mad = float(d.mean())
+            frac = float((d.max(axis=2) > PIXEL_DIFF).mean())
+            log("     %-6s zoom %-5s  uniform %.5f  MAD %.4f/255  pixels >%d/255: "
+                "%.3f%% of the frame"
+                % (tag, zoom if zoom is not None else "default",
+                   float(amt or 0), mad, PIXEL_DIFF, frac * 100))
+            return ok, mad, frac
+
+        log("     THE CRACK AT OA GRAIN, MEASURED AT TWO ZOOMS — settled map, "
+            "uniform scrubbed, nothing else moving:")
+        okz1, mad_z10, frac_z10 = crack_visibility("z10", None)
+        okz2, mad_z125, frac_z125 = crack_visibility("z12p5", 12.5)
+        ok_x7 &= okz1 and okz2
+        log("shot %-24s %-44s %5.1fs  %s"
+            % ("beauty_*.png / x7_crack_*", "X7 beauty shots and the crack "
+               "measurement", time.time() - t0, "ok" if ok_x7 else "FAILED"))
 
         gl_all = page.gl_errors()
         page.close()
@@ -2240,6 +2864,304 @@ def main():
             % ("PASS" if w6_all else "FAIL"))
         log("")
 
+        # ---- X0 the policy table and the crosswalks it claims
+        log("X0 THE POLICY TABLE, read off the page rather than assumed")
+        table = policy.get("table") or {}
+        want_modes = {}
+        for a, b in NESTED:
+            want_modes[a + ">" + b] = "finer"
+            want_modes[b + ">" + a] = "finer"
+        for a, b in [("ward", "lsoa"), ("pcon", "gla"), ("pcon", "borough"),
+                     ("pcon", "ward"), ("pcon", "lsoa")]:
+            want_modes[a + ">" + b] = "oa"
+            want_modes[b + ">" + a] = "oa"
+        wrong = sorted(k for k, v in want_modes.items() if table.get(k) != v)
+        missing = sorted(set(want_modes) - set(table))
+        extra = sorted(set(table) - set(want_modes))
+        x0_table = not wrong and not missing and not extra
+        log("     %d ordered pairs listed: %d nested on the finer tier, %d "
+            "shattered on the output areas, %d demoted"
+            % (len(table), sum(1 for v in table.values() if v == "finer"),
+               sum(1 for v in table.values() if v == "oa"),
+               sum(1 for v in table.values() if v == "none")))
+        log("     %s every ordered pair of the six area types is in the table "
+            "and carries the mode this driver expects%s"
+            % ("pass" if x0_table else "FAIL",
+               "" if x0_table else " (wrong: %s; missing: %s; extra: %s)"
+               % (wrong, missing, extra)))
+        bases = sorted(policy.get("bases") or [])
+        x0_bases = bases == ["borough", "lsoa", "oa", "ward"]
+        log("     %s the extension is attached to exactly the tiers the table "
+            "can crack: %s" % ("pass" if x0_bases else "FAIL", bases))
+        log("     pcon and gla carry neither the extension nor a centroid "
+            "array, because no line of the table ever cracks them: they are")
+        log("     the coarse end of every pair they appear in, and the shatter "
+            "runs on the output areas.")
+        built = (xw or {}).get("built") or {}
+        stats = (xw or {}).get("stats") or {}
+        bad_xw = sorted(k for k in ("%s>%s" % p for p in NESTED)
+                        if not built.get(k))
+        x0_xw = not bad_xw and not (xw or {}).get("err")
+        log("     %s all %d nested crosswalks build from oa.parents.json with "
+            "no conflict%s"
+            % ("pass" if x0_xw else "FAIL", len(NESTED),
+               "" if x0_xw else " (failed: %s %s)" % (bad_xw, (xw or {}).get("err"))))
+        for k in ("%s>%s" % p for p in NESTED):
+            s = stats.get(k) or {}
+            log("        %-14s %6s of %-6s rows mapped, %s conflicts, over %s "
+                "output areas" % (k, s.get("mapped"), s.get("n"),
+                                  s.get("conflicts"), s.get("oas")))
+        log("     THIS IS THE NESTING CLAIM ITSELF, not a restatement of it.")
+        log("     buildXwalk throws on a conflicting parent, an out-of-range")
+        log("     row or an unmapped child, and every one of these is composed")
+        log("     through oa.parents.json — never through the labels file,")
+        log("     whose lad[] is not a borough row index. A 'finer' line on a")
+        log("     pair that does not really nest fails here, loudly, instead of")
+        log("     drawing a plateau that is not the coarser map.")
+        x0_all = ok_x0 and x0_table and x0_bases and x0_xw
+        ok_all &= x0_all
+        log("%s X0 the policy table is what the page holds, and every nested "
+            "pair really nests" % ("PASS" if x0_all else "FAIL"))
+        log("")
+
+        # ---- X1 endpoint identity, the new nested pairs
+        x1_land = compare(OUT / "x_ref_gla.png", OUT / "x1a_ward_gla.png",
+                          "X1a ward -> gla, one warped gesture on the WARD "
+                          "geometry, lands on exactly the Assembly-seat map",
+                          log)
+        x1_land &= compare(OUT / "x_ref_gla.png", OUT / "x1b_borough_gla.png",
+                           "X1b borough -> gla, cracking the BOROUGHS, lands "
+                           "on exactly the same Assembly-seat map", log)
+        x1_land &= compare(OUT / "w_ref_borough.png", OUT / "x1c_lsoa_borough.png",
+                           "X1c lsoa -> borough, cracking 4,994 LSOAs, lands "
+                           "on exactly the borough map", log)
+        x1_land &= compare(OUT / "x_ref_lsoa.png", OUT / "x1d_oa_lsoa.png",
+                           "X1d oa -> lsoa, cracking 26,369 OUTPUT AREAS, "
+                           "lands on exactly the neighbourhood map", log)
+        x1_all = ok_x1 and x1_land
+        ok_all &= x1_all
+        log("     EVERY ONE OF THESE RESTS ON THE SAME PROPERTY S1 MEASURED:")
+        log("     the displacement is (centroid - vertex) * amount, so an")
+        log("     amount of exactly zero multiplies the float32 centroid's")
+        log("     whole error by zero. Four more bases does not weaken it —")
+        log("     the envelope lands on 0 and has a committed frame there")
+        log("     before anything downstream treats the geometry as true.")
+        log("%s X1 four more nested pairs, four different cracking geometries, "
+            "every endpoint exact" % ("PASS" if x1_all else "FAIL"))
+        log("")
+
+        # ---- X2 the shatter
+        x2_land = compare(OUT / "x_ref_gla.png", OUT / "x2a_pcon_gla.png",
+                          "X2a pcon -> gla as an OA-BASIS SHATTER lands on "
+                          "exactly the Assembly-seat map", log)
+        x2_land &= compare(OUT / "w_ref_ward.png", OUT / "x2b_lsoa_ward.png",
+                           "X2b lsoa -> ward as an OA-BASIS SHATTER lands on "
+                           "exactly the ward map", log)
+        log("     %s X2a the shatter really engaged: the crack was on the "
+            "output areas and open at the peak" % ("pass" if x2a["engaged"] else "FAIL"))
+        log("     %s X2b the same, on the other non-nested pair"
+            % ("pass" if x2b["engaged"] else "FAIL"))
+        log("     THE PICTURE AT THE END CANNOT TELL THESE APART FROM V1.")
+        log("     A shatter that silently failed to engage would land on the")
+        log("     same frame, because the whole design is that the geometry is")
+        log("     true again before the hand-off. The mid-flight read is what")
+        log("     separates them, and it reads the basis as well as the")
+        log("     uniform: a crack open on the WRONG layer would pass a test")
+        log("     that only asked whether the uniform was non-zero.")
+        x2_all = x2a["ok"] and x2b["ok"] and x2_land and x2a["engaged"] \
+            and x2b["engaged"] and x2a["idle"] and x2b["idle"]
+        ok_all &= x2_all
+        log("%s X2 the non-nested pairs shatter on the output-area basis and "
+            "still land exactly" % ("PASS" if x2_all else "FAIL"))
+        log("")
+
+        # ---- X3 the demotion lever
+        x3_land = compare(OUT / "w_ref_pcon.png", OUT / "x3_none_ward_pcon.png",
+                          "X3 ward -> pcon with the pair DEMOTED to \"none\" "
+                          "lands on exactly the constituency map", log)
+        log("     %s and nothing cracked: the uniform was 0.00000 at the peak, "
+            "no basis was held and no tier was left frozen"
+            % ("pass" if x3["quiet"] else "FAIL"))
+        log("     ONE LINE OF THE TABLE IS THE WHOLE DIFFERENCE between this")
+        log("     leg and X2's. The owner asked for that lever because the")
+        log("     LSOA and OA-grain aesthetics are unseen; this is the")
+        log("     evidence that pulling it returns V1's morph exactly, rather")
+        log("     than something V1-shaped.")
+        x3_all = x3["ok"] and x3_land and x3["quiet"] and x3["idle"]
+        ok_all &= x3_all
+        log("%s X3 a demoted pair takes V1's morph and nothing warps"
+            % ("PASS" if x3_all else "FAIL"))
+        log("")
+
+        # ---- X4 OA grain
+        x4_land = compare(OUT / "x_ref_oa.png", OUT / "x4_borough_oa.png",
+                          "X4 borough -> oa, 26,435 rings cracking out of 33 "
+                          "borough plateaux, lands on exactly the output-area map",
+                          log)
+        x4_engaged = (x4_info.get("tier") == "oa"
+                      and float(x4_info.get("amount") or 0) > 0)
+        log("     %s the crack was on the output areas and open mid-gesture "
+            "(%.5f)" % ("pass" if x4_engaged else "FAIL",
+                        float(x4_info.get("amount") or 0)))
+        log("     .... %s fps over %s frames, worst %s ms  (REPORTED, NOT GATED)"
+            % (x4_beat.get("fps"), x4_beat.get("frames"), x4_beat.get("worst")))
+        log("     THE COST OF THE GRAIN IS ONE FLOAT, AND THAT IS THE CLAIM V2")
+        log("     COULD NOT MAKE. Its CPU warp rewrote the position buffer")
+        log("     every frame, so 26,435 rings would have cost ~7x the 731 it")
+        log("     managed 34-46 fps on. Here the per-frame work is the same")
+        log("     uniform write at either grain; what does scale is the")
+        log("     centroid array, built once, off the interaction path, and")
+        log("     measured above.")
+        x4_all = ok_x4 and x4_land and x4_engaged and x4_idle
+        ok_all &= x4_all
+        log("%s X4 the warp at output-area grain" % ("PASS" if x4_all else "FAIL"))
+        log("")
+
+        # ---- X5 the zoom path
+        x5_land = compare(OUT / "x5_ref_oa_z13.png", OUT / "x5_zoom_oa_end.png",
+                          "X5 the zoom auto-switch at 12.6 — lsoa -> oa driven "
+                          "by the camera — lands on the same frame the curtain "
+                          "reaches by the same route", log)
+        log("     %s and it WARPED rather than falling through to V1: %s"
+            % ("pass" if x5_warped else "FAIL", json.dumps(x5_log[:1])))
+        log("     THE ZOOM PATH IS THE ONE A READER MEETS WITHOUT ASKING.")
+        log("     It goes through setTier -> apply() like every pill, so the")
+        log("     policy reaches it for free — but 'for free' is a claim about")
+        log("     code, and this is the reading. The camera really moves; what")
+        log("     this cannot say is how crossing the threshold mid-DRAG feels.")
+        log("     %s X5b the zoom-warp interrupted by a pill click lands on "
+            "%r with the crack shut and nothing held"
+            % ("pass" if x5b_idle else "FAIL", x5b["st"].get("tier")))
+        x5_all = (x5_ref["ok"] and x5["ok"] and x5_land and x5_warped
+                  and x5_idle and x5b["ok"] and x5b_idle)
+        ok_all &= x5_all
+        log("%s X5 the zoom auto-switch warps, and survives an interrupt"
+            % ("PASS" if x5_all else "FAIL"))
+        log("")
+
+        # ---- X6 the basis change
+        x6_land = compare(OUT / "x_ref_lsoa.png", OUT / "x6_basis_change_end.png",
+                          "X6 a warp gesture retargeted onto a pair that cracks "
+                          "a DIFFERENT tier lands on exactly the neighbourhood map",
+                          log)
+        x6_carried = float(x6_pre.get("warp") or 0) > 0
+        x6_kept = x6_switch >= 0 and x6_dip > 0
+        x6_froze = len(x6_frozen_live) == len(x6_seed_frames)
+        x6_nocollapse = x6_drop <= X6_DROP_LIMIT
+        log("     %s the crack really was open on the ward layer when the "
+            "second pill was clicked (%.5f)"
+            % ("pass" if x6_carried else "FAIL", float(x6_pre.get("warp") or 0)))
+        log("     %s and it was CARRIED rather than snapped: the uniform never "
+            "fell below %.5f between the click and the hand-over"
+            % ("pass" if x6_kept else "FAIL", x6_dip))
+        log("     %s the ward layer kept its crack FROZEN for every frame it "
+            "was still the picture after the crack moved to the output areas "
+            "(%d of %d such frames drawn%s)"
+            % ("pass" if x6_froze else "FAIL", len(x6_frozen_live),
+               len(x6_seed_frames),
+               "; none drawn, so nothing could pop" if not x6_seed_frames else ""))
+        log("        without that the wards would snap flat on the frame the")
+        log("        crack moves and reopen on the frame the output areas are")
+        log("        revealed — a pop in the middle of a gesture, in the one")
+        log("        place this page promises there is never one.")
+        log("     %s and NO FRAME COLLAPSES THE CRACK: the steepest one-frame "
+            "fall anywhere in the hand-over is %.5f of a %.5f crack (limit "
+            "%.3f), at t=%d ms"
+            % ("pass" if x6_nocollapse else "FAIL", x6_drop,
+               (1 - WARP_INSET), X6_DROP_LIMIT, x6_drop_at))
+        log("        THIS GATE CAUGHT A REAL ONE, and it is the reason the")
+        log("        carry is now clocked in frames rather than in wall time.")
+        log("        Repainting the output-area basis for the retarget blocks")
+        log("        the main thread — the longest gap between two drawn")
+        log("        frames in the tape above is %d ms — and the 180 ms carry" % x6_gap)
+        log("        window was measured from the envelope's t0, so on the")
+        log("        first frame the reader actually saw, the whole window had")
+        log("        already expired. Measured before the fix: 0.08000 to")
+        log("        0.01409 in one step, then back open. runWarp now starts")
+        log("        the carry on the first frame it draws.")
+        log("     WHAT THIS LEG IS FOR. A retarget could not change the basis")
+        log("     when one pair warped, so nothing in W1-W6 covers it. Two")
+        log("     things go wrong if it is not handled and neither shows in")
+        log("     the endpoint: the tier the crack LEAVES keeps dur, ease and")
+        log("     noPick (the W6 defect, one tier along), and it keeps its")
+        log("     displacement — a frozen crack nothing ever clears, drawing a")
+        log("     permanently cracked map the next time that tier is shown.")
+        log("     The idle read-back above gates on both.")
+        x6_all = (ok_x6 and x6_land and x6_carried and x6_kept and x6_froze
+                  and x6_nocollapse and x6_idle)
+        ok_all &= x6_all
+        log("%s X6 a retarget moves the crack between bases and leaves nothing "
+            "behind" % ("PASS" if x6_all else "FAIL"))
+        log("")
+
+        # ---- X8 the stall past the end of the envelope, and its control
+        x8_land = compare(OUT / "w_ref_borough.png", OUT / "x8_stall_end.png",
+                          "X8 a gesture whose envelope ended inside a 600 ms "
+                          "main-thread block still lands on exactly the borough map",
+                          log)
+        x8_land &= compare(OUT / "w_ref_borough.png", OUT / "x8_control_wall.png",
+                           "X8 CONTROL: and so does the build with the defect in "
+                           "it — which is the point of this leg",
+                           log)
+        x8_staged = x8["gap"] >= X8_BLOCK * 0.8 and x8c["gap"] >= X8_BLOCK * 0.8
+        x8_open = x8["amt"] > 0 and x8c["amt"] > 0
+        x8_ok = x8["drop"] <= X6_DROP_LIMIT
+        x8_ctl = x8c["drop"] >= X6_DROP_LIMIT
+        log("     %s the stall was really staged: %d ms and %d ms with nothing "
+            "drawn, against a %d ms envelope"
+            % ("pass" if x8_staged else "FAIL", x8["gap"], x8c["gap"], X8_DUR))
+        log("     %s and a full crack really was open when the second pill was "
+            "clicked (%.5f, %.5f)"
+            % ("pass" if x8_open else "FAIL", x8["amt"], x8c["amt"]))
+        log("     %s FIXED    steepest one-frame fall %.5f  (limit %.3f)"
+            % ("pass" if x8_ok else "FAIL", x8["drop"], X6_DROP_LIMIT))
+        log("     %s CONTROL  steepest one-frame fall %.5f  (floor %.3f)"
+            % ("pass" if x8_ctl else "FAIL", x8c["drop"], X6_DROP_LIMIT))
+        log("     THE CONTROL IS THE ASSERTION THAT THIS PROBE CAN FAIL, and")
+        log("     unlike the standing concern about W5 and W6 it is measured on")
+        log("     every run rather than argued. Under ?carry=wall the crack")
+        log("     falls the WHOLE %.5f in one frame — the envelope reaches u=1"
+            % (1 - WARP_INSET))
+        log("     inside the block, finishes on the first frame it draws, and")
+        log("     puts the uniform to zero with the entire 180 ms blend still")
+        log("     owed. Both legs land on the borough map to the same tolerance,")
+        log("     which is exactly why no endpoint assertion in this file could")
+        log("     ever have found it.")
+        log("     THE FIX IS TWO THINGS, and the control restores both: the")
+        log("     blend is clocked in ACCUMULATED DRAWN-FRAME time (no single")
+        log("     frame may advance it by more than %d ms, so a second stall" % 33)
+        log("     inside the window cannot step over it either), and the")
+        log("     envelope may no longer FINISH while the blend is unfinished.")
+        log("     The morph's own hand-off waits for it through whenHealed(),")
+        log("     bounded, so a hand-off can still never take a cracked basis.")
+        x8_all = (x8["ok"] and x8c["ok"] and x8_land and x8_staged and x8_open
+                  and x8_ok and x8_ctl and x8["idle"] and x8c["idle"])
+        ok_all &= x8_all
+        log("%s X8 an interrupt blend survives a stall that outlives the gesture"
+            % ("PASS" if x8_all else "FAIL"))
+        log("")
+
+        # ---- X7 the beauty shots, reported and not gated
+        log("X7 THE UNSEEN GRAINS, committed for the eye and not asserted")
+        log("     beauty_oa_lsoa_crack.png        26,369 output areas cracking")
+        log("     beauty_lsoa_borough_crack.png   4,994 LSOAs cracking")
+        log("     beauty_pcon_gla_shatter_z10.png the shatter, whole-city view")
+        log("     beauty_pcon_gla_shatter_z12p5.png the shatter, zoomed in")
+        log("     HOW MUCH OF THE PICTURE THE CRACK ACTUALLY MOVES, at OA")
+        log("     grain, from two settled frames of the same map with the")
+        log("     uniform scrubbed and nothing else changing:")
+        log("        whole-city (zoom ~10)   MAD %.4f/255, %.3f%% of pixels past "
+            "%d/255" % (mad_z10, frac_z10 * 100, PIXEL_DIFF))
+        log("        zoomed in  (zoom 12.5)  MAD %.4f/255, %.3f%% of pixels past "
+            "%d/255" % (mad_z125, frac_z125 * 100, PIXEL_DIFF))
+        log("     ratio %.2fx more of the frame moves when zoomed in"
+            % ((frac_z125 / frac_z10) if frac_z10 else float("nan")))
+        log("     THE OWNER ASKED WHETHER A ZOOM-SCALED INSET IS THE RIGHT")
+        log("     LEVER. Nothing here implements one; the two readings above")
+        log("     are the evidence for deciding, and the report carries the")
+        log("     reading of them.")
+        log("")
+
         # ---- THE INK GATE, over every committed frame
         shots = sorted(OUT.glob("*.png"))
         inks = [(f.name, ink(f)) for f in shots]
@@ -2268,10 +3190,11 @@ def main():
 
         log("")
         log("---- UNTESTED-BY-DRIVER (left to the human eye) ----")
-        log("  * the real zoom-gesture lsoa<->oa auto-switch, AS A GESTURE. This")
-        log("    driver forces the tier through __setArea and elevationScale")
-        log("    through __applyZoom, so how crossing the threshold mid-drag feels")
-        log("    is unjudged. (A7 does morph lsoa->oa, just not by dragging.)")
+        log("  * the real zoom-gesture lsoa<->oa auto-switch, AS A GESTURE. X5")
+        log("    now MOVES THE CAMERA and lets applyZoom take the tier across")
+        log("    the 12.6 threshold, so the code path is the reader's; what is")
+        log("    still unjudged is how it feels mid-DRAG, with the camera under")
+        log("    a pointer and the crack opening at the same time.")
         log("  * plateau seam shimmer under rotation and tilt. The plateau is")
         log("    26,369 coplanar solids; whether their shared edges sparkle as the")
         log("    camera moves is not a still-frame question.")
@@ -2292,9 +3215,25 @@ def main():
         log("    is a per-ring similarity transform so no normal changes, but")
         log("    whether the newly exposed side walls read as walls or as gaps")
         log("    is not a still-frame question.")
-        log("  * the warp at OA grain. Nothing here says it looks right at")
-        log("    26,369 features — only that the cost of trying would be the")
-        log("    same one float, which is what v2's CPU path could not say.")
+        log("  * WHETHER THE OA-GRAIN CRACK AND THE SHATTER LOOK RIGHT. X4")
+        log("    says the OA-grain warp costs the same one float and lands")
+        log("    exactly; X7 commits four frames of it. Whether 26,369 rings")
+        log("    cracking reads as a map refining or as noise, and whether the")
+        log("    whole-city shatter reads as intent or as a rendering fault,")
+        log("    are the questions those frames exist to be judged on. The")
+        log("    measurement beside them is only how much of the picture moves.")
+        log("  * whether the shatter should get a DEEPER inset when zoomed out.")
+        log("    At the default view the crack moves 5.8% of the frame against")
+        log("    15.4% at zoom 12.5, on the same 0.08 displacement — it is")
+        log("    fainter, as expected, because the gaps are sub-pixel over much")
+        log("    of the city. Nothing here implements a zoom-scaled inset; the")
+        log("    two readings are the evidence for deciding whether to.")
+        log("  * the ~400 ms main-thread block when a retarget repaints the")
+        log("    output-area basis, which is V1's cost and not the warp's, but")
+        log("    which the warp makes visible: X6's tape shows the gap between")
+        log("    two drawn frames. The crack no longer collapses across it")
+        log("    (the carry is clocked in frames now), but the FREEZE is real")
+        log("    and no assertion here says how it feels.")
         log("  * the borough outlines coming on at t=0 of a borough->ward switch.")
         log("    That is inherited production behaviour (the curtain does it too),")
         log("    and A4 measures against it rather than around it — but whether it")
