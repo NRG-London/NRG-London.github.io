@@ -157,8 +157,10 @@ WARP_PEAK = 0.38
 
 def full_crack(tier):
     """The uniform at a fully open crack on `tier` — what (1 - inset) meant
-    when there was only one inset to subtract from."""
-    return 1.0 - WARP_INSET[tier]
+    when there was only one inset to subtract from. Tolerant of a tier that is
+    not a warp basis, mirroring the page's own warpInset() fallback, so a tape
+    that caught an odd frame reports rather than raises."""
+    return 1.0 - WARP_INSET.get(tier, 0.92)
 # THE NUMBER THAT SEPARATES THE TWO VERDICTS. v2's CPU warp measured 34.5-46.0
 # fps at ward grain in this same harness, on this same machine, rebuilding an
 # 811 KB position buffer and re-tessellating 689 features every frame. V3's
@@ -169,18 +171,69 @@ MIN_WARP_FPS = 55.0
 # The most of a full crack that may disappear between two consecutive DRAWN
 # frames during a retarget. The carry exists so that an interrupt blends the old
 # crack into the new envelope instead of dropping it, and this is the number
-# that says whether it worked: 0.03 is well above the steepest the blend itself
-# reaches (~0.016 on a 16 ms frame) and well below the collapse it was written
-# to catch (0.0659 in one 4 ms frame, measured on the build that clocked the
-# carry from the envelope's t0 rather than from its first drawn frame).
+# that says whether it worked.
 #
-# AN ABSOLUTE LIMIT, DELIBERATELY, and it did not move when the insets went per
-# tier. Both legs that gate on it interrupt a crack that is open on the WARD
-# basis, whose 0.08 is unchanged, so the blend it bounds is the same blend. X6
-# then hands over to the output areas, where the envelope is 0.20 deep — the
-# limit is stricter there in proportion, which is the right direction for a gate
-# whose claim is "no frame collapses the crack". See X6.
-X6_DROP_LIMIT = 0.03
+# A SHARE OF THE ARM'S OWN CRACK DEPTH, NOT AN ABSOLUTE, and the derivation is
+# the reason — put here so that the next inset change cannot silently break it:
+#
+#   HONEST WORST CASE. The carry blends a crack of depth D to zero over
+#   RELEASE_MS = 180 ms of accumulated DRAWN-FRAME time, and no single frame may
+#   advance that by more than CARRY_STEP_MS = 33 ms. So the steepest fall a
+#   CORRECT frame can show is D * 33/180 = 0.183 * D.
+#   THE DEFECT. A collapse puts the crack to zero in one frame: 1.000 * D.
+#
+# 0.375 sits between them, and it is the ratio the gate has always had: the old
+# absolute 0.03 was set when 0.08 was the only depth there was, and 0.03/0.08 is
+# 0.375 exactly. Keeping the RATIO keeps the margin on both sides at every
+# depth — 0.183 D << 0.375 D << 1.000 D.
+#
+# WHY IT COULD NOT STAY ABSOLUTE. With per-tier insets the output areas crack to
+# 0.20, where an honest frame may legitimately fall 0.183 * 0.20 = 0.037 — ABOVE
+# the old 0.03. The gate would have failed correct behaviour on a slow machine.
+# The depth is read from WARP_INSET, the same map W2 gates key by key, so the
+# two can never drift apart. The measured defect this was written to catch was
+# 0.0659 in one 4 ms frame on a 0.08 crack — 0.82 of the depth, still caught.
+DROP_LIMIT_FRAC = 0.375
+
+
+def drop_limit(tier):
+    """The most of `tier`'s full crack that may vanish in one drawn frame."""
+    return DROP_LIMIT_FRAC * full_crack(tier)
+
+
+def worst_drop(rows):
+    """The worst one-frame fall RELATIVE TO WHAT ITS OWN ARM ALLOWS.
+
+    `rows` are (page clock, basis tier, uniform) per drawn frame. Returns
+    (fall, basis, that basis's limit, fall/limit, page clock).
+
+    Judged per basis because the arms of a basis change no longer crack to the
+    same depth: 0.08 on the wards, 0.20 on the output areas. Ranking by the
+    RATIO rather than by the absolute fall is the point — a 0.05 fall is fine on
+    an OA arm (limit 0.075) and a collapse on a ward arm (limit 0.03), and only
+    the ratio says which one happened.
+
+    Where a frame pair STRADDLES the hand-over the deeper of the two bases is
+    used: the swap itself legitimately moves the uniform between two envelopes
+    of different depth, and the carry is what covers it, so charging that one
+    frame the shallower limit would fail correct behaviour. Only a drop from an
+    OPEN crack counts — the envelope's own heal ends at zero and the last step
+    of it is not a defect.
+    """
+    worst = (0.0, None, 0.0, 0.0, 0)
+    for i in range(1, len(rows)):
+        if float(rows[i - 1][2]) <= 0:
+            continue
+        d = float(rows[i - 1][2]) - float(rows[i][2])
+        if d <= 0:
+            continue
+        a, b = rows[i - 1][1], rows[i][1]
+        tier = a if full_crack(a) >= full_crack(b) else b
+        lim = drop_limit(tier)
+        ratio = (d / lim) if lim > 0 else float("inf")
+        if ratio > worst[3]:
+            worst = (d, tier, lim, ratio, rows[i][0])
+    return worst
 # X8 stages the stall rather than waiting for one: a morph cut to X8_DUR and the
 # main thread blocked for X8_BLOCK, which is longer, so the envelope ends while
 # nothing is being drawn and the interrupt's blend is still owed in full. The
@@ -2163,11 +2216,11 @@ def main():
         # collapse looks like from the reader's chair: consecutive samples are
         # consecutive DRAWN frames, so a big fall between two of them is a fall
         # the eye sees whole, however long the gap between them was.
-        x6_drop, x6_drop_at = 0.0, 0
-        for i in range(1, len(x6_tape)):
-            d = x6_tape[i - 1][2] - x6_tape[i][2]
-            if d > x6_drop:
-                x6_drop, x6_drop_at = d, x6_tape[i][0]
+        # The tape's rows are [t, WARP_TIER, amount, ...], which is exactly
+        # what worst_drop wants: this leg spans ward (0.08 deep) and oa (0.20
+        # deep) and they no longer share a limit.
+        (x6_drop, x6_drop_tier, x6_drop_lim, x6_drop_ratio,
+         x6_drop_at) = worst_drop(x6_tape)
         x6_gap = max([x6_tape[i][0] - x6_tape[i - 1][0]
                       for i in range(1, len(x6_tape))] or [0])
         log("     before: basis %r uniform %.5f" % (x6_pre.get("wtier"),
@@ -2220,7 +2273,8 @@ def main():
               window.__T8 = [];
               (function s() {
                 if (window.__T8.length > 400) return;
-                window.__T8.push([Math.round(performance.now()), WARP.amount]);
+                window.__T8.push([Math.round(performance.now()), WARP_TIER,
+                                  WARP.amount]);
                 requestAnimationFrame(s);
               })(); 0""")
             amt = n.js("WARP.amount")
@@ -2235,11 +2289,9 @@ def main():
                 tape = json.loads(n.js("JSON.stringify(window.__T8)") or "[]")
             except Exception:
                 tape = []
-            drop, drop_at = 0.0, 0
-            for i in range(1, len(tape)):
-                d = tape[i - 1][1] - tape[i][1]
-                if d > drop:
-                    drop, drop_at = d, tape[i][0]
+            # Ward throughout (borough -> ward, then ward -> borough), so this
+            # arm's limit is ward's and is unchanged by the per-tier insets.
+            drop, drop_tier, drop_lim, drop_ratio, drop_at = worst_drop(tape)
             gap = max([tape[i][0] - tape[i - 1][0]
                        for i in range(1, len(tape))] or [0])
             time.sleep(SETTLE)
@@ -2250,10 +2302,13 @@ def main():
             log("     crack %.5f at the click; envelope %d ms, block %d ms, "
                 "longest gap between drawn frames %d ms"
                 % (float(amt or 0), X8_DUR, X8_BLOCK, gap))
-            log("     steepest one-frame fall %.5f of a %.5f crack, at t=%d ms"
-                % (drop, full_crack("ward"), drop_at))
+            log("     steepest one-frame fall %.5f on the %s basis, %.0f%% of "
+                "its %.5f limit (%.3f of a %.5f crack), at t=%d ms"
+                % (drop, drop_tier, 100 * drop_ratio, drop_lim,
+                   DROP_LIMIT_FRAC, full_crack(drop_tier), drop_at))
             log("     log: %s" % json.dumps(mt2.get("log")))
             return {"ok": ok, "idle": idle, "drop": drop, "gap": gap,
+                    "ratio": drop_ratio, "tier": drop_tier, "lim": drop_lim,
                     "amt": float(amt or 0), "log": mt2.get("log")}
 
         x8 = stall_leg("X8 a stall past the end of the envelope",
@@ -3085,7 +3140,7 @@ def main():
         x6_carried = float(x6_pre.get("warp") or 0) > 0
         x6_kept = x6_switch >= 0 and x6_dip > 0
         x6_froze = len(x6_frozen_live) == len(x6_seed_frames)
-        x6_nocollapse = x6_drop <= X6_DROP_LIMIT
+        x6_nocollapse = x6_drop_ratio <= 1.0
         log("     %s the crack really was open on the ward layer when the "
             "second pill was clicked (%.5f)"
             % ("pass" if x6_carried else "FAIL", float(x6_pre.get("warp") or 0)))
@@ -3104,15 +3159,27 @@ def main():
         log("        place this page promises there is never one.")
         # THIS LEG SPANS TWO BASES and they no longer crack to the same depth:
         # it interrupts a ward crack (0.08 full) with a shatter that continues
-        # on the output areas (0.20 full), so both are named rather than one
-        # standing in for the other.
+        # on the output areas (0.20 full). Every fall is charged to the basis it
+        # happened on, and the worst is the worst RELATIVE TO THAT — see
+        # worst_drop and DROP_LIMIT_FRAC.
         log("     %s and NO FRAME COLLAPSES THE CRACK: the steepest one-frame "
-            "fall anywhere in the hand-over is %.5f, against a full crack of "
-            "%.5f on the wards it leaves and %.5f on the output areas it moves "
-            "to (limit %.3f), at t=%d ms"
-            % ("pass" if x6_nocollapse else "FAIL", x6_drop,
-               full_crack("ward"), full_crack("oa"),
-               X6_DROP_LIMIT, x6_drop_at))
+            "fall anywhere in the hand-over is %.5f, on the %s basis, against a "
+            "limit of %.5f there (%.0f%% of it), at t=%d ms"
+            % ("pass" if x6_nocollapse else "FAIL", x6_drop, x6_drop_tier,
+               x6_drop_lim, 100 * x6_drop_ratio, x6_drop_at))
+        log("        THE LIMIT IS A SHARE OF THE ARM'S OWN CRACK — %.3f of it,"
+            % DROP_LIMIT_FRAC)
+        log("        so ward %.5f (of a %.5f crack) and oa %.5f (of %.5f)."
+            % (drop_limit("ward"), full_crack("ward"),
+               drop_limit("oa"), full_crack("oa")))
+        log("        AN ABSOLUTE LIMIT COULD NOT SURVIVE PER-TIER INSETS. The")
+        log("        carry blends over 180 ms of drawn-frame time capped at")
+        log("        33 ms a frame, so an HONEST frame may fall 0.183 of the")
+        log("        depth: 0.0147 on the wards, but 0.0367 on the output")
+        log("        areas — above the 0.03 this gate used to hold absolutely,")
+        log("        which would have failed correct behaviour on a slow")
+        log("        machine. A collapse is 1.000 of the depth and is still")
+        log("        caught with room. See DROP_LIMIT_FRAC for the derivation.")
         log("        THIS GATE CAUGHT A REAL ONE, and it is the reason the")
         log("        carry is now clocked in frames rather than in wall time.")
         log("        Repainting the output-area basis for the retarget blocks")
@@ -3149,18 +3216,25 @@ def main():
                            log)
         x8_staged = x8["gap"] >= X8_BLOCK * 0.8 and x8c["gap"] >= X8_BLOCK * 0.8
         x8_open = x8["amt"] > 0 and x8c["amt"] > 0
-        x8_ok = x8["drop"] <= X6_DROP_LIMIT
-        x8_ctl = x8c["drop"] >= X6_DROP_LIMIT
+        # Both arms run on the ward basis throughout, so both are judged
+        # against ward's limit — unchanged at 0.03 by the per-tier insets, since
+        # 0.375 * 0.08 is exactly what the absolute used to be.
+        x8_ok = x8["ratio"] <= 1.0
+        x8_ctl = x8c["ratio"] >= 1.0
         log("     %s the stall was really staged: %d ms and %d ms with nothing "
             "drawn, against a %d ms envelope"
             % ("pass" if x8_staged else "FAIL", x8["gap"], x8c["gap"], X8_DUR))
         log("     %s and a full crack really was open when the second pill was "
             "clicked (%.5f, %.5f)"
             % ("pass" if x8_open else "FAIL", x8["amt"], x8c["amt"]))
-        log("     %s FIXED    steepest one-frame fall %.5f  (limit %.3f)"
-            % ("pass" if x8_ok else "FAIL", x8["drop"], X6_DROP_LIMIT))
-        log("     %s CONTROL  steepest one-frame fall %.5f  (floor %.3f)"
-            % ("pass" if x8_ctl else "FAIL", x8c["drop"], X6_DROP_LIMIT))
+        log("     %s FIXED    steepest one-frame fall %.5f on %s  (limit "
+            "%.5f, %.0f%% of it)"
+            % ("pass" if x8_ok else "FAIL", x8["drop"], x8["tier"],
+               x8["lim"], 100 * x8["ratio"]))
+        log("     %s CONTROL  steepest one-frame fall %.5f on %s  (floor "
+            "%.5f, %.0f%% of it)"
+            % ("pass" if x8_ctl else "FAIL", x8c["drop"], x8c["tier"],
+               x8c["lim"], 100 * x8c["ratio"]))
         log("     THE CONTROL IS THE ASSERTION THAT THIS PROBE CAN FAIL, and")
         log("     unlike the standing concern about W5 and W6 it is measured on")
         log("     every run rather than argued. Under ?carry=wall the crack")
