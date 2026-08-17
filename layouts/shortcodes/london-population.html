@@ -1,10 +1,12 @@
 {{- /*
-  London Population — embeds the deck.gl 3D census map: 54 measures across 8
+  London Population — embeds the deck.gl 3D census map: 62 measures across 9
   thematic groups, over six selectable area types — Assembly seats, boroughs,
   constituencies, wards, and census neighbourhoods refining to 26,369 output
-  areas as you zoom in — at BOTH the 2021 and 2011 censuses (48 of the 54),
+  areas as you zoom in — at BOTH the 2021 and 2011 censuses (57 of the 62),
   with a change view between them. 2011 is counted on 2021 boundaries, so a
-  year switch changes the numbers and never the shapes.
+  year switch changes the numbers and never the shapes. Since Aug 2026 the
+  area-type switch is animated by the crack morph (see the london_population
+  project's DEPLOY_NOTES §§8-9; ?warp=0 = value morph, ?morph=0 = curtain).
 
   Sibling of crime-skyline / crime-hotspots / yorkshire-hotspots — same frame,
   fallback and full-screen machinery. One important difference:
