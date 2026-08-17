@@ -144,9 +144,21 @@ MID_DUR = 3000           # a deliberately slow morph, for the mid-flight frames
 # The page's own warp defaults, mirrored so the driver can stage a reference at
 # exactly the displacement a live frame is carrying. Changing them on the page
 # without changing them here would make W2's staged references the wrong shape,
-# so W2 reads both back off the page and asserts they agree.
-WARP_INSET = 0.92
+# so W2 reads both back off the page and asserts they agree — the WHOLE map,
+# key by key, not just the tier the leg happens to run on.
+#
+# PER BASIS TIER, because the gap a crack opens is proportional to the ring it
+# opens around: one scalar makes a borough gape and an output area barely show.
+# Only these four tiers ever carry the extension (WARP_BASIS_TIERS derives from
+# the policy table to exactly this set), so this dict is the whole policy.
+WARP_INSET = {"oa": 0.80, "lsoa": 0.92, "ward": 0.92, "borough": 0.96}
 WARP_PEAK = 0.38
+
+
+def full_crack(tier):
+    """The uniform at a fully open crack on `tier` — what (1 - inset) meant
+    when there was only one inset to subtract from."""
+    return 1.0 - WARP_INSET[tier]
 # THE NUMBER THAT SEPARATES THE TWO VERDICTS. v2's CPU warp measured 34.5-46.0
 # fps at ward grain in this same harness, on this same machine, rebuilding an
 # 811 KB position buffer and re-tessellating 689 features every frame. V3's
@@ -154,14 +166,20 @@ WARP_PEAK = 0.38
 # is met with room to spare by the GPU one, so it is a discriminating gate
 # rather than a decorative one.
 MIN_WARP_FPS = 55.0
-# The most of a full crack (1 - WARP_INSET = 0.08) that may disappear between
-# two consecutive DRAWN frames during a retarget. The carry exists so that an
-# interrupt blends the old crack into the new envelope instead of dropping it,
-# and this is the number that says whether it worked: 0.03 is well above the
-# steepest the blend itself reaches (~0.016 on a 16 ms frame) and well below
-# the collapse it was written to catch (0.0659 in one 4 ms frame, measured on
-# the build that clocked the carry from the envelope's t0 rather than from its
-# first drawn frame). See X6.
+# The most of a full crack that may disappear between two consecutive DRAWN
+# frames during a retarget. The carry exists so that an interrupt blends the old
+# crack into the new envelope instead of dropping it, and this is the number
+# that says whether it worked: 0.03 is well above the steepest the blend itself
+# reaches (~0.016 on a 16 ms frame) and well below the collapse it was written
+# to catch (0.0659 in one 4 ms frame, measured on the build that clocked the
+# carry from the envelope's t0 rather than from its first drawn frame).
+#
+# AN ABSOLUTE LIMIT, DELIBERATELY, and it did not move when the insets went per
+# tier. Both legs that gate on it interrupt a crack that is open on the WARD
+# basis, whose 0.08 is unchanged, so the blend it bounds is the same blend. X6
+# then hands over to the output areas, where the envelope is 0.20 deep — the
+# limit is stricter there in proportion, which is the right direction for a gate
+# whose claim is "no frame collapses the crack". See X6.
 X6_DROP_LIMIT = 0.03
 # X8 stages the stall rather than waiting for one: a morph cut to X8_DUR and the
 # main thread blocked for X8_BLOCK, which is longer, so the envelope ends while
@@ -1547,7 +1565,9 @@ def main():
         # The CPU ground truth: v2's warp in Float64, applied to the position
         # buffer BEFORE the first draw, so deck.gl tessellates and projects the
         # inset geography itself and nothing about the picture is the shader's.
-        nS3 = Nav(page, base, "?tier=ward&cpuwarp=%s&highlight=off" % WARP_INSET)
+        # ?tier=ward, so the inset that has to be reproduced is the WARD one.
+        nS3 = Nav(page, base,
+                  "?tier=ward&cpuwarp=%s&highlight=off" % WARP_INSET["ward"])
         got, st, mt = nS3.poll(morph_capable, timeout=180)
         ok_s &= check(nS3, st, got, "S cpu truth")
         time.sleep(SETTLE)
@@ -1609,7 +1629,11 @@ def main():
         n_w2 = Nav(page, base, "?tier=borough&morphdur=%d&highlight=off" % slow)
         got, st, mt = n_w2.poll(morph_capable, timeout=180)
         ok_w2 = check(n_w2, st, got, "W2 boot")
-        w2_inset = n_w2.js("WARP_INSET")
+        # The WHOLE map, so the gate below is on the policy and not on the one
+        # tier this leg happens to crack; `w2_inset_now` is what the live basis
+        # (ward, for borough -> ward) is actually cracking at.
+        w2_inset = json.loads(n_w2.js("JSON.stringify(WARP_INSET)") or "{}")
+        w2_inset_now = float(n_w2.js("warpInset()") or 0)
         w2_peak = n_w2.js("WARP_PEAK")
         n_w2.set_area("ward")
         got, st, mt = n_w2.poll(logged("gesture"), timeout=60)
@@ -1621,7 +1645,7 @@ def main():
         a_after = n_w2.js("WARP.amount")
         (OUT / "w2_mid_peak.png").write_bytes(w2_mid)
         w2_amt = (float(a_before) + float(a_after)) / 2.0
-        w2_t = w2_amt / (1.0 - w2_inset) if w2_inset < 1 else 0.0
+        w2_t = w2_amt / (1.0 - w2_inset_now) if w2_inset_now < 1 else 0.0
         got, st, mt = n_w2.poll(done_morphing, timeout=120)
         ok_w2 &= check(n_w2, st, got, "W2 finalise")
         w2_beat = (mt.get("warp") or {})
@@ -1657,8 +1681,10 @@ def main():
         log("shot %-24s %-44s %5.1fs  %s"
             % ("w2_*.png", "W2 concurrency, sampled at the peak",
                time.time() - t0, "ok" if ok_w2 else "FAILED"))
-        log("     uniform %.5f -> morphT %.4f (inset %s, peak %s); log %s"
-            % (w2_amt, w2_t, w2_inset, w2_peak, json.dumps(w2_log)))
+        log("     uniform %.5f -> morphT %.4f (inset %s on the live basis, "
+            "map %s, peak %s); log %s"
+            % (w2_amt, w2_t, w2_inset_now, json.dumps(w2_inset, sort_keys=True),
+               w2_peak, json.dumps(w2_log)))
 
         # ---- W4. A zoom and an interrupt landing mid-warp.
         log("")
@@ -2225,7 +2251,7 @@ def main():
                 "longest gap between drawn frames %d ms"
                 % (float(amt or 0), X8_DUR, X8_BLOCK, gap))
             log("     steepest one-frame fall %.5f of a %.5f crack, at t=%d ms"
-                % (drop, 1 - WARP_INSET, drop_at))
+                % (drop, full_crack("ward"), drop_at))
             log("     log: %s" % json.dumps(mt2.get("log")))
             return {"ok": ok, "idle": idle, "drop": drop, "gap": gap,
                     "amt": float(amt or 0), "log": mt2.get("log")}
@@ -2642,7 +2668,8 @@ def main():
                           "S2 the SHADER warp reproduces a CPU warp of the same "
                           "geometry at inset %s — v2's warp in Float64, applied to "
                           "the position buffer before the first draw so deck.gl "
-                          "tessellates the inset geography itself" % WARP_INSET,
+                          "tessellates the inset geography itself"
+                          % WARP_INSET["ward"],
                           log)
         s_ink_cpu, s_ink_gpu = ink(OUT / "s_cpu_truth.png"), ink(OUT / "s_gpu_warp.png")
         log("     ink %.4f (CPU truth) vs %.4f (GPU warp); uniform at the shot %s"
@@ -2737,11 +2764,22 @@ def main():
             "references can be")
         log("     staged to match it: uniform %.5f, i.e. morphT %.4f of a "
             "1-%s crack."
-            % (w2_amt, w2_t, w2_inset))
-        w2_cfg_ok = (abs(float(w2_inset) - WARP_INSET) < 1e-9
+            % (w2_amt, w2_t, w2_inset_now))
+        # THE GATE IS ON THE WHOLE MAP, not on the tier this leg cracks. A
+        # per-tier inset that drifted on any of the four would leave staged
+        # references elsewhere in this file the wrong shape, and an assertion
+        # that only read the live basis could not see it.
+        w2_cfg_ok = (set(w2_inset) == set(WARP_INSET)
+                     and all(abs(float(w2_inset[k]) - WARP_INSET[k]) < 1e-9
+                             for k in WARP_INSET)
                      and abs(float(w2_peak) - WARP_PEAK) < 1e-9)
-        log("     %s the page's own inset/peak match this driver's (%s, %s)"
-            % ("pass" if w2_cfg_ok else "FAIL", w2_inset, w2_peak))
+        log("     %s the page's own inset MAP and peak match this driver's "
+            "(%s, peak %s)"
+            % ("pass" if w2_cfg_ok else "FAIL",
+               json.dumps(w2_inset, sort_keys=True), w2_peak))
+        if not w2_cfg_ok:
+            log("          driver holds %s, peak %s"
+                % (json.dumps(WARP_INSET, sort_keys=True), WARP_PEAK))
 
         A = OUT / "w2_ref_plateau_cracked.png"
         B = OUT / "w2_ref_ward_cracked.png"
@@ -2770,11 +2808,11 @@ def main():
         log("        from the same two states with the crack closed, so it "
             "belongs to the cracked")
         log("        family. A frame whose geometry had not moved could not.")
-        w2_amt_ok = w2_amt > 0.9 * (1.0 - float(w2_inset))
+        w2_amt_ok = w2_amt > 0.9 * (1.0 - w2_inset_now)
         log("     %s and the page reports the uniform at %.5f, %.1f%% of a full "
             "crack"
             % ("pass" if w2_amt_ok else "FAIL", w2_amt,
-               100 * w2_amt / max(1e-9, 1.0 - float(w2_inset))))
+               100 * w2_amt / max(1e-9, 1.0 - w2_inset_now)))
         w2_end_ok = compare(OUT / "w_ref_ward.png", OUT / "w2_end.png",
                             "W2 and the gesture still lands exactly on the ward map",
                             log)
@@ -3064,11 +3102,17 @@ def main():
         log("        crack moves and reopen on the frame the output areas are")
         log("        revealed — a pop in the middle of a gesture, in the one")
         log("        place this page promises there is never one.")
+        # THIS LEG SPANS TWO BASES and they no longer crack to the same depth:
+        # it interrupts a ward crack (0.08 full) with a shatter that continues
+        # on the output areas (0.20 full), so both are named rather than one
+        # standing in for the other.
         log("     %s and NO FRAME COLLAPSES THE CRACK: the steepest one-frame "
-            "fall anywhere in the hand-over is %.5f of a %.5f crack (limit "
-            "%.3f), at t=%d ms"
+            "fall anywhere in the hand-over is %.5f, against a full crack of "
+            "%.5f on the wards it leaves and %.5f on the output areas it moves "
+            "to (limit %.3f), at t=%d ms"
             % ("pass" if x6_nocollapse else "FAIL", x6_drop,
-               (1 - WARP_INSET), X6_DROP_LIMIT, x6_drop_at))
+               full_crack("ward"), full_crack("oa"),
+               X6_DROP_LIMIT, x6_drop_at))
         log("        THIS GATE CAUGHT A REAL ONE, and it is the reason the")
         log("        carry is now clocked in frames rather than in wall time.")
         log("        Repainting the output-area basis for the retarget blocks")
@@ -3121,7 +3165,7 @@ def main():
         log("     unlike the standing concern about W5 and W6 it is measured on")
         log("     every run rather than argued. Under ?carry=wall the crack")
         log("     falls the WHOLE %.5f in one frame — the envelope reaches u=1"
-            % (1 - WARP_INSET))
+            % full_crack("ward"))
         log("     inside the block, finishes on the first frame it draws, and")
         log("     puts the uniform to zero with the entire 180 ms blend still")
         log("     owed. Both legs land on the borough map to the same tolerance,")
@@ -3156,10 +3200,15 @@ def main():
             "%d/255" % (mad_z125, frac_z125 * 100, PIXEL_DIFF))
         log("     ratio %.2fx more of the frame moves when zoomed in"
             % ((frac_z125 / frac_z10) if frac_z10 else float("nan")))
-        log("     THE OWNER ASKED WHETHER A ZOOM-SCALED INSET IS THE RIGHT")
-        log("     LEVER. Nothing here implements one; the two readings above")
-        log("     are the evidence for deciding, and the report carries the")
-        log("     reading of them.")
+        log("     THE INSETS ARE PER BASIS TIER, and the output areas are the")
+        log("     tier that moved: %.2f here against the 0.92 every basis used"
+            % WARP_INSET["oa"])
+        log("     to share, because a crack's gap is proportional to the ring")
+        log("     it opens around and an OA ring is small. The readings above")
+        log("     are that decision measured. A ZOOM-scaled inset is a")
+        log("     different lever and is still not implemented; these two")
+        log("     numbers remain the evidence for deciding whether it is")
+        log("     wanted on top of the per-tier map.")
         log("")
 
         # ---- THE INK GATE, over every committed frame
@@ -3210,7 +3259,9 @@ def main():
         log("    endpoints are exact; whether a 0.38 peak is the right place for")
         log("    the seams to be widest, and whether 750 ms is enough room for")
         log("    the whole shape, are eye questions. ?bench=1 gives a slider")
-        log("    straight onto the uniform for judging the inset by hand.")
+        log("    straight onto the uniform for judging the inset by hand; it")
+        log("    now drives the LIVE BASIS's entry in the per-tier map, so it")
+        log("    judges one tier at a time. ?s= still moves all four at once.")
         log("  * seam shimmer WHILE the crack is open, under rotation. The warp")
         log("    is a per-ring similarity transform so no normal changes, but")
         log("    whether the newly exposed side walls read as walls or as gaps")
@@ -3223,11 +3274,16 @@ def main():
         log("    are the questions those frames exist to be judged on. The")
         log("    measurement beside them is only how much of the picture moves.")
         log("  * whether the shatter should get a DEEPER inset when zoomed out.")
-        log("    At the default view the crack moves 5.8% of the frame against")
-        log("    15.4% at zoom 12.5, on the same 0.08 displacement — it is")
+        log("    At the default view the crack moves %.1f%% of the frame against"
+            % (frac_z10 * 100))
+        log("    %.1f%% at zoom 12.5, on the same %.2f displacement — it is"
+            % (frac_z125 * 100, full_crack("oa")))
         log("    fainter, as expected, because the gaps are sub-pixel over much")
-        log("    of the city. Nothing here implements a zoom-scaled inset; the")
-        log("    two readings are the evidence for deciding whether to.")
+        log("    of the city. THE INSETS ARE NOW PER BASIS TIER and the output")
+        log("    areas were deepened to 0.80 for exactly this reason, which")
+        log("    raises the whole-city reading; a ZOOM-scaled inset is still")
+        log("    not implemented, and these two readings remain the evidence")
+        log("    for deciding whether it is wanted on top.")
         log("  * the ~400 ms main-thread block when a retarget repaints the")
         log("    output-area basis, which is V1's cost and not the warp's, but")
         log("    which the warp makes visible: X6's tape shows the gap between")

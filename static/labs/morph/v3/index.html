@@ -440,7 +440,9 @@
       warp: typeof WARP === "undefined" ? null : {
         on: !!warpEnabled, beat: WARP.beat,
         amount: Math.round(WARP.amount * 100000) / 100000,
-        inset: WARP_INSET, peak: WARP_PEAK,
+        // `inset` is the whole per-tier map and `insetNow` the live basis's
+        // entry in it, so a driver can gate the policy and read the gesture.
+        inset: WARP_INSET, insetNow: warpInset(), peak: WARP_PEAK,
         fps: Math.round(WARP.fps * 10) / 10,
         worst: Math.round(WARP.worst * 10) / 10,
         frames: WARP.frames.length,
@@ -1108,10 +1110,41 @@
   // switch: it exists so the driver can show the defect and the fix in one run,
   // the same job ?ghost=0 does for the flicker. See runWarp and X8.
   var carryWall = params.get("carry") === "wall";
-  // How far a ring steps back at full crack. v2's default, judged by eye there.
-  var WARP_INSET = 0.92;
+  // HOW FAR A RING STEPS BACK AT FULL CRACK, PER BASIS TIER.
+  //
+  // One scalar cannot serve every basis, because THE GAP A CRACK OPENS IS
+  // PROPORTIONAL TO THE RING IT OPENS AROUND. At a single 0.92 a borough steps
+  // back by 8% OF A BOROUGH and the seams gape; an output area steps back by 8%
+  // of an output area and the crack is barely there. So the coarse bases are
+  // pulled towards 1 and the fine ones pushed away from it. The borough basis
+  // is the extreme case twice over — borough>gla also has little vertical
+  // movement to carry the eye, an Assembly seat being an average of 2-3 similar
+  // boroughs, which leaves the gap doing all the work — so its crack is halved,
+  // and the output areas' is deepened.
+  //
+  // Keyed by the tier the crack is RUNNING on. Only these four ever carry the
+  // extension: WARP_BASIS_TIERS derives from the policy table to exactly this
+  // set, so a fifth key here would be dead and a missing one unreachable.
+  var WARP_INSET = { oa: 0.80, lsoa: 0.92, ward: 0.92, borough: 0.96 };
+  // ?s= STAYS A GLOBAL LEVER and now overrides ALL FOUR TIERS at once, so "show
+  // me the whole page at inset x" is still one query string away. Setting one
+  // tier against the others is an edit above — the right friction for a
+  // decision that is made once and then lives in the file.
   var qInset = parseFloat(params.get("s"));
-  if (isFinite(qInset) && qInset > 0.5 && qInset <= 1) WARP_INSET = qInset;
+  if (isFinite(qInset) && qInset > 0.5 && qInset <= 1)
+    Object.keys(WARP_INSET).forEach(function (k) { WARP_INSET[k] = qInset; });
+  // The inset the LIVE basis cracks at. Every reader goes through here, so
+  // "which tier is this crack on" is answered in exactly one place. The
+  // fallback cannot be reached from the policy table and exists so that a
+  // hand-driven basis (a driver can set any tier) degrades to v2's number
+  // rather than to NaN.
+  function warpInset(t) {
+    // Guarded in the same spirit as the status node's typeof checks: an error
+    // thrown above this line leaves the map unassigned while setMeta still runs.
+    if (!WARP_INSET) return 0.92;
+    var v = WARP_INSET[t === undefined || t === null ? WARP_TIER : t];
+    return v === undefined ? 0.92 : v;
+  }
   // Where the crack is widest, as a fraction of the gesture. See warpEnv.
   var WARP_PEAK = 0.38;
   var qPeak = parseFloat(params.get("wk"));
@@ -1520,7 +1553,7 @@
         if (done) done();
         return;
       }
-      var want = u >= 1 ? 0 : (1 - WARP_INSET) * warpEnv(u);
+      var want = u >= 1 ? 0 : (1 - warpInset()) * warpEnv(u);
       if (carry > want) want = carry;
       setWarp(want);
       WARP.raf = requestAnimationFrame(tick);
@@ -4371,7 +4404,7 @@
     // crack and a scrub to 0 is exactly its endpoints.
     setWarpT: function (t) {
       stopWarp();
-      setWarp((1 - WARP_INSET) * Math.max(0, Math.min(1, +t || 0)));
+      setWarp((1 - warpInset()) * Math.max(0, Math.min(1, +t || 0)));
       return WARP.amount;
     },
     // The raw uniform, for the endpoint-identity assertions.
@@ -4391,9 +4424,11 @@
       return {
         on: warpEnabled && !!WARP_EXT, err: warpExtErr,
         tier: WARP_TIER, parent: WARP_PARENT,
-        inset: WARP_INSET, peak: WARP_PEAK, geom: warpGeom,
+        // The whole map, so the driver can gate every tier and not just the
+        // one that happens to be live, plus the live basis's own value.
+        inset: WARP_INSET, insetNow: warpInset(), peak: WARP_PEAK, geom: warpGeom,
         amount: WARP.amount,
-        t: WARP_INSET < 1 ? WARP.amount / (1 - WARP_INSET) : 0,
+        t: warpInset() < 1 ? WARP.amount / (1 - warpInset()) : 0,
         live: !!L,
         attached: !!(L && L.props && L.props.extensions &&
                      L.props.extensions.length > 0),
@@ -4487,16 +4522,19 @@
     var bTv = document.getElementById("benchTv");
     var bSv = document.getElementById("benchSv");
     var bInfo = document.getElementById("benchInfo");
-    bS.value = String(WARP_INSET);
+    // The slider drives the LIVE BASIS's entry in the map, so dragging it after
+    // a __v3.setWarpBasis() judges that tier and leaves the other three alone —
+    // which is the whole point of the map being per tier.
+    bS.value = String(warpInset());
     var qT = parseFloat(params.get("wt"));
     if (isFinite(qT)) bT.value = String(Math.max(0, Math.min(1, qT)));
     function benchApply() {
-      WARP_INSET = parseFloat(bS.value);
-      bSv.textContent = WARP_INSET.toFixed(3);
+      WARP_INSET[WARP_TIER] = parseFloat(bS.value);
+      bSv.textContent = warpInset().toFixed(3);
       var t = parseFloat(bT.value);
       bTv.textContent = t.toFixed(3);
       stopWarp();
-      setWarp((1 - WARP_INSET) * t);
+      setWarp((1 - warpInset()) * t);
       bInfo.textContent =
         "amount " + WARP.amount.toFixed(5) + "   tier " + WARP_TIER +
         "   ext " + (warpEnabled && WARP_EXT ? "on" : "OFF" +
@@ -4523,7 +4561,7 @@
       (switching ? "  switching" : "") + "\n" +
       "warp " + (warpEnabled && WARP_EXT ? "on" : "OFF") +
       "  amount " + WARP.amount.toFixed(4) +
-      "  inset " + WARP_INSET.toFixed(2) +
+      "  inset " + warpInset().toFixed(2) +
       (WARP.fps ? "  beat " + WARP.beat + " " + WARP.fps.toFixed(1) + " fps" +
                   " worst " + WARP.worst.toFixed(1) : "") + "\n" +
       MORPH_LOG.join("  ");
@@ -4669,7 +4707,7 @@
       }
       if (isFinite(wt)) {
         stopWarp();
-        setWarp((1 - WARP_INSET) * Math.max(0, Math.min(1, wt)));
+        setWarp((1 - warpInset()) * Math.max(0, Math.min(1, wt)));
       }
       stageDone = true;
       setStatus();

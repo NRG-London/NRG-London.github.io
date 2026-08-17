@@ -840,6 +840,17 @@ larger share of each area's *visible* footprint, and at 0.08 the plateau silhoue
 visibly nibbled at the city edge. The honest position is that the z10 shatter is
 legible-but-subtle and the decision is the owner's.
 
+> **Addendum, 2026-08-17 — the owner decided, and the numbers above are superseded.**
+> The lever chosen was not zoom-scaling but a **per-basis-tier inset map**, on the reasoning
+> that a crack's gap is proportional to the ring it opens around: `oa 0.80, lsoa 0.92,
+> ward 0.92, borough 0.96`. Boroughs gaped at a shared 0.92 and their crack is halved
+> (borough→gla also has little vertical movement to carry the eye, an Assembly seat being
+> 2–3 similar boroughs); the output areas were deepened to 0.80 for exactly the subtlety this
+> section measured. Re-measured on the same two frames: whole city **MAD 3.0322/255, 11.216%**
+> (was 5.81%), zoom 12.5 **MAD 11.8406/255, 30.468%** (was 15.40%), ratio 2.72x. `?s=` remains
+> a global lever and now overrides all four tiers at once. A zoom-scaled inset is still **not**
+> implemented. Everything else in this report stands as measured at the single 0.92.
+
 ## Deviations
 
 1. **Centroids are built when a tier's layer is first BUILT, not when it first warps.** The
