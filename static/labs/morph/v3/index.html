@@ -1103,6 +1103,11 @@
   // nothing snaps. Cleared by retireWarp() and by every handBack(). See
   // setWarpBasis.
   var WARP_FROZEN = {};
+  // ?carry=wall puts the interrupt blend back on the wall clock, which is where
+  // it was until a stall was measured stepping straight over it. Not a reader
+  // switch: it exists so the driver can show the defect and the fix in one run,
+  // the same job ?ghost=0 does for the flicker. See runWarp and X8.
+  var carryWall = params.get("carry") === "wall";
   // How far a ring steps back at full crack. v2's default, judged by eye there.
   var WARP_INSET = 0.92;
   var qInset = parseFloat(params.get("s"));
@@ -1459,18 +1464,52 @@
     // timestamp), so a stall carries both forward together and the crack stays
     // in step with the values. Only the carry — which exists to cover exactly
     // this kind of discontinuity — is measured in frames.
-    var carryT0 = 0;
+    //
+    // AND IT IS ACCUMULATED, NOT DIFFERENCED FROM THE FIRST FRAME. Clocking it
+    // as `now - carryT0` fixes the stall BEFORE the blend and not a stall
+    // INSIDE it: one 400 ms gap between the second and third drawn frames would
+    // step straight over the rest of the window and drop whatever was left in
+    // one frame. Advancing it by the frame interval, capped, means the blend
+    // always gets its shape in DRAWN FRAMES — at least
+    // RELEASE_MS / CARRY_STEP_MS of them, however badly the machine is
+    // behaving. `?carry=wall` restores the old clock so the driver can assert
+    // the defect in both directions in one run; see X8.
+    var carryMs = 0, carryStarted = false;
     function tick() {
       if (tok !== WARP.token) { WARP.raf = null; return; }
       var now = performance.now();
+      var dt = last ? now - last : 0;
       if (last) {
-        var dt = now - last;
         WARP.frames.push(dt);
         if (dt > WARP.worst) WARP.worst = dt;
       }
       last = now;
+      // The carry first, because whether the envelope may FINISH depends on it.
+      var carry = 0;
+      if (a0 > 0 && carryMs < RELEASE_MS) {
+        if (carryStarted) {
+          carryMs += carryWall ? dt : Math.min(dt, CARRY_STEP_MS);
+        }
+        carryStarted = true;
+        if (carryMs < RELEASE_MS) {
+          carry = a0 * (1 - easeCubicInOut(carryMs / RELEASE_MS));
+        }
+      }
       var u = dur > 0 ? (now - WARP.t0) / dur : 1;
-      if (u >= 1) {
+      // THE ENVELOPE MAY BE OVER AND THE CARRY STILL OWE FRAMES, and that is
+      // not a corner case at the production duration: the carry starts on the
+      // first frame DRAWN after the retarget, so a stall longer than what is
+      // left of the gesture leaves the whole 180 ms blend outstanding at u = 1.
+      // Ending there would put the crack from a0 to 0 in one frame — precisely
+      // the artefact the carry exists to remove, arriving through the door
+      // marked "finished". So the loop stays up until the blend has been seen.
+      // It cannot run away: the blend is bounded by RELEASE_MS of accumulated
+      // frame time, the morph's own finalise waits for it through whenHealed()
+      // and gives up after a bounded wait, and an interrupt takes the token.
+      // `carryWall` restores BOTH halves of what this fix changed — the clock
+      // and this ordering — because a control that only restored one of them
+      // would not reproduce the defect and would quietly stop being a control.
+      if (u >= 1 && (carryWall || carry <= 0)) {
         setWarp(0);
         WARP.raf = null;
         if (WARP.frames.length) {
@@ -1481,15 +1520,8 @@
         if (done) done();
         return;
       }
-      var want = (1 - WARP_INSET) * warpEnv(u);
-      if (a0 > 0) {
-        if (!carryT0) carryT0 = now;
-        var cu = (now - carryT0) / RELEASE_MS;
-        if (cu < 1) {
-          var carry = a0 * (1 - easeCubicInOut(cu));
-          if (carry > want) want = carry;
-        }
-      }
+      var want = u >= 1 ? 0 : (1 - WARP_INSET) * warpEnv(u);
+      if (carry > want) want = carry;
       setWarp(want);
       WARP.raf = requestAnimationFrame(tick);
     }
@@ -1522,6 +1554,41 @@
     WARP.beat = "";
   }
 
+  // WAIT FOR THE CRACK TO BE SHUT BEFORE HANDING OVER, and give up if it will
+  // not shut.
+  //
+  // Every finalise in this file rests on one sentence: the envelope has already
+  // put the uniform back to exactly zero and had a committed frame to do it on,
+  // so the geometry under the hand-off is the true geography bit for bit. That
+  // was guaranteed by arithmetic — the envelope's span and the finalise timer
+  // were both MORPH_DUR — until the carry was allowed to outlive the envelope
+  // (see runWarp). It can now owe up to RELEASE_MS of drawn frames at the
+  // moment the timer fires, and a hand-off taken then would swap a cracked
+  // basis for an uncracked destination in one frame.
+  //
+  // So the timer asks rather than assumes. THE WAIT IS ON A TIMER AND NOT ON
+  // rAF: this must complete in a background tab, where requestAnimationFrame
+  // does not run at all and the envelope therefore cannot progress. If the
+  // crack has not shut within RELEASE_MS plus a frame or two, it is closed by
+  // hand and the morph finishes — one snapped frame on a page nobody is
+  // looking at, against a morph stuck for the life of the tab.
+  function whenHealed(tok, cb) {
+    var deadline = performance.now() + RELEASE_MS + 120;
+    function check() {
+      if (tok !== MORPH.token) return;
+      if (WARP.amount <= 0) { cb(); return; }
+      if (performance.now() >= deadline) {
+        stopWarp();
+        setWarp(0);
+        logPhase("healwait");
+        cb();
+        return;
+      }
+      MORPH.timer = setTimeout(check, 16);
+    }
+    check();
+  }
+
   // Hand the crack from one basis to another WITHOUT retiring the gesture: the
   // tier the crack is leaving keeps its frozen displacement (setWarpBasis) but
   // must not keep the morph's own state — a stale `dur`/`ease` would run the
@@ -1536,17 +1603,30 @@
 
   // Close whatever crack is open, over RELEASE_MS, and land on exactly zero.
   // Used by every path that retires a morph without finishing it.
+  //
+  // Clocked in DRAWN-FRAME TIME for the same reason runWarp's carry is, and it
+  // is the same ease serving the same purpose: a stall that eats this window
+  // would close the crack in one visible step, which is the thing this function
+  // exists to avoid doing. No single frame may advance it by more than
+  // CARRY_STEP_MS, so the close is always seen across at least
+  // RELEASE_MS / CARRY_STEP_MS frames.
   var RELEASE_MS = 180;
+  // Two frames at 60 Hz. Large enough that a healthy machine closes the crack
+  // in RELEASE_MS of wall clock to within a frame, small enough that a stalling
+  // one still gets ~6 frames of blend rather than a step.
+  var CARRY_STEP_MS = 33;
   function releaseWarp() {
     stopWarp();
     var a0 = WARP.amount;
     if (!a0) { setWarp(0); return; }
-    var tok = WARP.token, t0 = performance.now();
+    var tok = WARP.token, last = 0, ms = 0;
     function back() {
       if (tok !== WARP.token) { WARP.raf = null; return; }
-      var u = (performance.now() - t0) / RELEASE_MS;
-      if (u >= 1) { setWarp(0); WARP.raf = null; return; }
-      setWarp(a0 * (1 - easeCubicInOut(u)));
+      var now = performance.now();
+      if (last) ms += carryWall ? (now - last) : Math.min(now - last, CARRY_STEP_MS);
+      last = now;
+      if (ms >= RELEASE_MS) { setWarp(0); WARP.raf = null; return; }
+      setWarp(a0 * (1 - easeCubicInOut(ms / RELEASE_MS)));
       WARP.raf = requestAnimationFrame(back);
     }
     WARP.raf = requestAnimationFrame(back);
@@ -1995,12 +2075,29 @@
   WARP_POLICY_TABLE.forEach(function (r) {
     WARP_POLICY[r[0] + ">" + r[1]] = r[2];
   });
+  // The table's own modes, before any override, so a promotion can be checked
+  // against what the pair really is rather than against what it has been set to.
+  var WARP_POLICY_BUILT = {};
+  Object.keys(WARP_POLICY).forEach(function (k) { WARP_POLICY_BUILT[k] = WARP_POLICY[k]; });
   var WARP_MODE_Q = params.get("warpmode") || "";
   WARP_MODE_Q.split(",").forEach(function (s) {
     if (!s) return;
     var bits = s.split(":"), pair = bits[0], mode = bits[1];
     if (!(pair in WARP_POLICY) || ["finer", "oa", "none"].indexOf(mode) < 0) {
       noteError("?warpmode: cannot read '" + s + "'");
+      return;
+    }
+    // DEMOTION IS ALWAYS LEGAL; PROMOTION TO "finer" IS NOT. "none" needs
+    // nothing and "oa" needs only the basis every tier can be drawn on, but
+    // "finer" asserts that one of the pair NESTS INSIDE the other, and only the
+    // table knows which pairs do. Left unchecked, ?warpmode=pcon>gla:finer
+    // would be accepted here and die later inside ensureXwalk — a page error
+    // and a silent fall back to V1 on the first click, which is a much worse
+    // place to find out than the query string.
+    if (mode === "finer" && WARP_POLICY_BUILT[pair] !== "finer") {
+      noteError("?warpmode: " + pair + " cannot be promoted to \"finer\" — " +
+                "those tiers do not nest (the table has it as \"" +
+                WARP_POLICY_BUILT[pair] + "\")");
       return;
     }
     WARP_POLICY[pair] = mode;
@@ -3204,6 +3301,16 @@
 
       MORPH.timer = setTimeout(function () {
         if (tok !== MORPH.token) return;
+        // A SHATTER'S CARRY CAN OUTLIVE ITS ENVELOPE too, and the hand-off
+        // below is the same invisible exchange resting on the same true
+        // geometry. Plain V1 morphs never wait, because nothing is open.
+        if (shatter) { whenHealed(tok, finaliseNow); return; }
+        finaliseNow();
+      }, MORPH_DUR + 60);
+      setStatus();
+    }
+
+    function finaliseNow() {
         // ---- FINALISE, in two commits.
         //
         // The destination is snapped AGAIN here. It was painted at ANIMATE, but
@@ -3240,15 +3347,17 @@
         } else {
           handBack();
         }
-      }, MORPH_DUR + 60);
-      setStatus();
     }
 
     // Hand back to the real layer. The basis is holding the identical picture,
     // and the destination has had its warm commit, so this is invisible.
     function handBack() {
       morphBasis = null;
-      if (shatter) { B_WARP = null; clearFrozen(); }
+      // `beat` is cleared on a normal finish as well as by retireWarp(), so an
+      // idle page never reports a beat it is not running. It was left standing
+      // before, which made "what is the warp doing?" answerable only by reading
+      // the uniform beside it.
+      if (shatter) { B_WARP = null; clearFrozen(); WARP.beat = ""; }
       if (toKey !== BASIS && READY[toKey]) READY[toKey].snap = true;
       B.dur = null;
       B.ease = null;
@@ -3388,7 +3497,9 @@
 
       MORPH.timer = setTimeout(function () {
         if (tok !== MORPH.token) return;
-        finalise();
+        // Not straight into finalise: an interrupt's carry can outlive the
+        // envelope, and the hand-off below is only invisible on true geometry.
+        whenHealed(tok, finalise);
       }, MORPH_DUR + 60);
       setStatus();
     }
@@ -3430,8 +3541,10 @@
       B_WARP = null;
       // Nothing may be left holding a crack: the redraw below rebuilds every
       // layer, and a frozen entry surviving it would draw a permanently
-      // cracked tier the next time that one came back on screen.
+      // cracked tier the next time that one came back on screen. `beat` goes
+      // with it, so an idle page never reports a beat it is not running.
       clearFrozen();
+      WARP.beat = "";
       if (dir === "merge" && READY[toKey]) READY[toKey].snap = true;
       W.dur = null;
       W.ease = null;

@@ -294,6 +294,14 @@ a frame whose geometry had not moved could not.
 From the committed `tools/morph-lab/captures/v3/RESULTS.txt` (36 PNGs). Driver exits **0**:
 `RESULT ALL ASSERTIONS PASS`.
 
+> **Every section of this report quotes the run that was committed at ITS stage, not the run
+> in `RESULTS.txt` today.** The evidence regenerates on every driver run and each round
+> appends rather than rewrites, so the figures below are the ones this section was written
+> against and the file in `captures/v3/` is always the latest round's. Where a number has
+> since moved — frame rates especially, which vary with machine load by a factor of three —
+> the later section says so and the ranges in the workbench hub are written to stay true
+> across all of them.
+
 ### The spike
 
 ```
@@ -488,6 +496,9 @@ output areas, 0 conflicts** (a conflict throws at boot).
 
 Both review Importants fixed and both cheap Minors folded in. Driver re-run end to end:
 **exit 0**, `RESULT ALL ASSERTIONS PASS`, evidence regenerated in place (40 PNGs).
+
+> As above: the figures in this section are from the run committed **at the end of this
+> round**. `captures/v3/RESULTS.txt` now holds a later one.
 
 ## Important 1 — a warp gesture interrupted by a NON-warp morph
 
@@ -869,3 +880,148 @@ legible-but-subtle and the decision is the owner's.
 5. **`WARP.beat` is still left holding the last beat's name after a completed gesture** —
    unchanged from the previous round's concern 3, and now reading `"shatter"` as well as
    `"split"` and `"merge"`.
+
+---
+
+# All-pairs fix round
+
+Lab merge approved as-is; the production port is conditional. Both review Importants
+addressed — one fixed, one **measured and stopped on the numbers**, which is the outcome the
+instruction allowed for. All three Minors folded in. Driver re-run end to end: **exit 0**,
+`RESULT ALL ASSERTIONS PASS`, evidence regenerated (65 PNGs, all past the ink gate). Figures
+below are from that run.
+
+## Important 1 — the envelope could finish while the blend was still owed. FIXED.
+
+`runWarp` checked `u >= 1` *before* the carry, so an envelope that reached its end inside a
+main-thread stall finished there and put the uniform to zero with the whole 180 ms blend
+outstanding: **a full crack to nothing in one frame**, arriving through the door marked
+"finished". At the production 750 ms duration this needs a stall of ~570 ms, which is
+squarely inside what the OA-basis repaint costs on slower hardware — X6 measured 397 ms at
+the lab's 3000 ms.
+
+Two changes, and the review asked for both:
+
+1. **The envelope may no longer finish while the blend is unfinished.** `u >= 1` now also
+   requires the carry to be spent; until it is, the loop keeps ticking the blend down.
+2. **The blend is clocked in ACCUMULATED drawn-frame time**, not differenced from the first
+   frame. Differencing fixed a stall *before* the blend and not one *inside* it — a single
+   400 ms gap between the second and third drawn frames would have stepped over the rest of
+   the window in one go. No single frame may now advance it by more than `CARRY_STEP_MS`
+   (33 ms, two frames at 60 Hz), so the blend always has its shape in **at least ~6 drawn
+   frames** however badly the machine is behaving. `releaseWarp` — the same ease, serving the
+   same purpose on the no-next-gesture path — got the same treatment.
+
+**And a hand-off can still never take a cracked basis.** Letting the blend outlive the
+envelope breaks the sentence every finalise rests on ("the uniform is back at exactly zero and
+has had a committed frame there"), which was previously guaranteed by arithmetic: the
+envelope's span and the finalise timer were both `MORPH_DUR`. So the timer now asks instead of
+assuming, through `whenHealed(tok, cb)` — used by both the warp finalise and the shatter's.
+It waits **on a timer, not on rAF**, because it has to complete in a background tab where rAF
+does not run at all, and it gives up after `RELEASE_MS + 120` and closes the crack by hand
+(logging `healwait`) rather than leaving a morph stuck for the life of the tab.
+
+### X8, and it is the one arm here whose falsifiability is measured
+
+The stall is **staged, not waited for**: the morph is cut to 400 ms and the main thread is
+blocked for 600 ms *from a timer*, which fires after `apply()`'s own microtasks — so the block
+lands exactly where the OA repaint lands it in the wild, between `runWarp`'s `t0` and its first
+executed frame. Nothing is mocked; the only addition is the stall.
+
+`?carry=wall` restores **both** halves of what the fix changed — the clock and the ordering —
+so the same leg runs twice on the same page and the defect is asserted **present** in one and
+absent in the other:
+
+| leg | staged stall | steepest one-frame fall | endpoint |
+| --- | --- | --- | --- |
+| fixed | 635 ms with nothing drawn | **0.00714** of a 0.08 crack (limit 0.030) | 0.0000/255 |
+| `?carry=wall` control | 632 ms | **0.08000** — the whole crack, in one frame (floor 0.030) | 0.0000/255 |
+
+Both endpoints are **0.0000/255 against the borough map**, which is the entire point: no
+endpoint assertion in this file could ever have found this. The control also answers the
+standing concern that W5/W6-class gates "have never been seen to fail" — this one fails on
+demand, on every run.
+
+The fixed leg's log shows the mechanism end to end: `gesture+2, healed+820, finalise+833`
+against the control's `gesture+1, healed+631, finalise+640`. The fix spends ~180 ms more
+finishing the blend and the hand-off waits for it; no `healwait` appears, so the bounded
+fallback never fired.
+
+## Important 2 — the retarget freeze. MEASURED, AND THE LINE IS STOPPED.
+
+The port condition was the ~250 + 400 ms freeze with a crack open when a mid-gesture retarget
+lands on the OA basis. The brief's hypothesis was that the block is `paintFrom`'s 26,369-value
+expansion plus the attribute upload, and the mitigations offered were (a) cache the expanded
+arrays and (c) schedule the heavy paint a frame behind. **Both are ruled out by measurement,
+and the hypothesis is wrong about where the time goes.**
+
+Timed on the page, OA basis, 26,435 rings / 350,538 vertices, three runs — each phase from the
+`redraw()` that issues it to the committed frame that carries it:
+
+| phase | our JS (`paintFrom`) | the commit |
+| --- | --- | --- |
+| seed (snapped + ghosted, all 350k vertices) | 3.6 – 8.3 ms | **146 – 164 ms** |
+| reveal (visibility flip only) | 0 ms | 7 – 9 ms |
+| animate (second full repaint, with a transition) | 3.8 – 5.4 ms | **141 – 159 ms** |
+| **the ceiling on caching**: phase bumped, *buffers reused byte for byte, no expansion at all* | 0 – 0.1 ms | **125 – 132 ms** |
+
+**The expansion is not the freeze.** It is 4–5 ms of a ~150 ms commit. And the last row is the
+decisive one: handing the layer buffers it already holds, with nothing expanded and nothing
+recomputed, still costs **125–132 ms per commit**. So mitigation (a) — caching the expanded
+colour/elevation arrays keyed on (measure, parent, year) — has a hard ceiling of roughly
+**15 % of one commit**, would add a keyed cache and its invalidation to `paintFrom`, and would
+leave a ~260 ms freeze where there is now a ~300 ms one. That is not the ~150 ms bar, and it is
+not close to it.
+
+Mitigation (c) cannot work either, and for a more basic reason: **there are no frames to hide
+the stall in.** The cost is inside the browser's frame production, so nothing animates during
+it — an eased crack-close scheduled "a frame behind" simply does not get its frames. The only
+variant that changes what the reader sees is to close the crack *fully before* issuing the
+paint, which costs +180 ms of latency on every such retarget and leaves the freeze exactly as
+long. That is a distortion of the machinery for no reduction in the freeze.
+
+**Where the time actually goes**, on this evidence: deck.gl re-reading and re-uploading the
+whole binary attribute set because the `data` object identity changed. The 125–132 ms floor
+with identical buffers says the trigger is the object, not the values. The lever, if anyone
+wants one, is therefore **not** caching our expansion — it is avoiding the new `data` object on
+a repaint (partial attribute updates, or driving the change through `updateTriggers` alone),
+which is a change to V1's core paint contract that every assertion in this file rests on. That
+is a sprint, not a fix round, and it is out of scope here by instruction.
+
+**So: stopped, reported, and the owner-sign-off route is the one this leaves open.** The freeze
+is inherited V1 behaviour — the same two commits happen on every non-nested morph in the
+shipped build — and what the warp changes is that it is now *legible*, because a frozen crack
+is more obviously frozen than a frozen map. X6's tape prints the gap on every run.
+
+## Minors
+
+* **Provenance.** §5 and Fix round 1 now each carry a one-line note that their figures are the
+  run committed at that stage, and that `captures/v3/RESULTS.txt` always holds the latest.
+* **`WARP.beat` is cleared in both `handBack()`s**, so an idle page never reports a beat it is
+  not running. Previous rounds' concern 3, now closed; the driver's idle read-backs show `""`.
+* **X6's freeze-window gate is robust to faster machines.** It was "at least one frame was
+  observed with the old basis frozen", which a machine that draws no frame inside the warm
+  window would fail for the right reason and the wrong outcome. It is now
+  *observed-or-provably-unnecessary*: **every** frame in which the old basis was still the
+  picture must have had it frozen, vacuously true when there are none — and when there are
+  none, nothing could have popped. This run drew 1 of 1.
+* **`?warpmode` promotion legality is validated at parse.** Demotion to `none` is always legal
+  and promotion to `oa` needs only the basis every tier can be drawn on, but `finer` asserts
+  that one tier nests inside the other and only the table knows which do. Promoting a
+  non-nesting pair is now refused at the query string with a named page error, instead of being
+  accepted and dying inside `ensureXwalk` on the first click.
+
+## Concerns
+
+1. **The retarget freeze is unfixed and is now quantified** — see Important 2. It is a port
+   condition, not a lab defect, and the numbers above are what a decision should be taken on.
+2. **`whenHealed`'s bounded give-up can still snap a crack**, by design, after
+   `RELEASE_MS + 120` of a crack that will not close — which in practice means a backgrounded
+   tab. It logs `healwait` when it fires. It did not fire in any leg of this run, so that path
+   is reasoned about rather than measured.
+3. **The blend can now extend a gesture by up to ~180 ms** past `MORPH_DUR` when a stall has
+   eaten its window. X8 measures it at 180 ms and the hand-off waits correctly, but it does
+   mean the gesture's total length is no longer exactly `MORPH_DUR + 60` on that path.
+4. **`?carry=wall` is a second lab flag that reaches production behaviour**, alongside
+   `?warpmode=`. Both are validated and neither is reader-facing, but both should be
+   considered at port time.

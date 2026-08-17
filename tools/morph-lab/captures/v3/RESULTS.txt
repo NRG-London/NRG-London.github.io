@@ -1,6 +1,6 @@
 driver     capture_v3.py
 browser    C:\Program Files\Google\Chrome\Application\chrome.exe
-serving    C:\Users\neilg\AppData\Local\Temp\claude\c--Users-neilg-OneDrive-Documents-neilgarratt-com\1e654b94-37c6-4cc6-86c0-a58827f30917\scratchpad\v3all-wt\static  ->  http://127.0.0.1:61526/labs/morph/v3/
+serving    C:\Users\neilg\AppData\Local\Temp\claude\c--Users-neilg-OneDrive-Documents-neilgarratt-com\1e654b94-37c6-4cc6-86c0-a58827f30917\scratchpad\v3all-wt\static  ->  http://127.0.0.1:53321/labs/morph/v3/
 viewport   1400x950, FULL-FRAME comparison — no crop, because the lab's status nodes are
            display:none and the HUD is off unless ?hud=1
 settle     1.6s before every committed capture, which outlasts the 1.01s peak pulse
@@ -15,196 +15,206 @@ fps        REPORTED, AND THIS MACHINE IS NOT A CLEAN ROOM. The frame
            the state and pixel gates around it do not move at all.
 
 probe [real GPU                              ] boot  {"ready": true, "errors": 0, "tier": "borough", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0, "wtier": "ward", "wbeat": "", "wfroz": 0}
-                                             morph ["borough->ward (warp)", "seed+6", "reveal+48", "gesture+60", "healed+814", "finalise+875"]
+                                             morph ["borough->ward (warp)", "seed+5", "reveal+44", "gesture+55", "healed+808", "finalise+869"]
 
 PASS probe  boots and morphs to finalise under [real GPU]
 
 ---- captures ----
-shot a1_ref_borough.png       A1 boot ?morph=0, curtain build sanity         6.1s  ok
+shot a1_ref_borough.png       A1 boot ?morph=0, curtain build sanity         5.2s  ok
 shot a2_ref_ward.png          A2 ward, loaded directly                       2.5s  ok
-shot a2_morph_ward.png        A2 default boot -> ward, morphed               4.0s  ok
-     {"status": {"ready": true, "errors": 0, "tier": "ward", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0, "wtier": "oa", "wbeat": "shatter", "wfroz": 0}, "log": ["lsoa->ward (shatter)", "seed+7", "reveal+167", "animate+192", "healed+946", "finalise+1015"]}
-shot a3_ref_gla.png           A3 gla, loaded directly                        3.7s  ok
-shot a3_morph_gla.png         A3 pcon -> gla (non-nested)                    3.8s  ok
-     {"status": {"ready": true, "errors": 0, "tier": "gla", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0, "wtier": "oa", "wbeat": "shatter", "wfroz": 0}, "log": ["pcon->gla (shatter)", "seed+3", "reveal+175", "animate+182", "healed+935", "finalise+1009"]}
-shot a3_morph_borough.png     A3 ward -> borough (merge)                     3.7s  ok
-     {"status": {"ready": true, "errors": 0, "tier": "borough", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0, "wtier": "ward", "wbeat": "merge", "wfroz": 0}, "log": ["ward->borough (warp)", "gesture+4", "healed+755", "finalise+824"]}
+shot a2_morph_ward.png        A2 default boot -> ward, morphed               3.8s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "ward", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0, "wtier": "oa", "wbeat": "", "wfroz": 0}, "log": ["lsoa->ward (shatter)", "seed+6", "reveal+156", "animate+165", "healed+919", "finalise+987"]}
+shot a3_ref_gla.png           A3 gla, loaded directly                        2.9s  ok
+shot a3_morph_gla.png         A3 pcon -> gla (non-nested)                    3.7s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "gla", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0, "wtier": "oa", "wbeat": "", "wfroz": 0}, "log": ["pcon->gla (shatter)", "seed+4", "reveal+153", "animate+161", "healed+914", "finalise+981"]}
+shot a3_morph_borough.png     A3 ward -> borough (merge)                     3.5s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "borough", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0, "wtier": "ward", "wbeat": "", "wfroz": 0}, "log": ["ward->borough (warp)", "gesture+4", "healed+759", "finalise+822"]}
 
-shot a4_from.png              A4 seed frame — the honest zero                1.9s  ok
-shot a4_mid25.png             A4 mid-flight                                       landed at 29.1% of a 3000 ms morph
-shot a4_mid50.png             A4 mid-flight                                       landed at 55.2% of a 3000 ms morph
-shot a4_mid75.png             A4 mid-flight                                       landed at 83.1% of a 3000 ms morph
+shot a4_from.png              A4 seed frame — the honest zero                1.2s  ok
+shot a4_mid25.png             A4 mid-flight                                       landed at 27.0% of a 3000 ms morph
+shot a4_mid50.png             A4 mid-flight                                       landed at 52.1% of a 3000 ms morph
+shot a4_mid75.png             A4 mid-flight                                       landed at 77.1% of a 3000 ms morph
 
-shot a5_interrupt_ward.png    A5 borough->pcon, retargeted to ward           5.7s  ok
+shot a5_interrupt_ward.png    A5 borough->pcon, retargeted to ward           3.9s  ok
      at +300 ms: {"ready": false, "errors": 0, "tier": "pcon", "morphBasis": "oa", "switching": true, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0, "wtier": "oa", "wbeat": "shatter", "wfroz": 0}
-     final:      {"ready": true, "errors": 0, "tier": "ward", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0, "wtier": "oa", "wbeat": "shatter", "wfroz": 0}
-     log:        ["pcon->ward (shatter)", "seed+0", "animate+60", "healed+819", "finalise+886"]
-     pass IDLE STATE after A5 (borough->pcon retargeted to ward): {"tiers": {"borough": [null, false], "oa": [null, false], "ward": [null, false], "pcon": [null, false]}, "oa": [null, false], "ward": [null, false], "warp": 0, "froz": {}, "wtier": "oa", "bwarp": false, "beat": "shatter", "mb": null, "seed": null, "sw": false}
+     final:      {"ready": true, "errors": 0, "tier": "ward", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0, "wtier": "oa", "wbeat": "", "wfroz": 0}
+     log:        ["pcon->ward (shatter)", "seed+0", "animate+17", "healed+769", "finalise+843"]
+     pass IDLE STATE after A5 (borough->pcon retargeted to ward): {"tiers": {"borough": [null, false], "oa": [null, false], "ward": [null, false], "pcon": [null, false]}, "oa": [null, false], "ward": [null, false], "warp": 0, "froz": {}, "wtier": "oa", "bwarp": false, "beat": "", "mb": null, "seed": null, "sw": false}
 
-     pass IDLE STATE after A5b (retarget inside the warm window): {"tiers": {"borough": [null, false], "oa": [null, false], "ward": [null, false], "pcon": [null, false]}, "oa": [null, false], "ward": [null, false], "warp": 0, "froz": {}, "wtier": "oa", "bwarp": false, "beat": "shatter", "mb": null, "seed": null, "sw": false}
-shot -                        A5b retarget inside the seed warm window       8.4s  ok
-     both pills clicked in one task; log: ["pcon->ward (shatter)", "seed+4", "reveal+204", "animate+217", "healed+969", "finalise+1042"]
-     after it settles: morphSeed=None morphBasis=None switching=False tier='ward'; 207 committed renders across the morph
+     pass IDLE STATE after A5b (retarget inside the warm window): {"tiers": {"borough": [null, false], "oa": [null, false], "ward": [null, false], "pcon": [null, false]}, "oa": [null, false], "ward": [null, false], "warp": 0, "froz": {}, "wtier": "oa", "bwarp": false, "beat": "", "mb": null, "seed": null, "sw": false}
+shot -                        A5b retarget inside the seed warm window       6.4s  ok
+     both pills clicked in one task; log: ["pcon->ward (shatter)", "seed+4", "reveal+145", "animate+153", "healed+903", "finalise+970"]
+     after it settles: morphSeed=None morphBasis=None switching=False tier='ward'; 265 committed renders across the morph
 
-shot a6_meas_mid/end.png      A6 measure change after a morph                6.2s  ok
-     three frames sampled at 142, 292, 486 ms into the 750 ms ease
+shot a6_meas_mid/end.png      A6 measure change after a morph                5.8s  ok
+     three frames sampled at 119, 264, 483 ms into the 750 ms ease
 
-shot a7_ref_oa.png            A7 oa / resident_under5y, loaded directly      3.1s  ok
-shot a7_morph_oa.png          A7 lsoa -> oa under suppression                4.4s  ok
-     {"status": {"ready": true, "errors": 0, "tier": "oa", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0, "wtier": "oa", "wbeat": "split", "wfroz": 0}, "log": ["lsoa->oa (warp)", "seed+6", "reveal+191", "gesture+210", "healed+965", "finalise+1039"]}
+shot a7_ref_oa.png            A7 oa / resident_under5y, loaded directly      2.6s  ok
+shot a7_morph_oa.png          A7 lsoa -> oa under suppression                3.7s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "oa", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0, "wtier": "oa", "wbeat": "", "wfroz": 0}, "log": ["lsoa->oa (warp)", "seed+8", "reveal+149", "gesture+164", "healed+918", "finalise+990"]}
 
-shot a8_ref_change.png        A8 ward change view, loaded directly           2.6s  ok
-shot a8_morph_change.png      A8 change view, borough -> ward                4.2s  ok
-     {"status": {"ready": true, "errors": 0, "tier": "ward", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0, "wtier": "ward", "wbeat": "split", "wfroz": 0}, "log": ["borough->ward (warp)", "seed+9", "reveal+95", "gesture+111", "healed+866", "finalise+924"]}
+shot a8_ref_change.png        A8 ward change view, loaded directly           2.3s  ok
+shot a8_morph_change.png      A8 change view, borough -> ward                3.6s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "ward", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0, "wtier": "ward", "wbeat": "", "wfroz": 0}, "log": ["borough->ward (warp)", "seed+5", "reveal+47", "gesture+57", "healed+808", "finalise+868"]}
 
-shot -                        A9 street mode keeps the curtain               4.7s  ok
-     113 state samples across the switch, morphActive true in 0
+shot -                        A9 street mode keeps the curtain               3.8s  ok
+     133 state samples across the switch, morphActive true in 0
 
-shot a10_zoom_mid75.png       A10 zoom during morph                          6.3s  ok
-     curElevScale 1 -> 0.11323210104515069 -> 1 across the nudge; frame landed at 77.9% of the morph
-     log: ["borough->ward", "seed+3", "reveal+246", "animate+261", "finalise+3334"]
+shot a10_zoom_mid75.png       A10 zoom during morph                          5.8s  ok
+     curElevScale 1 -> 0.11323210104515069 -> 1 across the nudge; frame landed at 77.1% of the morph
+     log: ["borough->ward", "seed+4", "reveal+167", "animate+180", "finalise+3248"]
 
-shot -                        A11 reduced motion switches instantly          2.7s  ok
-     TRANSITION=0  MORPH_DUR=0  91 samples, morphActive true in 0
+shot -                        A11 reduced motion switches instantly          2.6s  ok
+     TRANSITION=0  MORPH_DUR=0  94 samples, morphActive true in 0
 
-shot -                        A12 morph with an unpainted basis              4.8s  ok
-     READY.oa.painted cleared to null; 64 samples across the switch, morphActive true in 24
-     log: ["borough->ward", "seed+3", "reveal+223", "animate+235", "finalise+1064"]
+shot -                        A12 morph with an unpainted basis              4.5s  ok
+     READY.oa.painted cleared to null; 78 samples across the switch, morphActive true in 32
+     log: ["borough->ward", "seed+3", "reveal+155", "animate+164", "finalise+983"]
 
-shot -                        A13 fixed page: warm commits on                5.0s  ok
-     pass probe alive: on=True dead='' 135 committed frames signed (need >= 30), region [500, 226, 512, 384] of [1400, 950]
-     worst one-frame excess 0.01% of the region  at t=4491 ms, no mark
+shot -                        A13 fixed page: warm commits on                4.6s  ok
+     pass probe alive: on=True dead='' 139 committed frames signed (need >= 30), region [500, 226, 512, 384] of [1400, 950]
+     worst one-frame excess 0.00% of the region  at t=4120 ms, no mark
 
-shot -                        A13 fixed page on V1's path: ?warp=0, warm commits on   4.8s  ok
-     pass probe alive: on=True dead='' 93 committed frames signed (need >= 30), region [500, 226, 512, 384] of [1400, 950]
-     worst one-frame excess 0.00% of the region  at t=4305 ms, no mark
+shot -                        A13 fixed page on V1's path: ?warp=0, warm commits on   4.7s  ok
+     pass probe alive: on=True dead='' 106 committed frames signed (need >= 30), region [500, 226, 512, 384] of [1400, 950]
+     worst one-frame excess 0.00% of the region  at t=4141 ms, no mark
 
-shot -                        A13 ?warp=0&ghost=0 control: warm commits off   4.7s  ok
-     pass probe alive: on=True dead='' 110 committed frames signed (need >= 30), region [500, 226, 512, 384] of [1400, 950]
-     worst one-frame excess 14.28% of the region  at t=4288 ms, redraw[vis=ward mb=- sw=0 snap=ward ghost=-] phase:finalise
+shot -                        A13 ?warp=0&ghost=0 control: warm commits off   4.5s  ok
+     pass probe alive: on=True dead='' 114 committed frames signed (need >= 30), region [500, 226, 512, 384] of [1400, 950]
+     worst one-frame excess 14.28% of the region  at t=4111 ms, redraw[vis=ward mb=- sw=0 snap=ward ghost=-] phase:finalise
 
-shot -                        A13 ?ghost=0 on the WARP path (reported, not gated)   4.7s  ok
-     pass probe alive: on=True dead='' 136 committed frames signed (need >= 30), region [500, 226, 512, 384] of [1400, 950]
+shot -                        A13 ?ghost=0 on the WARP path (reported, not gated)   4.5s  ok
+     pass probe alive: on=True dead='' 139 committed frames signed (need >= 30), region [500, 226, 512, 384] of [1400, 950]
      worst one-frame excess 0.00% of the region
 
-shot -                        A13 measure change landing MID-MORPH           3.9s  ok
+shot -                        A13 measure change landing MID-MORPH           3.8s  ok
      pass probe alive: on=True dead='' 141 committed frames signed (need >= 30), region [500, 226, 512, 384] of [1400, 950]
-     worst one-frame excess 0.00% of the region
+     worst one-frame excess 0.01% of the region  at t=3079 ms, no mark
 
 shot -                        A13 the CURTAIN, ?morph=0, same route          5.2s  ok
-     pass probe alive: on=True dead='' 160 committed frames signed (need >= 30), region [500, 226, 512, 384] of [1400, 950]
+     pass probe alive: on=True dead='' 164 committed frames signed (need >= 30), region [500, 226, 512, 384] of [1400, 950]
      worst one-frame excess 0.00% of the region
 
-shot a0_*.png                 A0 v1 vs v3 ?warp=0, same route                7.4s  ok
+shot a0_*.png                 A0 v1 vs v3 ?warp=0, same route                7.0s  ok
 
-shot s_*.png                  S the spike: injection, truth, fps            18.0s  ok
-     warpInfo at boot: {"on": true, "err": "", "tier": "ward", "parent": "borough", "inset": 0.92, "peak": 0.38, "geom": true, "amount": 0, "t": 0, "live": true, "attached": true, "verts": 50738, "rings": 731, "feats": 689, "cent": true, "centMs": 2.4, "tierMs": 1, "frozen": 0, "attr": {"size": 2, "type": "float32", "step": "dynamic", "bytes": 101476, "external": true}, "fps": 0, "worst": 0, "frames": 0, "beat": ""}
-shot w_ref_ward.png           W ward reference, ?highlight=off chrome        2.9s  ok
-shot w_ref_borough.png        W borough reference, ?highlight=off chrome     2.5s  ok
+shot s_*.png                  S the spike: injection, truth, fps            14.8s  ok
+     warpInfo at boot: {"on": true, "err": "", "tier": "ward", "parent": "borough", "inset": 0.92, "peak": 0.38, "geom": true, "amount": 0, "t": 0, "live": true, "attached": true, "verts": 50738, "rings": 731, "feats": 689, "cent": true, "centMs": 1.8, "tierMs": 0.8, "frozen": 0, "attr": {"size": 2, "type": "float32", "step": "dynamic", "bytes": 101476, "external": true}, "fps": 0, "worst": 0, "frames": 0, "beat": ""}
+shot w_ref_ward.png           W ward reference, ?highlight=off chrome        2.3s  ok
+shot w_ref_borough.png        W borough reference, ?highlight=off chrome     2.3s  ok
 
-shot w1_split_end.png         W1 borough -> ward (warped split)              3.9s  ok
-     {"status": {"ready": true, "errors": 0, "tier": "ward", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0, "wtier": "ward", "wbeat": "split", "wfroz": 0}, "log": ["borough->ward (warp)", "seed+5", "reveal+201", "gesture+211", "healed+961", "finalise+1024"]}
+shot w1_split_end.png         W1 borough -> ward (warped split)              3.5s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "ward", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0, "wtier": "ward", "wbeat": "", "wfroz": 0}, "log": ["borough->ward (warp)", "seed+5", "reveal+36", "gesture+43", "healed+796", "finalise+853"]}
 shot w1_merge_end.png         W1 ward -> borough (warped merge)              3.5s  ok
-     {"status": {"ready": true, "errors": 0, "tier": "borough", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0, "wtier": "ward", "wbeat": "merge", "wfroz": 0}, "log": ["ward->borough (warp)", "gesture+3", "healed+758", "finalise+827"]}
+     {"status": {"ready": true, "errors": 0, "tier": "borough", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0, "wtier": "ward", "wbeat": "", "wfroz": 0}, "log": ["ward->borough (warp)", "gesture+4", "healed+754", "finalise+823"]}
 
 shot w2_ref_plateau_cracked.png W2 ref: plateau values, live crack                  ok
 shot w2_ref_ward_cracked.png  W2 ref: ward values, live crack                     ok
 shot w2_ref_plateau_flat.png  W2 ref: plateau values, no crack                    ok
 shot w2_ref_ward_flat.png     W2 ref: ward values, no crack                       ok
-shot w2_*.png                 W2 concurrency, sampled at the peak           19.8s  ok
-     uniform 0.07991 -> morphT 0.9988 (inset 0.92, peak 0.38); log ["borough->ward (warp)", "seed+5", "reveal+70", "gesture+86", "healed+3090", "finalise+3148"]
+shot w2_*.png                 W2 concurrency, sampled at the peak           16.2s  ok
+     uniform 0.07993 -> morphT 0.9991 (inset 0.92, peak 0.38); log ["borough->ward (warp)", "seed+5", "reveal+37", "gesture+44", "healed+3046", "finalise+3106"]
 
-     pass IDLE STATE after W4b (warp gesture interrupted at 35%): {"tiers": {"borough": [null, false], "oa": [null, false], "ward": [null, false]}, "oa": [null, false], "ward": [null, false], "warp": 0, "froz": {}, "wtier": "ward", "bwarp": false, "beat": "merge", "mb": null, "seed": null, "sw": false}
-shot w4_*.png                 W4 zoom and interrupt inside the gesture      14.8s  ok
-     zoom: uniform 0.07336 mid-gesture, 172 fps; interrupt fired at uniform 0.07984, settled at 0
+     pass IDLE STATE after W4b (warp gesture interrupted at 35%): {"tiers": {"borough": [null, false], "oa": [null, false], "ward": [null, false]}, "oa": [null, false], "ward": [null, false], "warp": 0, "froz": {}, "wtier": "ward", "bwarp": false, "beat": "", "mb": null, "seed": null, "sw": false}
+shot w4_*.png                 W4 zoom and interrupt inside the gesture      12.6s  ok
+     zoom: uniform 0.07346 mid-gesture, 178.5 fps; interrupt fired at uniform 0.07987, settled at 0
 
-shot w_ref_pcon.png           W5 pcon reference, ?highlight=off chrome       2.8s  ok
+shot w_ref_pcon.png           W5 pcon reference, ?highlight=off chrome       2.4s  ok
      pass IDLE STATE after W5 (warp gesture retargeted to a non-warp pair): {"tiers": {"borough": [null, false], "oa": [null, false], "ward": [null, false], "pcon": [null, false]}, "oa": [null, false], "ward": [null, false], "warp": 0, "froz": {}, "wtier": "ward", "bwarp": false, "beat": "", "mb": null, "seed": null, "sw": false}
-shot w5_*.png                 W5 warp retargeted onto a non-warp pair       10.0s  ok
+shot w5_*.png                 W5 warp retargeted onto a non-warp pair        9.4s  ok
      the crack was 0.07984 open when the second pill was clicked (basis then: ward)
-     log: ["ward->pcon", "seed+29", "reveal+194", "animate+208", "finalise+3281"]
+     log: ["ward->pcon", "seed+27", "reveal+167", "animate+176", "finalise+3247"]
 
-shot w6_ref_ward_m2.png       W6 ward/hh_density reference, loaded directly   2.6s  ok
+shot w6_ref_ward_m2.png       W6 ward/hh_density reference, loaded directly   2.3s  ok
      pass IDLE STATE after W6 (measure change mid-morph, ?warp=0): {"tiers": {"borough": [null, false], "oa": [null, false], "ward": [null, false]}, "oa": [null, false], "ward": [null, false], "warp": 0, "froz": {}, "wtier": "ward", "bwarp": false, "beat": "", "mb": null, "seed": null, "sw": false}
-shot w6_*.png                 W6 measure change mid V1 morph (?warp=0)       7.0s  ok
+shot w6_*.png                 W6 measure change mid V1 morph (?warp=0)       6.1s  ok
      morphBasis was 'oa' when the measure changed
 
-shot -                        X0 the policy table and its crosswalks         1.6s  ok
+shot -                        X0 the policy table and its crosswalks         1.0s  ok
      bases carrying the extension: ["ward", "borough", "lsoa", "oa"]
-     centroids at boot: {"borough": {"verts": 10098, "rings": 50, "ms": 2.6}, "lsoa": null, "oa": {"verts": 350538, "rings": 26435, "ms": 4}, "ward": {"verts": 50738, "rings": 731, "ms": 0.2}}
+     centroids at boot: {"borough": {"verts": 10098, "rings": 50, "ms": 0.5}, "lsoa": null, "oa": {"verts": 350538, "rings": 26435, "ms": 2.3}, "ward": {"verts": 50738, "rings": 731, "ms": 0.4}}
 
-shot x_ref_gla.png            X1 gla reference, ?highlight=off chrome        3.3s  ok
-shot x_ref_lsoa.png           X1 lsoa reference, ?highlight=off chrome       3.2s  ok
-shot x_ref_oa.png             X1 oa reference, ?highlight=off chrome         3.0s  ok
-shot x1a_ward_gla.png         X1a ward -> gla (merge, crack on the wards)    3.8s  ok
-     {"status": {"ready": true, "errors": 0, "tier": "gla", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0, "wtier": "ward", "wbeat": "merge", "wfroz": 0}, "log": ["ward->gla (warp)", "gesture+4", "healed+757", "finalise+825"]}
-shot x1b_borough_gla.png      X1b borough -> gla (merge, crack on the boroughs)   3.6s  ok
-     {"status": {"ready": true, "errors": 0, "tier": "gla", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0, "wtier": "borough", "wbeat": "merge", "wfroz": 0}, "log": ["borough->gla (warp)", "gesture+2", "healed+759", "finalise+828"]}
-shot x1c_lsoa_borough.png     X1c lsoa -> borough (merge, crack on the LSOAs)   3.7s  ok
-     {"status": {"ready": true, "errors": 0, "tier": "borough", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0, "wtier": "lsoa", "wbeat": "merge", "wfroz": 0}, "log": ["lsoa->borough (warp)", "gesture+5", "healed+759", "finalise+828"]}
-shot x1d_oa_lsoa.png          X1d oa -> lsoa (merge, crack on the OUTPUT AREAS)   4.2s  ok
-     {"status": {"ready": true, "errors": 0, "tier": "lsoa", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0, "wtier": "oa", "wbeat": "merge", "wfroz": 0}, "log": ["oa->lsoa (warp)", "gesture+16", "healed+786", "finalise+838"]}
+shot x_ref_gla.png            X1 gla reference, ?highlight=off chrome        2.4s  ok
+shot x_ref_lsoa.png           X1 lsoa reference, ?highlight=off chrome       2.5s  ok
+shot x_ref_oa.png             X1 oa reference, ?highlight=off chrome         2.6s  ok
+shot x1a_ward_gla.png         X1a ward -> gla (merge, crack on the wards)    3.4s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "gla", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0, "wtier": "ward", "wbeat": "", "wfroz": 0}, "log": ["ward->gla (warp)", "gesture+3", "healed+757", "finalise+820"]}
+shot x1b_borough_gla.png      X1b borough -> gla (merge, crack on the boroughs)   3.5s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "gla", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0, "wtier": "borough", "wbeat": "", "wfroz": 0}, "log": ["borough->gla (warp)", "gesture+3", "healed+756", "finalise+819"]}
+shot x1c_lsoa_borough.png     X1c lsoa -> borough (merge, crack on the LSOAs)   3.6s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "borough", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0, "wtier": "lsoa", "wbeat": "", "wfroz": 0}, "log": ["lsoa->borough (warp)", "gesture+6", "healed+761", "finalise+824"]}
+shot x1d_oa_lsoa.png          X1d oa -> lsoa (merge, crack on the OUTPUT AREAS)   3.6s  ok
+     {"status": {"ready": true, "errors": 0, "tier": "lsoa", "morphBasis": null, "switching": false, "morphReady": true, "warpOn": true, "warpReady": true, "staged": true, "warp": 0, "wtier": "oa", "wbeat": "", "wfroz": 0}, "log": ["oa->lsoa (warp)", "gesture+8", "healed+762", "finalise+825"]}
 
-     pass IDLE STATE after X2a pcon -> gla, the shatter: {"tiers": {"pcon": [null, false], "oa": [null, false], "ward": [null, false], "gla": [null, false]}, "oa": [null, false], "ward": [null, false], "warp": 0, "froz": {}, "wtier": "oa", "bwarp": false, "beat": "shatter", "mb": null, "seed": null, "sw": false}
-shot x2a_pcon_gla.png         X2a pcon -> gla, the shatter                   6.6s  ok
+     pass IDLE STATE after X2a pcon -> gla, the shatter: {"tiers": {"pcon": [null, false], "oa": [null, false], "ward": [null, false], "gla": [null, false]}, "oa": [null, false], "ward": [null, false], "warp": 0, "froz": {}, "wtier": "oa", "bwarp": false, "beat": "", "mb": null, "seed": null, "sw": false}
+shot x2a_pcon_gla.png         X2a pcon -> gla, the shatter                   5.9s  ok
      mid-flight: basis 'oa'  uniform 0.08000  beat 'shatter'  drawn basis 'oa'
-     log: ["pcon->gla (shatter)", "seed+4", "reveal+272", "animate+290", "healed+3293", "finalise+3366"]
-     pass IDLE STATE after X2b lsoa -> ward, the shatter: {"tiers": {"lsoa": [null, false], "oa": [null, false], "ward": [null, false]}, "oa": [null, false], "ward": [null, false], "warp": 0, "froz": {}, "wtier": "oa", "bwarp": false, "beat": "shatter", "mb": null, "seed": null, "sw": false}
-shot x2b_lsoa_ward.png        X2b lsoa -> ward, the shatter                  6.5s  ok
+     log: ["pcon->gla (shatter)", "seed+2", "reveal+144", "animate+153", "healed+3156", "finalise+3223"]
+     pass IDLE STATE after X2b lsoa -> ward, the shatter: {"tiers": {"lsoa": [null, false], "oa": [null, false], "ward": [null, false]}, "oa": [null, false], "ward": [null, false], "warp": 0, "froz": {}, "wtier": "oa", "bwarp": false, "beat": "", "mb": null, "seed": null, "sw": false}
+shot x2b_lsoa_ward.png        X2b lsoa -> ward, the shatter                  6.0s  ok
      mid-flight: basis 'oa'  uniform 0.08000  beat 'shatter'  drawn basis 'oa'
-     log: ["lsoa->ward (shatter)", "seed+5", "reveal+239", "animate+251", "healed+3253", "finalise+3327"]
+     log: ["lsoa->ward (shatter)", "seed+3", "reveal+148", "animate+158", "healed+3159", "finalise+3226"]
 
      pass IDLE STATE after X3 ward -> pcon DEMOTED to none: {"tiers": {"ward": [null, false], "oa": [null, false], "pcon": [null, false]}, "oa": [null, false], "ward": [null, false], "warp": 0, "froz": {}, "wtier": "ward", "bwarp": false, "beat": "", "mb": null, "seed": null, "sw": false}
-shot x3_none_ward_pcon.png    X3 ward -> pcon DEMOTED to none                6.2s  ok
+shot x3_none_ward_pcon.png    X3 ward -> pcon DEMOTED to none                5.8s  ok
      mid-flight: basis 'ward'  uniform 0.00000  beat ''  drawn basis 'oa'
-     log: ["ward->pcon", "seed+3", "reveal+169", "animate+182", "finalise+3255"]
+     log: ["ward->pcon", "seed+4", "reveal+147", "animate+158", "finalise+3230"]
 
-     pass IDLE STATE after X4 (borough -> oa at OA grain): {"tiers": {"borough": [null, false], "oa": [null, false], "ward": [null, false]}, "oa": [null, false], "ward": [null, false], "warp": 0, "froz": {}, "wtier": "oa", "bwarp": false, "beat": "split", "mb": null, "seed": null, "sw": false}
-shot x4_borough_oa.png        X4 borough -> oa, the OA-grain warp            3.8s  ok
-     basis 'oa'  26435 rings / 350538 verts  centroids 2.8 ms
-     mid-gesture uniform 0.07985; the gesture ran at 168.6 fps over 100 frames, worst 28 ms  (REPORTED, not gated)
-     log: ["borough->oa (warp)", "seed+6", "reveal+180", "gesture+194", "healed+946", "finalise+1010"]
+     pass IDLE STATE after X4 (borough -> oa at OA grain): {"tiers": {"borough": [null, false], "oa": [null, false], "ward": [null, false]}, "oa": [null, false], "ward": [null, false], "warp": 0, "froz": {}, "wtier": "oa", "bwarp": false, "beat": "", "mb": null, "seed": null, "sw": false}
+shot x4_borough_oa.png        X4 borough -> oa, the OA-grain warp            3.6s  ok
+     basis 'oa'  26435 rings / 350538 verts  centroids 1.9 ms
+     mid-gesture uniform 0.08000; the gesture ran at 177.9 fps over 111 frames, worst 14.3 ms  (REPORTED, not gated)
+     log: ["borough->oa (warp)", "seed+5", "reveal+152", "gesture+164", "healed+918", "finalise+978"]
 
-shot x5_ref_oa_z13.png        X5 zoom to 13 with the curtain                 3.8s  ok
+shot x5_ref_oa_z13.png        X5 zoom to 13 with the curtain                 3.6s  ok
      tier 'oa', log []
-     pass IDLE STATE after X5 (the zoom auto-switch to oa): {"tiers": {"lsoa": [null, false], "oa": [null, false], "ward": [null, false]}, "oa": [null, false], "ward": [null, false], "warp": 0, "froz": {}, "wtier": "oa", "bwarp": false, "beat": "split", "mb": null, "seed": null, "sw": false}
-shot x5_zoom_oa_end.png       X5 zoom to 13, auto-switch lsoa -> oa          4.1s  ok
-     tier 'oa', log ["lsoa->oa (warp)", "seed+10", "reveal+183", "gesture+202", "healed+955", "finalise+1014"]
-     pass IDLE STATE after X5b (zoom-warp interrupted by a pill): {"tiers": {"lsoa": [null, false], "oa": [null, false], "ward": [null, false], "borough": [null, false]}, "oa": [null, false], "ward": [null, false], "warp": 0, "froz": {}, "wtier": "oa", "bwarp": false, "beat": "merge", "mb": null, "seed": null, "sw": false}
-shot x5b_zoom_interrupt.png   X5b zoom-warp interrupted by Boroughs          7.5s  ok
-     the crack was 0.07976 open on basis 'oa' when Boroughs was clicked; landed on 'borough'
-     log: ["oa->borough (warp)", "gesture+35", "healed+3044", "finalise+3109"]
+     pass IDLE STATE after X5 (the zoom auto-switch to oa): {"tiers": {"lsoa": [null, false], "oa": [null, false], "ward": [null, false]}, "oa": [null, false], "ward": [null, false], "warp": 0, "froz": {}, "wtier": "oa", "bwarp": false, "beat": "", "mb": null, "seed": null, "sw": false}
+shot x5_zoom_oa_end.png       X5 zoom to 13, auto-switch lsoa -> oa          3.8s  ok
+     tier 'oa', log ["lsoa->oa (warp)", "seed+6", "reveal+157", "gesture+168", "healed+922", "finalise+982"]
+     pass IDLE STATE after X5b (zoom-warp interrupted by a pill): {"tiers": {"lsoa": [null, false], "oa": [null, false], "ward": [null, false], "borough": [null, false]}, "oa": [null, false], "ward": [null, false], "warp": 0, "froz": {}, "wtier": "oa", "bwarp": false, "beat": "", "mb": null, "seed": null, "sw": false}
+shot x5b_zoom_interrupt.png   X5b zoom-warp interrupted by Boroughs          7.0s  ok
+     the crack was 0.07984 open on basis 'oa' when Boroughs was clicked; landed on 'borough'
+     log: ["oa->borough (warp)", "gesture+29", "healed+3031", "finalise+3094"]
 
-     pass IDLE STATE after X6 (retarget moving the crack to a new basis): {"tiers": {"borough": [null, false], "oa": [null, false], "ward": [null, false], "lsoa": [null, false]}, "oa": [null, false], "ward": [null, false], "warp": 0, "froz": {}, "wtier": "oa", "bwarp": false, "beat": "shatter", "mb": null, "seed": null, "sw": false}
-shot x6_basis_change_end.png  X6 retarget across a basis change              7.8s  ok
-     before: basis 'ward' uniform 0.07987
+     pass IDLE STATE after X6 (retarget moving the crack to a new basis): {"tiers": {"borough": [null, false], "oa": [null, false], "ward": [null, false], "lsoa": [null, false]}, "oa": [null, false], "ward": [null, false], "warp": 0, "froz": {}, "wtier": "oa", "bwarp": false, "beat": "", "mb": null, "seed": null, "sw": false}
+shot x6_basis_change_end.png  X6 retarget across a basis change              7.0s  ok
+     before: basis 'ward' uniform 0.07985
      the hand-over, frame by frame  [t, basis, uniform, frozen, seed, drawn]:
-            2639  ward     0.07992  froz=-      seed=-        basis=ward
-            2644  ward     0.07994  froz=-      seed=-        basis=ward
-            2650  ward     0.07995  froz=-      seed=-        basis=ward
-            2658  ward     0.07997  froz=-      seed=-        basis=ward
-            2909  oa       0.07997  froz=ward   seed=ward     basis=oa
-            2919  oa       0.07997  froz=ward   seed=-        basis=oa
-            3316  oa       0.07997  froz=ward   seed=-        basis=oa
-            3320  oa       0.07997  froz=ward   seed=-        basis=oa
-            3328  oa       0.07994  froz=ward   seed=-        basis=oa
-     log: ["ward->lsoa (shatter)", "seed+42", "reveal+252", "animate+285", "healed+3303", "finalise+3358"]
+            1981  ward     0.07987  froz=-      seed=-        basis=ward
+            1987  ward     0.07990  froz=-      seed=-        basis=ward
+            1994  ward     0.07992  froz=-      seed=-        basis=ward
+            2161  oa       0.07992  froz=ward   seed=ward     basis=oa
+            2165  oa       0.07992  froz=ward   seed=-        basis=oa
+            2421  oa       0.07992  froz=ward   seed=-        basis=oa
+            2425  oa       0.07992  froz=ward   seed=-        basis=oa
+            2427  oa       0.07992  froz=ward   seed=-        basis=oa
+     log: ["ward->lsoa (shatter)", "seed+28", "reveal+166", "animate+187", "healed+3189", "finalise+3256"]
 
-shot beauty_oa_lsoa_crack.png X7 oa -> lsoa, the output areas cracking            ok  basis 'oa', uniform 0.07946
-shot beauty_lsoa_borough_crack.png X7 lsoa -> borough, the LSOAs cracking              ok  basis 'lsoa', uniform 0.07983
-shot beauty_pcon_gla_shatter_z10.png X7 pcon -> gla shatter, the default city view        ok  basis 'oa', uniform 0.07984
-shot beauty_pcon_gla_shatter_z12p5.png X7 pcon -> gla shatter, zoomed to 12.5              ok  basis 'oa', uniform 0.07965
+     pass IDLE STATE after X8 a stall past the end of the envelope: {"tiers": {"borough": [null, false], "oa": [null, false], "ward": [null, false]}, "oa": [null, false], "ward": [null, false], "warp": 0, "froz": {}, "wtier": "ward", "bwarp": false, "beat": "", "mb": null, "seed": null, "sw": false}
+shot x8_stall_end.png         X8 a stall past the end of the envelope        3.7s  ok
+     crack 0.08000 at the click; envelope 400 ms, block 600 ms, longest gap between drawn frames 635 ms
+     steepest one-frame fall 0.00714 of a 0.08000 crack, at t=1865 ms
+     log: ["ward->borough (warp)", "gesture+2", "healed+820", "finalise+833"]
+     pass IDLE STATE after X8 CONTROL ?carry=wall, the clock before the fix: {"tiers": {"borough": [null, false], "oa": [null, false], "ward": [null, false]}, "oa": [null, false], "ward": [null, false], "warp": 0, "froz": {}, "wtier": "ward", "bwarp": false, "beat": "", "mb": null, "seed": null, "sw": false}
+shot x8_control_wall.png      X8 CONTROL ?carry=wall, the clock before the fix   7.2s  ok
+     crack 0.08000 at the click; envelope 400 ms, block 600 ms, longest gap between drawn frames 632 ms
+     steepest one-frame fall 0.08000 of a 0.08000 crack, at t=1733 ms
+     log: ["ward->borough (warp)", "gesture+1", "healed+631", "finalise+640"]
+
+shot beauty_oa_lsoa_crack.png X7 oa -> lsoa, the output areas cracking            ok  basis 'oa', uniform 0.07991
+shot beauty_lsoa_borough_crack.png X7 lsoa -> borough, the LSOAs cracking              ok  basis 'lsoa', uniform 0.07990
+shot beauty_pcon_gla_shatter_z10.png X7 pcon -> gla shatter, the default city view        ok  basis 'oa', uniform 0.07993
+shot beauty_pcon_gla_shatter_z12p5.png X7 pcon -> gla shatter, zoomed to 12.5              ok  basis 'oa', uniform 0.07974
      THE CRACK AT OA GRAIN, MEASURED AT TWO ZOOMS — settled map, uniform scrubbed, nothing else moving:
      z10    zoom default  uniform 0.08000  MAD 1.3384/255  pixels >12/255: 5.809% of the frame
-     z12p5  zoom 12.5   uniform 0.08000  MAD 4.8229/255  pixels >12/255: 15.396% of the frame
-shot beauty_*.png / x7_crack_* X7 beauty shots and the crack measurement     28.1s  ok
+     z12p5  zoom 12.5   uniform 0.08000  MAD 4.8229/255  pixels >12/255: 15.397% of the frame
+shot beauty_*.png / x7_crack_* X7 beauty shots and the crack measurement     25.7s  ok
 
 ---- assertions ----
 PASS A1 boot with ?morph=0: page ready, errors 0 (curtain build sanity)
 
 PASS a2_ref_ward.png vs a2_morph_ward.png
      A2 endpoint: the default view morphed to ward through the real pill path lands on the ward map
-     MAD 0.0002/255 (limit 2.0)   pixels >12/255: 11 of 1330000 = 0.0008% (limit 0.5%)   max channel diff 29
+     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1330000 = 0.0000% (limit 0.5%)   max channel diff 3
 
 PASS a3_ref_gla.png vs a3_morph_gla.png
      A3 endpoint, non-nested: pcon -> gla lands on the Assembly-seat map
@@ -212,31 +222,31 @@ PASS a3_ref_gla.png vs a3_morph_gla.png
 
 PASS a1_ref_borough.png vs a3_morph_borough.png
      A3 endpoint, merge direction: ward -> borough lands on the borough map, borough outlines stepping back out
-     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1330000 = 0.0000% (limit 0.5%)   max channel diff 1
+     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1330000 = 0.0000% (limit 0.5%)   max channel diff 0
 
 A4 mid-flight progression: does the morph SLIDE?
-     the seed frame and the ward map are 4.3948/255 apart
-     a4_mid25   0.3633 from the seed,  4.1719 from the ward end  ->   8.27% across   (frame landed at 29.1%)
-     a4_mid50   2.5625 from the seed,  2.4001 from the ward end  ->  58.31% across   (frame landed at 55.2%)
-     a4_mid75   4.2979 from the seed,  0.2087 from the ward end  ->  97.80% across   (frame landed at 83.1%)
+     the seed frame and the ward map are 4.4061/255 apart
+     a4_mid25   0.3453 from the seed,  4.1929 from the ward end  ->   7.84% across   (frame landed at 27.0%)
+     a4_mid50   2.3987 from the seed,  2.5743 from the ward end  ->  54.44% across   (frame landed at 52.1%)
+     a4_mid75   4.1860 from the seed,  0.3950 from the ward end  ->  95.00% across   (frame landed at 77.1%)
      pass strictly increasing
      pass p25 >= 1.0%
      pass p50 within 10-90%
      pass p75 <= 99.9%
-PASS A4 the morph interpolates: 8.27% -> 58.31% -> 97.80%
+PASS A4 the morph interpolates: 7.84% -> 54.44% -> 95.00%
 
 PASS a2_ref_ward.png vs a5_interrupt_ward.png
      A5 interrupt: borough->pcon retargeted to ward 300 ms in, landing exactly on the ward map
-     MAD 0.0004/255 (limit 2.0)   pixels >12/255: 21 of 1330000 = 0.0016% (limit 0.5%)   max channel diff 33
+     MAD 0.0002/255 (limit 2.0)   pixels >12/255: 11 of 1330000 = 0.0008% (limit 0.5%)   max channel diff 35
      pass a morph really was in flight when the second pill was clicked
      pass no stuck morphBasis and no stuck switching afterwards
      pass and NOTHING IS LEFT ON EITHER BASIS — see the idle line above
 
 PASS a2_ref_ward.png vs <a5b final frame, in memory>
      A5b a retarget landing INSIDE the seed's warm window still lands exactly on the ward map
-     MAD 0.0004/255 (limit 2.0)   pixels >12/255: 21 of 1330000 = 0.0016% (limit 0.5%)   max channel diff 33
+     MAD 0.0003/255 (limit 2.0)   pixels >12/255: 18 of 1330000 = 0.0014% (limit 0.5%)   max channel diff 32
      pass morphSeed is cleared afterwards, not stranded on the tier the reader left
-     pass the morph was actually DRAWN (207 committed renders, need >= 30)
+     pass the morph was actually DRAWN (265 committed renders, need >= 30)
      pass no watchdog: the commit chain never stalled
      pass and NOTHING IS LEFT ON EITHER BASIS
      STRANDING SHOWS IN ALL THREE AT ONCE, and did before the fix:
@@ -251,28 +261,28 @@ A6 a measure change AFTER a morph still animates (the snap-poisoning regression)
      zero is the settled ward map on the OLD measure, so the chrome the change rewrites
      (title, legend, active pill) is a fixed part of every number below — which is why
      the claim is that they INCREASE, not that any one of them equals the easing.
-        142 ms after the change  ->   47.55% across
-        292 ms after the change  ->   62.32% across
-        486 ms after the change  ->   94.60% across
+        119 ms after the change  ->   45.79% across
+        264 ms after the change  ->   58.18% across
+        483 ms after the change  ->   93.43% across
      pass the first frame is strictly between the two ends (>2% and <98%)
      pass the three frames strictly increase — so it slides rather than cutting or stalling
 PASS A6 the measure change after a morph still animates
 
 PASS a7_ref_oa.png vs a7_morph_oa.png
      A7 suppression: lsoa -> oa on resident_under5y, whose denominator suppresses 294 output areas and none at any coarser grain
-     MAD 0.0005/255 (limit 2.0)   pixels >12/255: 29 of 1330000 = 0.0022% (limit 0.5%)   max channel diff 37
+     MAD 0.0004/255 (limit 2.0)   pixels >12/255: 19 of 1330000 = 0.0014% (limit 0.5%)   max channel diff 34
 
 PASS a8_ref_change.png vs a8_morph_change.png
      A8 change view: 2011->2021 at borough, morphed to ward, landing on the directly loaded change view
-     MAD 0.0001/255 (limit 2.0)   pixels >12/255: 10 of 1330000 = 0.0008% (limit 0.5%)   max channel diff 26
+     MAD 0.0002/255 (limit 2.0)   pixels >12/255: 18 of 1330000 = 0.0014% (limit 0.5%)   max channel diff 24
 
-PASS A9 street mode never morphed: morphActive false in all 113 samples across the switch, errors 0
+PASS A9 street mode never morphed: morphActive false in all 133 samples across the switch, errors 0
 
 PASS a2_ref_ward.png vs <a10 final frame, in memory>
      A10 endpoint after a mid-flight zoom still lands on the ward map
-     MAD 0.0003/255 (limit 2.0)   pixels >12/255: 17 of 1330000 = 0.0013% (limit 0.5%)   max channel diff 33
+     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 1 of 1330000 = 0.0001% (limit 0.5%)   max channel diff 25
      pass elevationScale really did move and come back (1 -> 0.11323210104515069 -> 1)
-     a10_zoom_mid75 is 95.02% across, against a4_mid75's 97.80% (drift 2.78 pts, limit 15)
+     a10_zoom_mid75 is 94.93% across, against a4_mid75's 95.00% (drift 0.07 pts, limit 15)
      A RESTART WOULD SHOW HERE, and did before the fix: this frame came in at 36.39%
      against a4_mid75's 94.99%, a drift of 58.6 points. The cause was NOT the scale — a
      bare redraw() with no scale change at all did the same damage (91% -> 37% at the
@@ -281,12 +291,12 @@ PASS a2_ref_ward.png vs <a10 final frame, in memory>
      object per tier, keyed on the paint counter.
 PASS A10 the in-flight transition survived the elevationScale redraws
 
-PASS A11 reduced motion: TRANSITION 0, no morph in 91 samples, the switch lands instantly
+PASS A11 reduced motion: TRANSITION 0, no morph in 94 samples, the switch lands instantly
 
 PASS a2_ref_ward.png vs <a12 final frame, in memory>
      A12 a morph started with an UNPAINTED basis still lands on the ward map
-     MAD 0.0004/255 (limit 2.0)   pixels >12/255: 28 of 1330000 = 0.0021% (limit 0.5%)   max channel diff 31
-     pass it really morphed rather than falling back to the curtain (morphActive true in 24 of 64 samples)
+     MAD 0.0001/255 (limit 2.0)   pixels >12/255: 4 of 1330000 = 0.0003% (limit 0.5%)   max channel diff 32
+     pass it really morphed rather than falling back to the curtain (morphActive true in 32 of 78 samples)
      WITH morphReady() REQUIRING B.painted THIS CURTAINED: morphActive
      stayed false for the whole switch and for every switch after it,
      while #v3status.morphReady — the field this driver gates on — said true.
@@ -298,13 +308,13 @@ A13 the one-frame flash: a layer revealed on the same commit that first
     sampled region, so it is about TWICE the share of pixels that changed
     luminance bucket: 23.5% here is roughly 11.8% of the region's pixels.
      region [500, 226, 512, 384] of [1400, 950]
-     pass fixed page, first arrival after a measure change    0.01%  (limit 1.00%, 135 frames)
-     pass fixed page on V1'S PATH, ?warp=0                    0.00%  (limit 1.00%, 93 frames)
-     pass ?ghost=0 control, the same route                   14.28%  (floor 5.00%, 110 frames)
+     pass fixed page, first arrival after a measure change    0.00%  (limit 1.00%, 139 frames)
+     pass fixed page on V1'S PATH, ?warp=0                    0.00%  (limit 1.00%, 106 frames)
+     pass ?ghost=0 control, the same route                   14.28%  (floor 5.00%, 114 frames)
           the control's spike is at redraw[vis=ward mb=- sw=0 snap=ward ghost=-] phase:finalise
-     pass measure change landing MID-MORPH                    0.00%  (limit 1.00%, 141 frames)
-     pass the CURTAIN under ?morph=0, the same route          0.00%  (limit 1.00%, 160 frames)
-     .... ?ghost=0 on the WARP path                       0.00%  (REPORTED, 136 frames)
+     pass measure change landing MID-MORPH                    0.01%  (limit 1.00%, 141 frames)
+     pass the CURTAIN under ?morph=0, the same route          0.00%  (limit 1.00%, 164 frames)
+     .... ?ghost=0 on the WARP path                       0.00%  (REPORTED, 139 frames)
      THE WARP PATH DOES NOT REPRODUCE THE DEFECT WITH ITS WARM COMMITS
      TURNED OFF, and this run does not establish why. The honest
      statement is the measurement: on V1's path ?ghost=0 shows the
@@ -333,7 +343,7 @@ PASS A13 no committed frame shows a picture its neighbours do not
 
 PASS a0_v1_ward.png vs a0_v3_warp0_ward.png
      A0 NO REGRESSION, measured against v1 itself: the same borough -> ward route through v1 and through v3 under ?warp=0 land on the same frame
-     MAD 0.0002/255 (limit 2.0)   pixels >12/255: 13 of 1330000 = 0.0010% (limit 0.5%)   max channel diff 32
+     MAD 0.0001/255 (limit 2.0)   pixels >12/255: 5 of 1330000 = 0.0004% (limit 0.5%)   max channel diff 29
 
 S THE SPIKE: does a LayerExtension move a SolidPolygonLayer's vertices at all?
      v2's verdict on deck.gl's own answer stands and is why this exists: declaring
@@ -348,14 +358,14 @@ S THE SPIKE: does a LayerExtension move a SolidPolygonLayer's vertices at all?
      pass the extension is attached and its attribute BOUND: float32 x2 dynamic, 101476 values for 50738 vertices
 PASS s_no_extension.png vs s_ext_at_rest.png
      S1 AT REST the extension is invisible: the page carrying it at morphT 0 against the page built without it at all
-     MAD 0.0002/255 (limit 2.0)   pixels >12/255: 14 of 1330000 = 0.0011% (limit 0.5%)   max channel diff 32
-     note and it is EXACT, not merely close (0.0002/255). It has to be: the displacement
+     MAD 0.0001/255 (limit 2.0)   pixels >12/255: 8 of 1330000 = 0.0006% (limit 0.5%)   max channel diff 29
+     note and it is EXACT, not merely close (0.0001/255). It has to be: the displacement
      is (centroid - vertex) * amount, so amount = 0 multiplies the whole of the
      float32 centroid's error by zero. Every endpoint assertion in this file rests on it.
 
 PASS s_cpu_truth.png vs s_gpu_warp.png
      S2 the SHADER warp reproduces a CPU warp of the same geometry at inset 0.92 — v2's warp in Float64, applied to the position buffer before the first draw so deck.gl tessellates the inset geography itself
-     MAD 0.0033/255 (limit 2.0)   pixels >12/255: 243 of 1330000 = 0.0183% (limit 0.5%)   max channel diff 51
+     MAD 0.0033/255 (limit 2.0)   pixels >12/255: 242 of 1330000 = 0.0182% (limit 0.5%)   max channel diff 51
      ink 0.2714 (CPU truth) vs 0.2714 (GPU warp); uniform at the shot 0.07999999999999996
      THIS IS ALSO THE SIDE-WALL ASSERTION. The top faces are drawn from a
      NON-instanced model and the walls from an INSTANCED one, off the same buffers
@@ -369,11 +379,11 @@ PASS s_cpu_truth.png vs s_gpu_warp.png
 
      pass NO BLANKING: ink 0.2783 at rest and 0.2714 fully warped (floor 0.15, v2's blanked layer 0.0363)
      pass NO WebGL ERRORS from the browser's own log across rest, full warp and a 2 s scrub (0)
-     pass SCRUB 90.6 fps over 181 frames, worst frame 62.2 ms (floor 55)
+     pass SCRUB 178.3 fps over 357 frames, worst frame 12.2 ms (floor 55)
         v2's CPU warp measured 34.5-46.0 fps on this machine, in this harness, at this
         grain, and could not run a value transition at the same time at any speed.
         Headless Chrome does not lock rAF to vsync, so the mean is THROUGHPUT and not a
-        claim about a 60 Hz screen. THE WORST FRAME IS NOT SMALL: 62.2 ms here, against
+        claim about a 60 Hz screen. THE WORST FRAME IS NOT SMALL: 12.2 ms here, against
         8-11 ms measured in isolated probes of the same code. The mean hides it, this
         line does not, and it is carried into the report as an open concern rather than
         as a 60 fps claim.
@@ -381,7 +391,7 @@ PASS S the injection reaches position, draws, and is exact at rest
 
 PASS w_ref_ward.png vs w1_split_end.png
      W1 SPLIT endpoint: borough -> ward as ONE warped gesture lands on exactly the ward map
-     MAD 0.0003/255 (limit 2.0)   pixels >12/255: 17 of 1330000 = 0.0013% (limit 0.5%)   max channel diff 33
+     MAD 0.0003/255 (limit 2.0)   pixels >12/255: 17 of 1330000 = 0.0013% (limit 0.5%)   max channel diff 38
 
 PASS w_ref_borough.png vs w1_merge_end.png
      W1 MERGE endpoint: ward -> borough as ONE warped gesture hands back exactly the borough map
@@ -397,27 +407,27 @@ W2 CONCURRENCY — the claim V3 exists to make
      restart and the two can share one timeline.
      Sampled at the envelope's PEAK, where cubic-in-out is stationary, so the
      screenshot round trip barely moves the displacement and the references can be
-     staged to match it: uniform 0.07991, i.e. morphT 0.9988 of a 1-0.92 crack.
+     staged to match it: uniform 0.07993, i.e. morphT 0.9991 of a 1-0.92 crack.
      pass the page's own inset/peak match this driver's (0.92, 0.38)
-     the two same-crack references are 4.7968/255 apart
-     the live frame is 1.4366/255 from the plateau end and 3.9549/255 from the ward end
-     pass VALUE PROGRESS 29.95% across, strictly interior (band 10-90%)
+     the two same-crack references are 4.7967/255 apart
+     the live frame is 1.4453/255 from the plateau end and 3.9476/255 from the ward end
+     pass VALUE PROGRESS 30.13% across, strictly interior (band 10-90%)
      pass POSITION DISPLACEMENT, from pixels rather than from the page's own report of
-        its uniform: the live frame sits 5.3915/255 from the CRACKED pair and 6.1251/255
+        its uniform: the live frame sits 5.3929/255 from the CRACKED pair and 6.1260/255
         from the same two states with the crack closed, so it belongs to the cracked
         family. A frame whose geometry had not moved could not.
-     pass and the page reports the uniform at 0.07991, 99.9% of a full crack
+     pass and the page reports the uniform at 0.07993, 99.9% of a full crack
 PASS w_ref_ward.png vs w2_end.png
      W2 and the gesture still lands exactly on the ward map
-     MAD 0.0003/255 (limit 2.0)   pixels >12/255: 17 of 1330000 = 0.0013% (limit 0.5%)   max channel diff 33
-     pass W3 the gesture held 141.9 fps over 420 frames, worst 74.8 ms (floor 55)
-     phase log: ["borough->ward (warp)", "seed+5", "reveal+70", "gesture+86", "healed+3090", "finalise+3148"]
-PASS W2/W3 the values and the crack move TOGETHER, at 142 fps
+     MAD 0.0003/255 (limit 2.0)   pixels >12/255: 20 of 1330000 = 0.0015% (limit 0.5%)   max channel diff 38
+     pass W3 the gesture held 179.7 fps over 535 frames, worst 14.0 ms (floor 55)
+     phase log: ["borough->ward (warp)", "seed+5", "reveal+37", "gesture+44", "healed+3046", "finalise+3106"]
+PASS W2/W3 the values and the crack move TOGETHER, at 180 fps
 
 PASS w_ref_ward.png vs <w4 zoom final frame, in memory>
      W4a a zoom landing inside the gesture — two elevationScale layer-stack rebuilds mid-warp — still lands exactly on the ward map
-     MAD 0.0003/255 (limit 2.0)   pixels >12/255: 17 of 1330000 = 0.0013% (limit 0.5%)   max channel diff 33
-     the uniform was 0.07336 when the zoom landed, so the warp really was in flight
+     MAD 0.0004/255 (limit 2.0)   pixels >12/255: 25 of 1330000 = 0.0019% (limit 0.5%)   max channel diff 36
+     the uniform was 0.07346 when the zoom landed, so the warp really was in flight
 
 PASS w_ref_borough.png vs <w4 interrupt final frame, in memory>
      W4b an interrupt landing inside the gesture — the opposite pill at 35% — lands exactly on the borough map
@@ -443,7 +453,7 @@ PASS W5 a warp retargeted onto a non-warp pair retires cleanly
 
 PASS w6_ref_ward_m2.png vs w6_measure_mid_morph_end.png
      W6 a measure change landing mid V1 morph (?warp=0) lands on the directly loaded ward map for that measure
-     MAD 0.0003/255 (limit 2.0)   pixels >12/255: 19 of 1330000 = 0.0014% (limit 0.5%)   max channel diff 37
+     MAD 0.0003/255 (limit 2.0)   pixels >12/255: 23 of 1330000 = 0.0017% (limit 0.5%)   max channel diff 32
      pass a V1 morph really was in flight when the measure changed (basis 'oa')
      THIS IS THE SHAPE OF THE REGRESSION RUN 3 EXPOSED, and the
      reason this arm exists: endMorph() had stopped resetting the
@@ -486,10 +496,10 @@ PASS x_ref_gla.png vs x1b_borough_gla.png
      MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1330000 = 0.0000% (limit 0.5%)   max channel diff 1
 PASS w_ref_borough.png vs x1c_lsoa_borough.png
      X1c lsoa -> borough, cracking 4,994 LSOAs, lands on exactly the borough map
-     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1330000 = 0.0000% (limit 0.5%)   max channel diff 0
+     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1330000 = 0.0000% (limit 0.5%)   max channel diff 1
 PASS x_ref_lsoa.png vs x1d_oa_lsoa.png
      X1d oa -> lsoa, cracking 26,369 OUTPUT AREAS, lands on exactly the neighbourhood map
-     MAD 0.0002/255 (limit 2.0)   pixels >12/255: 13 of 1330000 = 0.0010% (limit 0.5%)   max channel diff 31
+     MAD 0.0002/255 (limit 2.0)   pixels >12/255: 15 of 1330000 = 0.0011% (limit 0.5%)   max channel diff 30
      EVERY ONE OF THESE RESTS ON THE SAME PROPERTY S1 MEASURED:
      the displacement is (centroid - vertex) * amount, so an
      amount of exactly zero multiplies the float32 centroid's
@@ -503,7 +513,7 @@ PASS x_ref_gla.png vs x2a_pcon_gla.png
      MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1330000 = 0.0000% (limit 0.5%)   max channel diff 1
 PASS w_ref_ward.png vs x2b_lsoa_ward.png
      X2b lsoa -> ward as an OA-BASIS SHATTER lands on exactly the ward map
-     MAD 0.0002/255 (limit 2.0)   pixels >12/255: 8 of 1330000 = 0.0006% (limit 0.5%)   max channel diff 33
+     MAD 0.0001/255 (limit 2.0)   pixels >12/255: 3 of 1330000 = 0.0002% (limit 0.5%)   max channel diff 32
      pass X2a the shatter really engaged: the crack was on the output areas and open at the peak
      pass X2b the same, on the other non-nested pair
      THE PICTURE AT THE END CANNOT TELL THESE APART FROM V1.
@@ -529,8 +539,8 @@ PASS X3 a demoted pair takes V1's morph and nothing warps
 PASS x_ref_oa.png vs x4_borough_oa.png
      X4 borough -> oa, 26,435 rings cracking out of 33 borough plateaux, lands on exactly the output-area map
      MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1330000 = 0.0000% (limit 0.5%)   max channel diff 11
-     pass the crack was on the output areas and open mid-gesture (0.07985)
-     .... 168.6 fps over 100 frames, worst 28 ms  (REPORTED, NOT GATED)
+     pass the crack was on the output areas and open mid-gesture (0.08000)
+     .... 177.9 fps over 111 frames, worst 14.3 ms  (REPORTED, NOT GATED)
      THE COST OF THE GRAIN IS ONE FLOAT, AND THAT IS THE CLAIM V2
      COULD NOT MAKE. Its CPU warp rewrote the position buffer
      every frame, so 26,435 rings would have cost ~7x the 731 it
@@ -542,7 +552,7 @@ PASS X4 the warp at output-area grain
 
 PASS x5_ref_oa_z13.png vs x5_zoom_oa_end.png
      X5 the zoom auto-switch at 12.6 — lsoa -> oa driven by the camera — lands on the same frame the curtain reaches by the same route
-     MAD 0.0014/255 (limit 2.0)   pixels >12/255: 81 of 1330000 = 0.0061% (limit 0.5%)   max channel diff 36
+     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1330000 = 0.0000% (limit 0.5%)   max channel diff 1
      pass and it WARPED rather than falling through to V1: ["lsoa->oa (warp)"]
      THE ZOOM PATH IS THE ONE A READER MEETS WITHOUT ASKING.
      It goes through setTier -> apply() like every pill, so the
@@ -554,20 +564,20 @@ PASS X5 the zoom auto-switch warps, and survives an interrupt
 
 PASS x_ref_lsoa.png vs x6_basis_change_end.png
      X6 a warp gesture retargeted onto a pair that cracks a DIFFERENT tier lands on exactly the neighbourhood map
-     MAD 0.0001/255 (limit 2.0)   pixels >12/255: 6 of 1330000 = 0.0005% (limit 0.5%)   max channel diff 29
-     pass the crack really was open on the ward layer when the second pill was clicked (0.07987)
+     MAD 0.0003/255 (limit 2.0)   pixels >12/255: 19 of 1330000 = 0.0014% (limit 0.5%)   max channel diff 31
+     pass the crack really was open on the ward layer when the second pill was clicked (0.07985)
      pass and it was CARRIED rather than snapped: the uniform never fell below 0.07987 between the click and the hand-over
-     pass the ward layer kept its crack FROZEN for the 1 frames it was still the picture after the crack moved to the output areas
+     pass the ward layer kept its crack FROZEN for every frame it was still the picture after the crack moved to the output areas (1 of 1 such frames drawn)
         without that the wards would snap flat on the frame the
         crack moves and reopen on the frame the output areas are
         revealed — a pop in the middle of a gesture, in the one
         place this page promises there is never one.
-     pass and NO FRAME COLLAPSES THE CRACK: the steepest one-frame fall anywhere in the hand-over is 0.00707 of a 0.08000 crack (limit 0.030), at t=3416 ms
+     pass and NO FRAME COLLAPSES THE CRACK: the steepest one-frame fall anywhere in the hand-over is 0.00718 of a 0.08000 crack (limit 0.030), at t=2514 ms
         THIS GATE CAUGHT A REAL ONE, and it is the reason the
         carry is now clocked in frames rather than in wall time.
         Repainting the output-area basis for the retarget blocks
         the main thread — the longest gap between two drawn
-        frames in the tape above is 397 ms — and the 180 ms carry
+        frames in the tape above is 256 ms — and the 180 ms carry
         window was measured from the envelope's t0, so on the
         first frame the reader actually saw, the whole window had
         already expired. Measured before the fix: 0.08000 to
@@ -583,6 +593,34 @@ PASS x_ref_lsoa.png vs x6_basis_change_end.png
      The idle read-back above gates on both.
 PASS X6 a retarget moves the crack between bases and leaves nothing behind
 
+PASS w_ref_borough.png vs x8_stall_end.png
+     X8 a gesture whose envelope ended inside a 600 ms main-thread block still lands on exactly the borough map
+     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1330000 = 0.0000% (limit 0.5%)   max channel diff 0
+PASS w_ref_borough.png vs x8_control_wall.png
+     X8 CONTROL: and so does the build with the defect in it — which is the point of this leg
+     MAD 0.0000/255 (limit 2.0)   pixels >12/255: 0 of 1330000 = 0.0000% (limit 0.5%)   max channel diff 0
+     pass the stall was really staged: 635 ms and 632 ms with nothing drawn, against a 400 ms envelope
+     pass and a full crack really was open when the second pill was clicked (0.08000, 0.08000)
+     pass FIXED    steepest one-frame fall 0.00714  (limit 0.030)
+     pass CONTROL  steepest one-frame fall 0.08000  (floor 0.030)
+     THE CONTROL IS THE ASSERTION THAT THIS PROBE CAN FAIL, and
+     unlike the standing concern about W5 and W6 it is measured on
+     every run rather than argued. Under ?carry=wall the crack
+     falls the WHOLE 0.08000 in one frame — the envelope reaches u=1
+     inside the block, finishes on the first frame it draws, and
+     puts the uniform to zero with the entire 180 ms blend still
+     owed. Both legs land on the borough map to the same tolerance,
+     which is exactly why no endpoint assertion in this file could
+     ever have found it.
+     THE FIX IS TWO THINGS, and the control restores both: the
+     blend is clocked in ACCUMULATED DRAWN-FRAME time (no single
+     frame may advance it by more than 33 ms, so a second stall
+     inside the window cannot step over it either), and the
+     envelope may no longer FINISH while the blend is unfinished.
+     The morph's own hand-off waits for it through whenHealed(),
+     bounded, so a hand-off can still never take a cracked basis.
+PASS X8 an interrupt blend survives a stall that outlives the gesture
+
 X7 THE UNSEEN GRAINS, committed for the eye and not asserted
      beauty_oa_lsoa_crack.png        26,369 output areas cracking
      beauty_lsoa_borough_crack.png   4,994 LSOAs cracking
@@ -592,7 +630,7 @@ X7 THE UNSEEN GRAINS, committed for the eye and not asserted
      grain, from two settled frames of the same map with the
      uniform scrubbed and nothing else changing:
         whole-city (zoom ~10)   MAD 1.3384/255, 5.809% of pixels past 12/255
-        zoomed in  (zoom 12.5)  MAD 4.8229/255, 15.396% of pixels past 12/255
+        zoomed in  (zoom 12.5)  MAD 4.8229/255, 15.397% of pixels past 12/255
      ratio 2.65x more of the frame moves when zoomed in
      THE OWNER ASKED WHETHER A ZOOM-SCALED INSET IS THE RIGHT
      LEVER. Nothing here implements one; the two readings above
@@ -600,7 +638,7 @@ X7 THE UNSEEN GRAINS, committed for the eye and not asserted
      reading of them.
 
 INK GATE: every committed frame shows a drawn map
-     63 PNGs, ink from 0.1975 to 0.8236, floor 0.15
+     65 PNGs, ink from 0.1975 to 0.8236, floor 0.15
      v2 spent a sprint with a BLANK map, a clean page error count and nothing in
      window.onerror, because a WebGL INVALID_OPERATION is not a JavaScript
      exception. errors==0 is not a drawing assertion; this is.

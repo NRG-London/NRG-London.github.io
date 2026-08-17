@@ -60,6 +60,9 @@ pair:
       impossible when one pair warped, and invisible in any endpoint.
   X7  Beauty shots of the unseen grains, plus a measurement of how much of the
       frame an output-area crack actually moves at two zooms.
+  X8  A main-thread stall that outlives the gesture, staged, with a ?carry=wall
+      CONTROL that reproduces the defect — the one arm in this file whose
+      falsifiability is measured on every run rather than argued.
 
 AN INK GATE ON EVERY CAPTURE
 ----------------------------
@@ -160,6 +163,12 @@ MIN_WARP_FPS = 55.0
 # the build that clocked the carry from the envelope's t0 rather than from its
 # first drawn frame). See X6.
 X6_DROP_LIMIT = 0.03
+# X8 stages the stall rather than waiting for one: a morph cut to X8_DUR and the
+# main thread blocked for X8_BLOCK, which is longer, so the envelope ends while
+# nothing is being drawn and the interrupt's blend is still owed in full. The
+# block is issued from a timer so it lands between runWarp's t0 and its first
+# executed frame — where the output-area repaint lands it in the wild.
+X8_DUR, X8_BLOCK = 400, 600
 # Seconds after a state is reached before capturing. The peak-marker pulse runs
 # for PULSE_LEAD + PULSE_TOTAL + 60 = 1.01 s after any paint and then draws one
 # clean frame without it; every committed capture waits that out, so the pulse
@@ -2110,10 +2119,18 @@ def main():
         x6_moved = [s for s in x6_tape if s[1] != "ward"]
         x6_switch = x6_tape.index(x6_moved[0]) if x6_moved else -1
         x6_span = x6_tape[max(0, x6_switch - 4):x6_switch + 5] if x6_switch >= 0 else []
-        # Frames where the crack has moved to the output areas while the ward
-        # layer is STILL the picture (morphSeed standing) — the freeze window.
-        x6_frozen_live = [s for s in x6_tape
-                          if s[1] == "oa" and s[4] == "ward" and "ward" in (s[3] or "")]
+        # Frames in which the crack has already moved to the new basis while the
+        # OLD one is STILL the picture (morphSeed standing) — the freeze window,
+        # and the only frames in which freezing can be seen to matter.
+        #
+        # OBSERVED-OR-PROVABLY-UNNECESSARY, because the window is measured in
+        # frames and a faster machine may not draw one inside it: the gate is
+        # that EVERY such frame had the old basis frozen, which is vacuously
+        # true when there are none — and when there are none, nothing could have
+        # popped. Gating on "at least one was observed" would have made this
+        # leg fail on a machine that is behaving better than this one.
+        x6_seed_frames = [s for s in x6_tape if s[1] != "ward" and s[4] == "ward"]
+        x6_frozen_live = [s for s in x6_seed_frames if "ward" in (s[3] or "")]
         # The lowest the uniform ever got between the click and the take-over.
         x6_dip = min([s[2] for s in x6_tape[:x6_switch + 1]] or [0]) if x6_switch >= 0 else 0
         # THE STEEPEST ONE-FRAME FALL anywhere in the hand-over, which is what a
@@ -2135,6 +2152,88 @@ def main():
             log("        %8d  %-8s %.5f  froz=%-6s seed=%-8s basis=%s"
                 % (s[0], s[1], s[2], s[3] or "-", s[4] or "-", s[5] or "-"))
         log("     log: %s" % json.dumps(mt6.get("log")))
+
+        # ---- X8. A STALL LONGER THAN WHAT IS LEFT OF THE ENVELOPE.
+        #
+        #      X6 covers a stall that lands BEFORE the interrupt's blend. This
+        #      is the one that lands ON TOP of it and runs past the end of the
+        #      gesture, which is a different failure and reachable at the
+        #      PRODUCTION duration: the blend starts on the first frame drawn
+        #      after the retarget, so a stall longer than what is left of a
+        #      750 ms gesture leaves the whole 180 ms of it outstanding at
+        #      u = 1 — and an envelope that simply finishes there puts the
+        #      crack from a full 0.08 to 0 in one frame, through the door
+        #      marked "finished".
+        #
+        #      STAGED RATHER THAN WAITED FOR. The morph is cut to 400 ms and the
+        #      main thread is blocked for 600 ms from a TIMER, which fires after
+        #      apply()'s own microtasks — so the block lands squarely between
+        #      runWarp's t0 and the envelope's first executed frame, which is
+        #      exactly where the OA-basis repaint lands it in the wild. Nothing
+        #      about the page is mocked; the only thing this adds is the stall.
+        #
+        #      AND IT HAS A CONTROL. ?carry=wall restores both halves of what
+        #      the fix changed — the clock and the ordering — so the same leg,
+        #      on the same page, is run twice and the defect is asserted to be
+        #      PRESENT in one and absent in the other. The endpoint is asserted
+        #      in both, because the endpoint is exactly what cannot see this.
+        log("")
+        t0 = time.time()
+
+        def stall_leg(tag, extra, fname):
+            n = Nav(page, base, "?tier=borough&morphdur=%d&highlight=off%s"
+                                % (X8_DUR, extra))
+            got, st, mt = n.poll(morph_capable, timeout=180)
+            ok = check(n, st, got, tag + " boot")
+            n.set_area("ward")
+            got, st, mt = n.poll(logged("gesture"), timeout=60)
+            ok &= check(n, st, got, tag + " gesture")
+            at = log_at(mt, "gesture") or n.clock()
+            n.wait_clock(at + X8_DUR * WARP_PEAK)
+            n.js("""
+              window.__T8 = [];
+              (function s() {
+                if (window.__T8.length > 400) return;
+                window.__T8.push([Math.round(performance.now()), WARP.amount]);
+                requestAnimationFrame(s);
+              })(); 0""")
+            amt = n.js("WARP.amount")
+            n.js('window.__setArea("borough").then(function(){},function(){});'
+                 'setTimeout(function () {'
+                 '  var t = performance.now();'
+                 '  while (performance.now() - t < %d) {}'
+                 '}, 0); 0' % X8_BLOCK)
+            got, st2, mt2 = n.poll(done_morphing, timeout=120)
+            ok &= check(n, st2, got, tag + " endpoint")
+            try:
+                tape = json.loads(n.js("JSON.stringify(window.__T8)") or "[]")
+            except Exception:
+                tape = []
+            drop, drop_at = 0.0, 0
+            for i in range(1, len(tape)):
+                d = tape[i - 1][1] - tape[i][1]
+                if d > drop:
+                    drop, drop_at = d, tape[i][0]
+            gap = max([tape[i][0] - tape[i - 1][0]
+                       for i in range(1, len(tape))] or [0])
+            time.sleep(SETTLE)
+            page.screenshot(OUT / fname)
+            idle = idle_clean(n, tag, log)
+            log("shot %-24s %-44s %5.1fs  %s"
+                % (fname, tag, time.time() - t0, "ok" if ok else "FAILED"))
+            log("     crack %.5f at the click; envelope %d ms, block %d ms, "
+                "longest gap between drawn frames %d ms"
+                % (float(amt or 0), X8_DUR, X8_BLOCK, gap))
+            log("     steepest one-frame fall %.5f of a %.5f crack, at t=%d ms"
+                % (drop, 1 - WARP_INSET, drop_at))
+            log("     log: %s" % json.dumps(mt2.get("log")))
+            return {"ok": ok, "idle": idle, "drop": drop, "gap": gap,
+                    "amt": float(amt or 0), "log": mt2.get("log")}
+
+        x8 = stall_leg("X8 a stall past the end of the envelope",
+                       "", "x8_stall_end.png")
+        x8c = stall_leg("X8 CONTROL ?carry=wall, the clock before the fix",
+                        "&carry=wall", "x8_control_wall.png")
 
         # ---- X7. THE BEAUTY SHOTS, and one measurement to argue about them.
         #
@@ -2947,7 +3046,7 @@ def main():
                           log)
         x6_carried = float(x6_pre.get("warp") or 0) > 0
         x6_kept = x6_switch >= 0 and x6_dip > 0
-        x6_froze = len(x6_frozen_live) > 0
+        x6_froze = len(x6_frozen_live) == len(x6_seed_frames)
         x6_nocollapse = x6_drop <= X6_DROP_LIMIT
         log("     %s the crack really was open on the ward layer when the "
             "second pill was clicked (%.5f)"
@@ -2955,9 +3054,12 @@ def main():
         log("     %s and it was CARRIED rather than snapped: the uniform never "
             "fell below %.5f between the click and the hand-over"
             % ("pass" if x6_kept else "FAIL", x6_dip))
-        log("     %s the ward layer kept its crack FROZEN for the %d frames it "
-            "was still the picture after the crack moved to the output areas"
-            % ("pass" if x6_froze else "FAIL", len(x6_frozen_live)))
+        log("     %s the ward layer kept its crack FROZEN for every frame it "
+            "was still the picture after the crack moved to the output areas "
+            "(%d of %d such frames drawn%s)"
+            % ("pass" if x6_froze else "FAIL", len(x6_frozen_live),
+               len(x6_seed_frames),
+               "; none drawn, so nothing could pop" if not x6_seed_frames else ""))
         log("        without that the wards would snap flat on the frame the")
         log("        crack moves and reopen on the frame the output areas are")
         log("        revealed — a pop in the middle of a gesture, in the one")
@@ -2990,6 +3092,53 @@ def main():
         ok_all &= x6_all
         log("%s X6 a retarget moves the crack between bases and leaves nothing "
             "behind" % ("PASS" if x6_all else "FAIL"))
+        log("")
+
+        # ---- X8 the stall past the end of the envelope, and its control
+        x8_land = compare(OUT / "w_ref_borough.png", OUT / "x8_stall_end.png",
+                          "X8 a gesture whose envelope ended inside a 600 ms "
+                          "main-thread block still lands on exactly the borough map",
+                          log)
+        x8_land &= compare(OUT / "w_ref_borough.png", OUT / "x8_control_wall.png",
+                           "X8 CONTROL: and so does the build with the defect in "
+                           "it — which is the point of this leg",
+                           log)
+        x8_staged = x8["gap"] >= X8_BLOCK * 0.8 and x8c["gap"] >= X8_BLOCK * 0.8
+        x8_open = x8["amt"] > 0 and x8c["amt"] > 0
+        x8_ok = x8["drop"] <= X6_DROP_LIMIT
+        x8_ctl = x8c["drop"] >= X6_DROP_LIMIT
+        log("     %s the stall was really staged: %d ms and %d ms with nothing "
+            "drawn, against a %d ms envelope"
+            % ("pass" if x8_staged else "FAIL", x8["gap"], x8c["gap"], X8_DUR))
+        log("     %s and a full crack really was open when the second pill was "
+            "clicked (%.5f, %.5f)"
+            % ("pass" if x8_open else "FAIL", x8["amt"], x8c["amt"]))
+        log("     %s FIXED    steepest one-frame fall %.5f  (limit %.3f)"
+            % ("pass" if x8_ok else "FAIL", x8["drop"], X6_DROP_LIMIT))
+        log("     %s CONTROL  steepest one-frame fall %.5f  (floor %.3f)"
+            % ("pass" if x8_ctl else "FAIL", x8c["drop"], X6_DROP_LIMIT))
+        log("     THE CONTROL IS THE ASSERTION THAT THIS PROBE CAN FAIL, and")
+        log("     unlike the standing concern about W5 and W6 it is measured on")
+        log("     every run rather than argued. Under ?carry=wall the crack")
+        log("     falls the WHOLE %.5f in one frame — the envelope reaches u=1"
+            % (1 - WARP_INSET))
+        log("     inside the block, finishes on the first frame it draws, and")
+        log("     puts the uniform to zero with the entire 180 ms blend still")
+        log("     owed. Both legs land on the borough map to the same tolerance,")
+        log("     which is exactly why no endpoint assertion in this file could")
+        log("     ever have found it.")
+        log("     THE FIX IS TWO THINGS, and the control restores both: the")
+        log("     blend is clocked in ACCUMULATED DRAWN-FRAME time (no single")
+        log("     frame may advance it by more than %d ms, so a second stall" % 33)
+        log("     inside the window cannot step over it either), and the")
+        log("     envelope may no longer FINISH while the blend is unfinished.")
+        log("     The morph's own hand-off waits for it through whenHealed(),")
+        log("     bounded, so a hand-off can still never take a cracked basis.")
+        x8_all = (x8["ok"] and x8c["ok"] and x8_land and x8_staged and x8_open
+                  and x8_ok and x8_ctl and x8["idle"] and x8c["idle"])
+        ok_all &= x8_all
+        log("%s X8 an interrupt blend survives a stall that outlives the gesture"
+            % ("PASS" if x8_all else "FAIL"))
         log("")
 
         # ---- X7 the beauty shots, reported and not gated
