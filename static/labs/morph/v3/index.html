@@ -2318,8 +2318,10 @@
   // late and stamp the wrong geography onto the map.
   var MORPH = { token: 0, timer: null };
   var MORPH_DUR = TRANSITION ? 750 : 0;
-  // ?morph=0 puts the production curtain back, which is what makes this page an
-  // A/B against the map it was copied from.
+  // ?morph=0 puts the PRE-MORPH curtain back, which is what made this page an
+  // A/B against the map it was copied from. (Production has since taken the
+  // morph and this page's warp, so the curtain is no longer what the live map
+  // does — only what it degrades to. ?warp=0 is the other A/B: v1 exactly.)
   var morphEnabled = params.get("morph") !== "0";
   // Driver affordances, both off by default: a slower morph gives the capture
   // round trip a small enough share of the transition for a mid-flight frame to
@@ -3677,8 +3679,8 @@
   // Everything a morph cannot do without, pulled once the first view is up and
   // never in front of it: the basis geometry, its denominators and values, and
   // the crosswalk. Until this finishes, morphReady() is false and every area
-  // change takes the production curtain — the reader is never blocked, they
-  // just get the old behaviour for the first second or two.
+  // change takes the curtain — the reader is never blocked, they just get the
+  // pre-morph behaviour for the first second or two.
   //
   // The last step is a WARM DRAW: one frame with the basis as the only visible
   // layer. Painting a layer is cheap; DRAWING it for the first time is not,
@@ -3859,12 +3861,24 @@
         }
 
         // Switching AREA TYPE swaps one set of shapes for a different set, so
-        // there is no attribute to interpolate between them — deck.gl can
-        // animate a value, not a change of geometry. What it can do is animate
-        // both sets at once: the outgoing areas sink to ground and fade while
-        // the incoming ones rise out of it. Overlapped like that it reads as a
-        // dissolve rather than the curtain-down-then-up a sequential swap
-        // would give, and it costs one extra frame.
+        // deck.gl has no attribute to interpolate BETWEEN THE TWO LAYERS: its
+        // transitions animate a value on one layer, and neither layer's values
+        // mean anything to the other. That is a limit on deck.gl's attribute
+        // transitions, and it is NOT the general truth it used to be written as
+        // here. This page disproves it twice over. The morph animates every
+        // switch on ONE fixed geometry (the finer tier of the pair, or the
+        // output areas every coarser tier was dissolved from), painted with
+        // whichever tier's values it is standing in for — so what interpolates
+        // is a value after all. And the WARP then moves the vertices as well,
+        // in the vertex shader, where deck.gl never learns that anything moved
+        // and therefore never has to interpolate them: see THE GPU BOUNDARY
+        // WARP above.
+        //
+        // `crossFade` is what remains when the morph cannot take a switch: the
+        // curtain, in the last branch below. Its name is a leftover from an
+        // overlapping dissolve that was tried and abandoned — two partitions of
+        // the same ground at part height interpenetrate and z-fight — so the
+        // path it gates is strictly sequential, down and then up.
         //
         // The incoming set has to be rendered FLAT for that frame first. A
         // layer appearing for the first time has no previous attribute value,
@@ -3915,6 +3929,11 @@
           switching = true;
           morphTier(from, T, m, fromVals, fromNd, !!(plan && plan.mode === "oa"));
         } else if (crossFade) {
+          // FALLBACK PATH — the morph and the warp above supersede this; kept
+          // for street mode, reduced motion, ?morph=0 and the warm-up window.
+          // Everything in this branch describes its own logic, not a limit on
+          // the page.
+          //
           // CURTAIN DOWN, then UP. The outgoing areas sink to ground on their
           // own, and only once they are flat do the incoming ones rise. The
           // sequence costs a couple of hundred milliseconds over an overlap and
@@ -4031,10 +4050,11 @@
 
   // Switching year is a change of VALUE on identical bars, so it uses the
   // ordinary measure transition — deck.gl interpolates the heights and colours
-  // straight across. The curtain down-and-up belongs to an area-type change,
-  // where the shapes themselves are replaced and there is nothing to
-  // interpolate; using it here would make a comparison between two censuses
-  // harder to see, which is the one thing this view exists to make easy.
+  // straight across. An area-type change replaces the shapes themselves, which
+  // is why it gets the morph and the crack instead (and the curtain only when
+  // both stand down); any of those here would make a comparison between two
+  // censuses harder to see, which is the one thing this view exists to make
+  // easy.
   function setYear(y) {
     if (y === yearSel) return Promise.resolve();
     yearSel = y;
