@@ -5,8 +5,8 @@ category: "Policing & Crime"
 themes: ["Tackling Crime"]
 image: "/images/campaigns/tracking-crime-card.jpg"
 stat: "+31%"
-stat_label: "London's recorded crime since 2013, against +54% elsewhere"
-summary: "How much crime is there in London, and is it getting better or worse? The honest answer needs a like-for-like comparison with the rest of the country. This interactive chart gives you one — nineteen crime types, back to 2012, London against everywhere else."
+stat_label: "London's recorded crime since 2013"
+summary: "How much crime is there in London, and is it getting better or worse? How does it compare with the rest of the country?"
 ---
 
 > Is crime in London rising or falling? Is it high or low compared with the rest of England and Wales? Cut through the arguments to the facts with my interactive London crime chart.
