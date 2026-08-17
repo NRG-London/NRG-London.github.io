@@ -8,24 +8,44 @@
   almost nothing for several charts in one article.
 
   Progressive enhancement, not a fallback:
-    - The spec carries `bakedSvg`, the default view pre-rendered by the STATIC
-      engine (charts.js) at build time. That is written straight into the page,
+    - The spec carries a pre-rendered SVG of the STARTING VIEW, produced at
+      build time by the static engine. That is written straight into the page,
       so a reader with JavaScript off — or a crawler, or a feed reader — gets a
       complete, correct, house-styled chart rather than an empty box.
     - charts-live.js then replaces it at IDENTICAL geometry (both engines read
       GEOM from chart-core.js) and reveals the controls. No flash, no layout
-      shift, no dead buttons if the script never arrives.
+      shift, and no dead buttons if the script never arrives.
+
+  Usage — no starting view, positional slug:
+    {{< ng-chart "london-crime-charts" >}}
+
+  Usage — with a starting view, EVERYTHING NAMED including the slug:
+    {{< ng-chart slug="london-crime-charts" crime="knife" compare="rew" >}}
+    {{< ng-chart slug="london-crime-charts" crime="homicide" encoding="rate" >}}
+
+  ⚠ Hugo refuses to mix positional and named parameters. Writing
+      {{< ng-chart "london-crime-charts" crime="knife" >}}
+  fails the whole build with "Cannot mix named and positional parameters",
+  which does not obviously point at the fix. Use slug="..." as soon as you pass
+  any other parameter.
+
+  STARTING VIEW. Any of crime / period / compare / encoding may be given to
+  choose which view the chart opens on; anything omitted falls back to the
+  chart's own default. The reader can still change everything afterwards — this
+  sets the opening state, not a restriction.
+
+  Each starting view needs its own baked SVG, or a reader without JavaScript
+  would be shown a different chart from the one the page is about. publish.py
+  scans this content directory for ng-chart calls and bakes exactly the views it
+  finds, so adding a new combination here means re-running publish.py. If the
+  SVG is missing this shortcode fails the build rather than quietly serving the
+  wrong picture.
 
   Data lives in data/charts/<slug>.json and is inlined at BUILD time, so a data
-  refresh is a page change — no ?v= cache-buster to remember to bump, unlike the
-  3D embeds.
+  refresh is a page change — no ?v= cache-buster to remember to bump.
 
   Stays inside the 800px .page-content column. The 80vw break-out exists because
   a 3D scene needs the width; a bar chart does not.
-
-  Usage:
-    {{< ng-chart "london-crime-charts" >}}
-    {{< ng-chart slug="london-crime-charts" >}}
 
   Built by: platform/branding/interactive.py  (publish())
   Needs:    /js/chart-core.js, /js/charts.js, /js/charts-live.js,
@@ -42,10 +62,53 @@
   {{- errorf "ng-chart: no data/charts/%s.json (page %s). Run publish.py." $slug .Page.File.Path -}}
 {{- end -}}
 
-{{- $id := printf "ngchart-%s" $slug -}}
-{{- $initial := $spec.initial -}}
-{{- $copy := index $spec.copy $initial.crime -}}
+{{- /* Starting view: the chart's default, with any given dimension overridden. */ -}}
+{{- $dims := slice "crime" "period" "compare" "encoding" -}}
+{{- $view := dict -}}
+{{- range $dim := $dims -}}
+  {{- $given := $.Get $dim -}}
+  {{- $view = merge $view (dict $dim (or $given (index $spec.initial $dim))) -}}
+{{- end -}}
+
+{{- /* Reject a dimension that does not exist before it silently does nothing. */ -}}
+{{- range $d := $spec.dims -}}
+  {{- $chosen := index $view $d.key -}}
+  {{- $keys := slice -}}
+  {{- range $d.options }}{{ $keys = $keys | append .key }}{{ end -}}
+  {{- if not (in $keys $chosen) -}}
+    {{- errorf "ng-chart: %s=%q is not one of this chart's options (%s) on page %s"
+        $d.key $chosen (delimit $keys ", ") $.Page.File.Path -}}
+  {{- end -}}
+{{- end -}}
+
+{{- $key := delimit (slice $view.crime $view.period $view.compare $view.encoding) "|" -}}
+{{- $baked := index ($spec.bakedViews | default dict) $key -}}
+{{- if not $baked -}}
+  {{- errorf "ng-chart: no baked SVG for view %q on page %s. Re-run publish.py — it bakes the views the content asks for." $key $.Page.File.Path -}}
+{{- end -}}
+
+{{- /* .Ordinal, not just the slug: the same chart can legitimately appear more
+       than once on a page opened on different starting views, and a slug-only
+       id gives every copy the same one. getElementById then returns the first
+       every time, so only the first chart mounts and the rest sit there as
+       static SVGs — with duplicate ids in the markup to boot. */ -}}
+{{- $id := printf "ngchart-%s-%d" $slug .Ordinal -}}
+{{- $copy := index $spec.copy $view.crime -}}
 {{- $frame := $spec.frame -}}
+
+{{- /* Only what charts-live.js actually reads. Dropping meta, frame and the
+       baked SVGs keeps tens of kilobytes of duplicate payload out of the page —
+       the SVG is already in the markup above, and the engine never reads it. */ -}}
+{{- $payload := dict
+      "id" $spec.id
+      "tone" $spec.tone
+      "palette" $spec.palette
+      "dims" $spec.dims
+      "availability" $spec.availability
+      "datasets" $spec.datasets
+      "copy" $spec.copy
+      "notes" $spec.notes
+      "initial" $view -}}
 
 <figure class="ng-chart" data-tone="{{ $spec.tone | default "editorial" }}">
   {{- with $frame.eyebrow }}
@@ -53,9 +116,7 @@
   {{- end }}
   <h3 class="ng-chart__title">{{ $copy.title }}</h3>
   <p class="ng-chart__subtitle"></p>
-  <div class="ng-chart__plot" id="{{ $id }}">
-    {{- with $spec.bakedSvg }}{{ . | safeHTML }}{{ end -}}
-  </div>
+  <div class="ng-chart__plot" id="{{ $id }}">{{ $baked | safeHTML }}</div>
   <div class="ng-chart__foot">
     <span class="ng-chart__source">Source: {{ $copy.source | default $frame.source }}</span>
     <span class="ng-chart__tag">{{ $frame.tag | default "NeilGarratt.com" }}</span>
@@ -66,7 +127,7 @@
        safeJS is required: inside a <script> element Go's contextual escaper
        treats the value as JS and would re-encode the JSON as a JS *string*,
        leaving JSON.parse() with a string instead of an object. */ -}}
-<script type="application/json" id="{{ $id }}-data">{{ $spec | jsonify | safeJS }}</script>
+<script type="application/json" id="{{ $id }}-data">{{ $payload | jsonify | safeJS }}</script>
 
 {{- /* Load the engines once per page, however many charts it holds. */ -}}
 {{- if not (.Page.Scratch.Get "ngChartAssets") -}}
