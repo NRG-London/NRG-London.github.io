@@ -83,6 +83,42 @@
     var fit = C.fitCategoryLabels(data.map(function (d) { return d.label; }),
                                   step, th.dark ? 14.5 : 13.5);
     H += fit.extraBottom;
+
+    /* Value labels take the same ladder charts-live.js runs, for the same
+       reason the category labels do. This engine used to draw them
+       unconditionally while the live engine hid them past fourteen bars, so a
+       seventeen-year series baked seventeen colliding numbers into the no-JS SVG
+       and then had them vanish the moment the script arrived. Both engines now
+       ask chart-core the same question and get the same answer.
+
+       A bar carrying a `note` ("No data") opts out: that is annotation, not a
+       number, and it has no coarser form to fall back to. */
+    var valSize = th.dark ? 16 : 14;
+    var hasNotes = data.some(function (d) { return d.note != null; });
+    var vfit;
+    if (opts.valueLabels === false) {
+      vfit = { show: false };
+    } else if (hasNotes) {
+      vfit = { show: true, coarse: false, fontSize: valSize };
+    } else {
+      var vals = data.map(function (d) { return d.value; });
+      var mk = function (coarse) {
+        return vals.map(function (v) {
+          return v == null ? '' : fmtCompact(v, opts.unit, coarse ? 0 : null);
+        });
+      };
+      var coarse = mk(true);
+      var collapses = vals.some(function (v, i) {
+        return v != null && v !== 0 && parseFloat(coarse[i]) === 0;
+      });
+      vfit = C.fitValueLabels([
+        { labels: mk(false), fontSize: valSize, coarse: false },
+        !collapses && { labels: coarse, fontSize: valSize, coarse: true },
+        !collapses && { labels: coarse, fontSize: valSize - 2, coarse: true }
+      ], step);
+      vfit.coarse = vfit.rung > 0;
+    }
+
     var svg = '';
 
     // gridlines + y axis labels
@@ -108,8 +144,8 @@
       var fill = d.highlight ? th.highlight : (opts.mono ? th.series[0] : th.series[i % th.series.length]);
       if (opts.dimOthers && !d.highlight) fill = th.muted;
       svg += el('rect', { x: bx, y: by, width: bw, height: Math.max(0, bh), fill: fill, rx: G.rx });
-      if (opts.valueLabels !== false && (hasVal || isNote)) {
-        var lab = isNote ? d.note : fmtCompact(v, opts.unit);
+      if (vfit.show && (hasVal || isNote)) {
+        var lab = isNote ? d.note : fmtCompact(v, opts.unit, vfit.coarse ? 0 : null);
         // A bar near the axis maximum has no room above its cap, and the
         // label's ascenders would be clipped by the top of the viewBox
         // (e.g. 99.0k against a 100k axis). Drop it inside the bar instead.
@@ -118,6 +154,10 @@
           : (isNote ? th.sub : (d.highlight ? fill : th.text));
         svg += txt(cx, place.y, lab, 'ngc-val', {
           fill: labFill, 'text-anchor': 'middle',
+          // Inline style, not a font-size attribute: .ngc-val carries a size and
+          // a CSS declaration beats a presentation attribute, so the small rung
+          // would silently render at the full size.
+          style: vfit.fontSize === valSize ? null : 'font-size:' + vfit.fontSize + 'px',
           'font-weight': isNote ? 500 : (d.highlight ? 700 : 600)
         });
       }

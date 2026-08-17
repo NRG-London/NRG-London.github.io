@@ -31,7 +31,9 @@
   display: inline-flex; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem;
 }
 .ng-chart__eyebrow::before { content: ''; width: 20px; height: 2px; background: var(--blue, #0070BA); flex: none; }
-.ng-chart__title { font-family: var(--serif, 'Libre Baskerville', Georgia, serif); font-size: 1.2rem; font-weight: 700; line-height: 1.3; letter-spacing: -0.01em; color: var(--ink, #1a2332); }
+/* padding-right clears the download button, which is absolutely positioned in
+   the same corner; without it a long title runs underneath it. */
+.ng-chart__title { font-family: var(--serif, 'Libre Baskerville', Georgia, serif); font-size: 1.2rem; font-weight: 700; line-height: 1.3; letter-spacing: -0.01em; color: var(--ink, #1a2332); padding-right: 2.6rem; }
 .ng-chart__subtitle { font-size: 0.9rem; color: var(--mid-grey, #8a9490); margin-top: 0.35rem; line-height: 1.5; }
 .ng-chart__plot { margin: 1.4rem 0 0.5rem; }
 .ng-chart__foot {
@@ -89,10 +91,13 @@
    The controls are hidden until charts-live.js mounts, so a reader
    with JS off never sees dead buttons under a static chart.
    ================================================================ */
+/* Below the source rule, not between the plot and it. A reader screenshotting
+   the chart crops to the title and the bars; keeping the controls last means
+   that crop still carries the source line and the tag. */
 .ngl-controls[hidden] { display: none; }
 .ngl-controls {
   display: flex; flex-direction: column; gap: 0.55rem;
-  margin: 1.1rem 0 0.2rem;
+  margin: 1.25rem 0 0;
 }
 
 .ngl-chiprow { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.45rem 0.5rem; }
@@ -162,12 +167,45 @@
 .ngl-bar:focus { outline: none; }
 .ngl-bar:focus-visible rect { stroke: var(--blue, #0070BA); stroke-width: 2; }
 
-/* the note line under the plot (recency / provisional caveats) */
+/* ── the note line (recency / provisional caveats) ──
+   Sits between the plot and the source rule, ABOVE the controls. A caveat that
+   can be cropped away from the bars it qualifies is not doing its job. */
 .ngl-note {
   font-size: 0.72rem; color: var(--mid-grey, #8a9490); line-height: 1.5;
   margin-top: 0.7rem; font-style: italic;
 }
+/* No note, no gap — the margin would otherwise open a hole above the rule. */
+.ngl-note:empty { margin: 0; }
 .ng-chart[data-tone="bold"] .ngl-note { color: rgba(243,246,244,0.5); }
+
+/* ── download ──
+   Top-right of the card, where a reader expects to find it. The card is already
+   position:relative. It is chrome, never part of the picture: chart-export.js
+   composes its own frame, so the button cannot appear in the downloaded PNG. */
+.ngl-download {
+  position: absolute; top: 1.4rem; right: 1.4rem; z-index: 5;
+  appearance: none; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 2rem; height: 2rem; padding: 0;
+  color: var(--mid-grey, #8a9490);
+  background: transparent;
+  border: 1px solid var(--warm-grey, #dde3df);
+  border-radius: 999px;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+.ngl-download:hover:not(:disabled) {
+  color: var(--blue-dark, #004d80); background: var(--blue-light, #E2EEF7);
+  border-color: var(--blue-muted, #5a9fd4);
+}
+.ngl-download:focus-visible { outline: 2px solid var(--blue, #0070BA); outline-offset: 2px; }
+/* Busy: the font fetch and the raster take a moment on a first click. */
+.ngl-download[data-busy] { opacity: 0.5; cursor: progress; }
+.ng-chart[data-tone="bold"] .ngl-download {
+  color: rgba(243,246,244,0.72); border-color: rgba(243,246,244,0.22);
+}
+.ng-chart[data-tone="bold"] .ngl-download:hover:not(:disabled) {
+  color: var(--paper, #f3f6f4); background: rgba(243,246,244,0.10);
+}
 
 /* screen-reader-only live region */
 .ngl-sr {

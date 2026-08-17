@@ -73,16 +73,93 @@
      per 1,000, its homicide rate ~0.012. Fixing one decimal renders the second
      as "0.0" on every bar and an axis of five zeroes, so the precision comes
      from the axis step - exactly enough to tell adjacent ticks apart. */
-  function formatValue(v, encoding, step) {
+  /* `fmt` is chosen once per chart by valueLabelFit: { decimals, coarse }. */
+  function formatValue(v, encoding, fmt) {
     if (v == null) return '';
     if (encoding === 'index') return Math.round(v).toString();
-    if (encoding === 'rate') return v.toFixed(C.decimalsFor(step));
-    return C.fmtCompact(Math.round(v), '');
+    if (encoding === 'rate') return v.toFixed(fmt.decimals);
+    return C.fmtCompact(Math.round(v), '', fmt.coarse ? 0 : null);
   }
+
+  /* Ticks keep taking their precision from the axis step, and should: they sit
+     on round numbers by construction, so 0, 1, 2, 3 is exactly right and "4.00"
+     would be noise. Bar labels are a different problem — see rateFormat. */
   function formatTick(v, encoding, step) {
     if (encoding === 'rate') return v.toFixed(C.decimalsFor(step));
     return C.fmtCompact(v, '');
   }
+
+  /* How many decimals a RATE series needs on its bars.
+     Not decimalsFor(step), which is what the bars used to use and which reads
+     the axis rather than the data. London's robbery rate runs 3.2 to 4.5 per
+     1,000; that axis has a step of 1, so every bar rendered as a flat "4". The
+     axis was right and the bars were useless.
+
+     Three significant figures at the magnitude of the largest bar. The largest
+     rather than each bar's own, because one precision has to serve the whole
+     chart, and because keying off the smallest would let a near-zero value push
+     the big ones to "400.00000". */
+  function rateDecimals(values) {
+    var max = 0;
+    values.forEach(function (v) { if (v != null) max = Math.max(max, Math.abs(v)); });
+    return C.decimalsForSig(max, 3);
+  }
+
+  /* The exact figure, for the tooltip only.
+     The bar-top label is abbreviated so a long series still fits — that is the
+     ladder's whole job — which only works if the precise number is one hover
+     away. So the two do different jobs: the label carries the shape, this
+     carries the figure.
+
+     It also takes no axis step, which is what fixes a real defect: showTip used
+     to call formatValue WITHOUT one, so decimalsFor(undefined) returned 0 and
+     every rate rendered with no decimals at all. London's homicide rate read as
+     "0". Significant figures are the right unit here anyway — a tooltip shows
+     one number and has no neighbouring ticks to stay consistent with. */
+  function formatExact(v, encoding) {
+    if (v == null) return 'no data';
+    if (encoding === 'index') return v.toFixed(1);
+    if (encoding === 'rate') return v.toFixed(C.decimalsForSig(v, 3));
+    return C.fmtNum(Math.round(v));
+  }
+
+  /* ---------- the value-label ladder ----------
+     Build the rungs this encoding can offer and let chart-core pick the first
+     that fits. Full precision, then coarse, then coarse a size down, then none.
+
+     The coarse rung is withheld — a null the ladder skips — when it would render
+     a value that is genuinely there as a flat zero. That is the homicide rate at
+     0.012: coarsened it reads 0.00, which is not a rounder version of the truth
+     but a different and wrong claim. */
+  function valueLabelRungs(values, encoding, size) {
+    var dec = encoding === 'rate' ? rateDecimals(values) : 0;
+    var fmts = [
+      { decimals: dec, coarse: false },
+      { decimals: Math.max(0, dec - 1), coarse: true }
+    ];
+    function labels(fmt) {
+      return values.map(function (v) { return formatValue(v, encoding, fmt); });
+    }
+    var full = labels(fmts[0]);
+    var coarse = labels(fmts[1]);
+
+    var collapses = values.some(function (v, i) {
+      return v != null && v !== 0 && parseFloat(coarse[i]) === 0;
+    });
+    if (collapses) coarse = null;
+
+    return [
+      { labels: full, fontSize: size, fmt: fmts[0] },
+      coarse && { labels: coarse, fontSize: size, fmt: fmts[1] },
+      coarse && { labels: coarse, fontSize: size - 2, fmt: fmts[1] }
+    ];
+  }
+
+  // Matches .ngc-val in ng-chart.css, including the bold tone's larger size.
+  // The small rung steps down rather than shrinking away: two points still sits
+  // comfortably against the category labels, where less starts to read as a
+  // footnote rather than a value.
+  function valFontSize(theme) { return theme.dark ? 16 : 14; }
 
   /* ================================================================
      LAYOUT
@@ -153,12 +230,26 @@
                  label: formatTick(t, view.encoding, sc.step) };
       }),
       bars: bars, cats: catLabels, dataset: dataset, values: values,
-      showValueLabels: !grouped && n <= 14,
+      encoding: view.encoding,
+      valueLabels: valueLabelFit(grouped, values[0], view.encoding, slot, theme),
       seriesNames: dataset.series.slice(0, nS).map(function (s) { return s.name; }),
       seriesColors: dataset.series.slice(0, nS).map(function (_, i) {
         return theme.series[i % theme.series.length];
       })
     };
+  }
+
+  /* Grouped bars stay label-free, and that is a decision rather than a fitting
+     outcome. Two series to a slot halves the room, but the real reason is that a
+     comparison chart is read as two shapes against each other — twenty-six
+     numbers competing across it is the clutter, not the information. The legend
+     and the tooltip carry the detail. */
+  function valueLabelFit(grouped, values, encoding, slot, theme) {
+    if (grouped) return { show: false };
+    var rungs = valueLabelRungs(values, encoding, valFontSize(theme));
+    var fit = C.fitValueLabels(rungs, slot);
+    fit.fmt = fit.rung >= 0 ? rungs[fit.rung].fmt : { decimals: 0, coarse: false };
+    return fit;
   }
 
   function makeBar(key, x, w, v, y, baseline, fill, ci, si, cat, dataset) {
@@ -311,10 +402,13 @@
         box.appendChild(row);
       });
 
+      // LAST in the figure, below the source line — not between the plot and
+      // the foot, where they used to go. A reader screenshotting the chart crops
+      // to the title and the bars, which left the source and the NeilGarratt.com
+      // tag stranded below the controls and out of the picture. Putting the
+      // chrome after the rule means the tidy crop is also the honest one.
       if (!existing && figure) {
-        var plot = figure.querySelector('.ng-chart__plot');
-        if (plot && plot.parentNode) plot.parentNode.insertBefore(box, plot.nextSibling);
-        else figure.appendChild(box);
+        figure.appendChild(box);
       } else if (!existing) {
         host.appendChild(box);
       }
@@ -322,9 +416,73 @@
       return { box: box, rows: rows };
     }
 
+    // The caveats travel with the chart for the same reason: above the rule, so
+    // "recent periods are provisional" cannot be cropped away from the bars it
+    // is about.
     var noteEl = document.createElement('p');
     noteEl.className = 'ngl-note';
-    (figure || host).insertBefore(noteEl, controls.box.nextSibling);
+    var foot = figure && figure.querySelector('.ng-chart__foot');
+    if (foot) figure.insertBefore(noteEl, foot);
+    else (figure || host).insertBefore(noteEl, controls.box);
+
+    /* ---------- download ----------
+       Only built when chart-export.js is present, the same bargain the controls
+       make: no script, no dead button. */
+    var downloadBtn = global.NGExport && figure ? buildDownload() : null;
+
+    function buildDownload() {
+      var b = figure.querySelector('.ngl-download') || document.createElement('button');
+      b.className = 'ngl-download';
+      b.type = 'button';
+      // An inline arrow rather than the ⬇ character, which arrives at a
+      // different weight on every platform and is an emoji on some.
+      b.innerHTML =
+        '<svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true" '
+        + 'fill="none" stroke="currentColor" stroke-width="1.7" '
+        + 'stroke-linecap="round" stroke-linejoin="round">'
+        + '<path d="M10 3v9m0 0 3.5-3.5M10 12 6.5 8.5"/>'
+        + '<path d="M3.5 14v2.5h13V14"/></svg>'
+        + '<span class="ngl-sr">Download this chart as an image</span>';
+      b.setAttribute('aria-label', 'Download this chart as an image');
+      b.title = 'Download this chart as an image';
+      b.addEventListener('click', runDownload);
+      if (!b.parentNode) figure.appendChild(b);
+      return b;
+    }
+
+    function runDownload() {
+      if (downloadBtn.disabled) return;
+      // Land the transition first. A chart caught mid-swoosh still holds the
+      // OUTGOING ticks and bars — they are only removed when the transition
+      // finishes — so exporting during one produces a chart with two y-axes
+      // fading through each other. The reader asked for the view they chose,
+      // which is where the animation is going, not a frame of it.
+      if (pendingFinish) pendingFinish();
+      downloadBtn.disabled = true;
+      downloadBtn.setAttribute('data-busy', '1');
+      global.NGExport.download(figure, downloadFilename())
+        .catch(function (err) {
+          if (global.console) console.error('chart download failed', err);
+          live.textContent = 'Sorry — the chart could not be downloaded.';
+        })
+        .then(function () {
+          downloadBtn.disabled = false;
+          downloadBtn.removeAttribute('data-busy');
+        });
+    }
+
+    /* Named from the chips the reader actually chose, so the file says what it
+       is once it is sitting in a Downloads folder among fifty others. */
+    function downloadFilename() {
+      var parts = [spec.id];
+      spec.dims.forEach(function (dim) {
+        var chosen = null;
+        dim.options.forEach(function (o) { if (o.key === view[dim.key]) chosen = o.label; });
+        if (chosen) parts.push(chosen);
+      });
+      return parts.join('-').toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') + '.png';
+    }
 
     /* ---------- state ---------- */
     function availableFor(dim) {
@@ -496,6 +654,17 @@
       (layout ? layout.bars : []).forEach(function (b) { byKey[b.key] = b; });
       var targetKeys = {};
 
+      /* Bar HEIGHTS always tween — in pixel space, which is what makes an axis
+         rescale read as a morph. The NUMBER on the cap is a different matter:
+         it may only tween while it stays the same kind of number.
+
+         Counts to per-1,000 moves a bar from 30,069 to 3.56. Interpolating that
+         walks through 15,018 and prints it as a rate, so for half a second the
+         chart states a figure that is not true in either unit. On an encoding
+         change the label therefore holds its final value and simply fades in
+         over the moving bar. */
+      var unitChanged = !layout || layout.encoding !== target.encoding;
+
       target.bars.forEach(function (b) {
         targetKeys[b.key] = 1;
         var prev = byKey[b.key];
@@ -503,6 +672,7 @@
         var from = prev
           ? { x: prev.x, w: prev.w, y: prev.y, h: prev.h, fill: prev.fill, value: prev.value }
           : { x: b.x, w: b.w, y: target.baseline, h: 0, fill: b.fill, value: 0 };
+        if (unitChanged) from.value = b.value;
         frames.push({ node: node, from: from, to: b, exiting: false });
       });
 
@@ -654,14 +824,22 @@
 
       var label = f.node.querySelector('.ngl-vallabel');
       if (!label) return;
-      if (f.exiting || !target.showValueLabels || to.value == null) {
+      var vl = target.valueLabels;
+      if (f.exiting || !vl.show || to.value == null) {
         label.setAttribute('opacity', f.exiting ? 1 - e : 0);
         return;
       }
       // Tween the number itself, reformatting each frame — a bar that grows
-      // while its label sits at the old figure looks broken.
+      // while its label sits at the old figure looks broken. The precision and
+      // size are the TARGET's throughout: a transition that changes rung would
+      // otherwise reformat mid-flight, and the width the ladder was chosen to
+      // respect is the width at the end.
       var v = lerp(from.value == null ? 0 : from.value, to.value, e);
-      label.textContent = formatValue(v, view.encoding, target.step);
+      label.textContent = formatValue(v, view.encoding, vl.fmt);
+      // style, not the font-size attribute: .ngc-val in ng-chart.css sets a size
+      // and a CSS declaration beats a presentation attribute, so the attribute
+      // would be silently ignored and the small rung would render at 14px.
+      label.style.fontSize = vl.fontSize + 'px';
       label.setAttribute('x', x + w / 2);
       // Placement follows the animated geometry, so a bar that grows past the
       // point where its label fits above the cap moves it inside as it goes.
@@ -753,12 +931,17 @@
       var html = '<span class="ngl-tooltip__key">' + C.esc(when) + '</span><br>';
       if (layout.grouped) html += C.esc(name) + ': ';
       html += '<span class="ngl-tooltip__val">'
-            + (bar.value == null ? 'no data' : formatValue(bar.value, view.encoding))
-            + (view.encoding === 'rate' ? ' per 1,000' : '')
+            + formatExact(bar.value, view.encoding)
+            + (view.encoding === 'rate' && bar.value != null ? ' per 1,000' : '')
             + '</span>';
       if (view.encoding !== 'count') {
         var rawv = ds.series[bar.seriesIndex].values[bar.catIndex];
-        html += '<br><span class="ngl-tooltip__val">' + C.fmtNum(rawv) + '</span> recorded';
+        // fmtNum calls toLocaleString, which throws on null. A gap in the series
+        // should read as a gap, not take the tooltip down with it.
+        if (rawv != null) {
+          html += '<br><span class="ngl-tooltip__val">' + C.fmtNum(rawv)
+                + '</span> recorded';
+        }
       }
       if (cov && cov.material && cov.missing && cov.missing.length) {
         html += '<div class="ngl-tooltip__note">Undercounts: '
@@ -792,6 +975,10 @@
       setMany: setMany,
       view: function () { return JSON.parse(JSON.stringify(view)); },
       setTransition: function (ms) { duration = ms; },
+      // Jump any in-flight transition to its end state, removing the exiting
+      // nodes. Anything that reads the DOM rather than watches it — the export,
+      // a capture driver — wants the settled chart, not a frame of the swoosh.
+      settle: function () { if (pendingFinish) pendingFinish(); },
       refresh: refresh
     };
 

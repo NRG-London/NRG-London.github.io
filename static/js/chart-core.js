@@ -16,11 +16,12 @@
      NGCore.resolveTheme(tone, pal)  -> resolved colours, pure
      NGCore.lin(d0,d1,r0,r1)         -> linear scale fn
      NGCore.niceScale(min,max,n)     -> { min, max, step, ticks }
-     NGCore.fmtCompact(v, unit) / fmtNum(v) / esc(s)
+     NGCore.fmtCompact(v, unit, decimals) / fmtNum(v) / esc(s)
      NGCore.valueLabelPlacement(barTop, barHeight, geom)
      NGCore.readableOn(bgHex)
-     NGCore.decimalsFor(step)
+     NGCore.decimalsFor(step) / decimalsForSig(v, sig)
      NGCore.fitCategoryLabels(labels, slotWidth, fontSize)
+     NGCore.fitValueLabels(rungs, slotWidth)
      NGCore.mix(a,b,t) / hexToRgb / rgbToHex
      NGCore.GEOM                     -> per-chart-type geometry
      NGCore.PALETTES / TONES / SEQ / DIV / INK / PAPER / DEEP
@@ -188,14 +189,43 @@
     return { min: nMin, max: nMax, step: step, ticks: ticks };
   }
 
-  /* ---------- formatting ---------- */
-  function fmtCompact(v, unit) {
+  /* ---------- formatting ----------
+     `decimals` is optional and coarsens the k/m/bn bands: 16,900 reads as
+     "16.9k" by default and "17k" at decimals=0. It exists for the value-label
+     ladder, which trades precision for room when a series gets long. Omitted,
+     the output is byte-identical to what it always was, so no existing caller
+     changes behaviour.
+
+     Note the trade is harsher the higher the band: decimals=0 leaves "17k" with
+     two figures but "3m" with one, because a band spans a thousandfold. Every
+     series on the London crime chart lives in the k band, but a chart working in
+     millions should think twice before coarsening. */
+  var _BANDS = [[1, ''], [1e3, 'k'], [1e6, 'm'], [1e9, 'bn']];
+
+  function fmtCompact(v, unit, decimals) {
     unit = unit || '';
     var n = Math.abs(v), s = v < 0 ? '-' : '', out;
-    if (n >= 1e9) out = (n / 1e9).toFixed(n % 1e9 ? 1 : 0) + 'bn';
-    else if (n >= 1e6) out = (n / 1e6).toFixed(n % 1e6 ? 1 : 0) + 'm';
-    else if (n >= 1e3) out = (n / 1e3).toFixed(n % 1e3 ? 1 : 0) + 'k';
-    else out = String(n);
+
+    var i = 0;
+    while (i + 1 < _BANDS.length && n >= _BANDS[i + 1][0]) i++;
+
+    function dp(idx) {
+      if (decimals != null) return decimals;
+      return n % _BANDS[idx][0] ? 1 : 0;
+    }
+    function render(idx) {
+      // Below a thousand there is no band to trade against, so an unspecified
+      // precision means "as given" rather than "rounded".
+      if (idx === 0 && decimals == null) return String(n);
+      return (n / _BANDS[idx][0]).toFixed(dp(idx));
+    }
+
+    out = render(i);
+    // The band is confirmed AFTER rounding, not assumed before it: 999,600 at
+    // zero decimals renders as "1000" in the k band, which should read "1m".
+    if (i + 1 < _BANDS.length && Number(out) >= 1000) out = render(++i);
+    out += _BANDS[i][1];
+
     return s + (unit === '£' ? '£' : '') + out + (unit && unit !== '£' ? unit : '');
   }
   function fmtNum(v) { return v.toLocaleString('en-GB'); }
@@ -236,6 +266,17 @@
     return Math.max(0, Math.min(6, Math.ceil(-Math.log10(step))));
   }
 
+  /* Decimals for `sig` significant figures at this magnitude. Where decimalsFor
+     answers "what does this axis need", this answers "what does this ONE number
+     need" — which is what a tooltip wants. 3.94 and 0.0123 are both three
+     figures, and want two decimals and four respectively. */
+  function decimalsForSig(v, sig) {
+    sig = sig || 3;
+    var n = Math.abs(v);
+    if (!(n > 0)) return 0;
+    return Math.max(0, Math.min(8, sig - 1 - Math.floor(Math.log10(n))));
+  }
+
   /* ---------- category label fitting ----------
      Axis ticks have to share the plot width. "2023/24" across fourteen
      financial years overlaps its neighbours and the whole axis blurs into a
@@ -249,12 +290,36 @@
      function on the same inputs and therefore reach the same answer, which is
      what keeps the baked no-JS SVG identical to what the live engine draws. */
 
-  // Advance widths as a fraction of font size, DM Sans. Approximate, and only
-  // ever used to choose between strategies with a margin - never to position.
+  /* Advance widths as a fraction of font size, DM Sans, measured from the font
+     itself rather than guessed. Used to choose between strategies, never to
+     position anything.
+
+     DIGITS ARE NOT ALL THE SAME WIDTH. DM Sans has no tabular-figure feature,
+     so `font-variant-numeric: tabular-nums` in ng-chart.css does nothing and
+     the digits stay proportional — "1" is 0.331 and "0" is 0.687, better than
+     twice as wide. A single average was out by 25% either way depending on
+     which digits a label happened to contain, and "08/09" was underestimated
+     by 11%, which is why fourteen financial years fitted on paper and collided
+     on screen.
+
+     Measured, not derived, so it stays deterministic: both engines reach the
+     same answer without touching the DOM, which is what keeps the baked no-JS
+     SVG identical to the live render even if the reader's font has not
+     arrived yet. */
+  var _ADV = {
+    '0': 0.687, '1': 0.331, '2': 0.578, '3': 0.595, '4': 0.622,
+    '5': 0.614, '6': 0.630, '7': 0.536, '8': 0.616, '9': 0.630,
+    '/': 0.283, '.': 0.216, ',': 0.216, ' ': 0.260,
+    'k': 0.528, 'm': 0.906, 'b': 0.610, 'n': 0.610
+  };
+
+  // A hair over the measured widths. Rounding, kerning and hinting all move the
+  // real number by a fraction of a pixel, and this decides whether a label
+  // collides with its neighbour — so it errs towards saying "no room".
+  var _ADV_MARGIN = 1.03;
+
   function _charWidth(ch) {
-    if (ch >= '0' && ch <= '9') return 0.58;
-    if (ch === '/' || ch === '.') return 0.32;
-    if (ch === ' ') return 0.26;
+    if (_ADV[ch] != null) return _ADV[ch];
     if (ch >= 'A' && ch <= 'Z') return 0.68;
     return 0.53;
   }
@@ -262,7 +327,7 @@
     var w = 0;
     s = String(s);
     for (var i = 0; i < s.length; i++) w += _charWidth(s.charAt(i));
-    return w * fontSize;
+    return w * fontSize * _ADV_MARGIN;
   }
 
   /* "2023/24" -> "23/24". Anything else is returned unchanged, so a label with
@@ -299,6 +364,47 @@
     };
   }
 
+  /* ---------- value-label fitting ----------
+     The numbers on the bar caps face the same squeeze the axis labels do, and
+     lose it sooner: a bar-top number sits in the same slot as its neighbour's,
+     with no baseline to separate them. Thirteen calendar years of "16.9k" fit
+     comfortably; eighteen financial years do not.
+
+     The answer is the same ladder shape as fitCategoryLabels, but the rungs
+     trade PRECISION rather than length, because the tooltip now carries the
+     exact figure. A bar-top label is there for the shape of the series; the
+     reader who wants 16,858 hovers.
+
+     The caller supplies the rungs already formatted — each engine knows its own
+     encodings — and this decides which one fits. A null rung is one the caller
+     ruled out (a coarse rate that would collapse every bar to 0.00), and is
+     skipped without ending the ladder.
+
+     Whichever rung wins applies to the WHOLE chart. "9.8k" beside "17k" reads
+     as sloppy, and it is the same rule decimalsFor already imposes on the axis:
+     one precision per chart, chosen from the value that needs the most room. */
+
+  // Tighter than the 0.95 the axis labels use. Ticks sit under a baseline that
+  // visually separates them; bar-cap numbers have nothing between them, so they
+  // read as touching while there is still nominally a gap.
+  var _VAL_FIT = 0.88;
+
+  function fitValueLabels(rungs, slot) {
+    var room = slot * _VAL_FIT;
+    for (var i = 0; i < rungs.length; i++) {
+      var r = rungs[i];
+      if (!r || !r.labels) continue;
+      var w = 0;
+      for (var j = 0; j < r.labels.length; j++) {
+        w = Math.max(w, estimateTextWidth(r.labels[j], r.fontSize));
+      }
+      if (w <= room) {
+        return { show: true, labels: r.labels, fontSize: r.fontSize, rung: i };
+      }
+    }
+    return { show: false, labels: null, fontSize: 0, rung: -1 };
+  }
+
   /* Ink or white, whichever reads on `bg`. */
   function readableOn(bg) {
     var r = hexToRgb(bg);
@@ -314,7 +420,8 @@
     lin: lin, niceNum: niceNum, niceScale: niceScale,
     fmtCompact: fmtCompact, fmtNum: fmtNum, esc: esc,
     valueLabelPlacement: valueLabelPlacement, readableOn: readableOn,
-    decimalsFor: decimalsFor, fitCategoryLabels: fitCategoryLabels,
+    decimalsFor: decimalsFor, decimalsForSig: decimalsForSig,
+    fitCategoryLabels: fitCategoryLabels, fitValueLabels: fitValueLabels,
     shortenLabel: shortenLabel, estimateTextWidth: estimateTextWidth
   };
 })(window);

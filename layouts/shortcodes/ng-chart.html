@@ -47,9 +47,14 @@
   Stays inside the 800px .page-content column. The 80vw break-out exists because
   a 3D scene needs the width; a bar chart does not.
 
+  DOM ORDER. The foot (source + NeilGarratt.com) is deliberately directly under
+  the plot, and charts-live.js appends the controls AFTER it. Readers share these
+  charts by screenshotting them and crop to the title and the bars, which used to
+  leave the source line stranded below the pills and out of the picture.
+
   Built by: platform/branding/interactive.py  (publish())
   Needs:    /js/chart-core.js, /js/charts.js, /js/charts-live.js,
-            /css/ng-chart.css  (linked from partials/head.html)
+            /js/chart-export.js, /css/ng-chart.css  (css from partials/head.html)
 */ -}}
 
 {{- $slug := .Get "slug" | default (.Get 0) -}}
@@ -135,6 +140,9 @@
 <script src="/js/chart-core.js"></script>
 <script src="/js/charts.js"></script>
 <script src="/js/charts-live.js"></script>
+{{- /* Optional: charts-live.js only builds the download button if this loaded,
+       so a failed request costs the button and nothing else. */ -}}
+<script src="/js/chart-export.js"></script>
 {{- end }}
 
 <script>
