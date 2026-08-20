@@ -1,0 +1,198 @@
+crime lab v1 battery - 2026-08-20 22:03:51
+lab page: C:\Users\neilg\OneDrive\Documents\neilgarratt.com\Neil_Garratt_Hugo_Site\static\labs\crime\v1\index.html (167737 bytes, mtime 2026-08-20 21:39)
+skyline:  C:\Users\neilg\OneDrive\Documents\neilgarratt.com\Neil_Garratt_Hugo_Site\static\interactive\crime-skyline\index.html (850921 bytes, mtime 2026-08-20 18:41)
+viewport 1400x950; ink threshold >40/255 off #1A2332; central crop 18-85% h x 22-78% w
+
+V1   PASS   load: done gate, ward tier default, state sane, ink
+V2   PASS   ward metric phone_theft->burglary: mid-frame between endpoints, final stable
+V3   FAIL   tier wards->hexes: __easing true->false, trough sinks extrusions, lands inked on hexes
+V4   PASS   hex metric burglary->shoplifting: per-hex attribute transition, mid-frame strictly between endpoints
+V5   PASS   hex year all->2022: mid-frame between endpoints, caption names 2022
+V6   PASS   band 220->120 via __applyZoom at the CFG midpoint: __easing fires, lands on band 120
+V7   PASS   tier round trip hexes->wards: state, ink and ward caption restored
+V8   PASS   availability: ward-only pill no-ops greyed in hex tier; hex-only tfp falls back to robbery entering wards
+V9   PASS   street mode in hex tier: light-base, attribution, tile ink in a margin crop; back to boroughs clean
+V10  PASS   interrupt storm: burglary, +120ms vehicle, +240ms year 2023 -> lands vehicle/2023, no errors
+V11  PASS   rapid tier toggles wards->hexes->wards at 150ms spacing: ends wards, settled, inked
+V13  PASS   data honesty: the page's own loaded hex data sums to the published all-period totals, exactly
+V12  PASS   prefers-reduced-motion: metric + tier switches are effectively instant (no __easing, no trough sag)
+V14  PASS*  parity: lab ward tier vs production /interactive/crime-skyline/ at robbery/All (PASS-with-notes)
+V15  PASS   cold race: cache off + ~400KB/s; tier+metric+year fired in one task while hex.220 still fetching
+     (*) V14 is the parity leg: PASS-with-notes; see its measured section
+
+---- V1: load: done gate, ward tier default, state sane, ink
+  pass __NG_DONE__ true, __NG_ERROR__ falsy
+  pass ward towers inked: central ink 0.2557 > 0.050
+  __state() = {"tier": "wards", "metric": "phone_theft", "period": "all", "band": 220, "mode": "boroughs"}
+  pass tier wards
+  pass metric/period/band/mode = phone_theft/all/220/boroughs
+  pass no console/GL errors after load
+  pass __NG_ERROR__ still falsy after load
+
+---- V2: ward metric phone_theft->burglary: mid-frame between endpoints, final stable
+  mid frame at ~409ms of the 750ms ease; central MAD mid-base 8.04, mid-final 16.20, final-base 22.11
+  pass endpoints differ (MAD 22.11 > 2.0)
+  pass mid differs from base (MAD 8.04 > 1.0)
+  pass mid differs from final (MAD 16.20 > 1.0)
+  pass final stable: two settled frames 0.5s apart agree (MAD 0.000 < 0.5)
+  pass state metric burglary
+  pass no console/GL errors after the metric ease
+  pass __NG_ERROR__ still falsy after the metric ease
+
+---- V3: tier wards->hexes: __easing true->false, trough sinks extrusions, lands inked on hexes
+  cold entry: 110 page-side [elevT, __easing] samples across the swap
+  pass __easing observed true during the cold swap
+  pass __easing false again (0.00s after the sample window)
+  pass the field sank to the floor: min elevT sampled 0.0000 < 0.10
+  pass state tier hexes, band 220: {"tier": "hexes", "metric": "burglary", "period": "all", "band": 220, "mode": "boroughs"}
+  pass hex tier inked 0.2066 > 0.020
+  pass warm re-entry settled (0.00s)
+  burst of 4 frames across the warm swap; min-ink frame bracketed at ~594ms (elevT sampled just after it: 1)
+  ink shares: wards-endpoint 0.5136, trough 0.1785, hexes-endpoint 0.2066
+  FAIL trough frame carries under half of either endpoint's ink (0.1785 vs 0.5136 / 0.2066)
+  pass wards endpoint carries material extrusion ink above the trough (0.3478)
+  pass hexes endpoint carries material extrusion ink above the trough (0.0583)
+  pass nothing rises AT the trough (trough-only ink 0.0010)
+  pass no console/GL errors after the tier switch
+  pass __NG_ERROR__ still falsy after the tier switch
+
+---- V4: hex metric burglary->shoplifting: per-hex attribute transition, mid-frame strictly between endpoints
+  mid frame at ~399ms; central MAD mid-base 4.35, mid-final 5.21, final-base 8.10
+  pass endpoints differ (MAD 8.10 > 2.0)
+  pass mid-frame strictly between endpoints (4.35 / 5.21 both > 1.0)
+  pass state metric shoplifting
+  pass no console/GL errors after the hex metric transition
+  pass __NG_ERROR__ still falsy after the hex metric transition
+
+---- V5: hex year all->2022: mid-frame between endpoints, caption names 2022
+  accepted form probe: current.year 'all' -> '2022' after __setYear('2022') (string form accepted)
+  pass committed year is 2022
+  mid frame at ~362ms; central MAD mid-base 0.91, mid-final 1.23, final-base 1.96
+  pass endpoints differ (MAD 1.96 > 1.0)
+  pass mid-frame between endpoints (0.91 / 1.23 both > 0.5)
+  pass state period 2022: {"tier": "hexes", "metric": "shoplifting", "period": "2022", "band": 220, "mode": "boroughs"}
+  pass caption DOM contains 2022: 'London 2022, aggregated to 220 m hexes \\u2014 37,873 recorded offences. Even inside the hottest wards, crime concen'
+  pass no console/GL errors after the year switch
+  pass __NG_ERROR__ still falsy after the year switch
+
+---- V6: band 220->120 via __applyZoom at the CFG midpoint: __easing fires, lands on band 120
+  runtime CFG.zoomThresholds [10.3, 11.5] -> __applyZoom(10.90) targets the middle (120 m) band
+  HEX[120] prefetched already: True
+  pass __easing observed true during the band swap
+  pass band swap landed
+  pass __easing false again in 0.38s
+  pass final state band 120: {"tier": "hexes", "metric": "shoplifting", "period": "2022", "band": 120, "mode": "boroughs"}
+  pass band flip changed pixels (MAD 2.12 > 1.0)
+  pass no console/GL errors after the band flip
+  pass __NG_ERROR__ still falsy after the band flip
+
+---- V7: tier round trip hexes->wards: state, ink and ward caption restored
+  pass __easing observed true during the swap
+  pass __easing false again in 0.71s
+  pass state restored: shared metric + year survive: {"tier": "wards", "metric": "shoplifting", "period": "2022", "band": 120, "mode": "boroughs"}
+  pass ward towers inked 0.3904 > 0.050
+  pass ward caption restored: title == CFG.wardMetrics.shoplifting.captions['2022'].title ('Top 5 wards carry as much shoplifting as the bottom 358 wards')
+  pass no console/GL errors after the round trip
+  pass __NG_ERROR__ still falsy after the round trip
+
+---- V8: availability: ward-only pill no-ops greyed in hex tier; hex-only tfp falls back to robbery entering wards
+  pass entered hex tier (shoplifting is shared, no fallback)
+  pass hex tier, metric shoplifting: {"tier": "hexes", "metric": "shoplifting", "period": "2022", "band": 120, "mode": "boroughs"}
+  pass __setMetric('phone_theft') in hex tier left the metric unchanged: {"tier": "hexes", "metric": "shoplifting", "period": "2022", "band": 120, "mode": "boroughs"}
+  pass phone_theft pill carries the greyed class ('unavail'): True
+  pass subtitle hints at the no-op: 'inside the hottest wards, crime concentrates on a handful of streets. (Phone theft is only available in the Wards view.)'
+  pass hex-only tfp set in hex tier
+  pass tier swap back to wards settled
+  pass tfp fell back to the ward fallback metric robbery: {"tier": "wards", "metric": "robbery", "period": "2022", "band": 120, "mode": "boroughs"}
+  pass subtitle mentions the swap: "d Waterloo & South Bank (249) lead London's 26,421 robberies (2022). (Theft from the person isn\\u2019t available in this view \\u2014 showing Robbery.)"
+  pass no console/GL errors after the availability checks
+  pass __NG_ERROR__ still falsy after the availability checks
+
+---- V9: street mode in hex tier: light-base, attribution, tile ink in a margin crop; back to boroughs clean
+  pass entered hex tier for the street leg
+  tile settle wait 8.3s
+  pass body has light-base class in street mode
+  pass attribution non-empty and names CARTO: '\\xa9 OpenStreetMap contributors \\xa9 CARTO'
+  margin TL: boroughs lum-std 55.78, street-vs-boroughs MAD 9.17, street lum-std 54.60
+  margin TR: boroughs lum-std 11.51, street-vs-boroughs MAD 72.98, street lum-std 99.49
+  margin BL: boroughs lum-std 29.15, street-vs-boroughs MAD 133.46, street lum-std 61.77
+  margin BR: boroughs lum-std 14.83, street-vs-boroughs MAD 189.66, street lum-std 24.79
+  margin midL: boroughs lum-std 0.00, street-vs-boroughs MAD 200.76, street lum-std 7.84
+  margin midR: boroughs lum-std 0.00, street-vs-boroughs MAD 202.90, street lum-std 8.41
+  pass a boroughs-flat margin crop carries tile ink in street mode (region midL)
+  pass light-base class off back in boroughs mode
+  pass attribution emptied back in boroughs mode: ''
+  pass no console/GL errors after the street round trip
+  pass __NG_ERROR__ still falsy after the street round trip
+
+---- V10: interrupt storm: burglary, +120ms vehicle, +240ms year 2023 -> lands vehicle/2023, no errors
+  pass __easing false after the storm (0.0s)
+  pass state carries the last calls: vehicle/2023: {"tier": "hexes", "metric": "vehicle", "period": "2023", "band": 120, "mode": "boroughs"}
+  pass hex tier inked after the storm 0.1149 > 0.020
+  final differs from pre-storm frame by central MAD 4.97
+  pass no console/GL errors after the interrupt storm
+  pass __NG_ERROR__ still falsy after the interrupt storm
+
+---- V11: rapid tier toggles wards->hexes->wards at 150ms spacing: ends wards, settled, inked
+  pass staged: back on wards before the toggles
+  pass __easing false after the toggles (0.0s)
+  pass ends on wards: {"tier": "wards", "metric": "vehicle", "period": "2023", "band": 120, "mode": "boroughs"}
+  pass ward towers inked 0.5205 > 0.050
+  pass no console/GL errors after the rapid toggles
+  pass __NG_ERROR__ still falsy after the rapid toggles
+
+---- V13: data honesty: the page's own loaded hex data sums to the published all-period totals, exactly
+  measured from HEX[220] in-page: {"tfp": 349693, "robbery": 145404, "shoplifting": 300795, "burglary": 260490, "vehicle": 487896, "bike": 84151, "damage": 271400, "publicorder": 284873}
+  pass exactly the 8 hex metrics present: ['bike', 'burglary', 'damage', 'publicorder', 'robbery', 'shoplifting', 'tfp', 'vehicle']
+  pass bike: measured 84151 == expected 84151
+  pass burglary: measured 260490 == expected 260490
+  pass damage: measured 271400 == expected 271400
+  pass publicorder: measured 284873 == expected 284873
+  pass robbery: measured 145404 == expected 145404
+  pass shoplifting: measured 300795 == expected 300795
+  pass tfp: measured 349693 == expected 349693
+  pass vehicle: measured 487896 == expected 487896
+  pass band 120 conserves the same totals (binning conserves counts): True
+  pass no console/GL errors after the totals evaluate
+  pass __NG_ERROR__ still falsy after the totals evaluate
+
+---- V12: prefers-reduced-motion: metric + tier switches are effectively instant (no __easing, no trough sag)
+  pass __NG_DONE__ true, __NG_ERROR__ falsy
+  pass page parsed prefers-reduced-motion: reduce
+  pass attribute-transition duration is 0
+  pass __easing never true across the metric switch
+  metric switch: ~250ms frame vs final MAD 0.000; final vs base MAD 22.11
+  pass the switch did happen (MAD 22.11 > 2.0)
+  pass no easing tail: ~250ms frame already agrees with the final (MAD 0.000 < 1.0)
+  pass __easing never true across the tier switch
+  tier switch: ink at ~392ms 0.2066 vs final 0.2066
+  pass no trough sag: ~250ms ink 0.2066 >= 85% of final 0.2066
+  pass tier landed: {"tier": "hexes", "metric": "burglary", "period": "all", "band": 220, "mode": "boroughs"}
+  pass no console/GL errors after the reduced-motion switches
+  pass __NG_ERROR__ still falsy after the reduced-motion switches
+
+---- V14: parity: lab ward tier vs production /interactive/crime-skyline/ at robbery/All (PASS-with-notes)
+  pass __NG_DONE__ true, __NG_ERROR__ falsy
+  pass lab driven to wards/robbery/all: {"tier": "wards", "metric": "robbery", "period": "all", "band": 220, "mode": "boroughs"}
+  pass __NG_DONE__ true, __NG_ERROR__ falsy
+  pass skyline driven to robbery/all: {"metric":"robbery","year":"all"}
+  lab camera:     {"longitude":-0.105,"latitude":51.47,"zoom":9.8,"pitch":50,"bearing":0,"maxPitch":70,"minZoom":8.4,"maxZoom":15.5}
+  skyline camera: {"longitude":-0.105,"latitude":51.445,"zoom":9.75,"pitch":55,"bearing":0,"maxPitch":70,"minZoom":8.4,"maxZoom":14}
+  cameras identical: False -> comparison is ink-DISTRIBUTION (qualitative), as the brief allows
+  MEASURED on the central crop (18-85% h x 22-78% w): central MAD 12.31; ink 0.4620 (lab) vs 0.3616 (skyline); ink-mask IoU 0.703; ink-profile correlation columns 0.976, rows 0.951
+  pass both frames carry a ward skyline (ink 0.4620 / 0.3616)
+  pass east-west ink distribution agrees (column-profile r 0.976 > 0.6; the residual difference is the shipped camera offset)
+  row-profile r 0.951 is EXPECTED to be lower when cameras differ (pitch 50 vs 55 + latitude shift move towers vertically)
+  pass no console/GL errors after the parity captures
+  pass __NG_ERROR__ still falsy after the parity captures
+
+---- V15: cold race: cache off + ~400KB/s; tier+metric+year fired in one task while hex.220 still fetching
+  pass __NG_DONE__ true, __NG_ERROR__ falsy
+  pass hex.220 fetch GENUINELY pending at the trigger (measured in the same synchronous evaluate): True
+  pass committed state carries the full selection immediately: {"pending": true, "tier": "hexes", "metric": "publicorder", "year": "2023"}
+  pass tier swap landed once the fetch arrived
+  pass __easing false (settled 0.2s after landing)
+  pass rendered state carries the full selection: {"tier": "hexes", "metric": "publicorder", "period": "2023", "band": 220, "mode": "boroughs"}
+  pass hex tier inked after the race 0.1124 > 0.020
+  pass no console/GL errors after the cold race
+  pass __NG_ERROR__ still falsy after the cold race

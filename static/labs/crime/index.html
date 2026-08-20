@@ -22,9 +22,11 @@
 <p>Prototype workbench for the merged wards&harr;hexes London crime chart &mdash; the two shipped charts (ward skylines, hex hotspots) rebuilt as ONE page with a tier switch, server-side hex data, and per-hex animated transitions the old GPU-aggregated HexagonLayer could never do.</p>
 <p class="ev"><strong>STATUS &mdash; 2026-08-20. v1 lab is up.</strong>
 The data pipeline (server-side pointy-top hex binning in BNG, 3 zoom bands, 8 police.uk metrics &times; 6 periods, plus the ward skyline data passed through untouched) verified 51/51 against DuckDB and reconciles the shipped hotspot chart's totals to zero delta. v1 below is the first merged page: ward tier is the shipped skyline v4 behaviour transplanted; hex tier is NEW &mdash; a <code>ColumnLayer</code> over the server roster, so metric <em>and year</em> switches ease per-hex (the old chart re-binned client-side and could only sink-and-swap the whole field, and had no years at all). Band changes and tier changes use the sink&rarr;swap&rarr;rise ease. Everything here is throwaway lab work: unlinked, noindexed, nothing on the live site depends on it.</p>
+<p class="ev"><strong>STATUS &mdash; 2026-08-20 (later). ss1 lab is up.</strong>
+One hex map that toggles between stop-and-search intensity and crime on the SAME grid &mdash; "is police activity concentrated where crime is?". Searches and crime live on different rosters, so the page merges them into a client-side UNION roster per band; every switch (search&harr;search, crime&harr;crime, <em>search&harr;crime</em>) then eases per-hex, so you see the towers move between where crime is and where searches happen. Smoke 8/8 PASS incl. a cell-value honesty leg against the raw JSON. Data caveats (8% unmapped searches pre-Oct-2024, missing Met Nov 2022, anonymised snap points) are in the page's "About this data" footer.</p>
 <ul>
   <li><a href="v1/"><code>v1/</code></a> &mdash; the merged chart. Useful params: <a href="v1/?tier=hexes"><code>?tier=hexes</code></a> &middot; <a href="v1/?tier=hexes&amp;mode=street"><code>?tier=hexes&amp;mode=street</code></a> &middot; <a href="v1/?hud=1"><code>?hud=1</code></a> (fps + state overlay) &middot; <code>?radius=220|120|70</code> (pin a hex band, disables zoom bands) &middot; <code>?m=&lt;metric&gt;&amp;y=&lt;year|all&gt;</code></li>
-  <li>ss1 &mdash; stop-and-search layer on the same hex grid: <em>placeholder, not built yet</em>. The grid module (<code>hexgrid.py</code>, origin (0,0) BNG) is the contract it must import.</li>
+  <li><a href="ss1/"><code>ss1/</code></a> &mdash; stop and search vs crime, hex-only. Useful params: <a href="ss1/?m=tfp"><code>?m=tfp</code></a> &middot; <a href="ss1/?m=searches_drugs&amp;y=2023"><code>?m=searches_drugs&amp;y=2023</code></a> &middot; <a href="ss1/?mode=street"><code>?mode=street</code></a> &middot; <a href="ss1/?hud=1"><code>?hud=1</code></a> &middot; <code>?radius=220|120|70</code>. Metrics: <code>searches_all searches_drugs searches_weapons positive_all</code> + the 8 crime keys.</li>
 </ul>
 
 <section id="notes">
@@ -39,9 +41,18 @@ The data pipeline (server-side pointy-top hex binning in BNG, 3 zoom bands, 8 po
 <label><input type="checkbox"> Tooltips: ward name/borough/count in ward tier; per-hex count with period in hex tier. Zero cells silent?</label>
 <label><input type="checkbox"> Mobile: pill row wraps, tier switch and pinch-zoom band changes usable, nothing overlaps the metric switcher?</label>
 
+<h2>Eye checklist &mdash; ss1</h2>
+<label><input type="checkbox"> <strong>Search&harr;crime morph over the West End</strong> (All searches &harr; Theft from the person, zoomed to Westminster/Soho): does the per-hex ease read as towers MOVING between the two geographies, or as noise? This is the page's whole point.</label>
+<label><input type="checkbox"> Does the "searches follow crime" story read at the whole-London view? All searches vs Theft from the person: theft is a tight West End spike, searches are spread across town centres (Croydon, Newham&hellip;) &mdash; is that contrast legible, and honest?</label>
+<label><input type="checkbox"> Drug searches vs Drugs pattern: flip Drug searches &harr; the crime measures &mdash; do drug-search hotspots sit where you'd expect, and does the mismatch (if any) look like a finding or an artefact?</label>
+<label><input type="checkbox"> Tooltip both-figures: hover a hot hex with a search measure up &mdash; searches + thefts from the person + "x.x searches per offence" all sensible? With a crime measure up &mdash; total searches shown?</label>
+<label><input type="checkbox"> Caveat block wording ("About this data", bottom left): honest, compact, nothing overclaimed? Per-measure height scaling clear enough?</label>
+<label><input type="checkbox"> Street mode: hexes + chrome legible over the light base, group labels readable?</label>
+<label><input type="checkbox"> Mobile: two switcher rows wrap sanely, caveat block opens and scrolls, nothing overlaps?</label>
+
 <h2>How to run</h2>
 <p><code>hugo server</code> from the repo root, then <a href="http://localhost:1313/labs/crime/">http://localhost:1313/labs/crime/</a> &mdash; the hex tiles are fetched over HTTP, <code>file://</code> won't load them.</p>
-<p class="ev">Data + build live in <code>E:\Crime Data\platform\investigations\crime_map_v2\</code> (FINDINGS.md there is the record); the page is emitted by <code>make_crime_map_html.py</code> and copied here with its <code>d/</code> data folder.</p>
+<p class="ev">Data + build live in <code>E:\Crime Data\platform\investigations\crime_map_v2\</code> (v1) and <code>...\investigations\stop_search_map\</code> (ss1) &mdash; each folder's FINDINGS.md is the record; the pages are emitted by <code>make_crime_map_html.py</code> / <code>make_ss_map_html.py</code> and copied here with their <code>d/</code> data folders.</p>
 </section>
 </body>
 </html>

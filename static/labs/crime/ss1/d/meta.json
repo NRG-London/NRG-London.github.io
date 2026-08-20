@@ -1,0 +1,577 @@
+{
+  "generated_utc": "2026-08-20T20:39:36+00:00",
+  "source": "police.uk street_crime (hex tier); viz3d ward build passthrough (ward tier)",
+  "filter": {
+    "falls_within": [
+      "Metropolitan Police Service",
+      "City of London Police"
+    ],
+    "years": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "clip": "Greater London boundary + 500 m buffer"
+  },
+  "grid": {
+    "crs": "EPSG:27700",
+    "origin_bng": [
+      0.0,
+      0.0
+    ],
+    "orientation": "pointy-top axial",
+    "module": "investigations/crime_map_v2/hexgrid.py"
+  },
+  "bands": [
+    220,
+    120,
+    70
+  ],
+  "periods": [
+    "2021",
+    "2022",
+    "2023",
+    "2024",
+    "2025",
+    "all"
+  ],
+  "files": {
+    "hex": [
+      "hex.220.json",
+      "hex.120.json",
+      "hex.70.json"
+    ],
+    "ward": [
+      "ward.geojson",
+      "ward_meta.json"
+    ]
+  },
+  "metrics": [
+    {
+      "key": "tfp",
+      "label": "Theft from the person",
+      "crime_type": "Theft from the person",
+      "tiers": [
+        "hex"
+      ],
+      "total_all": 349693
+    },
+    {
+      "key": "robbery",
+      "label": "Robbery",
+      "crime_type": "Robbery",
+      "tiers": [
+        "hex",
+        "ward"
+      ],
+      "total_all": 145404,
+      "ward_metric": "robbery",
+      "ward_prop": "rb",
+      "ward_years": [
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "ward_period_labels": {
+        "2021": "2021",
+        "2022": "2022",
+        "2023": "2023",
+        "2024": "2024",
+        "2025": "2025",
+        "all": "2021\u20132025"
+      }
+    },
+    {
+      "key": "shoplifting",
+      "label": "Shoplifting",
+      "crime_type": "Shoplifting",
+      "tiers": [
+        "hex",
+        "ward"
+      ],
+      "total_all": 300795,
+      "ward_metric": "shoplifting",
+      "ward_prop": "sh",
+      "ward_years": [
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "ward_period_labels": {
+        "2021": "2021",
+        "2022": "2022",
+        "2023": "2023",
+        "2024": "2024",
+        "2025": "2025",
+        "all": "2021\u20132025"
+      }
+    },
+    {
+      "key": "burglary",
+      "label": "Burglary",
+      "crime_type": "Burglary",
+      "tiers": [
+        "hex",
+        "ward"
+      ],
+      "total_all": 260490,
+      "ward_metric": "burglary",
+      "ward_prop": "bu",
+      "ward_years": [
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "ward_period_labels": {
+        "2021": "2021",
+        "2022": "2022",
+        "2023": "2023",
+        "2024": "2024",
+        "2025": "2025",
+        "all": "2021\u20132025"
+      }
+    },
+    {
+      "key": "vehicle",
+      "label": "Vehicle crime",
+      "crime_type": "Vehicle crime",
+      "tiers": [
+        "hex",
+        "ward"
+      ],
+      "total_all": 487896,
+      "ward_metric": "vehicle",
+      "ward_prop": "vc",
+      "ward_years": [
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "ward_period_labels": {
+        "2021": "2021",
+        "2022": "2022",
+        "2023": "2023",
+        "2024": "2024",
+        "2025": "2025",
+        "all": "2021\u20132025"
+      }
+    },
+    {
+      "key": "bike",
+      "label": "Bike theft",
+      "crime_type": "Bicycle theft",
+      "tiers": [
+        "hex",
+        "ward"
+      ],
+      "total_all": 84151,
+      "ward_metric": "bike_theft",
+      "ward_prop": "bk",
+      "ward_years": [
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "ward_period_labels": {
+        "2021": "2021",
+        "2022": "2022",
+        "2023": "2023",
+        "2024": "2024",
+        "2025": "2025",
+        "all": "2021\u20132025"
+      }
+    },
+    {
+      "key": "damage",
+      "label": "Criminal damage",
+      "crime_type": "Criminal damage and arson",
+      "tiers": [
+        "hex",
+        "ward"
+      ],
+      "total_all": 271400,
+      "ward_metric": "criminal_damage",
+      "ward_prop": "cd",
+      "ward_years": [
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "ward_period_labels": {
+        "2021": "2021",
+        "2022": "2022",
+        "2023": "2023",
+        "2024": "2024",
+        "2025": "2025",
+        "all": "2021\u20132025"
+      }
+    },
+    {
+      "key": "publicorder",
+      "label": "Public order",
+      "crime_type": "Public order",
+      "tiers": [
+        "hex"
+      ],
+      "total_all": 284873
+    },
+    {
+      "key": "phone_theft",
+      "label": "Phone theft",
+      "tiers": [
+        "ward"
+      ],
+      "ward_metric": "phone_theft",
+      "ward_prop": "pt",
+      "ward_years": [
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "ward_period_labels": {
+        "2021": "2021",
+        "2022": "2022",
+        "2023": "2023",
+        "2024": "2024",
+        "2025": "2025",
+        "all": "2021\u20132025"
+      },
+      "ward_only_reason": "source has no point geography (Met dashboard / SNT data)"
+    },
+    {
+      "key": "knife_crime",
+      "label": "Knife crime",
+      "tiers": [
+        "ward"
+      ],
+      "ward_metric": "knife_crime",
+      "ward_prop": "kn",
+      "ward_years": [
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "ward_period_labels": {
+        "2023": "2023",
+        "2024": "2024",
+        "2025": "2025",
+        "all": "May 2022\u20132025"
+      },
+      "ward_only_reason": "source has no point geography (Met dashboard / SNT data)"
+    },
+    {
+      "key": "violence_injury",
+      "label": "Violence with injury",
+      "tiers": [
+        "ward"
+      ],
+      "ward_metric": "violence_injury",
+      "ward_prop": "vi",
+      "ward_years": [
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "ward_period_labels": {
+        "2023": "2023",
+        "2024": "2024",
+        "2025": "2025",
+        "all": "Apr 2022\u20132025"
+      },
+      "ward_only_reason": "source has no point geography (Met dashboard / SNT data)"
+    },
+    {
+      "key": "sexual_offences",
+      "label": "Sexual offences",
+      "tiers": [
+        "ward"
+      ],
+      "ward_metric": "sexual_offences",
+      "ward_prop": "sx",
+      "ward_years": [
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "ward_period_labels": {
+        "2023": "2023",
+        "2024": "2024",
+        "2025": "2025",
+        "all": "Apr 2022\u20132025"
+      },
+      "ward_only_reason": "source has no point geography (Met dashboard / SNT data)"
+    }
+  ],
+  "domains": {
+    "220": {
+      "tfp": {
+        "2021": 965,
+        "2022": 2182,
+        "2023": 2993,
+        "2024": 3822,
+        "2025": 3319,
+        "all": 12806
+      },
+      "robbery": {
+        "2021": 228,
+        "2022": 378,
+        "2023": 518,
+        "2024": 477,
+        "2025": 429,
+        "all": 2030
+      },
+      "shoplifting": {
+        "2021": 548,
+        "2022": 439,
+        "2023": 572,
+        "2024": 766,
+        "2025": 882,
+        "all": 2696
+      },
+      "burglary": {
+        "2021": 64,
+        "2022": 88,
+        "2023": 79,
+        "2024": 99,
+        "2025": 77,
+        "all": 343
+      },
+      "vehicle": {
+        "2021": 167,
+        "2022": 172,
+        "2023": 218,
+        "2024": 281,
+        "2025": 201,
+        "all": 811
+      },
+      "bike": {
+        "2021": 117,
+        "2022": 109,
+        "2023": 75,
+        "2024": 67,
+        "2025": 71,
+        "all": 356
+      },
+      "damage": {
+        "2021": 78,
+        "2022": 79,
+        "2023": 82,
+        "2024": 89,
+        "2025": 108,
+        "all": 413
+      },
+      "publicorder": {
+        "2021": 198,
+        "2022": 210,
+        "2023": 215,
+        "2024": 213,
+        "2025": 190,
+        "all": 965
+      }
+    },
+    "120": {
+      "tfp": {
+        "2021": 599,
+        "2022": 1370,
+        "2023": 1614,
+        "2024": 2039,
+        "2025": 1602,
+        "all": 7177
+      },
+      "robbery": {
+        "2021": 120,
+        "2022": 184,
+        "2023": 300,
+        "2024": 227,
+        "2025": 205,
+        "all": 951
+      },
+      "shoplifting": {
+        "2021": 478,
+        "2022": 273,
+        "2023": 492,
+        "2024": 649,
+        "2025": 878,
+        "all": 1985
+      },
+      "burglary": {
+        "2021": 37,
+        "2022": 42,
+        "2023": 43,
+        "2024": 46,
+        "2025": 42,
+        "all": 150
+      },
+      "vehicle": {
+        "2021": 151,
+        "2022": 138,
+        "2023": 157,
+        "2024": 207,
+        "2025": 144,
+        "all": 617
+      },
+      "bike": {
+        "2021": 110,
+        "2022": 82,
+        "2023": 73,
+        "2024": 49,
+        "2025": 47,
+        "all": 334
+      },
+      "damage": {
+        "2021": 44,
+        "2022": 64,
+        "2023": 53,
+        "2024": 42,
+        "2025": 70,
+        "all": 219
+      },
+      "publicorder": {
+        "2021": 113,
+        "2022": 100,
+        "2023": 116,
+        "2024": 151,
+        "2025": 150,
+        "all": 501
+      }
+    },
+    "70": {
+      "tfp": {
+        "2021": 573,
+        "2022": 1004,
+        "2023": 1186,
+        "2024": 1549,
+        "2025": 1211,
+        "all": 5357
+      },
+      "robbery": {
+        "2021": 63,
+        "2022": 89,
+        "2023": 149,
+        "2024": 95,
+        "2025": 73,
+        "all": 460
+      },
+      "shoplifting": {
+        "2021": 312,
+        "2022": 218,
+        "2023": 432,
+        "2024": 647,
+        "2025": 878,
+        "all": 1883
+      },
+      "burglary": {
+        "2021": 37,
+        "2022": 27,
+        "2023": 40,
+        "2024": 32,
+        "2025": 35,
+        "all": 88
+      },
+      "vehicle": {
+        "2021": 137,
+        "2022": 135,
+        "2023": 155,
+        "2024": 203,
+        "2025": 143,
+        "all": 593
+      },
+      "bike": {
+        "2021": 48,
+        "2022": 38,
+        "2023": 32,
+        "2024": 39,
+        "2025": 41,
+        "all": 120
+      },
+      "damage": {
+        "2021": 44,
+        "2022": 41,
+        "2023": 53,
+        "2024": 38,
+        "2025": 70,
+        "all": 192
+      },
+      "publicorder": {
+        "2021": 112,
+        "2022": 70,
+        "2023": 98,
+        "2024": 86,
+        "2025": 133,
+        "all": 419
+      }
+    }
+  },
+  "provenance": {
+    "tfp": {
+      "crime_type": "Theft from the person",
+      "distinct_point_year_rows": 75353,
+      "offences_kept": 349693,
+      "offences_clipped_outside_boundary": 175
+    },
+    "robbery": {
+      "crime_type": "Robbery",
+      "distinct_point_year_rows": 71714,
+      "offences_kept": 145404,
+      "offences_clipped_outside_boundary": 70
+    },
+    "shoplifting": {
+      "crime_type": "Shoplifting",
+      "distinct_point_year_rows": 31465,
+      "offences_kept": 300795,
+      "offences_clipped_outside_boundary": 47
+    },
+    "burglary": {
+      "crime_type": "Burglary",
+      "distinct_point_year_rows": 138861,
+      "offences_kept": 260490,
+      "offences_clipped_outside_boundary": 61
+    },
+    "vehicle": {
+      "crime_type": "Vehicle crime",
+      "distinct_point_year_rows": 207771,
+      "offences_kept": 487896,
+      "offences_clipped_outside_boundary": 633
+    },
+    "bike": {
+      "crime_type": "Bicycle theft",
+      "distinct_point_year_rows": 48877,
+      "offences_kept": 84151,
+      "offences_clipped_outside_boundary": 23
+    },
+    "damage": {
+      "crime_type": "Criminal damage and arson",
+      "distinct_point_year_rows": 139285,
+      "offences_kept": 271400,
+      "offences_clipped_outside_boundary": 169
+    },
+    "publicorder": {
+      "crime_type": "Public order",
+      "distinct_point_year_rows": 125057,
+      "offences_kept": 284873,
+      "offences_clipped_outside_boundary": 298
+    }
+  },
+  "ward_source": {
+    "geojson": "combined_ward.geojson",
+    "meta": "combined_meta.json",
+    "features": 680,
+    "note": "regenerate by re-running investigations/viz3d/build_skyline_data.py"
+  }
+}

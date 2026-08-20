@@ -1,0 +1,211 @@
+{
+  "generated_utc": "2026-08-20T20:34:09+00:00",
+  "source": "police.uk stop_and_search",
+  "filter": {
+    "source_force": [
+      "metropolitan",
+      "city-of-london"
+    ],
+    "years": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025
+    ],
+    "coords": "latitude/longitude NOT NULL",
+    "clip": "Greater London boundary + 500 m buffer",
+    "dedup": false,
+    "dedup_note": "platform convention (build_summaries.py, build_stop_search_lsoa.py): no dedup; measured exact-duplicate rate ~1.3-3.1%/yr in window"
+  },
+  "grid": {
+    "crs": "EPSG:27700",
+    "origin_bng": [
+      0.0,
+      0.0
+    ],
+    "orientation": "pointy-top axial",
+    "module": "investigations/crime_map_v2/hexgrid.py",
+    "note": "IDENTICAL (q, r) cell identity to crime_map_v2 hex.<band>.json \u2014 join the two datasets on (q, r). Rosters differ: this file's roster is cells with searches, which includes cells with zero crime."
+  },
+  "bands": [
+    220,
+    120,
+    70
+  ],
+  "periods": [
+    "2021",
+    "2022",
+    "2023",
+    "2024",
+    "2025",
+    "all"
+  ],
+  "files": [
+    "ss.220.json",
+    "ss.120.json",
+    "ss.70.json"
+  ],
+  "metrics": [
+    {
+      "key": "searches_all",
+      "label": "All searches",
+      "definition": "every stop-and-search record",
+      "total_all": 741644
+    },
+    {
+      "key": "searches_drugs",
+      "label": "Drug searches",
+      "definition": "object_of_search = 'Controlled drugs'",
+      "total_all": 448843
+    },
+    {
+      "key": "searches_weapons",
+      "label": "Weapons searches",
+      "definition": "object_of_search IN ('Offensive weapons', 'Firearms')",
+      "total_all": 123192
+    },
+    {
+      "key": "positive_all",
+      "label": "Searches with a positive outcome",
+      "definition": "outcome IS NOT NULL AND outcome NOT IN ('Nothing found - no further action', 'A no further action disposal') (build_stop_search_lsoa.py convention)",
+      "total_all": 219480
+    }
+  ],
+  "domains": {
+    "220": {
+      "searches_all": {
+        "2021": 1604,
+        "2022": 1470,
+        "2023": 1613,
+        "2024": 1510,
+        "2025": 1354,
+        "all": 6150
+      },
+      "searches_drugs": {
+        "2021": 1110,
+        "2022": 905,
+        "2023": 732,
+        "2024": 640,
+        "2025": 814,
+        "all": 3071
+      },
+      "searches_weapons": {
+        "2021": 294,
+        "2022": 202,
+        "2023": 273,
+        "2024": 113,
+        "2025": 125,
+        "all": 737
+      },
+      "positive_all": {
+        "2021": 307,
+        "2022": 455,
+        "2023": 431,
+        "2024": 484,
+        "2025": 410,
+        "all": 1799
+      }
+    },
+    "120": {
+      "searches_all": {
+        "2021": 1472,
+        "2022": 1068,
+        "2023": 927,
+        "2024": 694,
+        "2025": 759,
+        "all": 3796
+      },
+      "searches_drugs": {
+        "2021": 1015,
+        "2022": 665,
+        "2023": 441,
+        "2024": 369,
+        "2025": 659,
+        "all": 2064
+      },
+      "searches_weapons": {
+        "2021": 278,
+        "2022": 152,
+        "2023": 175,
+        "2024": 79,
+        "2025": 85,
+        "all": 579
+      },
+      "positive_all": {
+        "2021": 254,
+        "2022": 324,
+        "2023": 290,
+        "2024": 273,
+        "2025": 222,
+        "all": 1194
+      }
+    },
+    "70": {
+      "searches_all": {
+        "2021": 1144,
+        "2022": 778,
+        "2023": 790,
+        "2024": 378,
+        "2025": 362,
+        "all": 2970
+      },
+      "searches_drugs": {
+        "2021": 787,
+        "2022": 553,
+        "2023": 429,
+        "2024": 284,
+        "2025": 337,
+        "all": 2118
+      },
+      "searches_weapons": {
+        "2021": 215,
+        "2022": 152,
+        "2023": 205,
+        "2024": 78,
+        "2025": 64,
+        "all": 516
+      },
+      "positive_all": {
+        "2021": 191,
+        "2022": 166,
+        "2023": 253,
+        "2024": 143,
+        "2025": 124,
+        "all": 635
+      }
+    }
+  },
+  "provenance": {
+    "distinct_point_year_rows": 130264,
+    "kept": {
+      "searches_all": 741644,
+      "searches_drugs": 448843,
+      "searches_weapons": 123192,
+      "positive_all": 219480
+    },
+    "clipped_outside_boundary": {
+      "searches_all": 559,
+      "searches_drugs": 268,
+      "searches_weapons": 64,
+      "positive_all": 243
+    },
+    "window_rows_met_col": 808720,
+    "window_rows_null_coords": 66124
+  },
+  "qa": {
+    "coords_missing_window_pct": 8.2,
+    "coords_missing_by_year_pct": {
+      "2021": 10.6,
+      "2022": 10.6,
+      "2023": 10.4,
+      "2024": 6.1,
+      "2025": 0.7
+    },
+    "missingness_note": "Geocoding coverage improved sharply from Oct 2024 (~10% of Met records unmapped 2021-2023, ~1% from late 2024). Pooled 2021-2025 cell comparisons are safe; YEAR-ON-YEAR search trends per cell are biased upward by ~10% of level \u2014 do not read a 2021->2025 rise in a cell as a real increase without this correction.",
+    "met_nov_2022_missing": "The Met published no Nov 2022 stop-and-search file; 2022 totals are ~1/12 low (City of London only that month).",
+    "duplicates_note": "~2.5% exact-duplicate records (declining by year); retained, matching the platform's other S&S builds.",
+    "outcome_convention": "positive = outcome recorded and not a no-further-action disposal (build_stop_search_lsoa.py convention). outcome_linked is ~0.4% true and was not used.",
+    "anonymisation": "police.uk snaps each search to a fixed nearby anonymised point (~few hundred metres); hex-level aggregation is within tolerance."
+  }
+}
