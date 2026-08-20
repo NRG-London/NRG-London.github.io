@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>[LAB] Crime map workbench</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body{background:#12151a;color:#d7dae0;font:16px/1.5 system-ui,sans-serif;max-width:38em;margin:2em auto;padding:0 1em}
+  h1{color:#fff;font-size:1.4em}
+  a{color:#7ab8ff}
+  li{margin-bottom:.6em}
+  code{background:#1e232b;padding:.1em .3em;border-radius:3px}
+  section{margin-top:2em;border-top:1px solid #2a303a;padding-top:1em}
+  h3{color:#fff;font-size:1.05em;margin-bottom:.3em}
+  label{display:block;margin-bottom:.4em}
+  .ev{color:#9aa2ad;font-size:.92em;margin:.2em 0 .8em}
+</style>
+</head>
+<body>
+<h1>Crime map workbench</h1>
+<p>Prototype workbench for the merged wards&harr;hexes London crime chart &mdash; the two shipped charts (ward skylines, hex hotspots) rebuilt as ONE page with a tier switch, server-side hex data, and per-hex animated transitions the old GPU-aggregated HexagonLayer could never do.</p>
+<p class="ev"><strong>STATUS &mdash; 2026-08-20. v1 lab is up.</strong>
+The data pipeline (server-side pointy-top hex binning in BNG, 3 zoom bands, 8 police.uk metrics &times; 6 periods, plus the ward skyline data passed through untouched) verified 51/51 against DuckDB and reconciles the shipped hotspot chart's totals to zero delta. v1 below is the first merged page: ward tier is the shipped skyline v4 behaviour transplanted; hex tier is NEW &mdash; a <code>ColumnLayer</code> over the server roster, so metric <em>and year</em> switches ease per-hex (the old chart re-binned client-side and could only sink-and-swap the whole field, and had no years at all). Band changes and tier changes use the sink&rarr;swap&rarr;rise ease. Everything here is throwaway lab work: unlinked, noindexed, nothing on the live site depends on it.</p>
+<ul>
+  <li><a href="v1/"><code>v1/</code></a> &mdash; the merged chart. Useful params: <a href="v1/?tier=hexes"><code>?tier=hexes</code></a> &middot; <a href="v1/?tier=hexes&amp;mode=street"><code>?tier=hexes&amp;mode=street</code></a> &middot; <a href="v1/?hud=1"><code>?hud=1</code></a> (fps + state overlay) &middot; <code>?radius=220|120|70</code> (pin a hex band, disables zoom bands) &middot; <code>?m=&lt;metric&gt;&amp;y=&lt;year|all&gt;</code></li>
+  <li>ss1 &mdash; stop-and-search layer on the same hex grid: <em>placeholder, not built yet</em>. The grid module (<code>hexgrid.py</code>, origin (0,0) BNG) is the contract it must import.</li>
+</ul>
+
+<section id="notes">
+<h2>Eye checklist &mdash; v1</h2>
+<p>No persistence &mdash; just work down the list.</p>
+<label><input type="checkbox"> Tier switch, both directions (Wards &harr; Hexes pill): does the sink&rarr;swap&rarr;rise read as one chart changing grain, or as two pages taped together?</label>
+<label><input type="checkbox"> <strong>Per-hex easing on metric switch</strong> (hex tier, e.g. Theft from the person &rarr; Shoplifting): each hex should ease to its own new height/colour &mdash; the West End sinking while the high streets rise &mdash; NOT the whole field dipping. This is the point of the rebuild.</label>
+<label><input type="checkbox"> <strong>Year switching in the hex tier &mdash; NEW capability.</strong> The old hotspot chart had no years. Step 2021 &rarr; 2025 on Theft from the person and watch the phone-theft geography move, hex by hex. Does the story read?</label>
+<label><input type="checkbox"> Band-change ease while zooming (220&rarr;120&rarr;70 m at zooms ~10.3 / ~11.5): does the refine feel deliberate? Any flapping at the thresholds?</label>
+<label><input type="checkbox"> Ward-only metric in hex tier (e.g. Phone theft, Knife crime): greyed, click explains itself. Switch to Hexes while on one &mdash; falls back (to Theft from the person) with a subtitle note. Fair? Same the other way: Theft from the person / Public order in ward tier fall back to Robbery.</label>
+<label><input type="checkbox"> Map: Streets toggle in BOTH tiers: chrome scrim readable, borough frame present over wards, hexes legible over the light base?</label>
+<label><input type="checkbox"> Tooltips: ward name/borough/count in ward tier; per-hex count with period in hex tier. Zero cells silent?</label>
+<label><input type="checkbox"> Mobile: pill row wraps, tier switch and pinch-zoom band changes usable, nothing overlaps the metric switcher?</label>
+
+<h2>How to run</h2>
+<p><code>hugo server</code> from the repo root, then <a href="http://localhost:1313/labs/crime/">http://localhost:1313/labs/crime/</a> &mdash; the hex tiles are fetched over HTTP, <code>file://</code> won't load them.</p>
+<p class="ev">Data + build live in <code>E:\Crime Data\platform\investigations\crime_map_v2\</code> (FINDINGS.md there is the record); the page is emitted by <code>make_crime_map_html.py</code> and copied here with its <code>d/</code> data folder.</p>
+</section>
+</body>
+</html>
