@@ -4,3 +4,4 @@ hugo.lock
 .hugo_build.lock
 .DS_Store
 projectsummary.md
+__pycache__/
