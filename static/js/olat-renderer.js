@@ -20,6 +20,24 @@
     return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
   }
 
+  /* ---- transition timing (matches the crime maps and the crime charts) ----
+     750 ms cubic-in-out on every change that only moves the NUMBERS behind the
+     dots: a new origin, a new scenario, e-bike/car on or off. Changes that alter
+     what the map MEANS -- the mapping options, the isochrone threshold, the
+     reference layers, zoom -- stay a hard cut, so the legend and the map never
+     disagree even for a frame. */
+  var reducedMotion = window.matchMedia
+    && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var TRANSITION = reducedMotion ? 0 : 750;
+  // ?ease=<ms> shortens or disables the glide without a rebuild; ?ease=0 is exactly
+  // the pre-easing behaviour, which is what the capture harness wants for stills.
+  var easeQ = /[?&]ease=(\d+)/.exec(window.location.search);
+  if (easeQ) TRANSITION = parseInt(easeQ[1], 10);
+
+  function easeCubicInOut(t) {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
   var OlatRenderer = function (canvas, opts) {
     opts = opts || {};
     this.canvas = canvas;
@@ -41,6 +59,13 @@
     this._times = null;                 // Uint8 per-destination current mode
     this.z = 1; this.uc = 0.5; this.vc = 0.5;   // viewport: scale + centre (0..1)
     this.u = null; this.v = null;               // normalised frame coords (0..1)
+    // colour transition: _colFrom/_colTo hold a per-point RGB triple each, _ord is the
+    // far->near draw permutation for the target state. _suppress holds the last painted
+    // frame while a bracketed change (which may await a fetch) assembles itself.
+    this._suppress = false;
+    this._brToken = 0; this._brTimer = null;
+    this._tw = { active: false, token: 0, t0: 0, dur: 0, e: 0, raf: null, samples: null };
+    this._colFrom = null; this._colTo = null; this._ord = null; this._ordN = 0;
   };
 
   /* ---- load manifest + coords + overlay (once) --------------------------- */
@@ -256,8 +281,14 @@
     this.ebike = !!ebike; this.car = !!car;
     if (this._ch) { this._recompute(); this.render(); }
   };
-  OlatRenderer.prototype.setView = function (v) { this.view = v; if (this._ch) this.render(); };
-  OlatRenderer.prototype.setThreshold = function (t) { this.threshold = t; if (this._ch) this.render(); };
+  // setView/setThreshold change what the colours MEAN, so they land any glide in
+  // flight first (its _colTo was built for the old mapping) and then cut, as before.
+  OlatRenderer.prototype.setView = function (v) {
+    this._endTween(false); this.view = v; if (this._ch) this.render();
+  };
+  OlatRenderer.prototype.setThreshold = function (t) {
+    this._endTween(false); this.threshold = t; if (this._ch) this.render();
+  };
   OlatRenderer.prototype.setSeparateUnreachable = function (b) {
     this.separateUnreachable = !!b; if (this._ch) this.render();
   };
@@ -295,14 +326,31 @@
   // with putImageData, bypassing the canvas Path2D fill (which some Android
   // browsers software-rasterise pathologically slowly). ~100x faster there.
   OlatRenderer.prototype.render = function () {
-    if (!this._ch) return;
+    if (!this._ch || this._suppress) return;
     var t0 = (performance && performance.now) ? performance.now() : 0;
-    var ctx = this.ctx, W = this.W, H = this.H, N = this.N, px = this.px, py = this.py;
+    var ctx = this.ctx, W = this.W, H = this.H;
     this._ensureBuf();
     this._ensureStamp();
-    var data = this._buf.data, offs = this._offs, no = offs.length, m = this._offsR;
+    var data = this._buf.data, no = this._offs.length, m = this._offsR;
     data.fill(255);                               // opaque white background
-    var res = (this.view === "time") ? this._groupsTime() : this._groupsDiff();
+    if (this._tw.active) this._drawTween(data, no, m);
+    else this._drawGroups(data, no, m);
+    ctx.putImageData(this._buf, 0, 0);
+    // Draw the baked borough/boundary overlay through the SAME viewport as the dots:
+    // a source sub-rectangle -> full canvas, so it zooms and pans with everything
+    // else instead of staying frozen at full extent. At z=1 this is the full image.
+    var oW = this.overlay.naturalWidth || W, oH = this.overlay.naturalHeight || H, oh = 0.5 / this.z;
+    ctx.drawImage(this.overlay,
+      (this.uc - oh) * oW, (this.vc - oh) * oH, oW / this.z, oH / this.z,
+      0, 0, W, H);                                 // borough/boundary lines on top
+    this._drawStar(ctx);
+    this._lastRenderMs = ((performance && performance.now) ? performance.now() : 0) - t0;
+  };
+
+  // resting path: one flat colour per group, drawn far -> near
+  OlatRenderer.prototype._drawGroups = function (data, no, m) {
+    var W = this.W, H = this.H, N = this.N, px = this.px, py = this.py, offs = this._offs;
+    var res = this._groups();
     var grp = res.grp, cols = res.colours, order = res.order;
     for (var oi = 0; oi < order.length; oi++) {
       var g = order[oi], col = cols[g];
@@ -320,16 +368,31 @@
         }
       }
     }
-    ctx.putImageData(this._buf, 0, 0);
-    // Draw the baked borough/boundary overlay through the SAME viewport as the dots:
-    // a source sub-rectangle -> full canvas, so it zooms and pans with everything
-    // else instead of staying frozen at full extent. At z=1 this is the full image.
-    var oW = this.overlay.naturalWidth || W, oH = this.overlay.naturalHeight || H, oh = 0.5 / this.z;
-    ctx.drawImage(this.overlay,
-      (this.uc - oh) * oW, (this.vc - oh) * oH, oW / this.z, oH / this.z,
-      0, 0, W, H);                                 // borough/boundary lines on top
-    this._drawStar(ctx);
-    this._lastRenderMs = ((performance && performance.now) ? performance.now() : 0) - t0;
+  };
+
+  // transition path: every point carries its own colour AND its own place in the draw
+  // order, both lerped from the outgoing state to the incoming one at the eased
+  // fraction. One pass over the freshly ordered points, so the group filter -- six
+  // passes over N at rest -- disappears and a glide frame costs about a resting frame.
+  OlatRenderer.prototype._drawTween = function (data, no, m) {
+    var W = this.W, H = this.H, px = this.px, py = this.py, offs = this._offs;
+    var e = this._tw.e;
+    this._orderFrame(e);
+    var ord = this._ord, n = this._ordN, cf = this._colFrom, ct = this._colTo;
+    for (var k = 0; k < n; k++) {
+      var i = ord[k], j = i * 3;
+      var x = px[i] | 0, y = py[i] | 0;
+      if (x < -m || y < -m || x > W + m || y > H + m) continue;   // cull off-screen (zoom)
+      var cr = (cf[j] + (ct[j] - cf[j]) * e + 0.5) | 0;
+      var cg = (cf[j + 1] + (ct[j + 1] - cf[j + 1]) * e + 0.5) | 0;
+      var cb = (cf[j + 2] + (ct[j + 2] - cf[j + 2]) * e + 0.5) | 0;
+      for (var o = 0; o < no; o++) {
+        var xx = x + offs[o][0], yy = y + offs[o][1];
+        if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue;
+        var kk = (yy * W + xx) * 4;
+        data[kk] = cr; data[kk + 1] = cg; data[kk + 2] = cb;
+      }
+    }
   };
 
   OlatRenderer.prototype._ensureBuf = function () {
@@ -356,6 +419,10 @@
   };
 
   // group each destination + give a colour table and a far->near draw order
+  OlatRenderer.prototype._groups = function () {
+    return (this.view === "time") ? this._groupsTime() : this._groupsDiff();
+  };
+
   OlatRenderer.prototype._groupsTime = function () {
     var N = this.N, t = this._times, sent = this.sentinel, lut = this.binLut, thr = this.threshold;
     var grp = this._grp, sep = this.separateUnreachable, i;
@@ -387,6 +454,186 @@
     cols[5] = [106, 81, 163];                            // #6a51a3 newly reachable
     cols[6] = [238, 241, 244];                           // #eef1f4 unreachable
     return { grp: grp, colours: cols, order: [6, 0, 1, 2, 3, 4, 5] };
+  };
+
+  /* ---- colour transitions ------------------------------------------------
+     The map has no GPU layer to hand a transition to -- it plots every dot itself --
+     so the glide is hand-rolled. It tweens the RENDERED COLOUR of each point, not the
+     minutes behind it: _times is committed the instant the change is made, so the mean,
+     the catchment %, the reachable count and the hover readout are right from the first
+     frame while the picture catches up. Tweening colour also makes this palette-blind,
+     so an origin change inside a difference map or the isochrone glides for free.  */
+
+  OlatRenderer.prototype._ensureTweenBufs = function () {
+    var N = this.N;
+    if (this._colFrom && this._colFrom.length === N * 3) return;
+    this._colFrom = new Uint8Array(N * 3);
+    this._colTo = new Uint8Array(N * 3);
+    this._rkFrom = new Float32Array(N);
+    this._rkTo = new Float32Array(N);
+    this._bin = new Uint8Array(N);
+    this._ord = new Int32Array(N);
+  };
+
+  // per-point RGB for a grouping result, flattened into out[i*3..]
+  OlatRenderer.prototype._fillColours = function (res, out) {
+    var N = this.N, grp = res.grp, cols = res.colours;
+    var tbl = new Uint8Array(256 * 3);           // flatten once; keep the inner loop flat
+    for (var g = 0; g < cols.length; g++) {
+      var c = cols[g]; if (!c) continue;
+      tbl[g * 3] = c[0]; tbl[g * 3 + 1] = c[1]; tbl[g * 3 + 2] = c[2];
+    }
+    for (var i = 0; i < N; i++) {
+      var b = grp[i] * 3, j = i * 3;
+      out[j] = tbl[b]; out[j + 1] = tbl[b + 1]; out[j + 2] = tbl[b + 2];
+    }
+  };
+
+  /* Draw ORDER has to be tweened too, not just colour.
+     Overlaps resolve best-last, so which dot wins a contested pixel depends on the
+     ranking. Holding the target's ranking for the whole glide made the first frame
+     show, at every contested pixel, the outgoing colour of whichever dot will be best
+     in the INCOMING state -- which is worse than or equal to the dot that is best in
+     the outgoing state, never better. So a glide opened with a brief systematic step
+     backwards (some yellow flicking to orange) before improving. Interpolating the
+     rank alongside the colour makes e=0 the outgoing frame and e=1 the incoming frame,
+     both exactly, with nothing between them to explain away.
+
+     Ranks are normalised to 0..1 so a from-state and a to-state with different band
+     counts (six journey-time bands vs the isochrone's two) stay comparable, and -1
+     marks a point the target does not draw. */
+  OlatRenderer.prototype._fillRanks = function (res, out) {
+    var N = this.N, grp = res.grp, order = res.order, K = order.length;
+    var rank = new Float32Array(256), i;
+    for (i = 0; i < 256; i++) rank[i] = -1;
+    var div = K > 1 ? K - 1 : 1;
+    for (i = 0; i < K; i++) if (res.colours[order[i]]) rank[order[i]] = i / div;
+    for (i = 0; i < N; i++) out[i] = rank[grp[i]];
+  };
+
+  /* Order the points for one frame at eased fraction e.
+     Quantising the interpolated rank into QBINS lets this be a counting sort -- O(N)
+     with a 64-entry histogram -- instead of sorting 35,650 floats every frame. The
+     bins are far enough apart that at e=0 and e=1 the quantisation is exact, so both
+     ends reproduce the resting group order (and therefore the resting frame) exactly;
+     the sort is stable in index order, which is what the resting group loop does too.
+     Rank ties break by index, so dots only ever swap when their ranks actually cross,
+     and at a crossing their interpolated colours are at their closest. */
+  OlatRenderer.prototype.QBINS = 64;
+  OlatRenderer.prototype._orderFrame = function (e) {
+    var N = this.N, rf = this._rkFrom, rt = this._rkTo, bin = this._bin, ord = this._ord;
+    var QB = this.QBINS, sc = QB - 1, i, b, a;
+    var counts = this._qc || (this._qc = new Int32Array(QB + 1));
+    counts.fill(0);
+    for (i = 0; i < N; i++) {
+      if (rt[i] < 0) { bin[i] = 255; continue; }        // the target does not draw it
+      a = rf[i]; if (a < 0) a = rt[i];                  // new to the picture: don't move it
+      b = ((a + (rt[i] - a) * e) * sc + 0.5) | 0;
+      if (b < 0) b = 0; else if (b > sc) b = sc;
+      bin[i] = b; counts[b + 1]++;
+    }
+    for (i = 0; i < QB; i++) counts[i + 1] += counts[i];
+    this._ordN = counts[QB];
+    for (i = 0; i < N; i++) { b = bin[i]; if (b !== 255) ord[counts[b]++] = i; }
+  };
+
+  // Collapse an in-flight glide into its from-buffer, so the next one starts from
+  // exactly what is on screen rather than snapping back to the last resting state.
+  OlatRenderer.prototype._freezeFrom = function (e) {
+    var cf = this._colFrom, ct = this._colTo, n = this.N * 3, j;
+    for (j = 0; j < n; j++) cf[j] = (cf[j] + (ct[j] - cf[j]) * e + 0.5) | 0;
+    var rf = this._rkFrom, rt = this._rkTo, N = this.N, i;
+    for (i = 0; i < N; i++) {
+      if (rt[i] < 0) continue;
+      rf[i] = rf[i] < 0 ? rt[i] : rf[i] + (rt[i] - rf[i]) * e;
+    }
+  };
+
+  // Land the glide: cancel the frame, drop back to the resting group path, and (unless
+  // the caller is about to repaint anyway) render once, so the settled frame always
+  // comes out of the original renderer and no drift can accumulate.
+  OlatRenderer.prototype._endTween = function (repaint) {
+    var tw = this._tw;
+    if (!tw.active && !tw.raf) return;
+    tw.token++;
+    if (tw.raf) { cancelAnimationFrame(tw.raf); tw.raf = null; }
+    tw.active = false; tw.e = 1;
+    window.__olatEasing = false;
+    if (repaint !== false) this.render();
+  };
+
+  /* A state change can touch several things at once -- a scenario switch changes mode
+     availability, the image directory and the origin together -- and the origin load is
+     async. So bracket it: beginTransition snapshots what is on screen and HOLDS that
+     frame, the caller mutates whatever it likes, and commitTransition glides to the
+     result. One paint, of the truth, instead of a flash of half-applied state. */
+  OlatRenderer.prototype.beginTransition = function () {
+    if (!this._ch) return;                       // nothing on screen yet -> plain first paint
+    this._ensureTweenBufs();
+    var tw = this._tw;
+    if (tw.active) {
+      this._freezeFrom(tw.e);                    // supersession: carry on from the live frame
+      tw.token++;
+      if (tw.raf) { cancelAnimationFrame(tw.raf); tw.raf = null; }
+      tw.active = false;
+    } else {
+      this._ensureBuf();                         // _grp must exist before _groups()
+      var from = this._groups();
+      this._fillColours(from, this._colFrom);
+      this._fillRanks(from, this._rkFrom);
+    }
+    this._suppress = true;
+    // watchdog: never leave the map frozen if a fetch neither resolves nor rejects
+    var self = this, tok = ++this._brToken;
+    clearTimeout(this._brTimer);
+    this._brTimer = setTimeout(function () {
+      if (self._suppress && tok === self._brToken) self.cancelTransition();
+    }, 4000);
+  };
+
+  OlatRenderer.prototype.commitTransition = function () {
+    this._brToken++; clearTimeout(this._brTimer);
+    this._suppress = false;
+    if (!this._ch) return;
+    if (!this._colFrom || !TRANSITION) { this._endTween(false); this.render(); return; }
+    this._ensureBuf();
+    var res = this._groups();
+    this._fillColours(res, this._colTo);
+    this._fillRanks(res, this._rkTo);
+    var tw = this._tw, self = this;
+    tw.active = true; tw.e = 0; tw.dur = TRANSITION; tw.samples = [];
+    tw.t0 = (performance && performance.now) ? performance.now() : Date.now();
+    var tok = ++tw.token;
+    window.__olatEasing = true;
+    (function step() {
+      tw.raf = requestAnimationFrame(function () {
+        if (tok !== tw.token) return;            // superseded: the newer glide owns the map
+        var now = (performance && performance.now) ? performance.now() : Date.now();
+        var t = tw.dur > 0 ? Math.min((now - tw.t0) / tw.dur, 1) : 1;
+        tw.e = easeCubicInOut(t);
+        self.render();
+        // Frame budget. A big canvas honestly costs ~25 ms a frame and reads fine, so
+        // this only catches a slideshow: below ~20fps, land it now, because an honest
+        // cut beats a stutter. The first sample is dropped -- it carries the click
+        // handler's own work rather than the steady-state cost of a frame.
+        if (tw.samples && tw.samples.length < 4) {
+          tw.samples.push(self._lastRenderMs || 0);
+          if (tw.samples.length === 4 &&
+              (tw.samples[1] + tw.samples[2] + tw.samples[3]) / 3 > 50) {
+            self._endTween(); return;
+          }
+        }
+        if (t < 1) { step(); return; }
+        self._endTween();
+      });
+    })();
+  };
+
+  // Abandon the bracket without gliding (the data never arrived): unfreeze and repaint.
+  OlatRenderer.prototype.cancelTransition = function () {
+    this._brToken++; clearTimeout(this._brTimer);
+    this._suppress = false;
+    if (this._ch) this.render();
   };
 
   OlatRenderer.prototype._threshColour = function (thr) {
@@ -470,6 +717,11 @@
 
   function addDot(path, x, y, r) { path.moveTo(x + r, y); path.arc(x, y, r, 0, TAU); }
   function rgbCss(c) { return "rgb(" + c[0] + "," + c[1] + "," + c[2] + ")"; }
+
+  // Capture/test hooks, matching the other interactives: __olatEasing is true while a
+  // glide is in flight, __olatEaseMs(n) overrides the duration (0 = the old hard cut).
+  window.__olatEasing = false;
+  window.__olatEaseMs = function (n) { TRANSITION = Math.max(0, n | 0); return TRANSITION; };
 
   window.OlatRenderer = OlatRenderer;
 })();

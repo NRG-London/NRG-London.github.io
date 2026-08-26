@@ -165,7 +165,11 @@
     chip.classList.add("active");
     activeChip = chip;
     canvas.setAttribute("aria-label", "Heatmap of journey times from " + chip.dataset.name);
-    r.setOrigin(chip.dataset.img).then(function () { updateHeader(); updateStats(); });
+    // The star snaps to the centre you picked; the colours glide to its journey times.
+    r.beginTransition();
+    r.setOrigin(chip.dataset.img).then(function () {
+      r.commitTransition(); updateHeader(); updateStats();
+    }).catch(function () { r.cancelTransition(); });
   }
 
   function chooseBorough(bslug, pickFirst) {
@@ -215,7 +219,9 @@
       btn.setAttribute("aria-pressed", on ? "true" : "false");
       btn.classList.toggle("active", on);
       setter(on);
+      r.beginTransition();
       r.setModes(ebike, car);
+      r.commitTransition();
       updateHeader(); updateStats();
     });
   }
@@ -274,10 +280,22 @@
   // Draw the selected scheme's line + stations as an SVG overlay (from its GeoJSON,
   // projected through the map frame). It lives inside the borough SVG, so it pans and
   // zooms with everything and sits above the map layers regardless of their toggles.
+  // The outgoing scheme's line fades over the same 750 ms the colours take, rather
+  // than being cut away: it is one gesture, so it should read as one. The group loses
+  // its id at once so the next switch cannot find it, and is removed when the fade has
+  // run. SCEN_FADE_MS must stay at or above the CSS transition in olat-v3-zoom.css.
+  var SCEN_FADE_MS = 800;
+  function fadeOutScenarioLine(g) {
+    g.removeAttribute("id");
+    g.setAttribute("class", "olat3-scenario-geo olat3-scen-out olat3-scen-fade");
+    setTimeout(function () { if (g.parentNode) g.parentNode.removeChild(g); }, SCEN_FADE_MS);
+  }
   function drawScenarioLine(scenario) {
     var svg = document.querySelector("#olat3-map svg");
+    // clear any ghost still fading from an earlier switch, then fade the current one out
+    if (svg) svg.querySelectorAll(".olat3-scen-out").forEach(function (g) { g.remove(); });
     var old = document.getElementById("olat3-scenario-geo");
-    if (old) old.remove();
+    if (old) fadeOutScenarioLine(old);
     if (!svg || !scenario || !scenario.geojson || !r.manifest) return;
     var fr = r.manifest.frame, cv = r.manifest.canvas;
     if (!fr || !cv) return;
@@ -288,7 +306,7 @@
       if (activeScenario !== scenario) return;               // user switched away while loading
       var g = document.createElementNS(NS, "g");
       g.setAttribute("id", "olat3-scenario-geo");
-      g.setAttribute("class", "olat3-scenario-geo");
+      g.setAttribute("class", "olat3-scenario-geo olat3-scen-fade");   // lifted below
       g.setAttribute("aria-hidden", "true");
       (gj.features || []).forEach(function (f) {
         if (!f.geometry || f.geometry.type !== "LineString") return;
@@ -312,6 +330,11 @@
         g.appendChild(c);
       });
       svg.appendChild(g);                                    // last child -> above borough lines
+      // two frames: one to let the appended node settle at opacity 0, one to lift it,
+      // so the browser has a start value to transition FROM rather than skipping it
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () { g.setAttribute("class", "olat3-scenario-geo"); });
+      });
     }).catch(function () {});
   }
   function applyScenario(scenario) {
@@ -319,16 +342,28 @@
     var modes = scenario ? (scenario.modes || ["pt"]) : ["pt", "pt-ebike", "pt-car"];
     availEbike = modes.indexOf("pt-ebike") >= 0;
     availCar = modes.indexOf("pt-car") >= 0;
+    // Bracket the whole switch. Mode availability, the image directory and the origin
+    // all change together and the data load is async, so hold the current frame until
+    // the new set has landed and then glide to it once. Before this the map painted
+    // here with the OLD scenario's data under the NEW toggles, then again on arrival.
+    r.beginTransition();
     if (!availEbike && ebike) forceToggleOff(toggleEbike, function () { ebike = false; });
     if (!availCar && car) forceToggleOff(toggleCar, function () { car = false; });
     r.setModes(ebike, car);
     if ((view === "diff-ebike" && !availEbike) || (view === "diff-car" && !availCar)) selectView("time");
     refreshModeAvailability();
     r.setImageDir(activeScenario ? activeScenario.dir : null);
-    drawScenarioLine(activeScenario);
     var slug = activeChip ? activeChip.dataset.img : root.dataset.default;
-    r.setOrigin(slug).then(function () { updateHeader(); updateLegend(); updateStats(); })
-      .catch(function () {});   // if the set isn't there, leave the current map up
+    var target = activeScenario;
+    r.setOrigin(slug).then(function () {
+      if (activeScenario !== target) return;      // superseded while the data loaded
+      // The line is drawn HERE, not before the fetch: scenario images are never
+      // prefetched, so on a first switch the old line would otherwise fade out
+      // several hundred ms before the colours moved. One gesture, one moment.
+      r.commitTransition();
+      drawScenarioLine(target);
+      updateHeader(); updateLegend(); updateStats();
+    }).catch(function () { r.cancelTransition(); });   // set isn't there -> leave the map up
   }
   function buildScenarios() {
     if (root.dataset.scenarios !== "on") return;               // feature off for this page
