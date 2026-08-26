@@ -17,7 +17,7 @@
 {{- $scenarios := eq (.Get "scenarios") "on" -}}
 {{- $selB := index (where $centres.boroughs "slug" $default) 0 -}}
 {{- $selC := index $selB.centres 0 -}}
-<link rel="stylesheet" href="/css/olat-v3.css?v=10">
+<link rel="stylesheet" href="/css/olat-v3.css?v=13">
 <link rel="stylesheet" href="/css/olat-v3-zoom.css?v=9">
 <div class="olat-explorer olat-v3" id="olat-explorer-v3" data-default="{{ $default }}" data-base="/olat/"{{ if $scenarios }} data-scenarios="on"{{ end }}>
   {{- /* two columns are display:contents normally (no layout change); the
@@ -60,13 +60,13 @@
 
   <div class="olat-modes" id="olat3-modes" role="group" aria-label="Transport modes included">
     <span class="olat-modes-label">Modes: public transport &amp; walking</span>
-    <button type="button" class="olat-mode-toggle" id="olat3-toggle-ebike" aria-pressed="false">+ e-bike</button>
+    <span class="olat3-modetip" id="olat3-ebike-tip"><button type="button" class="olat-mode-toggle" id="olat3-toggle-ebike" aria-pressed="false">+ e-bike</button></span>
     <button type="button" class="olat-mode-toggle" id="olat3-toggle-car" aria-pressed="false">+ car</button>
   </div>
 
   {{- if $scenarios }}
   <details class="olat3-panel olat3-scenpanel" id="olat3-scenpanel" open hidden>
-    <summary>Proposed lines</summary>
+    <summary>What if..?</summary>
     <div class="olat3-panel-body">
       <div class="olat3-scenarios" id="olat3-scenarios" role="radiogroup" aria-label="Network scenario"></div>
     </div>
@@ -96,11 +96,18 @@
       <button type="button" class="olat-mode-toggle olat3-layer" data-layer="rail" aria-pressed="false">Rail &amp; Tube</button>
       <button type="button" class="olat-mode-toggle olat3-layer" data-layer="map" aria-pressed="false">Map</button>
       <button type="button" class="olat-mode-toggle olat3-layer" data-layer="stations" aria-pressed="false">Stations</button>
+      <button type="button" class="olat-mode-toggle olat3-layer" data-layer="carownership" aria-pressed="false" title="Average cars or vans per household, Census 2021, TS045 at LSOA level.">Car ownership</button>
       <label class="olat3-fade">
         <span class="olat3-fade-label">Fade</span>
         <input type="range" id="olat3-fade" min="15" max="100" step="5" value="70" disabled
                aria-label="Reference layer opacity">
       </label>
+      <div class="olat3-legend" id="olat3-legend-carownership" hidden aria-hidden="true">
+        <span class="olat3-legend-title">Cars or vans per household</span>
+        <div class="olat3-legend-bar"></div>
+        <div class="olat3-legend-ticks"><span>0</span><span>0.5</span><span>1</span><span>1.5</span><span>2</span></div>
+        <span class="olat3-legend-src">Census 2021 · TS045 · LSOA · OGL v3</span>
+      </div>
     </div>
   </details>
 
@@ -115,6 +122,7 @@
       <img class="olat3-ref" id="olat3-ref-map" data-src="/olat/ref-map.png?v=5" alt="" hidden>
       <img class="olat3-ref" id="olat3-ref-rail" data-src="/olat/ref-rail.png?v=5" alt="" hidden>
       <img class="olat3-ref" id="olat3-ref-stations" data-src="/olat/ref-stations.png?v=5" alt="" hidden>
+      <img class="olat3-ref" id="olat3-ref-carownership" data-src="/olat/ref-carownership.png?v=1" alt="" hidden>
     </div>
     <svg viewBox="{{ delimit $olat.viewBox " " }}" preserveAspectRatio="none"
          xmlns="http://www.w3.org/2000/svg" aria-hidden="false" role="group"
@@ -147,4 +155,4 @@
   </div><!-- /olat3-col-map -->
 </div>
 <script src="/js/olat-renderer.js?v=12" defer></script>
-<script src="/js/olat-explorer-v3.js?v=15" defer></script>
+<script src="/js/olat-explorer-v3.js?v=18" defer></script>

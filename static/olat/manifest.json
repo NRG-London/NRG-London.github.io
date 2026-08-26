@@ -1672,6 +1672,15 @@
  ],
  "scenarios": [
   {
+   "id": "stepfree",
+   "label": "Step Free Access",
+   "dir": "scenarios/stepfree",
+   "modes": [
+    "pt",
+    "pt-car"
+   ]
+  },
+  {
    "id": "cr2",
    "label": "Crossrail 2",
    "dir": "scenarios/cr2",

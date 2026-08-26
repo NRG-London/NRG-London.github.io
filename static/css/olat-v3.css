@@ -97,6 +97,12 @@
 
 /* map-layer toggles + fade */
 .olat-mode-toggle.olat3-dim { opacity: 0.4; cursor: not-allowed; }
+/* e-bike "not modelled" tooltip: the title sits on a wrapper span so it shows even
+   while the button is natively disabled (disabled buttons suppress their own tooltip);
+   pointer-events:none lets the hover fall through to the wrapper. */
+.olat3-modetip { display: inline-flex; }
+.olat3-modetip[title] { cursor: help; }
+.olat-mode-toggle:disabled { pointer-events: none; }
 .olat3-fade {
   display: inline-flex;
   align-items: center;
@@ -112,6 +118,26 @@
 }
 .olat3-fade input[type="range"] { width: 120px; accent-color: var(--blue); }
 .olat3-fade input[type="range"]:disabled { opacity: 0.4; }
+
+/* car-ownership choropleth legend (shown only while its layer is active) */
+.olat3-legend { display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.5rem; max-width: 240px; }
+.olat3-legend[hidden] { display: none; }
+.olat3-legend-title {
+  font-size: 0.65rem; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--mid-grey);
+}
+.olat3-legend-bar {
+  height: 10px; border-radius: 2px; border: 1px solid rgba(0, 0, 0, 0.15);
+  background: linear-gradient(to right,
+    rgba(226, 238, 247, 0) 0%, rgba(167, 204, 231, 0.25) 25%,
+    rgba(100, 163, 212, 0.5) 50%, rgba(36, 125, 189, 0.75) 75%,
+    rgba(0, 77, 128, 1) 100%);
+}
+.olat3-legend-ticks {
+  display: flex; justify-content: space-between;
+  font-size: 0.6rem; color: var(--mid-grey);
+}
+.olat3-legend-src { font-size: 0.55rem; color: var(--mid-grey); opacity: 0.85; }
 
 .olat3-stats {
   font-size: 0.8rem !important;

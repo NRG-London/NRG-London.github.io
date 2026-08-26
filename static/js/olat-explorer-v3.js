@@ -242,7 +242,7 @@
     b.addEventListener("click", function () { if (b.disabled) return; selectView(b.dataset.view); });
   });
 
-  /* ---- network scenarios (Proposed lines) + graceful mode fail-over ------
+  /* ---- network scenarios (What if..?) + graceful mode fail-over ------
      A network scenario changes public-transport routing, so its data set is
      separate and never composed client-side. Its journey-time channels can land
      incrementally (pt first, then car, then e-bike overnight), so each scenario
@@ -252,6 +252,15 @@
     var diff = (view === "diff-car" || view === "diff-ebike");
     toggleEbike.disabled = diff || !availEbike;
     toggleEbike.classList.toggle("olat3-dim", toggleEbike.disabled);
+    // explain WHY e-bike is greyed when the active scenario doesn't model it (e.g.
+    // step-free). Title goes on the wrapper span so it shows despite the disabled button.
+    var ebikeTip = document.getElementById("olat3-ebike-tip");
+    if (ebikeTip) {
+      if (!availEbike && activeScenario)
+        ebikeTip.title = "Not modelled for " + (activeScenario.label || activeScenario.id);
+      else
+        ebikeTip.removeAttribute("title");
+    }
     toggleCar.disabled = diff || !availCar;
     toggleCar.classList.toggle("olat3-dim", toggleCar.disabled);
     viewBtns.forEach(function (b) {
@@ -336,13 +345,22 @@
       b.setAttribute("aria-checked", i === 0 ? "true" : "false");
       b.textContent = o.label;
       b.addEventListener("click", function () {
-        if (b.classList.contains("active")) return;
+        var isActive = b.classList.contains("active");
+        // Click-to-toggle: clicking the already-active scenario reverts to the
+        // baseline ("London today", the first radio), so you can flick a
+        // scenario on and off without moving the mouse off the map. Clicking the
+        // active "London today" is a no-op. The group always keeps exactly one
+        // radio checked, so radiogroup semantics still hold.
+        if (isActive && o.scenario === null) return;
+        var target = (isActive && o.scenario !== null)
+          ? scenList.querySelector(".olat3-scen")   // first button = "London today"
+          : b;
         scenList.querySelectorAll(".olat3-scen").forEach(function (x) {
-          var on = x === b;
+          var on = x === target;
           x.classList.toggle("active", on);
           x.setAttribute("aria-checked", on ? "true" : "false");
         });
-        applyScenario(o.scenario);
+        applyScenario(target === b ? o.scenario : null);
       });
       scenList.appendChild(b);
     });
@@ -359,7 +377,7 @@
     }
   });
 
-  /* ---- Map layers (rail / map / stations) + fade ------------------------- */
+  /* ---- Map layers (rail / map / stations / car ownership) + fade --------- */
   if (refWrap) refWrap.style.opacity = fadeInput.value / 100;
   layerBtns.forEach(function (b) {
     b.addEventListener("click", function () {
@@ -371,6 +389,9 @@
         if (on && !img.getAttribute("src")) img.src = img.dataset.src;
         img.hidden = !on;
       }
+      // a layer may carry a legend (e.g. the car-ownership choropleth); reveal it with the layer
+      var legend = document.getElementById("olat3-legend-" + b.dataset.layer);
+      if (legend) legend.hidden = !on;
       var anyOn = Array.prototype.some.call(layerBtns, function (x) {
         return x.getAttribute("aria-pressed") === "true";
       });

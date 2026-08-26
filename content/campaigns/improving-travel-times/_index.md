@@ -23,7 +23,9 @@ So if you don't get why most outer-London households own a car, including a majo
 
 {{< olat-explorer-v3 default="croydon" scenarios="on" >}}
 
-UPDATE: several new features including "What if?" models with proposed lines, map overlays to get your bearings, map zoom, and a "landscape big mode" that works especially well on a computer or rotated tablet. Note: the WLO now ALSO adds an Elizabeth Line station at Old Oak Common. The zoom has also revealed some curious anomalies where a few points wrongly show as completely unreachable, I assume because of something in the OSM used for walking routing. I'm investigating.
+UPDATE: several new features including "What if?" models with proposed lines, map overlays to get your bearings, map zoom, and a "landscape big mode" that works especially well on a computer or rotated tablet. Note: The zoom has also revealed some curious anomalies where a few points wrongly show as completely unreachable, I assume because of something in the OSM used for walking routing. I'm investigating.
+
+**Step-Free** Although this dramatically affects the reachable area in many places, my model is actually *too optimistic*. It only models step-free to platform not step-free to train, and it doesn't take into account either the extra time to travel through a station, or the fact that some station interchanges are not step-free even if part of the station is. I am working on adding at least some of this, but although TfL's station accessibility data is excellent, national rail's isn't, plus the R5 routing engine can't handle every permutation. Also, it assumes every lift is working which, too often, they aren't.
 
 ## What It Does And How It Works
 
