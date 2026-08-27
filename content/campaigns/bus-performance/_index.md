@@ -6,16 +6,14 @@ stat: "1 in 5"
 stat_label: "trips on a typical London bus route mean waiting more than ten minutes"
 summary: "Excess wait time for every London bus route, week by week, measured independently from the buses' own position data. Find your route and see whether it is getting better or worse."
 build:
-  list: never
-  render: always
+  list: "never"
+  render: "always"
 sitemap:
   disable: true
 noindex: true
 ---
 
-> Unlisted while I build this out. **All the figures on these pages are sample
-> data** — realistic in shape and size, but generated, not measured. The real
-> weekly numbers replace them once the pipeline is running.
+> Unlisted while I build this out. This is a best page for a new bus data performance tracker. The data is real, though the way it's presented is very much in flux.
 
 {{< bus-hero >}}
 
