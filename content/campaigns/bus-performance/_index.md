@@ -13,7 +13,7 @@ sitemap:
 noindex: true
 ---
 
-> Unlisted while I build this out. This is a best page for a new bus data performance tracker. The data is real, though the way it's presented is very much in flux.
+> Unlisted while I build this out. This is a test page for a new bus data performance tracker: the data is real, though the way it's presented is very much in flux.
 
 {{< bus-hero >}}
 
