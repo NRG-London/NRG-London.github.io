@@ -1,0 +1,30 @@
+{{ define "main" }}
+{{- $w := site.Data.bus.weekly -}}
+<div class="page-header">
+  <a href="/campaigns/bus-performance/" class="back-link">&larr; Bus performance</a>
+  <h1>{{ .Title }}</h1>
+</div>
+
+<div class="page-content ngbus">
+  {{ .Content }}
+
+  {{- /* Every route, in the order a Londoner reads them: 9 before 18, then the
+         letter-prefixed and night routes. weekly.json is written in that order
+         already, so this ranges rather than sorts — Hugo's `sort` is
+         lexicographic and would put 100 before 2. */ -}}
+  <div class="ngbus-az">
+    {{- range $w.routes }}
+    <a href="/bus/{{ lower .route }}/"
+       {{ if not .ewt_min }}data-nodata="1" title="No data published this week"{{ else }}title="{{ lang.FormatNumber 1 .ewt_min }} min excess wait"{{ end }}>{{ .route }}</a>
+    {{- end }}
+  </div>
+
+  <p class="ngbus-attr">{{ $w.attribution }}
+    {{ if $w.sample }}<strong>These are sample figures, not measurements.</strong>{{ end }}</p>
+</div>
+
+{{- /* Every page that uses an ngbus- class must pull the stylesheet in. This
+       page has no shortcode on it to do that for it, and without this line the
+       route grid degrades to a wall of blue text — which is what it did. */ -}}
+{{ partial "bus-assets.html" . }}
+{{ end }}

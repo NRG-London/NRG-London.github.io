@@ -1,0 +1,40 @@
+{{- /*
+  bus-hero — the illustrated top of a bus page.
+
+  Usage:
+    {{< bus-hero >}}                          headline figures from weekly.json
+    {{< bus-hero route="157" deck="single" >}} a named route
+    {{< bus-hero stat="616" label="routes watched" route="157" >}}
+
+  The bus is decoration that earns its place: the destination blind carries the
+  route number, so on a route page the illustration is telling you which page
+  you are on. On the hub it runs blank, because no single route is the subject.
+*/ -}}
+
+{{- $d := site.Data.bus.weekly -}}
+{{- $route := .Get "route" | default "" -}}
+{{- $deck := .Get "deck" | default "double" -}}
+{{- $stat := .Get "stat" -}}
+{{- $label := .Get "label" -}}
+{{- $caption := .Get "caption" -}}
+
+{{- if and (not $stat) $d -}}
+  {{- $stat = printf "%.1f min" $d.summary.median_ewt_min -}}
+  {{- /* %.0f, not %d: these arrive from JSON as float64 and %d prints
+         "%!d(float64=597)" rather than failing, so it ships looking fine. */ -}}
+  {{- $label = printf "is the middling London bus route's excess wait — the time a rider loses to gaps in the service, beyond what the timetable already asks of them. %.0f of %.0f routes reported in the week ending %s." $d.summary.reporting $d.summary.routes (dateFormat "2 January 2006" $d.week_ending) -}}
+{{- end -}}
+
+<div class="ngbus ngbus-hero">
+  <figure class="ngbus-hero__figure">
+    {{ partial "bus-graphic.html" (dict
+        "deck" $deck "route" $route "id" (printf "hero-%s" (.Page.File.ContentBaseName | default "x"))
+        "class" "ngbus-bus--animate") }}
+    {{- with $caption }}<figcaption class="ngbus-hero__caption">{{ . }}</figcaption>{{ end }}
+  </figure>
+  {{- if $stat }}
+  <p class="ngbus-hero__stat">{{ $stat }}<small>{{ $label }}</small></p>
+  {{- end }}
+</div>
+
+{{- partial "bus-assets.html" . -}}

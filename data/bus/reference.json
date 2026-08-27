@@ -1,0 +1,8354 @@
+{
+ "version": 0,
+ "source": "TfL route feed and fleet audit, via the Road Data project's buses.duckdb",
+ "route_feed_date": "2026-08-05",
+ "fleet_snapshot_date": "2026-03-31",
+ "routes": [
+  {
+   "route": "1",
+   "service_class": "regular",
+   "termini": [
+    "Royal Free Hospital",
+    "Canada Water Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.372,
+   "vehicle_count": 16
+  },
+  {
+   "route": "100",
+   "service_class": "regular",
+   "termini": [
+    "King Edward Street / St Pauls Station",
+    "St George's Town Hall / Shadwell Stn"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 1.0,
+   "vehicle_count": 11
+  },
+  {
+   "route": "101",
+   "service_class": "regular",
+   "termini": [
+    "Woodbine Place",
+    "Beckton Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD",
+   "vehicle_share": 1.0,
+   "vehicle_count": 16
+  },
+  {
+   "route": "102",
+   "service_class": "regular",
+   "termini": [
+    "Edmonton Green Bus Station",
+    "Brent Cross Shopping Centre"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.718,
+   "vehicle_count": 28
+  },
+  {
+   "route": "103",
+   "service_class": "regular",
+   "termini": [
+    "Chase Cross",
+    "Rainham Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.958,
+   "vehicle_count": 23
+  },
+  {
+   "route": "104",
+   "service_class": "regular",
+   "termini": [
+    "Stratford Bus Station",
+    "Beckton Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD",
+   "vehicle_share": 0.913,
+   "vehicle_count": 21
+  },
+  {
+   "route": "105",
+   "service_class": "regular",
+   "termini": [
+    "Rockware Avenue / Greenford Station",
+    "Heathrow Central Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 1.0,
+   "vehicle_count": 30
+  },
+  {
+   "route": "106",
+   "service_class": "regular",
+   "termini": [
+    "Finsbury Park Interchange",
+    "Cavell Street"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 1.0,
+   "vehicle_count": 30
+  },
+  {
+   "route": "107",
+   "service_class": "regular",
+   "termini": [
+    "Edgware Bus Station",
+    "New Barnet Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.85,
+   "vehicle_count": 17
+  },
+  {
+   "route": "108",
+   "service_class": "regular",
+   "termini": [
+    "Stratford International Station",
+    "Lewisham Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 0.963,
+   "vehicle_count": 26
+  },
+  {
+   "route": "109",
+   "service_class": "regular",
+   "termini": [
+    "St. George's Walk / Croydon Town Centre",
+    "Brixton Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.8,
+   "vehicle_count": 32
+  },
+  {
+   "route": "11",
+   "service_class": "regular",
+   "termini": [
+    "Fulham Town Hall",
+    "Waterloo Station   / Upper Taxi Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 22
+  },
+  {
+   "route": "110",
+   "service_class": "regular",
+   "termini": [
+    "School Road",
+    "Hammersmith Bus Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.96,
+   "vehicle_count": 24
+  },
+  {
+   "route": "111",
+   "service_class": "regular",
+   "termini": [
+    "Heathrow Central Bus Station",
+    "Cromwell Road Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.811,
+   "vehicle_count": 30
+  },
+  {
+   "route": "112",
+   "service_class": "regular",
+   "termini": [
+    "Haven Green / Ealing Broadway Stn",
+    "Tally Ho Corner"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.516,
+   "vehicle_count": 16
+  },
+  {
+   "route": "113",
+   "service_class": "regular",
+   "termini": [
+    "Edgware Bus Station",
+    "Marble Arch Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.933,
+   "vehicle_count": 42
+  },
+  {
+   "route": "114",
+   "service_class": "regular",
+   "termini": [
+    "Mill Hill Broadway Station",
+    "Ruislip Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.975,
+   "vehicle_count": 39
+  },
+  {
+   "route": "115",
+   "service_class": "regular",
+   "termini": [
+    "East Ham / Central Park",
+    "Aldgate Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.806,
+   "vehicle_count": 25
+  },
+  {
+   "route": "116",
+   "service_class": "regular",
+   "termini": [
+    "Ashford Hospital",
+    "Hounslow Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 1.0,
+   "vehicle_count": 13
+  },
+  {
+   "route": "117",
+   "service_class": "regular",
+   "termini": [
+    "West Middlesex Hospital",
+    "Staines Bus Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.619,
+   "vehicle_count": 13
+  },
+  {
+   "route": "119",
+   "service_class": "regular",
+   "termini": [
+    "Bromley North Station",
+    "The Colonnades / Croydon Airport"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 0.618,
+   "vehicle_count": 21
+  },
+  {
+   "route": "12",
+   "service_class": "regular",
+   "termini": [
+    "Oxford Circus Stn  / Margaret Street",
+    "Eynella Road / Dulwich Library"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.964,
+   "vehicle_count": 27
+  },
+  {
+   "route": "120",
+   "service_class": "regular",
+   "termini": [
+    "Hounslow Bus Station",
+    "Northolt Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.8,
+   "vehicle_count": 32
+  },
+  {
+   "route": "121",
+   "service_class": "regular",
+   "termini": [
+    "Enfield Island Village",
+    "Turnpike Lane Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "VDL Wrightbus Eclipse Gemini 2",
+   "vehicle_share": 1.0,
+   "vehicle_count": 45
+  },
+  {
+   "route": "122",
+   "service_class": "regular",
+   "termini": [
+    "Plumstead Road / Plumstead Station",
+    "Crystal Palace Parade"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 0.457,
+   "vehicle_count": 21
+  },
+  {
+   "route": "123",
+   "service_class": "regular",
+   "termini": [
+    "Turnpike Lane Bus Station",
+    "Hainault Street"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV EvoSeti",
+   "vehicle_share": 0.372,
+   "vehicle_count": 16
+  },
+  {
+   "route": "124",
+   "service_class": "regular",
+   "termini": [
+    "Stanstead Road / St Dunstans College",
+    "Southend Crescent / Southend Close"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.643,
+   "vehicle_count": 18
+  },
+  {
+   "route": "125",
+   "service_class": "regular",
+   "termini": [
+    "Station Road",
+    "Colindale Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 0.621,
+   "vehicle_count": 18
+  },
+  {
+   "route": "126",
+   "service_class": "regular",
+   "termini": [
+    "Ringers Road",
+    "Eltham High Street / Foots Cray Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 1.0,
+   "vehicle_count": 14
+  },
+  {
+   "route": "127",
+   "service_class": "regular",
+   "termini": [
+    "Purley Station",
+    "Tooting Broadway Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 0.571,
+   "vehicle_count": 16
+  },
+  {
+   "route": "128",
+   "service_class": "regular",
+   "termini": [
+    "Romford Station",
+    "Claybury Broadway"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 0.643,
+   "vehicle_count": 18
+  },
+  {
+   "route": "129",
+   "service_class": "regular",
+   "termini": [
+    "Magellan Boulevard",
+    "Molesworth Street"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD",
+   "vehicle_share": 1.0,
+   "vehicle_count": 36
+  },
+  {
+   "route": "13",
+   "service_class": "regular",
+   "termini": [
+    "North Finchley Bus Station",
+    "Victoria Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV EvoSeti",
+   "vehicle_share": 1.0,
+   "vehicle_count": 31
+  },
+  {
+   "route": "130",
+   "service_class": "regular",
+   "termini": [
+    "Vulcan Way",
+    "Parchmore Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.778,
+   "vehicle_count": 14
+  },
+  {
+   "route": "131",
+   "service_class": "regular",
+   "termini": [
+    "Fairfield Bus Station",
+    "Tooting Broadway Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.6,
+   "vehicle_count": 21
+  },
+  {
+   "route": "132",
+   "service_class": "regular",
+   "termini": [
+    "North Greenwich Station",
+    "Geddes Place"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 0.818,
+   "vehicle_count": 18
+  },
+  {
+   "route": "133",
+   "service_class": "regular",
+   "termini": [
+    "Streatham Station",
+    "Drake Street"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.976,
+   "vehicle_count": 41
+  },
+  {
+   "route": "134",
+   "service_class": "regular",
+   "termini": [
+    "North Finchley Bus Station",
+    "University College Hospital / Euston Rd"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.739,
+   "vehicle_count": 34
+  },
+  {
+   "route": "135",
+   "service_class": "regular",
+   "termini": [
+    "Crossharbour Asda",
+    "Moorfields Eye Hospital"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.654,
+   "vehicle_count": 17
+  },
+  {
+   "route": "136",
+   "service_class": "regular",
+   "termini": [
+    "Grove Park Station",
+    "Elephant & Castle / Newington Causeway"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400 MMC",
+   "vehicle_share": 0.745,
+   "vehicle_count": 35
+  },
+  {
+   "route": "137",
+   "service_class": "regular",
+   "termini": [
+    "Telford Avenue",
+    "Marble Arch Station  / Park Lane"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.98,
+   "vehicle_count": 49
+  },
+  {
+   "route": "138",
+   "service_class": "regular",
+   "termini": [
+    "Bromley North Station",
+    "Chestnut Avenue"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 8
+  },
+  {
+   "route": "139",
+   "service_class": "regular",
+   "termini": [
+    "Golders Green Station",
+    "Waterloo Station   / Waterloo Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.667,
+   "vehicle_count": 16
+  },
+  {
+   "route": "14",
+   "service_class": "regular",
+   "termini": [
+    "Putney Heath / Green Man",
+    ".Russell Square"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.56,
+   "vehicle_count": 28
+  },
+  {
+   "route": "140",
+   "service_class": "regular",
+   "termini": [
+    "Millington Road",
+    "Long Elmes"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.884,
+   "vehicle_count": 38
+  },
+  {
+   "route": "141",
+   "service_class": "regular",
+   "termini": [
+    "Tottenhall Road",
+    "London Bridge Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD",
+   "vehicle_share": 0.654,
+   "vehicle_count": 34
+  },
+  {
+   "route": "142",
+   "service_class": "regular",
+   "termini": [
+    "Watford Junction Station",
+    "Brent Cross Shopping Centre"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 0.531,
+   "vehicle_count": 17
+  },
+  {
+   "route": "143",
+   "service_class": "regular",
+   "termini": [
+    "Brent Cross Shopping Centre",
+    "Archway Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 1.0,
+   "vehicle_count": 16
+  },
+  {
+   "route": "144",
+   "service_class": "regular",
+   "termini": [
+    "Muswell Hill Broadway",
+    "Edmonton Green Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV EvoSeti",
+   "vehicle_share": 0.457,
+   "vehicle_count": 16
+  },
+  {
+   "route": "145",
+   "service_class": "regular",
+   "termini": [
+    "Dagenham Asda",
+    "Leytonstone Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.73,
+   "vehicle_count": 27
+  },
+  {
+   "route": "146",
+   "service_class": "regular",
+   "termini": [
+    "Bromley North Station",
+    "Downe Church"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis ADL",
+   "vehicle_share": 0.5,
+   "vehicle_count": 2
+  },
+  {
+   "route": "147",
+   "service_class": "regular",
+   "termini": [
+    "Hainault Street",
+    "Canning Town Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.425,
+   "vehicle_count": 17
+  },
+  {
+   "route": "148",
+   "service_class": "regular",
+   "termini": [
+    "Denmark Hill / Camberwell Green",
+    "White City Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.655,
+   "vehicle_count": 19
+  },
+  {
+   "route": "149",
+   "service_class": "regular",
+   "termini": [
+    "Edmonton Green Bus Station",
+    "London Bridge Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.922,
+   "vehicle_count": 47
+  },
+  {
+   "route": "15",
+   "service_class": "regular",
+   "termini": [
+    "Blackwall Station",
+    "Charing Cross Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.85,
+   "vehicle_count": 17
+  },
+  {
+   "route": "150",
+   "service_class": "regular",
+   "termini": [
+    "Becontree Heath Leisure Centre",
+    "Lambourne Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 2",
+   "vehicle_share": 0.929,
+   "vehicle_count": 26
+  },
+  {
+   "route": "151",
+   "service_class": "regular",
+   "termini": [
+    "Shotfield",
+    "Worcester Park Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.941,
+   "vehicle_count": 16
+  },
+  {
+   "route": "152",
+   "service_class": "regular",
+   "termini": [
+    "South Lodge Avenue / Yorkshire Road",
+    "Walton Avenue"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 1.0,
+   "vehicle_count": 15
+  },
+  {
+   "route": "153",
+   "service_class": "regular",
+   "termini": [
+    "Finsbury Park Interchange",
+    "Liverpool Street Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 0.474,
+   "vehicle_count": 9
+  },
+  {
+   "route": "154",
+   "service_class": "regular",
+   "termini": [
+    "West Croydon Bus Station",
+    "Morden Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 1.0,
+   "vehicle_count": 34
+  },
+  {
+   "route": "155",
+   "service_class": "regular",
+   "termini": [
+    "St George's Hospital",
+    "Lambeth Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.931,
+   "vehicle_count": 27
+  },
+  {
+   "route": "156",
+   "service_class": "regular",
+   "termini": [
+    "Wimbledon Bus Station",
+    "Vauxhall Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H",
+   "vehicle_share": 0.676,
+   "vehicle_count": 25
+  },
+  {
+   "route": "157",
+   "service_class": "regular",
+   "termini": [
+    "Crystal Palace Bus Station",
+    "Morden Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 1.0,
+   "vehicle_count": 30
+  },
+  {
+   "route": "158",
+   "service_class": "regular",
+   "termini": [
+    "Chingford Mount",
+    "Stratford Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "VDL Wrightbus Eclipse Gemini 2",
+   "vehicle_share": 0.69,
+   "vehicle_count": 29
+  },
+  {
+   "route": "159",
+   "service_class": "regular",
+   "termini": [
+    "Streatham Station",
+    "Oxford Circus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 48
+  },
+  {
+   "route": "16",
+   "service_class": "regular",
+   "termini": [
+    "Brent Park Tesco",
+    "Bishops Bridge / Paddington Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.529,
+   "vehicle_count": 18
+  },
+  {
+   "route": "160",
+   "service_class": "regular",
+   "termini": [
+    "Thomas Lane",
+    "Sidcup Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 0.889,
+   "vehicle_count": 16
+  },
+  {
+   "route": "161",
+   "service_class": "regular",
+   "termini": [
+    "Chislehurst War Memorial",
+    "North Greenwich Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.521,
+   "vehicle_count": 25
+  },
+  {
+   "route": "162",
+   "service_class": "regular",
+   "termini": [
+    "Beckenham Junction Stn  / Rectory Rd",
+    "Eltham Bus Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 1.0,
+   "vehicle_count": 19
+  },
+  {
+   "route": "163",
+   "service_class": "regular",
+   "termini": [
+    "London Road / Morden Station",
+    "Francis Grove"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 0.923,
+   "vehicle_count": 24
+  },
+  {
+   "route": "164",
+   "service_class": "regular",
+   "termini": [
+    "Sutton Station  / the Quadrant",
+    "Francis Grove"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 1.0,
+   "vehicle_count": 23
+  },
+  {
+   "route": "165",
+   "service_class": "regular",
+   "termini": [
+    "The Brewery",
+    "Abbey Wood Lane"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.958,
+   "vehicle_count": 23
+  },
+  {
+   "route": "166",
+   "service_class": "regular",
+   "termini": [
+    "Epsom Hospital",
+    "West Croydon Bus Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD",
+   "vehicle_share": 0.75,
+   "vehicle_count": 3
+  },
+  {
+   "route": "167",
+   "service_class": "regular",
+   "termini": [
+    "Hainault Street",
+    "Loughton Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.929,
+   "vehicle_count": 13
+  },
+  {
+   "route": "169",
+   "service_class": "regular",
+   "termini": [
+    "Clayhall / the Glade",
+    "Barking Town Centre"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.966,
+   "vehicle_count": 28
+  },
+  {
+   "route": "17",
+   "service_class": "regular",
+   "termini": [
+    "Archway Station  / Holloway Road",
+    "London Bridge Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.8,
+   "vehicle_count": 28
+  },
+  {
+   "route": "170",
+   "service_class": "regular",
+   "termini": [
+    "Danebury Avenue / Minstead Gardens",
+    "Victoria Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 1.0,
+   "vehicle_count": 20
+  },
+  {
+   "route": "171",
+   "service_class": "regular",
+   "termini": [
+    "Newquay Road",
+    "Lambeth Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.5,
+   "vehicle_count": 1
+  },
+  {
+   "route": "172",
+   "service_class": "regular",
+   "termini": [
+    "Brockley Rise / Chandos",
+    "Aldwych / Drury Lane"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 1.0,
+   "vehicle_count": 10
+  },
+  {
+   "route": "173",
+   "service_class": "regular",
+   "termini": [
+    "Beckton Bus Station",
+    "King George Hospital"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.917,
+   "vehicle_count": 33
+  },
+  {
+   "route": "174",
+   "service_class": "regular",
+   "termini": [
+    "Dagnam Park Square",
+    "C E M E"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.917,
+   "vehicle_count": 33
+  },
+  {
+   "route": "175",
+   "service_class": "regular",
+   "termini": [
+    "Hillrise Estate",
+    "Oval Road South"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 2",
+   "vehicle_share": 1.0,
+   "vehicle_count": 24
+  },
+  {
+   "route": "176",
+   "service_class": "regular",
+   "termini": [
+    "Penge / Pawleyne Arms",
+    "Tottenham Ct Rd Stn  / Gt Russell St"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.688,
+   "vehicle_count": 33
+  },
+  {
+   "route": "177",
+   "service_class": "regular",
+   "termini": [
+    "Thamesmead Town Centre",
+    "Peckham Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 0.31,
+   "vehicle_count": 18
+  },
+  {
+   "route": "178",
+   "service_class": "regular",
+   "termini": [
+    "Calderwood Street",
+    "Lewisham Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 0.714,
+   "vehicle_count": 10
+  },
+  {
+   "route": "179",
+   "service_class": "regular",
+   "termini": [
+    "Chingford Station",
+    "Hainault Street"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.562,
+   "vehicle_count": 18
+  },
+  {
+   "route": "18",
+   "service_class": "regular",
+   "termini": [
+    "Sudbury & Harrow Road Station",
+    "Euston Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD",
+   "vehicle_share": 0.912,
+   "vehicle_count": 52
+  },
+  {
+   "route": "180",
+   "service_class": "regular",
+   "termini": [
+    "Erith Quarry / Fraser Road",
+    "North Greenwich Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.457,
+   "vehicle_count": 16
+  },
+  {
+   "route": "181",
+   "service_class": "regular",
+   "termini": [
+    "Lewisham Station",
+    "Grove Park Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 16
+  },
+  {
+   "route": "182",
+   "service_class": "regular",
+   "termini": [
+    "Bannister Playing Fields",
+    "Brent Cross Shopping Centre"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.843,
+   "vehicle_count": 43
+  },
+  {
+   "route": "183",
+   "service_class": "regular",
+   "termini": [
+    "Golders Green Station",
+    "Pinner Station  / Bridge Street"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 0.885,
+   "vehicle_count": 23
+  },
+  {
+   "route": "184",
+   "service_class": "regular",
+   "termini": [
+    "Turnpike Lane Bus Station",
+    "Chesterfield Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 1.0,
+   "vehicle_count": 30
+  },
+  {
+   "route": "185",
+   "service_class": "regular",
+   "termini": [
+    "Lewisham Station",
+    "Victoria Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 0.902,
+   "vehicle_count": 37
+  },
+  {
+   "route": "186",
+   "service_class": "regular",
+   "termini": [
+    "Northwick Park Hospital Social Club",
+    "Brent Cross Shopping Centre"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.892,
+   "vehicle_count": 33
+  },
+  {
+   "route": "187",
+   "service_class": "regular",
+   "termini": [
+    "Central Middlesex Hospital",
+    "O2 Centre / Sainsbury's"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV",
+   "vehicle_share": 1.0,
+   "vehicle_count": 19
+  },
+  {
+   "route": "188",
+   "service_class": "regular",
+   "termini": [
+    "North Greenwich Station",
+    "Tottenham Court Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD",
+   "vehicle_share": 0.885,
+   "vehicle_count": 23
+  },
+  {
+   "route": "189",
+   "service_class": "regular",
+   "termini": [
+    "Brent Cross Shopping Centre",
+    "Marble Arch Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 37
+  },
+  {
+   "route": "19",
+   "service_class": "regular",
+   "termini": [
+    "Finsbury Park Interchange",
+    "Parkgate Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 42
+  },
+  {
+   "route": "190",
+   "service_class": "regular",
+   "termini": [
+    "George Street",
+    "Empress State Building / W Brompton Stn"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.846,
+   "vehicle_count": 11
+  },
+  {
+   "route": "191",
+   "service_class": "regular",
+   "termini": [
+    "Edmonton Green Bus Station",
+    "Brimsdown Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "VDL Wrightbus Eclipse Gemini 2",
+   "vehicle_share": 1.0,
+   "vehicle_count": 37
+  },
+  {
+   "route": "192",
+   "service_class": "regular",
+   "termini": [
+    "Little Park Gardens",
+    "Tottenham Hale Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 17
+  },
+  {
+   "route": "193",
+   "service_class": "regular",
+   "termini": [
+    "Queen's Hospital",
+    "Essex Gardens"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.944,
+   "vehicle_count": 17
+  },
+  {
+   "route": "194",
+   "service_class": "regular",
+   "termini": [
+    "Bell Green / Sainsbury's",
+    "West Croydon Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "VDL Wrightbus Eclipse Gemini 2",
+   "vehicle_share": 0.889,
+   "vehicle_count": 24
+  },
+  {
+   "route": "195",
+   "service_class": "regular",
+   "termini": [
+    "Romney Road",
+    "Half Acre"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.95,
+   "vehicle_count": 19
+  },
+  {
+   "route": "196",
+   "service_class": "regular",
+   "termini": [
+    "Elephant & Castle / Newington Causeway",
+    "Norwood Junction Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis ADL",
+   "vehicle_share": 1.0,
+   "vehicle_count": 18
+  },
+  {
+   "route": "197",
+   "service_class": "regular",
+   "termini": [
+    "Peckham Bus Station",
+    "Fairfield Halls"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.731,
+   "vehicle_count": 19
+  },
+  {
+   "route": "198",
+   "service_class": "regular",
+   "termini": [
+    "Shrublands / Bramble Close",
+    "Talbot Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H City",
+   "vehicle_share": 0.722,
+   "vehicle_count": 13
+  },
+  {
+   "route": "199",
+   "service_class": "regular",
+   "termini": [
+    "Canada Water Bus Station",
+    "Catford Garage"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.64,
+   "vehicle_count": 16
+  },
+  {
+   "route": "2",
+   "service_class": "regular",
+   "termini": [
+    "Marylebone Station",
+    "Norwood Bus Garage"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.733,
+   "vehicle_count": 44
+  },
+  {
+   "route": "20",
+   "service_class": "regular",
+   "termini": [
+    "Walthamstow Bus Station",
+    "Burton Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H",
+   "vehicle_share": 0.522,
+   "vehicle_count": 12
+  },
+  {
+   "route": "200",
+   "service_class": "regular",
+   "termini": [
+    "Lambton Road",
+    "Mitcham Fair Green"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Optare Metrodecker EV",
+   "vehicle_share": 0.34,
+   "vehicle_count": 16
+  },
+  {
+   "route": "201",
+   "service_class": "regular",
+   "termini": [
+    "Morden Station",
+    "Dulwich Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 1.0,
+   "vehicle_count": 19
+  },
+  {
+   "route": "202",
+   "service_class": "regular",
+   "termini": [
+    "Crystal Palace Parade",
+    "Blackheath / Royal Standard"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.607,
+   "vehicle_count": 17
+  },
+  {
+   "route": "203",
+   "service_class": "regular",
+   "termini": [
+    "School Road",
+    "Staines Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.857,
+   "vehicle_count": 12
+  },
+  {
+   "route": "204",
+   "service_class": "regular",
+   "termini": [
+    "Sudbury Town Station",
+    "Edgware Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 1.0,
+   "vehicle_count": 31
+  },
+  {
+   "route": "205",
+   "service_class": "regular",
+   "termini": [
+    "Portman Street / Selfridges",
+    "Bow Church Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H",
+   "vehicle_share": 0.759,
+   "vehicle_count": 22
+  },
+  {
+   "route": "206",
+   "service_class": "regular",
+   "termini": [
+    "The Paddocks",
+    "Kilburn Park Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV",
+   "vehicle_share": 0.76,
+   "vehicle_count": 19
+  },
+  {
+   "route": "207",
+   "service_class": "regular",
+   "termini": [
+    "Hayes By-Pass",
+    "White City Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.578,
+   "vehicle_count": 26
+  },
+  {
+   "route": "208",
+   "service_class": "regular",
+   "termini": [
+    "Lewisham Station",
+    "Orpington / Perry Hall Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400 MMC",
+   "vehicle_share": 0.643,
+   "vehicle_count": 27
+  },
+  {
+   "route": "209",
+   "service_class": "regular",
+   "termini": [
+    "Mortlake Bus Station",
+    "Lonsdale Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.941,
+   "vehicle_count": 16
+  },
+  {
+   "route": "21",
+   "service_class": "regular",
+   "termini": [
+    "Lewisham Centre",
+    "Caledonian Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.843,
+   "vehicle_count": 43
+  },
+  {
+   "route": "210",
+   "service_class": "regular",
+   "termini": [
+    "Finsbury Park Station",
+    "Brent Cross Shopping Centre"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD",
+   "vehicle_share": 0.842,
+   "vehicle_count": 16
+  },
+  {
+   "route": "211",
+   "service_class": "regular",
+   "termini": [
+    "Hammersmith Bus Station",
+    "Battersea Power Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 33
+  },
+  {
+   "route": "212",
+   "service_class": "regular",
+   "termini": [
+    "Chingford Station",
+    "St James Street Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 1.0,
+   "vehicle_count": 23
+  },
+  {
+   "route": "213",
+   "service_class": "regular",
+   "termini": [
+    "Fairfield Bus Station",
+    "Sutton Bus Garage"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 0.968,
+   "vehicle_count": 30
+  },
+  {
+   "route": "214",
+   "service_class": "regular",
+   "termini": [
+    "Highgate School / Hampstead Lane",
+    "Finsbury Square"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 1.0,
+   "vehicle_count": 24
+  },
+  {
+   "route": "215",
+   "service_class": "regular",
+   "termini": [
+    "Lee Valley Campsite",
+    "Walthamstow Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 14
+  },
+  {
+   "route": "216",
+   "service_class": "regular",
+   "termini": [
+    "Staines Bus Station",
+    "Cromwell Road Bus Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 20
+  },
+  {
+   "route": "217",
+   "service_class": "regular",
+   "termini": [
+    "Waltham Cross Bus Station",
+    "Turnpike Lane Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.538,
+   "vehicle_count": 14
+  },
+  {
+   "route": "218",
+   "service_class": "regular",
+   "termini": [
+    "Hammersmith Bus Station",
+    "North Acton Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.909,
+   "vehicle_count": 10
+  },
+  {
+   "route": "219",
+   "service_class": "regular",
+   "termini": [
+    "Francis Grove",
+    "Falcon Lane"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 0.895,
+   "vehicle_count": 17
+  },
+  {
+   "route": "22",
+   "service_class": "regular",
+   "termini": [
+    "Putney Common",
+    "Margaret Street / Oxford Circus"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.739,
+   "vehicle_count": 17
+  },
+  {
+   "route": "220",
+   "service_class": "regular",
+   "termini": [
+    "Willesden Junction Station",
+    "Mapleton Crescent"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.622,
+   "vehicle_count": 28
+  },
+  {
+   "route": "221",
+   "service_class": "regular",
+   "termini": [
+    "Edgware Bus Station",
+    "Turnpike Lane Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.558,
+   "vehicle_count": 24
+  },
+  {
+   "route": "222",
+   "service_class": "regular",
+   "termini": [
+    "Uxbridge Station",
+    "Hounslow Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.975,
+   "vehicle_count": 39
+  },
+  {
+   "route": "223",
+   "service_class": "regular",
+   "termini": [
+    "Harrow View West",
+    "Wembley Central Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.917,
+   "vehicle_count": 11
+  },
+  {
+   "route": "224",
+   "service_class": "regular",
+   "termini": [
+    "Alperton Sainsbury's",
+    "Mitchell Way"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.923,
+   "vehicle_count": 12
+  },
+  {
+   "route": "225",
+   "service_class": "regular",
+   "termini": [
+    "Springbank Road / Hither Green Station",
+    "Canada Water Bus Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.846,
+   "vehicle_count": 11
+  },
+  {
+   "route": "226",
+   "service_class": "regular",
+   "termini": [
+    "Haven Green / Ealing Broadway Stn",
+    "Golders Green Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 0.947,
+   "vehicle_count": 18
+  },
+  {
+   "route": "227",
+   "service_class": "regular",
+   "termini": [
+    "Bromley North Station",
+    "Crystal Palace"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus StreetLite DF",
+   "vehicle_share": 0.765,
+   "vehicle_count": 13
+  },
+  {
+   "route": "228",
+   "service_class": "regular",
+   "termini": [
+    "Central Middlesex Hospital",
+    "Chippenham Road / Shirland Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV",
+   "vehicle_share": 1.0,
+   "vehicle_count": 15
+  },
+  {
+   "route": "229",
+   "service_class": "regular",
+   "termini": [
+    "Thamesmead Town Centre",
+    "Queen Mary's Hospital / Chislehurst Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 0.676,
+   "vehicle_count": 25
+  },
+  {
+   "route": "23",
+   "service_class": "regular",
+   "termini": [
+    "Great Western Road",
+    "Aldwych / Drury Lane"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Optare Metrodecker EV",
+   "vehicle_share": 0.468,
+   "vehicle_count": 22
+  },
+  {
+   "route": "230",
+   "service_class": "regular",
+   "termini": [
+    "Fyfield Road",
+    "Wood Green Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.923,
+   "vehicle_count": 12
+  },
+  {
+   "route": "231",
+   "service_class": "regular",
+   "termini": [
+    "Enfield Chase Station",
+    "Turnpike Lane Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 0.75,
+   "vehicle_count": 12
+  },
+  {
+   "route": "232",
+   "service_class": "regular",
+   "termini": [
+    "Mitchell Way",
+    "Coburg Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus StreetLite DF",
+   "vehicle_share": 0.741,
+   "vehicle_count": 20
+  },
+  {
+   "route": "233",
+   "service_class": "regular",
+   "termini": [
+    "Eltham Bus Station",
+    "Beechenlea Lane"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis ADL",
+   "vehicle_share": 1.0,
+   "vehicle_count": 16
+  },
+  {
+   "route": "234",
+   "service_class": "regular",
+   "termini": [
+    "The Spires",
+    "Archway Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.684,
+   "vehicle_count": 13
+  },
+  {
+   "route": "235",
+   "service_class": "regular",
+   "termini": [
+    "Three Fishes",
+    "Great West Quarter"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 0.958,
+   "vehicle_count": 23
+  },
+  {
+   "route": "236",
+   "service_class": "regular",
+   "termini": [
+    "Finsbury Park Interchange",
+    "Hackney Wick"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus StreetLite DF",
+   "vehicle_share": 0.696,
+   "vehicle_count": 16
+  },
+  {
+   "route": "237",
+   "service_class": "regular",
+   "termini": [
+    "Frampton Road",
+    "White City Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.615,
+   "vehicle_count": 24
+  },
+  {
+   "route": "238",
+   "service_class": "regular",
+   "termini": [
+    "Stratford Bus Station",
+    "Barking Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.517,
+   "vehicle_count": 15
+  },
+  {
+   "route": "24",
+   "service_class": "regular",
+   "termini": [
+    "Grosvenor Road",
+    "Royal Free Hospital"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.972,
+   "vehicle_count": 35
+  },
+  {
+   "route": "240",
+   "service_class": "regular",
+   "termini": [
+    "Golders Green Station",
+    "Edgware Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 1.0,
+   "vehicle_count": 15
+  },
+  {
+   "route": "241",
+   "service_class": "regular",
+   "termini": [
+    "Here East",
+    "Royal Crest Avenue"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400 MMC",
+   "vehicle_share": 0.536,
+   "vehicle_count": 15
+  },
+  {
+   "route": "242",
+   "service_class": "regular",
+   "termini": [
+    "Homerton Hospital / Wardle Street",
+    "Aldgate Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.722,
+   "vehicle_count": 26
+  },
+  {
+   "route": "243",
+   "service_class": "regular",
+   "termini": [
+    "Redvers Road",
+    "Waterloo Station / Mepham Street"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.65,
+   "vehicle_count": 13
+  },
+  {
+   "route": "244",
+   "service_class": "regular",
+   "termini": [
+    "Queen Elizabeth Hospital / West Entrance",
+    "Abbey Wood Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 0.957,
+   "vehicle_count": 22
+  },
+  {
+   "route": "245",
+   "service_class": "regular",
+   "termini": [
+    "Alperton Sainsbury's",
+    "Golders Green Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 2",
+   "vehicle_share": 0.444,
+   "vehicle_count": 20
+  },
+  {
+   "route": "246",
+   "service_class": "regular",
+   "termini": [
+    "Bromley North Station",
+    "Chartwell"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.636,
+   "vehicle_count": 7
+  },
+  {
+   "route": "247",
+   "service_class": "regular",
+   "termini": [
+    "Barkingside Station",
+    "Romford Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.968,
+   "vehicle_count": 30
+  },
+  {
+   "route": "248",
+   "service_class": "regular",
+   "termini": [
+    "Romford Market",
+    "Moor Lane"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.81,
+   "vehicle_count": 17
+  },
+  {
+   "route": "249",
+   "service_class": "regular",
+   "termini": [
+    "The Pavement",
+    "Jasmine Grove"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.895,
+   "vehicle_count": 34
+  },
+  {
+   "route": "25",
+   "service_class": "regular",
+   "termini": [
+    "Hainault Street",
+    "Holborn Circus"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400 MMC",
+   "vehicle_share": 0.979,
+   "vehicle_count": 46
+  },
+  {
+   "route": "250",
+   "service_class": "regular",
+   "termini": [
+    "Brixton Road / Brixton Police Station",
+    "West Croydon Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.93,
+   "vehicle_count": 40
+  },
+  {
+   "route": "251",
+   "service_class": "regular",
+   "termini": [
+    "Arnos Grove Station",
+    "Edgware Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV",
+   "vehicle_share": 1.0,
+   "vehicle_count": 14
+  },
+  {
+   "route": "252",
+   "service_class": "regular",
+   "termini": [
+    "Collier Row Library",
+    "Hornchurch Town Centre"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 0.97,
+   "vehicle_count": 32
+  },
+  {
+   "route": "253",
+   "service_class": "regular",
+   "termini": [
+    "Hackney Central Station",
+    "Mornington Cres Stn / Camden Tn Library"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 51
+  },
+  {
+   "route": "254",
+   "service_class": "regular",
+   "termini": [
+    "Aldgate Station",
+    "Caledonian Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 55
+  },
+  {
+   "route": "255",
+   "service_class": "regular",
+   "termini": [
+    "South Lodge Avenue / Yorkshire Road",
+    "Balham Station  / Balham Station Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 1.0,
+   "vehicle_count": 11
+  },
+  {
+   "route": "256",
+   "service_class": "regular",
+   "termini": [
+    "Miramar Way",
+    "Wincanton Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.783,
+   "vehicle_count": 18
+  },
+  {
+   "route": "257",
+   "service_class": "regular",
+   "termini": [
+    "Stratford Bus Station",
+    "Walthamstow Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.6,
+   "vehicle_count": 18
+  },
+  {
+   "route": "258",
+   "service_class": "regular",
+   "termini": [
+    "Watford Junction Station",
+    "South Harrow Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.593,
+   "vehicle_count": 16
+  },
+  {
+   "route": "259",
+   "service_class": "regular",
+   "termini": [
+    "Edmonton Green Bus Station",
+    "King's Cross Road / Pentonville Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.921,
+   "vehicle_count": 35
+  },
+  {
+   "route": "26",
+   "service_class": "regular",
+   "termini": [
+    "St Mary of Eton Church",
+    "Westminster Cathedral / Victoria Stn"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H City",
+   "vehicle_share": 0.705,
+   "vehicle_count": 31
+  },
+  {
+   "route": "260",
+   "service_class": "regular",
+   "termini": [
+    "White City Bus Station",
+    "Golders Green Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.949,
+   "vehicle_count": 37
+  },
+  {
+   "route": "261",
+   "service_class": "regular",
+   "termini": [
+    "Lewisham Station",
+    "Princess Royal University Hospital"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 0.5,
+   "vehicle_count": 4
+  },
+  {
+   "route": "262",
+   "service_class": "regular",
+   "termini": [
+    "Gallions Reach Shopping Park",
+    "Stratford Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 0.917,
+   "vehicle_count": 11
+  },
+  {
+   "route": "263",
+   "service_class": "regular",
+   "termini": [
+    "Parkhurst Road / Holloway Nags Head",
+    "Barnet Hospital"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.944,
+   "vehicle_count": 34
+  },
+  {
+   "route": "264",
+   "service_class": "regular",
+   "termini": [
+    "West Croydon Bus Station",
+    "St George's Hospital"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 1.0,
+   "vehicle_count": 19
+  },
+  {
+   "route": "265",
+   "service_class": "regular",
+   "termini": [
+    "Putney Bridge Station",
+    "Tolworth / King Charles Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 1.0,
+   "vehicle_count": 24
+  },
+  {
+   "route": "266",
+   "service_class": "regular",
+   "termini": [
+    "Acton Old Town Hall",
+    "Brent Cross Shopping Centre"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.966,
+   "vehicle_count": 28
+  },
+  {
+   "route": "267",
+   "service_class": "regular",
+   "termini": [
+    "Hammersmith Bus Station",
+    "South Road / Fulwell"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.769,
+   "vehicle_count": 20
+  },
+  {
+   "route": "268",
+   "service_class": "regular",
+   "termini": [
+    "Golders Green Station",
+    "O2 Centre / Sainsbury's"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 1.0,
+   "vehicle_count": 1
+  },
+  {
+   "route": "269",
+   "service_class": "regular",
+   "termini": [
+    "Bexleyheath Clock Tower",
+    "Bromley North Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 1.0,
+   "vehicle_count": 29
+  },
+  {
+   "route": "27",
+   "service_class": "regular",
+   "termini": [
+    "Hammersmith Stn / H&c and Circle Lines",
+    "Hartland Road / Camden Market"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 40
+  },
+  {
+   "route": "270",
+   "service_class": "regular",
+   "termini": [
+    "Putney Bridge Station",
+    "Madeira Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.85,
+   "vehicle_count": 17
+  },
+  {
+   "route": "272",
+   "service_class": "regular",
+   "termini": [
+    "Cavendish Road",
+    "Shepherd's Bush Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 18
+  },
+  {
+   "route": "273",
+   "service_class": "regular",
+   "termini": [
+    "Conington Road",
+    "Station Square / Petts Wood Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.55,
+   "vehicle_count": 11
+  },
+  {
+   "route": "274",
+   "service_class": "regular",
+   "termini": [
+    "Angel Islington",
+    "Lancaster Gate Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV EvoSeti",
+   "vehicle_share": 1.0,
+   "vehicle_count": 22
+  },
+  {
+   "route": "275",
+   "service_class": "regular",
+   "termini": [
+    "Walthamstow Bus Station",
+    "Barkingside Tesco"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 0.583,
+   "vehicle_count": 14
+  },
+  {
+   "route": "276",
+   "service_class": "regular",
+   "termini": [
+    "Gateway Surgical Centre",
+    "Stoke Newington Common"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV",
+   "vehicle_share": 1.0,
+   "vehicle_count": 24
+  },
+  {
+   "route": "277",
+   "service_class": "regular",
+   "termini": [
+    "Dalston Junction Station",
+    "Isle of Dogs Asda"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.625,
+   "vehicle_count": 20
+  },
+  {
+   "route": "278",
+   "service_class": "regular",
+   "termini": [
+    "Heathrow Central Bus Station",
+    "Ruislip Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400 MMC",
+   "vehicle_share": 0.529,
+   "vehicle_count": 9
+  },
+  {
+   "route": "279",
+   "service_class": "regular",
+   "termini": [
+    "Waltham Cross Bus Station",
+    "Manor House Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.932,
+   "vehicle_count": 41
+  },
+  {
+   "route": "28",
+   "service_class": "regular",
+   "termini": [
+    "Station Terrace",
+    "Mapleton Crescent"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 2",
+   "vehicle_share": 1.0,
+   "vehicle_count": 23
+  },
+  {
+   "route": "280",
+   "service_class": "regular",
+   "termini": [
+    "St George's Hospital",
+    "Belmont Station  / Brighton Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 2",
+   "vehicle_share": 0.429,
+   "vehicle_count": 12
+  },
+  {
+   "route": "281",
+   "service_class": "regular",
+   "termini": [
+    "Hounslow Bus Station",
+    "Tolworth Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 0.8,
+   "vehicle_count": 36
+  },
+  {
+   "route": "282",
+   "service_class": "regular",
+   "termini": [
+    "Ealing Hospital",
+    "Mount Vernon Hospital"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H",
+   "vehicle_share": 0.783,
+   "vehicle_count": 18
+  },
+  {
+   "route": "284",
+   "service_class": "regular",
+   "termini": [
+    "Lewisham Station",
+    "Grove Park Cemetery"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.938,
+   "vehicle_count": 15
+  },
+  {
+   "route": "285",
+   "service_class": "regular",
+   "termini": [
+    "Heathrow Central Bus Station",
+    "Cromwell Road Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400 MMC",
+   "vehicle_share": 0.857,
+   "vehicle_count": 18
+  },
+  {
+   "route": "286",
+   "service_class": "regular",
+   "termini": [
+    "Queen Mary's Hospital / Cancer Centre",
+    "Greenwich Town Centre / Cutty Sark"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.433,
+   "vehicle_count": 13
+  },
+  {
+   "route": "287",
+   "service_class": "regular",
+   "termini": [
+    "Barking Station",
+    "Abbey Wood Lane"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 1.0,
+   "vehicle_count": 17
+  },
+  {
+   "route": "288",
+   "service_class": "regular",
+   "termini": [
+    "Queensbury Morrisons",
+    "Meadfield"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 18
+  },
+  {
+   "route": "289",
+   "service_class": "regular",
+   "termini": [
+    "Elmers End Interchange",
+    "Purley Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.725,
+   "vehicle_count": 37
+  },
+  {
+   "route": "29",
+   "service_class": "regular",
+   "termini": [
+    "Lordship Lane",
+    "Trafalgar Square / Charing Cross Stn"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 2",
+   "vehicle_share": 0.541,
+   "vehicle_count": 33
+  },
+  {
+   "route": "290",
+   "service_class": "regular",
+   "termini": [
+    "Staines Bus Station",
+    "Arragon Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 0.7,
+   "vehicle_count": 14
+  },
+  {
+   "route": "291",
+   "service_class": "regular",
+   "termini": [
+    "Queen Elizabeth Hospital / West Entrance",
+    "Garland Road Clinic"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 1.0,
+   "vehicle_count": 14
+  },
+  {
+   "route": "292",
+   "service_class": "regular",
+   "termini": [
+    "Wetherby Road",
+    "Colindale Superstores"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 0.5,
+   "vehicle_count": 11
+  },
+  {
+   "route": "293",
+   "service_class": "regular",
+   "termini": [
+    "London Road / Morden Station",
+    "Epsom Hospital"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.909,
+   "vehicle_count": 10
+  },
+  {
+   "route": "294",
+   "service_class": "regular",
+   "termini": [
+    "Havering Park",
+    "Wincanton Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400 MMC",
+   "vehicle_share": 0.833,
+   "vehicle_count": 20
+  },
+  {
+   "route": "295",
+   "service_class": "regular",
+   "termini": [
+    "Ladbroke Grove Sainsbury's",
+    "Clapham Junction Stn  / the Falcon"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 0.45,
+   "vehicle_count": 18
+  },
+  {
+   "route": "296",
+   "service_class": "regular",
+   "termini": [
+    "Romford Station",
+    "Roden Street"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.938,
+   "vehicle_count": 15
+  },
+  {
+   "route": "297",
+   "service_class": "regular",
+   "termini": [
+    "Pound Lane / Willesden Bus Garage",
+    "Ealing Broadway Station   / Haven Green"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.395,
+   "vehicle_count": 15
+  },
+  {
+   "route": "298",
+   "service_class": "regular",
+   "termini": [
+    "Arnos Grove Station",
+    "Potters Bar Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 0.889,
+   "vehicle_count": 16
+  },
+  {
+   "route": "299",
+   "service_class": "regular",
+   "termini": [
+    "Queens Avenue",
+    "Cockfosters Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.889,
+   "vehicle_count": 8
+  },
+  {
+   "route": "3",
+   "service_class": "regular",
+   "termini": [
+    "Victoria Bus Station",
+    "Crystal Palace"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.971,
+   "vehicle_count": 33
+  },
+  {
+   "route": "30",
+   "service_class": "regular",
+   "termini": [
+    "Euston Station",
+    "Hackney Wick / Trowbridge Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV EvoSeti",
+   "vehicle_share": 1.0,
+   "vehicle_count": 22
+  },
+  {
+   "route": "300",
+   "service_class": "regular",
+   "termini": [
+    "Wordsworth Health Centre",
+    "Canning Town Station"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "301",
+   "service_class": "regular",
+   "termini": [
+    "Bexleyheath Clock Tower",
+    "Beresford Sq / Woolwich Arsenal Stn"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis ADL",
+   "vehicle_share": 0.5,
+   "vehicle_count": 9
+  },
+  {
+   "route": "302",
+   "service_class": "regular",
+   "termini": [
+    "Mill Hill Broadway Station",
+    "Kensal Rise Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.647,
+   "vehicle_count": 22
+  },
+  {
+   "route": "303",
+   "service_class": "regular",
+   "termini": [
+    "Edgware Bus Station",
+    "Kingsbury Circle"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.941,
+   "vehicle_count": 16
+  },
+  {
+   "route": "304",
+   "service_class": "regular",
+   "termini": [
+    "Custom House Station",
+    "Manor Park / Gladding Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H",
+   "vehicle_share": 0.385,
+   "vehicle_count": 10
+  },
+  {
+   "route": "306",
+   "service_class": "regular",
+   "termini": [
+    "Second Avenue",
+    "Sands End / Sainsbury's"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 1.0,
+   "vehicle_count": 20
+  },
+  {
+   "route": "307",
+   "service_class": "regular",
+   "termini": [
+    "Brimsdown Station",
+    "Barnet Hospital"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 1.0,
+   "vehicle_count": 27
+  },
+  {
+   "route": "308",
+   "service_class": "regular",
+   "termini": [
+    "Woodbine Place",
+    "Lea Bridge Roundabout"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV EvoSeti",
+   "vehicle_share": 0.654,
+   "vehicle_count": 17
+  },
+  {
+   "route": "309",
+   "service_class": "regular",
+   "termini": [
+    "Canning Town Bus Station",
+    "Bonner Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 11
+  },
+  {
+   "route": "31",
+   "service_class": "regular",
+   "termini": [
+    "Bayham Street",
+    "White City Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD",
+   "vehicle_share": 1.0,
+   "vehicle_count": 34
+  },
+  {
+   "route": "310",
+   "service_class": "regular",
+   "termini": [
+    "Stamford Hill Broadway",
+    "Golders Green Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 13
+  },
+  {
+   "route": "312",
+   "service_class": "regular",
+   "termini": [
+    "Canons Hill",
+    "Norwood Junction Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.5,
+   "vehicle_count": 3
+  },
+  {
+   "route": "313",
+   "service_class": "regular",
+   "termini": [
+    "Chingford Station",
+    "Dame Alice Owen's School"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "VDL Wrightbus Eclipse Gemini 2",
+   "vehicle_share": 0.6,
+   "vehicle_count": 12
+  },
+  {
+   "route": "314",
+   "service_class": "regular",
+   "termini": [
+    "Eltham Bus Station",
+    "Salcot Crescent"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV",
+   "vehicle_share": 0.679,
+   "vehicle_count": 19
+  },
+  {
+   "route": "315",
+   "service_class": "regular",
+   "termini": [
+    "St Julian's Farm Road",
+    "Springfield University Hospital"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.643,
+   "vehicle_count": 9
+  },
+  {
+   "route": "316",
+   "service_class": "regular",
+   "termini": [
+    "Brent Cross West Station",
+    "White City Bus Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV",
+   "vehicle_share": 1.0,
+   "vehicle_count": 30
+  },
+  {
+   "route": "317",
+   "service_class": "regular",
+   "termini": [
+    "Waltham Cross Bus Station",
+    "Little Park Gardens"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.833,
+   "vehicle_count": 10
+  },
+  {
+   "route": "318",
+   "service_class": "regular",
+   "termini": [
+    "North Middlesex Hospital",
+    "Rookwood Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 1.0,
+   "vehicle_count": 10
+  },
+  {
+   "route": "319",
+   "service_class": "regular",
+   "termini": [
+    "Telford Avenue",
+    "Cadogan Gardens / Sloane Square"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 1.0,
+   "vehicle_count": 22
+  },
+  {
+   "route": "32",
+   "service_class": "regular",
+   "termini": [
+    "Edgware Bus Station",
+    "Kilburn Park Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.925,
+   "vehicle_count": 37
+  },
+  {
+   "route": "320",
+   "service_class": "regular",
+   "termini": [
+    "Biggin Hill Valley",
+    "Catford Bridge Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD",
+   "vehicle_share": 0.842,
+   "vehicle_count": 16
+  },
+  {
+   "route": "321",
+   "service_class": "regular",
+   "termini": [
+    "Foots Cray Tesco",
+    "New Cross Sainsbury's"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD",
+   "vehicle_share": 1.0,
+   "vehicle_count": 18
+  },
+  {
+   "route": "322",
+   "service_class": "regular",
+   "termini": [
+    "Crystal Palace Bus Station",
+    "The Pavement"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "323",
+   "service_class": "regular",
+   "termini": [
+    "Canning Town Bus Station",
+    "Mile End Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 1.0,
+   "vehicle_count": 6
+  },
+  {
+   "route": "324",
+   "service_class": "regular",
+   "termini": [
+    "Centennial Park",
+    "Tesco Brent Cross"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.538,
+   "vehicle_count": 7
+  },
+  {
+   "route": "325",
+   "service_class": "regular",
+   "termini": [
+    "East Beckton / Sainsbury's",
+    "Prince Regent Bus Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 1.0,
+   "vehicle_count": 22
+  },
+  {
+   "route": "326",
+   "service_class": "regular",
+   "termini": [
+    "The Spires",
+    "Brent Cross Shopping Centre"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 26
+  },
+  {
+   "route": "327",
+   "service_class": "regular",
+   "termini": [
+    "Waltham Cross Bus Station",
+    "Elsinge Estate"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 1.0,
+   "vehicle_count": 4
+  },
+  {
+   "route": "328",
+   "service_class": "regular",
+   "termini": [
+    "Golders Green Station",
+    "Limerston Street"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 1.0,
+   "vehicle_count": 23
+  },
+  {
+   "route": "329",
+   "service_class": "regular",
+   "termini": [
+    "Little Park Gardens",
+    "Turnpike Lane Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 0.5,
+   "vehicle_count": 11
+  },
+  {
+   "route": "33",
+   "service_class": "regular",
+   "termini": [
+    "Fulwell Station",
+    "Lonsdale Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.6,
+   "vehicle_count": 18
+  },
+  {
+   "route": "330",
+   "service_class": "regular",
+   "termini": [
+    "Wanstead Park Station",
+    "Thames Barrier"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 0.389,
+   "vehicle_count": 7
+  },
+  {
+   "route": "331",
+   "service_class": "regular",
+   "termini": [
+    "Ruislip Station",
+    "Belmont Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.917,
+   "vehicle_count": 11
+  },
+  {
+   "route": "333",
+   "service_class": "regular",
+   "termini": [
+    "Mitcham Road / Tooting Broadway Stn",
+    "Elephant & Castle / Newington Causeway"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV EvoSeti",
+   "vehicle_share": 0.652,
+   "vehicle_count": 15
+  },
+  {
+   "route": "335",
+   "service_class": "regular",
+   "termini": [
+    "Wingfield School",
+    "North Greenwich Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 2",
+   "vehicle_share": 0.909,
+   "vehicle_count": 20
+  },
+  {
+   "route": "336",
+   "service_class": "regular",
+   "termini": [
+    "Thomas Lane",
+    "Locksbottom / Pallant Way"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.867,
+   "vehicle_count": 13
+  },
+  {
+   "route": "337",
+   "service_class": "regular",
+   "termini": [
+    "Northcote Road",
+    "Richmond Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 1.0,
+   "vehicle_count": 24
+  },
+  {
+   "route": "339",
+   "service_class": "regular",
+   "termini": [
+    "Leytonstone Stn  / Grove Green Road",
+    "Shadwell Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Switch Mobility Optare",
+   "vehicle_share": 0.75,
+   "vehicle_count": 12
+  },
+  {
+   "route": "34",
+   "service_class": "regular",
+   "termini": [
+    "Barnet High Street / Barnet Church",
+    "Walthamstow Central Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD",
+   "vehicle_share": 0.806,
+   "vehicle_count": 29
+  },
+  {
+   "route": "340",
+   "service_class": "regular",
+   "termini": [
+    "Edgware Bus Station",
+    "Harrow Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.455,
+   "vehicle_count": 10
+  },
+  {
+   "route": "341",
+   "service_class": "regular",
+   "termini": [
+    "Meridian Water Station",
+    "Waterloo Station   / Waterloo Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.533,
+   "vehicle_count": 8
+  },
+  {
+   "route": "343",
+   "service_class": "regular",
+   "termini": [
+    "Tower Hill / Tower Gateway Station",
+    "New Cross / Jerningham Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.571,
+   "vehicle_count": 24
+  },
+  {
+   "route": "344",
+   "service_class": "regular",
+   "termini": [
+    "Clapham Junction Station",
+    "Liverpool Street Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H",
+   "vehicle_share": 0.654,
+   "vehicle_count": 34
+  },
+  {
+   "route": "345",
+   "service_class": "regular",
+   "termini": [
+    "Peckham Bus Station",
+    "Natural History Museum / Cromwell Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H",
+   "vehicle_share": 0.56,
+   "vehicle_count": 28
+  },
+  {
+   "route": "346",
+   "service_class": "regular",
+   "termini": [
+    "Dagnam Park Square",
+    "Lexington Way"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.625,
+   "vehicle_count": 5
+  },
+  {
+   "route": "349",
+   "service_class": "regular",
+   "termini": [
+    "Glyn Road",
+    "Rookwood Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.964,
+   "vehicle_count": 27
+  },
+  {
+   "route": "35",
+   "service_class": "regular",
+   "termini": [
+    "Clapham Junction Station  / Falcon Road",
+    "Shoreditch"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.725,
+   "vehicle_count": 29
+  },
+  {
+   "route": "350",
+   "service_class": "regular",
+   "termini": [
+    "Millington Road",
+    "Heathrow Terminal 5"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.667,
+   "vehicle_count": 6
+  },
+  {
+   "route": "352",
+   "service_class": "regular",
+   "termini": [
+    "Bromley North Station",
+    "Bell Green / Sainsbury's"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.643,
+   "vehicle_count": 9
+  },
+  {
+   "route": "353",
+   "service_class": "regular",
+   "termini": [
+    "Ramsden Estate / Rye Crescent",
+    "Markfield"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 0.9,
+   "vehicle_count": 9
+  },
+  {
+   "route": "354",
+   "service_class": "regular",
+   "termini": [
+    "High Street / Maple Road",
+    "Bromley North Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 1.0,
+   "vehicle_count": 14
+  },
+  {
+   "route": "355",
+   "service_class": "regular",
+   "termini": [
+    "Three Kings Pond",
+    "Brixton Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.864,
+   "vehicle_count": 19
+  },
+  {
+   "route": "356",
+   "service_class": "regular",
+   "termini": [
+    "Sydenham Hill / Kirkdale",
+    "Wickham Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.917,
+   "vehicle_count": 11
+  },
+  {
+   "route": "357",
+   "service_class": "regular",
+   "termini": [
+    "Chingdale Road",
+    "Whipps Cross Hospital / A & E"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 0.889,
+   "vehicle_count": 16
+  },
+  {
+   "route": "358",
+   "service_class": "regular",
+   "termini": [
+    "Orpington Bus Station",
+    "Crystal Palace Parade"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Irizar Etram",
+   "vehicle_share": 0.8,
+   "vehicle_count": 20
+  },
+  {
+   "route": "359",
+   "service_class": "regular",
+   "termini": [
+    "Purley / Downlands Precinct",
+    "Addington Village Interchange"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 1.0,
+   "vehicle_count": 2
+  },
+  {
+   "route": "36",
+   "service_class": "regular",
+   "termini": [
+    "Claremont Road",
+    "New Cross Bus Garage"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.5,
+   "vehicle_count": 29
+  },
+  {
+   "route": "360",
+   "service_class": "regular",
+   "termini": [
+    "Elephant & Castle / Newington Causeway",
+    "Prince Consort Road / Imperial College"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.783,
+   "vehicle_count": 18
+  },
+  {
+   "route": "362",
+   "service_class": "regular",
+   "termini": [
+    "Manor Road",
+    "King George Hospital"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.875,
+   "vehicle_count": 7
+  },
+  {
+   "route": "363",
+   "service_class": "regular",
+   "termini": [
+    "Crystal Palace Parade",
+    "Lambeth Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.519,
+   "vehicle_count": 14
+  },
+  {
+   "route": "364",
+   "service_class": "regular",
+   "termini": [
+    "Hainault Street",
+    "Ballards Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.8,
+   "vehicle_count": 16
+  },
+  {
+   "route": "365",
+   "service_class": "regular",
+   "termini": [
+    "South Street",
+    "Havering Park"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 0.784,
+   "vehicle_count": 29
+  },
+  {
+   "route": "366",
+   "service_class": "regular",
+   "termini": [
+    "Falmouth Gardens",
+    "Beckton Bus Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 0.963,
+   "vehicle_count": 26
+  },
+  {
+   "route": "367",
+   "service_class": "regular",
+   "termini": [
+    "West Croydon Bus Station",
+    "Bromley North Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.524,
+   "vehicle_count": 11
+  },
+  {
+   "route": "368",
+   "service_class": "regular",
+   "termini": [
+    "Wangey Road",
+    "Harts Lane Estate"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 1.0,
+   "vehicle_count": 14
+  },
+  {
+   "route": "37",
+   "service_class": "regular",
+   "termini": [
+    "Putney Heath / Green Man",
+    "Peckham Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.394,
+   "vehicle_count": 13
+  },
+  {
+   "route": "370",
+   "service_class": "regular",
+   "termini": [
+    "Mercury Gardens",
+    "Lakeside Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 1.0,
+   "vehicle_count": 26
+  },
+  {
+   "route": "371",
+   "service_class": "regular",
+   "termini": [
+    "Manor Road / Sainsbury's",
+    "Kingston Hall Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 0.48,
+   "vehicle_count": 12
+  },
+  {
+   "route": "372",
+   "service_class": "regular",
+   "termini": [
+    "Hornchurch Town Centre",
+    "Lakeside Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 0.905,
+   "vehicle_count": 19
+  },
+  {
+   "route": "375",
+   "service_class": "regular",
+   "termini": [
+    "Romford Station",
+    "Passingford Bridge"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.333,
+   "vehicle_count": 1
+  },
+  {
+   "route": "376",
+   "service_class": "regular",
+   "termini": [
+    "Beckton Bus Station",
+    "Newham Town Hall"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 1.0,
+   "vehicle_count": 12
+  },
+  {
+   "route": "377",
+   "service_class": "regular",
+   "termini": [
+    "Glyn Road",
+    "Oakwood Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.556,
+   "vehicle_count": 5
+  },
+  {
+   "route": "378",
+   "service_class": "regular",
+   "termini": [
+    "Mortlake Bus Station",
+    "Putney Bridge Stn  / Gonville Street"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.4,
+   "vehicle_count": 8
+  },
+  {
+   "route": "379",
+   "service_class": "regular",
+   "termini": [
+    "Chingford Station",
+    "Yardley Lane Estate"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis ADL",
+   "vehicle_share": 0.667,
+   "vehicle_count": 6
+  },
+  {
+   "route": "38",
+   "service_class": "regular",
+   "termini": [
+    "Clapton Pond",
+    "Victoria Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.971,
+   "vehicle_count": 68
+  },
+  {
+   "route": "380",
+   "service_class": "regular",
+   "termini": [
+    "Belmarsh Prison / Woolwich Crown Court",
+    "Molesworth Street"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 16
+  },
+  {
+   "route": "381",
+   "service_class": "regular",
+   "termini": [
+    "Peckham Bus Station",
+    "County Hall"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.731,
+   "vehicle_count": 19
+  },
+  {
+   "route": "382",
+   "service_class": "regular",
+   "termini": [
+    "Southgate Station",
+    "Millbrook Park"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV",
+   "vehicle_share": 0.933,
+   "vehicle_count": 14
+  },
+  {
+   "route": "383",
+   "service_class": "regular",
+   "termini": [
+    "The Spires",
+    "Finchley Memorial Hospital"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.833,
+   "vehicle_count": 5
+  },
+  {
+   "route": "384",
+   "service_class": "regular",
+   "termini": [
+    "Edgware Bus Station",
+    "Cockfosters Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV",
+   "vehicle_share": 1.0,
+   "vehicle_count": 12
+  },
+  {
+   "route": "385",
+   "service_class": "regular",
+   "termini": [
+    "Chingford Station",
+    "Salisbury Hall Sainsbury's"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.5,
+   "vehicle_count": 2
+  },
+  {
+   "route": "386",
+   "service_class": "regular",
+   "termini": [
+    "Woolwich High Street",
+    "Royal Parade"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 1.0,
+   "vehicle_count": 15
+  },
+  {
+   "route": "388",
+   "service_class": "regular",
+   "termini": [
+    "Stratford City Bus Station",
+    "London Bridge Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H City",
+   "vehicle_share": 0.76,
+   "vehicle_count": 19
+  },
+  {
+   "route": "389",
+   "service_class": "regular",
+   "termini": [
+    "The Spires",
+    "Western Way"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 1.0,
+   "vehicle_count": 1
+  },
+  {
+   "route": "39",
+   "service_class": "regular",
+   "termini": [
+    "Putney Bridge Station",
+    "Clapham Junction Stn  / the Falcon"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 1.0,
+   "vehicle_count": 24
+  },
+  {
+   "route": "390",
+   "service_class": "regular",
+   "termini": [
+    "Archway Station",
+    "Victoria Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 28
+  },
+  {
+   "route": "393",
+   "service_class": "regular",
+   "termini": [
+    "Upper Clapton Road / Brooke Road",
+    "Chalk Farm Road / Morrisons"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.941,
+   "vehicle_count": 16
+  },
+  {
+   "route": "394",
+   "service_class": "regular",
+   "termini": [
+    "Homerton Hospital / Wardle Street",
+    "Tolpuddle St / Islington Police Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 11
+  },
+  {
+   "route": "395",
+   "service_class": "regular",
+   "termini": [
+    "Harrow Bus Station",
+    "Westway Cross Retail Park"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.857,
+   "vehicle_count": 6
+  },
+  {
+   "route": "396",
+   "service_class": "regular",
+   "termini": [
+    "King George Hospital",
+    "Roden Street"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 0.571,
+   "vehicle_count": 4
+  },
+  {
+   "route": "397",
+   "service_class": "regular",
+   "termini": [
+    "Salisbury Hall Sainsbury's",
+    "The Broadway"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.889,
+   "vehicle_count": 8
+  },
+  {
+   "route": "398",
+   "service_class": "regular",
+   "termini": [
+    "Ruislip Station",
+    "Hemery Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 1.0,
+   "vehicle_count": 12
+  },
+  {
+   "route": "399",
+   "service_class": "regular",
+   "termini": [
+    "The Spires",
+    "Hadley Wood Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 1.0,
+   "vehicle_count": 1
+  },
+  {
+   "route": "4",
+   "service_class": "regular",
+   "termini": [
+    "Archway Station",
+    "Blackfriars Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.964,
+   "vehicle_count": 27
+  },
+  {
+   "route": "40",
+   "service_class": "regular",
+   "termini": [
+    "Dulwich / the Plough",
+    "Clerkenwell Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 0.933,
+   "vehicle_count": 28
+  },
+  {
+   "route": "401",
+   "service_class": "regular",
+   "termini": [
+    "Thamesmead Town Centre",
+    "Bexleyheath Clock Tower"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.909,
+   "vehicle_count": 20
+  },
+  {
+   "route": "403",
+   "service_class": "regular",
+   "termini": [
+    "Warlingham / Sainsbury's",
+    "West Croydon Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 2",
+   "vehicle_share": 0.571,
+   "vehicle_count": 8
+  },
+  {
+   "route": "404",
+   "service_class": "regular",
+   "termini": [
+    "Crawford Crescent",
+    "Westway"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 7
+  },
+  {
+   "route": "405",
+   "service_class": "regular",
+   "termini": [
+    "Redhill Bus Station",
+    "Park Street"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD",
+   "vehicle_share": 1.0,
+   "vehicle_count": 22
+  },
+  {
+   "route": "406",
+   "service_class": "regular",
+   "termini": [
+    "Cromwell Road Bus Station",
+    "Epsom High Street"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.87,
+   "vehicle_count": 20
+  },
+  {
+   "route": "407",
+   "service_class": "regular",
+   "termini": [
+    "Sutton / Marshall's Road",
+    "Caterham Valley"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H",
+   "vehicle_share": 0.515,
+   "vehicle_count": 17
+  },
+  {
+   "route": "41",
+   "service_class": "regular",
+   "termini": [
+    "Archway Station",
+    "Tottenham Hale Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV",
+   "vehicle_share": 0.471,
+   "vehicle_count": 8
+  },
+  {
+   "route": "410",
+   "service_class": "regular",
+   "termini": [
+    "Crystal Palace Bus Station",
+    "Shotfield"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus StreetLite DF",
+   "vehicle_share": 1.0,
+   "vehicle_count": 23
+  },
+  {
+   "route": "411",
+   "service_class": "regular",
+   "termini": [
+    "Cromwell Road Bus Station",
+    "Central Square"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.909,
+   "vehicle_count": 10
+  },
+  {
+   "route": "412",
+   "service_class": "regular",
+   "termini": [
+    "Purley / Downlands Precinct",
+    "Park Street"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD",
+   "vehicle_share": 1.0,
+   "vehicle_count": 14
+  },
+  {
+   "route": "413",
+   "service_class": "regular",
+   "termini": [
+    "Sutton Bus Garage",
+    "Morden Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 1.0,
+   "vehicle_count": 21
+  },
+  {
+   "route": "415",
+   "service_class": "regular",
+   "termini": [
+    "Hardel Rise",
+    "Burgess Park / Dunton Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.826,
+   "vehicle_count": 19
+  },
+  {
+   "route": "417",
+   "service_class": "regular",
+   "termini": [
+    "Crystal Palace Bus Station",
+    "Omnibus Clapham"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 1.0,
+   "vehicle_count": 19
+  },
+  {
+   "route": "418",
+   "service_class": "regular",
+   "termini": [
+    "Cromwell Road Bus Station",
+    "Epsom Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.857,
+   "vehicle_count": 18
+  },
+  {
+   "route": "419",
+   "service_class": "regular",
+   "termini": [
+    "George Street",
+    "Norley Vale"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 22
+  },
+  {
+   "route": "42",
+   "service_class": "regular",
+   "termini": [
+    "East Dulwich Sainsbury's",
+    "Appold Street"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 17
+  },
+  {
+   "route": "422",
+   "service_class": "regular",
+   "termini": [
+    "North Greenwich Station",
+    "Bexleyheath Clock Tower"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 0.489,
+   "vehicle_count": 22
+  },
+  {
+   "route": "423",
+   "service_class": "regular",
+   "termini": [
+    "School Road",
+    "Heathrow Terminal 5"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 1.0,
+   "vehicle_count": 17
+  },
+  {
+   "route": "424",
+   "service_class": "regular",
+   "termini": [
+    "Putney Heath / Green Man",
+    "Stevenage Road / Fulham Football Club"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.857,
+   "vehicle_count": 6
+  },
+  {
+   "route": "425",
+   "service_class": "regular",
+   "termini": [
+    "Hainault Street",
+    "Kenninghall Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 37
+  },
+  {
+   "route": "427",
+   "service_class": "regular",
+   "termini": [
+    "York Road",
+    "Bridge Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.694,
+   "vehicle_count": 25
+  },
+  {
+   "route": "428",
+   "service_class": "regular",
+   "termini": [
+    "Erith Town Centre / Cross Street",
+    "Bluewater Shopping Centre"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 2",
+   "vehicle_share": 0.478,
+   "vehicle_count": 11
+  },
+  {
+   "route": "43",
+   "service_class": "regular",
+   "termini": [
+    "Halliwick Park",
+    "London Bridge Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 0.714,
+   "vehicle_count": 30
+  },
+  {
+   "route": "430",
+   "service_class": "regular",
+   "termini": [
+    "Danebury Avenue / Minstead Gardens",
+    "Victoria & Albert Museum"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.435,
+   "vehicle_count": 10
+  },
+  {
+   "route": "432",
+   "service_class": "regular",
+   "termini": [
+    "Brixton Road / Brixton Police Station",
+    "Jasmine Grove"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 2",
+   "vehicle_share": 0.65,
+   "vehicle_count": 13
+  },
+  {
+   "route": "433",
+   "service_class": "regular",
+   "termini": [
+    "Addington Village Interchange",
+    "Park Street"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 1.0,
+   "vehicle_count": 10
+  },
+  {
+   "route": "434",
+   "service_class": "regular",
+   "termini": [
+    "Ridgemount Avenue",
+    "Caterham Valley"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.5,
+   "vehicle_count": 4
+  },
+  {
+   "route": "436",
+   "service_class": "regular",
+   "termini": [
+    "Lewisham Centre",
+    "Battersea Park Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.781,
+   "vehicle_count": 25
+  },
+  {
+   "route": "439",
+   "service_class": "regular",
+   "termini": [
+    "Waddon Marsh",
+    "Wapses Lodge Roundabout"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 1.0,
+   "vehicle_count": 5
+  },
+  {
+   "route": "44",
+   "service_class": "regular",
+   "termini": [
+    "Victoria Station",
+    "Tooting Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.5,
+   "vehicle_count": 14
+  },
+  {
+   "route": "440",
+   "service_class": "regular",
+   "termini": [
+    "Turnham Green Church",
+    "First Way"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 19
+  },
+  {
+   "route": "444",
+   "service_class": "regular",
+   "termini": [
+    "Turnpike Lane Bus Station",
+    "Chingford Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.833,
+   "vehicle_count": 10
+  },
+  {
+   "route": "45",
+   "service_class": "regular",
+   "termini": [
+    "Denmark Hill / Camberwell Green",
+    "Morden Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.735,
+   "vehicle_count": 25
+  },
+  {
+   "route": "450",
+   "service_class": "regular",
+   "termini": [
+    "West Croydon Bus Station",
+    "Bell Green / Sainsbury's"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 1.0,
+   "vehicle_count": 18
+  },
+  {
+   "route": "452",
+   "service_class": "regular",
+   "termini": [
+    "Palace Gardens Terr / Notting Hill Gte",
+    "Vauxhall Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Optare Metrodecker EV",
+   "vehicle_share": 0.28,
+   "vehicle_count": 14
+  },
+  {
+   "route": "453",
+   "service_class": "regular",
+   "termini": [
+    "Deptford Bridge Station",
+    "Great Central Street"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 44
+  },
+  {
+   "route": "456",
+   "service_class": "regular",
+   "termini": [
+    "Crews Hill",
+    "North Middlesex Hospital"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus StreetLite WF",
+   "vehicle_share": 0.556,
+   "vehicle_count": 5
+  },
+  {
+   "route": "46",
+   "service_class": "regular",
+   "termini": [
+    "Paddington Station",
+    "St Bartholomew's Hospital"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 0.786,
+   "vehicle_count": 22
+  },
+  {
+   "route": "460",
+   "service_class": "regular",
+   "termini": [
+    "Pound Lane / Willesden Bus Garage",
+    "North Finchley Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.538,
+   "vehicle_count": 14
+  },
+  {
+   "route": "462",
+   "service_class": "regular",
+   "termini": [
+    "Limes Farm / Copperfield",
+    "Hainault Street"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.917,
+   "vehicle_count": 11
+  },
+  {
+   "route": "463",
+   "service_class": "regular",
+   "termini": [
+    "Coulsdon South Station",
+    "Pollards Hill"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus StreetLite WF",
+   "vehicle_share": 0.8,
+   "vehicle_count": 16
+  },
+  {
+   "route": "464",
+   "service_class": "regular",
+   "termini": [
+    "Tatsfield Village / Old Ship",
+    "New Addington Tram Stop"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 4
+  },
+  {
+   "route": "465",
+   "service_class": "regular",
+   "termini": [
+    "Cromwell Road Bus Station",
+    "South Street / Rose Hill"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.923,
+   "vehicle_count": 12
+  },
+  {
+   "route": "466",
+   "service_class": "regular",
+   "termini": [
+    "Addington Village Interchange",
+    "Westway"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD",
+   "vehicle_share": 1.0,
+   "vehicle_count": 29
+  },
+  {
+   "route": "467",
+   "service_class": "regular",
+   "termini": [
+    "Hinchley Wood School",
+    "Epsom Hospital"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 1.0,
+   "vehicle_count": 5
+  },
+  {
+   "route": "468",
+   "service_class": "regular",
+   "termini": [
+    "Swan & Sugar Loaf",
+    "Borough Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.977,
+   "vehicle_count": 42
+  },
+  {
+   "route": "469",
+   "service_class": "regular",
+   "termini": [
+    "Queen Elizabeth Hospital / West Entrance",
+    "Erith Town Centre / Riverside"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.579,
+   "vehicle_count": 11
+  },
+  {
+   "route": "47",
+   "service_class": "regular",
+   "termini": [
+    "Newquay Road",
+    "Shoreditch"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo ADL Enviro 400H MMC",
+   "vehicle_share": 0.378,
+   "vehicle_count": 17
+  },
+  {
+   "route": "470",
+   "service_class": "regular",
+   "termini": [
+    "Colliers Wood Station",
+    "Sutton Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 1.0,
+   "vehicle_count": 5
+  },
+  {
+   "route": "473",
+   "service_class": "regular",
+   "termini": [
+    "North Woolwich Ferry",
+    "Stratford Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD",
+   "vehicle_share": 1.0,
+   "vehicle_count": 14
+  },
+  {
+   "route": "474",
+   "service_class": "regular",
+   "termini": [
+    "Hermit Road",
+    "Manor Park Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.727,
+   "vehicle_count": 16
+  },
+  {
+   "route": "476",
+   "service_class": "regular",
+   "termini": [
+    "Northumberland Park",
+    "King's Cross Station   / York Way"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV EvoSeti",
+   "vehicle_share": 0.543,
+   "vehicle_count": 19
+  },
+  {
+   "route": "481",
+   "service_class": "regular",
+   "termini": [
+    "Cromwell Road Bus Station",
+    "West London Mental Health Trust"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.667,
+   "vehicle_count": 10
+  },
+  {
+   "route": "482",
+   "service_class": "regular",
+   "termini": [
+    "Southall Broadway",
+    "Heathrow Terminal 5"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400 MMC",
+   "vehicle_share": 0.846,
+   "vehicle_count": 11
+  },
+  {
+   "route": "483",
+   "service_class": "regular",
+   "termini": [
+    "Three Bridges / Windmill Lane",
+    "Harrow Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.442,
+   "vehicle_count": 19
+  },
+  {
+   "route": "484",
+   "service_class": "regular",
+   "termini": [
+    "Lewisham Station",
+    "Denmark Hill / Camberwell Green"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 0.933,
+   "vehicle_count": 14
+  },
+  {
+   "route": "485",
+   "service_class": "regular",
+   "termini": [
+    "Lonsdale Road",
+    "Ram Street"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.556,
+   "vehicle_count": 5
+  },
+  {
+   "route": "486",
+   "service_class": "regular",
+   "termini": [
+    "North Greenwich Station",
+    "Friswell Place"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 0.4,
+   "vehicle_count": 12
+  },
+  {
+   "route": "487",
+   "service_class": "regular",
+   "termini": [
+    "South Harrow Bus Station",
+    "Willesden Junction Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV",
+   "vehicle_share": 1.0,
+   "vehicle_count": 19
+  },
+  {
+   "route": "488",
+   "service_class": "regular",
+   "termini": [
+    "Hancock Road",
+    "Forest Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 1.0,
+   "vehicle_count": 14
+  },
+  {
+   "route": "49",
+   "service_class": "regular",
+   "termini": [
+    "Northcote Road",
+    "White City Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 1.0,
+   "vehicle_count": 29
+  },
+  {
+   "route": "490",
+   "service_class": "regular",
+   "termini": [
+    "Pools on the Park",
+    "Heathrow Terminal 5"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.645,
+   "vehicle_count": 20
+  },
+  {
+   "route": "491",
+   "service_class": "regular",
+   "termini": [
+    "Waltham Cross Bus Station",
+    "North Middlesex Hospital"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "492",
+   "service_class": "regular",
+   "termini": [
+    "Sidcup Station",
+    "Bluewater Shopping Centre"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 0.708,
+   "vehicle_count": 17
+  },
+  {
+   "route": "493",
+   "service_class": "regular",
+   "termini": [
+    "St George's / University of London",
+    "Richmond Bus Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 1.0,
+   "vehicle_count": 15
+  },
+  {
+   "route": "496",
+   "service_class": "regular",
+   "termini": [
+    "Harold Wood Station",
+    "Queen's Hospital"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 1.0,
+   "vehicle_count": 22
+  },
+  {
+   "route": "498",
+   "service_class": "regular",
+   "termini": [
+    "Queen's Hospital",
+    "Brentwood Sainsbury's"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400 MMC",
+   "vehicle_share": 0.8,
+   "vehicle_count": 12
+  },
+  {
+   "route": "499",
+   "service_class": "regular",
+   "termini": [
+    "Gallows Corner / Tesco",
+    "Stansgate Road Shops"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 1.0,
+   "vehicle_count": 15
+  },
+  {
+   "route": "5",
+   "service_class": "regular",
+   "termini": [
+    "Romford Market",
+    "Canning Town Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.833,
+   "vehicle_count": 55
+  },
+  {
+   "route": "50",
+   "service_class": "regular",
+   "termini": [
+    "Park Lane / Fairfield Halls",
+    "Clapham Road / Stockwell Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.958,
+   "vehicle_count": 23
+  },
+  {
+   "route": "51",
+   "service_class": "regular",
+   "termini": [
+    "Woolwich High Street",
+    "Orpington Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 2",
+   "vehicle_share": 0.571,
+   "vehicle_count": 20
+  },
+  {
+   "route": "52",
+   "service_class": "regular",
+   "termini": [
+    "Victoria Bus Station",
+    "Pound Lane"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.95,
+   "vehicle_count": 38
+  },
+  {
+   "route": "53",
+   "service_class": "regular",
+   "termini": [
+    "Orchard Road / Griffin Road",
+    "Lower Marsh"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.448,
+   "vehicle_count": 30
+  },
+  {
+   "route": "533",
+   "service_class": "regular",
+   "termini": [
+    "Hammersmith Bus Station",
+    "Lonsdale Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 7
+  },
+  {
+   "route": "54",
+   "service_class": "regular",
+   "termini": [
+    "Elmers End Interchange",
+    "Plumstead Road / Burrage Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400 MMC",
+   "vehicle_share": 0.769,
+   "vehicle_count": 30
+  },
+  {
+   "route": "55",
+   "service_class": "regular",
+   "termini": [
+    "Walthamstow Bus Station",
+    "Great Titchfield St / Oxford Circus Stn"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.949,
+   "vehicle_count": 37
+  },
+  {
+   "route": "56",
+   "service_class": "regular",
+   "termini": [
+    "Whipps Cross Bus Stand",
+    "St. Bartholomew's Hospital"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H",
+   "vehicle_share": 0.774,
+   "vehicle_count": 24
+  },
+  {
+   "route": "57",
+   "service_class": "regular",
+   "termini": [
+    "Fairfield Bus Station",
+    "Atkins Road / New Park Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 0.892,
+   "vehicle_count": 33
+  },
+  {
+   "route": "58",
+   "service_class": "regular",
+   "termini": [
+    "East Ham / Central Park",
+    "South Grove"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV",
+   "vehicle_share": 1.0,
+   "vehicle_count": 22
+  },
+  {
+   "route": "59",
+   "service_class": "regular",
+   "termini": [
+    "Poynders Road / Kings Avenue",
+    "St Bartholomew's Hospital"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.917,
+   "vehicle_count": 44
+  },
+  {
+   "route": "6",
+   "service_class": "regular",
+   "termini": [
+    "Bertie Road",
+    "Victoria Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.833,
+   "vehicle_count": 40
+  },
+  {
+   "route": "60",
+   "service_class": "regular",
+   "termini": [
+    "Oasis Academy",
+    "Streatham Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD",
+   "vehicle_share": 0.632,
+   "vehicle_count": 24
+  },
+  {
+   "route": "601",
+   "service_class": "school",
+   "termini": [
+    "Thamesmead Town Centre",
+    "Wilmington Hall School"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "602",
+   "service_class": "school",
+   "termini": [
+    "Thamesmead Town Centre",
+    "Townley Grammar School"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 1.0,
+   "vehicle_count": 1
+  },
+  {
+   "route": "61",
+   "service_class": "regular",
+   "termini": [
+    "Chislehurst / Gordon Arms",
+    "Bromley North Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 0.625,
+   "vehicle_count": 5
+  },
+  {
+   "route": "616",
+   "service_class": "school",
+   "termini": [
+    "Old Park Ridings",
+    "Edmonton Green Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "618",
+   "service_class": "school",
+   "termini": [
+    "Easedale House",
+    "Bolder Academy"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "62",
+   "service_class": "regular",
+   "termini": [
+    "Marks Gate / Billet Road",
+    "Gascoigne Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400 MMC",
+   "vehicle_share": 0.87,
+   "vehicle_count": 20
+  },
+  {
+   "route": "621",
+   "service_class": "school",
+   "termini": [
+    "Lewisham Station",
+    "Leigh Stationers' Academy"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "624",
+   "service_class": "school",
+   "termini": [
+    "Grove Park Station",
+    "Welling Library"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "628",
+   "service_class": "school",
+   "termini": [
+    "Jewish Free School",
+    "Southgate Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Scania Omnicity",
+   "vehicle_share": 1.0,
+   "vehicle_count": 2
+  },
+  {
+   "route": "63",
+   "service_class": "regular",
+   "termini": [
+    "Therapia Road",
+    "King's Cross Station   / York Way"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 0.744,
+   "vehicle_count": 29
+  },
+  {
+   "route": "631",
+   "service_class": "school",
+   "termini": [
+    "Golders Green Station",
+    "Henrietta Barnett School"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Optare Solo SR",
+   "vehicle_share": 1.0,
+   "vehicle_count": 2
+  },
+  {
+   "route": "632",
+   "service_class": "school",
+   "termini": [
+    "South Mead",
+    "Kilburn Park Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 2",
+   "vehicle_share": 1.0,
+   "vehicle_count": 1
+  },
+  {
+   "route": "633",
+   "service_class": "school",
+   "termini": [
+    "Coulsdon South Station",
+    "South Lodge Avenue / Yorkshire Road"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "634",
+   "service_class": "school",
+   "termini": [
+    "Queens Avenue",
+    "Galley Lane"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "639",
+   "service_class": "school",
+   "termini": [
+    "Danebury Avenue / Minstead Gardens",
+    "St John Bosco College"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "64",
+   "service_class": "regular",
+   "termini": [
+    "Thornton Heath Pond",
+    "Vulcan Way"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 1.0,
+   "vehicle_count": 46
+  },
+  {
+   "route": "642",
+   "service_class": "school",
+   "termini": [
+    "West Hendon Broadway / Herbert Road",
+    "London Academy"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "645",
+   "service_class": "school",
+   "termini": [
+    "Purley Library",
+    "Purley Way / Waddon Road"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "646",
+   "service_class": "school",
+   "termini": [
+    "Wincanton Road",
+    "Moor Lane"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "65",
+   "service_class": "regular",
+   "termini": [
+    "Brook Street",
+    "Ealing Broadway Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 0.882,
+   "vehicle_count": 45
+  },
+  {
+   "route": "652",
+   "service_class": "school",
+   "termini": [
+    "Abbey Wood Lane",
+    "Upminster Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 2",
+   "vehicle_share": 1.0,
+   "vehicle_count": 2
+  },
+  {
+   "route": "653",
+   "service_class": "school",
+   "termini": [
+    "Princes Avenue",
+    "Jewish Free School"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 0.5,
+   "vehicle_count": 2
+  },
+  {
+   "route": "658",
+   "service_class": "school",
+   "termini": [
+    "Leigh Stationers' Academy",
+    "Beresford Sq / Woolwich Arsenal Stn"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "66",
+   "service_class": "regular",
+   "termini": [
+    "Romford Station",
+    "Leytonstone Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.958,
+   "vehicle_count": 23
+  },
+  {
+   "route": "660",
+   "service_class": "school",
+   "termini": [
+    "Newquay Road",
+    "Leigh Stationers' Academy"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "661",
+   "service_class": "school",
+   "termini": [
+    "Station Square / Petts Wood Station",
+    "Centre Common Road / War Memorial"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "667",
+   "service_class": "school",
+   "termini": [
+    "Hainault Street",
+    "Club House"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 1.0,
+   "vehicle_count": 1
+  },
+  {
+   "route": "67",
+   "service_class": "regular",
+   "termini": [
+    "Lordship Lane",
+    "Forest Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 22
+  },
+  {
+   "route": "670",
+   "service_class": "school",
+   "termini": [
+    "Danebury Avenue / Minstead Gardens",
+    "St John Bosco College"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H",
+   "vehicle_share": 1.0,
+   "vehicle_count": 1
+  },
+  {
+   "route": "672",
+   "service_class": "school",
+   "termini": [
+    "Hawksmoor School",
+    "Beresford Sq / Woolwich Arsenal Stn"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "68",
+   "service_class": "regular",
+   "termini": [
+    "St Julian's Farm Road",
+    "Euston Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.907,
+   "vehicle_count": 39
+  },
+  {
+   "route": "681",
+   "service_class": "school",
+   "termini": [
+    "Hounslow Bus Station",
+    "Broom Road / Teddington School"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "683",
+   "service_class": "school",
+   "termini": [
+    "Colney Hatch Lane",
+    "Jewish Free School"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 0.5,
+   "vehicle_count": 4
+  },
+  {
+   "route": "685",
+   "service_class": "school",
+   "termini": [
+    "Tithepit Shaw Lane",
+    "Farley Road"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "686",
+   "service_class": "school",
+   "termini": [
+    "St Edward's School",
+    "Stratton Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 2",
+   "vehicle_share": 1.0,
+   "vehicle_count": 1
+  },
+  {
+   "route": "688",
+   "service_class": "school",
+   "termini": [
+    "Southgate Station",
+    "Jewish Free School"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Scania Omnicity",
+   "vehicle_share": 0.571,
+   "vehicle_count": 4
+  },
+  {
+   "route": "689",
+   "service_class": "school",
+   "termini": [
+    "West Croydon Bus Station",
+    "Glade Gardens"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "69",
+   "service_class": "regular",
+   "termini": [
+    "Walthamstow Bus Station",
+    "Canning Town Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 0.783,
+   "vehicle_count": 18
+  },
+  {
+   "route": "690",
+   "service_class": "school",
+   "termini": [
+    "St Julian's Farm Road",
+    "Burntwood School"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "695",
+   "service_class": "school",
+   "termini": [
+    "Cherry Lane School",
+    "Swakeleys Drive"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "697",
+   "service_class": "school",
+   "termini": [
+    "Whittington Avenue",
+    "Swakeleys Drive"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "698",
+   "service_class": "school",
+   "termini": [
+    "Conway Drive",
+    "Swakeleys Drive"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "7",
+   "service_class": "regular",
+   "termini": [
+    "Brunel Road",
+    "Oxford Circus Station  / John Lewis"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus StreetDeck Fcev",
+   "vehicle_share": 0.545,
+   "vehicle_count": 18
+  },
+  {
+   "route": "70",
+   "service_class": "regular",
+   "termini": [
+    "Chiswick Business Park",
+    "Queensberry Place"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 1.0,
+   "vehicle_count": 33
+  },
+  {
+   "route": "71",
+   "service_class": "regular",
+   "termini": [
+    "Chessington World of Adventures",
+    "Cromwell Road Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.909,
+   "vehicle_count": 20
+  },
+  {
+   "route": "72",
+   "service_class": "regular",
+   "termini": [
+    "Brunel Road",
+    "Hammersmith Bridge Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.905,
+   "vehicle_count": 19
+  },
+  {
+   "route": "73",
+   "service_class": "regular",
+   "termini": [
+    "Great Titchfield St / Oxford Circus Stn",
+    "Stoke Newington Common"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 53
+  },
+  {
+   "route": "74",
+   "service_class": "regular",
+   "termini": [
+    "Putney Exchange",
+    "Baker Street Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.421,
+   "vehicle_count": 16
+  },
+  {
+   "route": "75",
+   "service_class": "regular",
+   "termini": [
+    "Lewisham Station",
+    "Fairfield Halls"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400 MMC",
+   "vehicle_share": 0.892,
+   "vehicle_count": 33
+  },
+  {
+   "route": "76",
+   "service_class": "regular",
+   "termini": [
+    "Tottenham Hale Bus Station",
+    "Lower Marsh"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 44
+  },
+  {
+   "route": "77",
+   "service_class": "regular",
+   "termini": [
+    "Waterloo Station   / Upper Taxi Road",
+    "Tooting Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.676,
+   "vehicle_count": 23
+  },
+  {
+   "route": "78",
+   "service_class": "regular",
+   "termini": [
+    "Shoreditch High Street Station",
+    "St Mary's Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.483,
+   "vehicle_count": 14
+  },
+  {
+   "route": "79",
+   "service_class": "regular",
+   "termini": [
+    "Stonebridge Park Station",
+    "Edgware Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.517,
+   "vehicle_count": 15
+  },
+  {
+   "route": "8",
+   "service_class": "regular",
+   "termini": [
+    "Bow Church",
+    "St Giles High Street"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.571,
+   "vehicle_count": 24
+  },
+  {
+   "route": "80",
+   "service_class": "regular",
+   "termini": [
+    "Downview and Highdown Prisons",
+    "Reynolds Close"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 0.727,
+   "vehicle_count": 24
+  },
+  {
+   "route": "81",
+   "service_class": "regular",
+   "termini": [
+    "Queensmere Centre",
+    "Hounslow Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV EvoSeti",
+   "vehicle_share": 0.564,
+   "vehicle_count": 22
+  },
+  {
+   "route": "83",
+   "service_class": "regular",
+   "termini": [
+    "Golders Green Station",
+    "Glacier Way"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 2",
+   "vehicle_share": 0.615,
+   "vehicle_count": 24
+  },
+  {
+   "route": "85",
+   "service_class": "regular",
+   "termini": [
+    "Putney Bridge Station",
+    "Kingston Hall Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 1.0,
+   "vehicle_count": 26
+  },
+  {
+   "route": "86",
+   "service_class": "regular",
+   "termini": [
+    "Stratford Bus Station",
+    "Romford Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.923,
+   "vehicle_count": 48
+  },
+  {
+   "route": "87",
+   "service_class": "regular",
+   "termini": [
+    "Wandsworth Plain",
+    "Aldwych / Drury Lane"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.818,
+   "vehicle_count": 27
+  },
+  {
+   "route": "88",
+   "service_class": "regular",
+   "termini": [
+    "Parliament Hill Fields",
+    "Omnibus Clapham"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H",
+   "vehicle_share": 0.316,
+   "vehicle_count": 12
+  },
+  {
+   "route": "89",
+   "service_class": "regular",
+   "termini": [
+    "Lewisham Station",
+    "Forest Road / Slade Green Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400",
+   "vehicle_share": 0.452,
+   "vehicle_count": 14
+  },
+  {
+   "route": "9",
+   "service_class": "regular",
+   "termini": [
+    "Aldwych / Bush House",
+    "Hammersmith Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.969,
+   "vehicle_count": 31
+  },
+  {
+   "route": "90",
+   "service_class": "regular",
+   "termini": [
+    "Northolt Station",
+    "Feltham Leisure West"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV EvoSeti",
+   "vehicle_share": 0.643,
+   "vehicle_count": 18
+  },
+  {
+   "route": "91",
+   "service_class": "regular",
+   "termini": [
+    "Wood Green Station",
+    "Whitehall / Trafalgar Square"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV EvoSeti",
+   "vehicle_share": 0.484,
+   "vehicle_count": 15
+  },
+  {
+   "route": "92",
+   "service_class": "regular",
+   "termini": [
+    "Ealing Hospital",
+    "Ikea Brent Park"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV EvoSeti",
+   "vehicle_share": 0.548,
+   "vehicle_count": 17
+  },
+  {
+   "route": "93",
+   "service_class": "regular",
+   "termini": [
+    "Priory Road",
+    "Putney Bridge Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 0.98,
+   "vehicle_count": 50
+  },
+  {
+   "route": "94",
+   "service_class": "regular",
+   "termini": [
+    "Acton Green",
+    "Charles I I Street"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 1.0,
+   "vehicle_count": 29
+  },
+  {
+   "route": "95",
+   "service_class": "regular",
+   "termini": [
+    "Southall Broadway",
+    "Shepherd's Bush Green"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.92,
+   "vehicle_count": 23
+  },
+  {
+   "route": "96",
+   "service_class": "regular",
+   "termini": [
+    "Bluewater Shopping Centre",
+    "Thomas Street"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 2",
+   "vehicle_share": 0.644,
+   "vehicle_count": 29
+  },
+  {
+   "route": "969",
+   "service_class": "regular",
+   "termini": [
+    "Gladstone Avenue Whitton",
+    "Roehampton Vale / Asda"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 1.0,
+   "vehicle_count": 1
+  },
+  {
+   "route": "97",
+   "service_class": "regular",
+   "termini": [
+    "Chingford Station",
+    "Stratford City Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus StreetDeck",
+   "vehicle_share": 0.5,
+   "vehicle_count": 21
+  },
+  {
+   "route": "98",
+   "service_class": "regular",
+   "termini": [
+    "Pound Lane / Willesden Bus Garage",
+    "Red Lion Square"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.615,
+   "vehicle_count": 8
+  },
+  {
+   "route": "99",
+   "service_class": "regular",
+   "termini": [
+    "Woolwich High Street",
+    "Geddes Place"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.913,
+   "vehicle_count": 21
+  },
+  {
+   "route": "A10",
+   "service_class": "regular",
+   "termini": [
+    "Uxbridge Station",
+    "Heathrow Central Bus Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.444,
+   "vehicle_count": 8
+  },
+  {
+   "route": "B11",
+   "service_class": "regular",
+   "termini": [
+    "Bexleyheath Bus Garage",
+    "Yarnton Way / Harrow Manorway"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.722,
+   "vehicle_count": 13
+  },
+  {
+   "route": "B12",
+   "service_class": "regular",
+   "termini": [
+    "Erith Town Centre / Riverside",
+    "St Mary's Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.786,
+   "vehicle_count": 11
+  },
+  {
+   "route": "B13",
+   "service_class": "regular",
+   "termini": [
+    "Bexleyheath Library",
+    "New Eltham Station  / Southwood Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 1.0,
+   "vehicle_count": 5
+  },
+  {
+   "route": "B14",
+   "service_class": "regular",
+   "termini": [
+    "Bexleyheath Library",
+    "Orpington Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis ADL",
+   "vehicle_share": 0.889,
+   "vehicle_count": 8
+  },
+  {
+   "route": "B15",
+   "service_class": "regular",
+   "termini": [
+    "Bexleyheath Clock Tower",
+    "Horncastle Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.9,
+   "vehicle_count": 9
+  },
+  {
+   "route": "B16",
+   "service_class": "regular",
+   "termini": [
+    "Bexleyheath Bus Garage",
+    "Wingfield School"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.583,
+   "vehicle_count": 7
+  },
+  {
+   "route": "BL1",
+   "service_class": "regular",
+   "termini": [
+    "Lewisham Centre",
+    "Waterloo Station / Waterloo Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 1.0,
+   "vehicle_count": 12
+  },
+  {
+   "route": "C1",
+   "service_class": "regular",
+   "termini": [
+    "Victoria Station",
+    "White City Bus Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 1.0,
+   "vehicle_count": 28
+  },
+  {
+   "route": "C10",
+   "service_class": "regular",
+   "termini": [
+    "Canada Water Bus Station",
+    "Victoria Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.931,
+   "vehicle_count": 27
+  },
+  {
+   "route": "C11",
+   "service_class": "regular",
+   "termini": [
+    "Archway Station",
+    "Brent Cross Shopping Centre"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 1.0,
+   "vehicle_count": 18
+  },
+  {
+   "route": "C3",
+   "service_class": "regular",
+   "termini": [
+    "Clapham Junction Station  / Falcon Road",
+    "Warwick Road Tesco"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 1.0,
+   "vehicle_count": 22
+  },
+  {
+   "route": "D3",
+   "service_class": "regular",
+   "termini": [
+    "Bonner Road",
+    "Leamouth / Orchard Place"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 1.0,
+   "vehicle_count": 10
+  },
+  {
+   "route": "D6",
+   "service_class": "regular",
+   "termini": [
+    "King Edward's Road",
+    "Isle of Dogs Asda"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.4,
+   "vehicle_count": 10
+  },
+  {
+   "route": "D7",
+   "service_class": "regular",
+   "termini": [
+    "Poplar / All Saints Church",
+    "Mile End Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.737,
+   "vehicle_count": 14
+  },
+  {
+   "route": "D8",
+   "service_class": "regular",
+   "termini": [
+    "Stratford Bus Station",
+    "Isle of Dogs Asda"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV",
+   "vehicle_share": 1.0,
+   "vehicle_count": 15
+  },
+  {
+   "route": "E1",
+   "service_class": "regular",
+   "termini": [
+    "Clifton Road",
+    "Haven Green / Ealing Broadway Stn"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 2",
+   "vehicle_share": 0.571,
+   "vehicle_count": 8
+  },
+  {
+   "route": "E10",
+   "service_class": "regular",
+   "termini": [
+    "Islip Manor Road",
+    "Haven Green / Ealing Broadway Stn"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.8,
+   "vehicle_count": 12
+  },
+  {
+   "route": "E11",
+   "service_class": "regular",
+   "termini": [
+    "Clifton Road",
+    "The Common / Warwick Dene"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.875,
+   "vehicle_count": 7
+  },
+  {
+   "route": "E2",
+   "service_class": "regular",
+   "termini": [
+    "Brentford Bus Depot.",
+    "Clifton Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.735,
+   "vehicle_count": 25
+  },
+  {
+   "route": "E3",
+   "service_class": "regular",
+   "termini": [
+    "Clifton Road",
+    "Edensor Road / New Chiswick Pool"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.692,
+   "vehicle_count": 27
+  },
+  {
+   "route": "E5",
+   "service_class": "regular",
+   "termini": [
+    "Toplocks Estate / Glade Lane",
+    "Perivale Tesco"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Switch Mobility Optare",
+   "vehicle_share": 0.818,
+   "vehicle_count": 18
+  },
+  {
+   "route": "E6",
+   "service_class": "regular",
+   "termini": [
+    "Rockware Avenue / Greenford Station",
+    "Bulls Bridge Tesco"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.923,
+   "vehicle_count": 12
+  },
+  {
+   "route": "E7",
+   "service_class": "regular",
+   "termini": [
+    "Ruislip Station",
+    "Ealing Broadway Station   / Haven Green"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.857,
+   "vehicle_count": 12
+  },
+  {
+   "route": "E8",
+   "service_class": "regular",
+   "termini": [
+    "The Bell",
+    "Ealing Broadway Station   / Haven Green"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.667,
+   "vehicle_count": 24
+  },
+  {
+   "route": "E9",
+   "service_class": "regular",
+   "termini": [
+    "Welbeck Avenue",
+    "Haven Green / Ealing Broadway Stn"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV EvoSeti",
+   "vehicle_share": 0.714,
+   "vehicle_count": 15
+  },
+  {
+   "route": "EL1",
+   "service_class": "regular",
+   "termini": [
+    "Ilford Station  / Ilford Hill",
+    "Northgate Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 46
+  },
+  {
+   "route": "EL2",
+   "service_class": "regular",
+   "termini": [
+    "Becontree Heath Leisure Centre",
+    "Dagenham Dock Terminus"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 28
+  },
+  {
+   "route": "EL3",
+   "service_class": "regular",
+   "termini": [
+    "Chadwell Heath Lane",
+    "Northgate Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 31
+  },
+  {
+   "route": "G1",
+   "service_class": "regular",
+   "termini": [
+    "Hermitage Lane",
+    "Shaftesbury Estate / Wickersley Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis ADL",
+   "vehicle_share": 0.812,
+   "vehicle_count": 13
+  },
+  {
+   "route": "H10",
+   "service_class": "regular",
+   "termini": [
+    "St Mark's Hospital",
+    "St Mark's Hospital"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 0.958,
+   "vehicle_count": 23
+  },
+  {
+   "route": "H11",
+   "service_class": "regular",
+   "termini": [
+    "Harrow Bus Station",
+    "Mount Vernon Hospital"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 16
+  },
+  {
+   "route": "H12",
+   "service_class": "regular",
+   "termini": [
+    "Stanmore Station",
+    "South Harrow Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.552,
+   "vehicle_count": 16
+  },
+  {
+   "route": "H13",
+   "service_class": "regular",
+   "termini": [
+    "St Vincent's Nursing Home",
+    "Ruislip Lido"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.818,
+   "vehicle_count": 9
+  },
+  {
+   "route": "H14",
+   "service_class": "regular",
+   "termini": [
+    "St Thomas' Drive",
+    "Northwick Park Hospital"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.8,
+   "vehicle_count": 8
+  },
+  {
+   "route": "H17",
+   "service_class": "regular",
+   "termini": [
+    "Harrow Bus Station",
+    "Wembley Central Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 14
+  },
+  {
+   "route": "H18",
+   "service_class": "regular",
+   "termini": [
+    "Harrow Bus Station",
+    "Harrow Bus Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.9,
+   "vehicle_count": 9
+  },
+  {
+   "route": "H19",
+   "service_class": "regular",
+   "termini": [
+    "Harrow Bus Station",
+    "Kymberley Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.9,
+   "vehicle_count": 9
+  },
+  {
+   "route": "H2",
+   "service_class": "regular",
+   "termini": [
+    "Golders Green Station",
+    "Golders Green Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Optare Solo SR",
+   "vehicle_share": 1.0,
+   "vehicle_count": 6
+  },
+  {
+   "route": "H20",
+   "service_class": "regular",
+   "termini": [
+    "Civic Street",
+    "Twickenham Tesco"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.9,
+   "vehicle_count": 9
+  },
+  {
+   "route": "H22",
+   "service_class": "regular",
+   "termini": [
+    "The Bell",
+    "West Middlesex Hospital"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 24
+  },
+  {
+   "route": "H25",
+   "service_class": "regular",
+   "termini": [
+    "Churchfields Avenue",
+    "Hatton Cross Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.739,
+   "vehicle_count": 17
+  },
+  {
+   "route": "H26",
+   "service_class": "regular",
+   "termini": [
+    "Central Parade",
+    "Hatton Cross Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 13
+  },
+  {
+   "route": "H28",
+   "service_class": "regular",
+   "termini": [
+    "Bulls Bridge Tesco",
+    "Tesco Osterley"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.786,
+   "vehicle_count": 11
+  },
+  {
+   "route": "H3",
+   "service_class": "regular",
+   "termini": [
+    "Golders Green Station",
+    "East Finchley / Hill Top"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Optare Solo SR",
+   "vehicle_share": 1.0,
+   "vehicle_count": 2
+  },
+  {
+   "route": "H32",
+   "service_class": "regular",
+   "termini": [
+    "School Road",
+    "Southall Town Hall"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 27
+  },
+  {
+   "route": "H37",
+   "service_class": "regular",
+   "termini": [
+    "Hounslow / Blenheim Centre",
+    "Manor Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 14
+  },
+  {
+   "route": "H9",
+   "service_class": "regular",
+   "termini": [
+    "St Mark's Hospital",
+    "St Mark's Hospital"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 0.958,
+   "vehicle_count": 23
+  },
+  {
+   "route": "H91",
+   "service_class": "regular",
+   "termini": [
+    "Hounslow West Station",
+    "Hammersmith Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.649,
+   "vehicle_count": 24
+  },
+  {
+   "route": "H98",
+   "service_class": "regular",
+   "termini": [
+    "School Road",
+    "Wood End Green Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.621,
+   "vehicle_count": 18
+  },
+  {
+   "route": "K1",
+   "service_class": "regular",
+   "termini": [
+    "New Malden Station",
+    "Cromwell Road Bus Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.789,
+   "vehicle_count": 15
+  },
+  {
+   "route": "K2",
+   "service_class": "regular",
+   "termini": [
+    "Kingston Hospital",
+    "Hook Parade"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.889,
+   "vehicle_count": 16
+  },
+  {
+   "route": "K3",
+   "service_class": "regular",
+   "termini": [
+    "Roehampton Vale / Asda",
+    "Esher High School"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 22
+  },
+  {
+   "route": "K4",
+   "service_class": "regular",
+   "termini": [
+    "Kingston Hospital",
+    "Ripon Gardens"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.833,
+   "vehicle_count": 5
+  },
+  {
+   "route": "K5",
+   "service_class": "regular",
+   "termini": [
+    "Dysart Avenue",
+    "Morden Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.636,
+   "vehicle_count": 7
+  },
+  {
+   "route": "N1",
+   "service_class": "night",
+   "termini": [
+    "New Oxford Street",
+    "Titmuss Avenue"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.833,
+   "vehicle_count": 5
+  },
+  {
+   "route": "N109",
+   "service_class": "night",
+   "termini": [
+    "Fairfield Halls",
+    "Conduit Street / Hamleys Toy Store"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.583,
+   "vehicle_count": 7
+  },
+  {
+   "route": "N11",
+   "service_class": "night",
+   "termini": [
+    "Ealing Broadway Station",
+    "Horse Guards Parade"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "N113",
+   "service_class": "night",
+   "termini": [
+    "Edgware Bus Station",
+    "Northumberland Avenue / Trafalgar Square"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 1.0,
+   "vehicle_count": 3
+  },
+  {
+   "route": "N118",
+   "service_class": "night",
+   "termini": [
+    "Ruislip Station",
+    "Whitehall / Trafalgar Square"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD",
+   "vehicle_share": 1.0,
+   "vehicle_count": 11
+  },
+  {
+   "route": "N133",
+   "service_class": "night",
+   "termini": [
+    "Morden Station",
+    "Liverpool Street Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.667,
+   "vehicle_count": 2
+  },
+  {
+   "route": "N136",
+   "service_class": "night",
+   "termini": [
+    "Oxford Circus Stn  / Margaret Street",
+    "Chislehurst War Memorial"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 2
+  },
+  {
+   "route": "N137",
+   "service_class": "night",
+   "termini": [
+    "Crystal Palace Bus Station",
+    "John Prince's Street / Oxford Circus"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 1
+  },
+  {
+   "route": "N140",
+   "service_class": "night",
+   "termini": [
+    "Heathrow Central Bus Station",
+    "Long Elmes"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 1.0,
+   "vehicle_count": 3
+  },
+  {
+   "route": "N15",
+   "service_class": "night",
+   "termini": [
+    "Romford Market",
+    "Margaret Street / Oxford Circus"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.643,
+   "vehicle_count": 9
+  },
+  {
+   "route": "N155",
+   "service_class": "night",
+   "termini": [
+    "Morden Station",
+    "Aldwych / Drury Lane"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 1.0,
+   "vehicle_count": 1
+  },
+  {
+   "route": "N171",
+   "service_class": "night",
+   "termini": [
+    "Springbank Road / Hither Green Station",
+    "Tottenham Court Road"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "N18",
+   "service_class": "night",
+   "termini": [
+    "Harrow Weald Bus Garage",
+    "Whitehall / Trafalgar Square"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD",
+   "vehicle_share": 1.0,
+   "vehicle_count": 13
+  },
+  {
+   "route": "N19",
+   "service_class": "night",
+   "termini": [
+    "Finsbury Park Interchange",
+    "Clapham Junction Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 2
+  },
+  {
+   "route": "N199",
+   "service_class": "night",
+   "termini": [
+    "Trafalgar Square / Charing Cross Stn",
+    "St Mary Cray Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo ADL Enviro 400H MMC",
+   "vehicle_share": 0.5,
+   "vehicle_count": 1
+  },
+  {
+   "route": "N2",
+   "service_class": "night",
+   "termini": [
+    "Crystal Palace Bus Station",
+    "Marylebone Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 1.0,
+   "vehicle_count": 3
+  },
+  {
+   "route": "N20",
+   "service_class": "night",
+   "termini": [
+    "Barnet Hospital",
+    "Whitehall / Trafalgar Square"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 4
+  },
+  {
+   "route": "N205",
+   "service_class": "night",
+   "termini": [
+    "Paddington Station",
+    "Drapers Field"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H",
+   "vehicle_share": 0.5,
+   "vehicle_count": 1
+  },
+  {
+   "route": "N207",
+   "service_class": "night",
+   "termini": [
+    "Uxbridge Station",
+    "Bloomsbury Square"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.8,
+   "vehicle_count": 12
+  },
+  {
+   "route": "N21",
+   "service_class": "night",
+   "termini": [
+    "Bexleyheath Clock Tower",
+    "Charing Cross Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.875,
+   "vehicle_count": 7
+  },
+  {
+   "route": "N22",
+   "service_class": "night",
+   "termini": [
+    "South Road / Fulwell",
+    "Margaret Street / Oxford Circus"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.5,
+   "vehicle_count": 3
+  },
+  {
+   "route": "N242",
+   "service_class": "night",
+   "termini": [
+    "Homerton Hospital / Wardle Street",
+    "St Giles High Street"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.75,
+   "vehicle_count": 3
+  },
+  {
+   "route": "N25",
+   "service_class": "night",
+   "termini": [
+    "Hainault Street",
+    "Great Titchfield St / Oxford Circus Stn"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400 MMC",
+   "vehicle_share": 0.667,
+   "vehicle_count": 2
+  },
+  {
+   "route": "N250",
+   "service_class": "night",
+   "termini": [
+    "Brixton Road / Brixton Police Station",
+    "Fairfield Halls"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 1.0,
+   "vehicle_count": 9
+  },
+  {
+   "route": "N253",
+   "service_class": "night",
+   "termini": [
+    "Aldgate Station",
+    "St Giles High Street"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 1
+  },
+  {
+   "route": "N26",
+   "service_class": "night",
+   "termini": [
+    "Victoria Station",
+    "Chingford Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H City",
+   "vehicle_share": 0.75,
+   "vehicle_count": 6
+  },
+  {
+   "route": "N263",
+   "service_class": "night",
+   "termini": [
+    "North Finchley Bus Station",
+    "Finsbury Square"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 1.0,
+   "vehicle_count": 6
+  },
+  {
+   "route": "N266",
+   "service_class": "night",
+   "termini": [
+    "Hammersmith Bus Station",
+    "Brent Cross Shopping Centre"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 1.0,
+   "vehicle_count": 8
+  },
+  {
+   "route": "N27",
+   "service_class": "night",
+   "termini": [
+    "Hammersmith Bus Station",
+    "Hartland Road / Camden Market"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 3
+  },
+  {
+   "route": "N277",
+   "service_class": "night",
+   "termini": [
+    "White Lion Street",
+    "Isle of Dogs Asda"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV",
+   "vehicle_share": 0.444,
+   "vehicle_count": 4
+  },
+  {
+   "route": "N279",
+   "service_class": "night",
+   "termini": [
+    "Waltham Cross Bus Station",
+    "Trafalgar Square / Charing Cross Stn"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 1.0,
+   "vehicle_count": 5
+  },
+  {
+   "route": "N28",
+   "service_class": "night",
+   "termini": [
+    "Bayham Street",
+    "Mapleton Crescent"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "N29",
+   "service_class": "night",
+   "termini": [
+    "Little Park Gardens",
+    "Trafalgar Square / Charing Cross Stn"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 2",
+   "vehicle_share": 0.5,
+   "vehicle_count": 1
+  },
+  {
+   "route": "N3",
+   "service_class": "night",
+   "termini": [
+    "Oxford Circus Stn  / Margaret Street",
+    "Bromley North Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 8
+  },
+  {
+   "route": "N31",
+   "service_class": "night",
+   "termini": [
+    "Bayham Street",
+    "Clapham Junction Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD",
+   "vehicle_share": 0.75,
+   "vehicle_count": 3
+  },
+  {
+   "route": "N32",
+   "service_class": "night",
+   "termini": [
+    "Edgware Bus Station",
+    "Victoria Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 1.0,
+   "vehicle_count": 1
+  },
+  {
+   "route": "N33",
+   "service_class": "night",
+   "termini": [
+    "Fulwell Station",
+    "Hammersmith Bus Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 0.5,
+   "vehicle_count": 1
+  },
+  {
+   "route": "N343",
+   "service_class": "night",
+   "termini": [
+    "Trafalgar Square / Charing Cross Stn",
+    "New Cross / Jerningham Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 2
+  },
+  {
+   "route": "N38",
+   "service_class": "night",
+   "termini": [
+    "Walthamstow Bus Station",
+    "Victoria Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 4
+  },
+  {
+   "route": "N381",
+   "service_class": "night",
+   "termini": [
+    "Peckham Bus Station",
+    "Horse Guards Parade"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "N41",
+   "service_class": "night",
+   "termini": [
+    "Trafalgar Sq / Charing Cross Stn",
+    "Tottenham Hale Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV",
+   "vehicle_share": 1.0,
+   "vehicle_count": 1
+  },
+  {
+   "route": "N44",
+   "service_class": "night",
+   "termini": [
+    "Aldwych / Bush House",
+    "Sutton Station  / the Quadrant"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.6,
+   "vehicle_count": 3
+  },
+  {
+   "route": "N472",
+   "service_class": "night",
+   "termini": [
+    "North Greenwich Station",
+    "Gayton Road / Abbey Wood Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 2",
+   "vehicle_share": 0.5,
+   "vehicle_count": 1
+  },
+  {
+   "route": "N5",
+   "service_class": "night",
+   "termini": [
+    "Edgware Bus Station",
+    "Whitehall / Trafalgar Square"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.5,
+   "vehicle_count": 1
+  },
+  {
+   "route": "N53",
+   "service_class": "night",
+   "termini": [
+    "Orchard Road / Griffin Road",
+    "Horse Guards Parade"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 2
+  },
+  {
+   "route": "N55",
+   "service_class": "night",
+   "termini": [
+    "St Thomas of Canterbury Church",
+    "Great Titchfield St / Oxford Circus Stn"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 3
+  },
+  {
+   "route": "N550",
+   "service_class": "night",
+   "termini": [
+    "Trafalgar Square",
+    "Canning Town Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H City",
+   "vehicle_share": 0.333,
+   "vehicle_count": 2
+  },
+  {
+   "route": "N551",
+   "service_class": "night",
+   "termini": [
+    "Trafalgar Square",
+    "Gallions Reach Shopping Park"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.889,
+   "vehicle_count": 8
+  },
+  {
+   "route": "N63",
+   "service_class": "night",
+   "termini": [
+    "Crystal Palace Parade",
+    "King's Cross Station   / York Way"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.5,
+   "vehicle_count": 3
+  },
+  {
+   "route": "N65",
+   "service_class": "night",
+   "termini": [
+    "Chessington World of Adventures",
+    "Ealing Broadway Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 1.0,
+   "vehicle_count": 4
+  },
+  {
+   "route": "N68",
+   "service_class": "night",
+   "termini": [
+    "Old Coulsdon / Tudor Rose",
+    "St Giles High Street"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 4
+  },
+  {
+   "route": "N7",
+   "service_class": "night",
+   "termini": [
+    "Northolt Station",
+    "Oxford Circus Station  / John Lewis"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.75,
+   "vehicle_count": 3
+  },
+  {
+   "route": "N72",
+   "service_class": "night",
+   "termini": [
+    "Brunel Road",
+    "Norley Vale"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 1
+  },
+  {
+   "route": "N73",
+   "service_class": "night",
+   "termini": [
+    "Great Titchfield St / Oxford Circus Stn",
+    "Walthamstow Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 3
+  },
+  {
+   "route": "N74",
+   "service_class": "night",
+   "termini": [
+    "Danebury Avenue / Minstead Gardens",
+    "Baker Street Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 1.0,
+   "vehicle_count": 2
+  },
+  {
+   "route": "N8",
+   "service_class": "night",
+   "termini": [
+    "The Lowe",
+    "Great Titchfield St / Oxford Circus Stn"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 1.0,
+   "vehicle_count": 2
+  },
+  {
+   "route": "N83",
+   "service_class": "night",
+   "termini": [
+    "Golders Green Station",
+    "Ealing Hospital"
+   ],
+   "deck": "double",
+   "deck_known": false,
+   "vehicle_model": null,
+   "vehicle_share": null,
+   "vehicle_count": null
+  },
+  {
+   "route": "N86",
+   "service_class": "night",
+   "termini": [
+    "Stratford Bus Station",
+    "Dagnam Park Square"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 1.0,
+   "vehicle_count": 4
+  },
+  {
+   "route": "N87",
+   "service_class": "night",
+   "termini": [
+    "Fairfield Bus Station",
+    "Aldwych / Drury Lane"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.333,
+   "vehicle_count": 2
+  },
+  {
+   "route": "N89",
+   "service_class": "night",
+   "termini": [
+    "Trafalgar Square / Charing Cross Stn",
+    "Erith Town Centre / Riverside"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.875,
+   "vehicle_count": 7
+  },
+  {
+   "route": "N9",
+   "service_class": "night",
+   "termini": [
+    "Aldwych / Bush House",
+    "Heathrow Terminal 5"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.667,
+   "vehicle_count": 2
+  },
+  {
+   "route": "N91",
+   "service_class": "night",
+   "termini": [
+    "Cockfosters Station",
+    "Whitehall / Trafalgar Square"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo ADL Enviro 400H MMC",
+   "vehicle_share": 0.5,
+   "vehicle_count": 2
+  },
+  {
+   "route": "N97",
+   "service_class": "night",
+   "termini": [
+    "Hammersmith Bus Station",
+    "Whitehall / Trafalgar Square"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.5,
+   "vehicle_count": 1
+  },
+  {
+   "route": "N98",
+   "service_class": "night",
+   "termini": [
+    "Stanmore Station",
+    "Red Lion Square"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 1.0,
+   "vehicle_count": 3
+  },
+  {
+   "route": "P12",
+   "service_class": "regular",
+   "termini": [
+    "Surrey Quays Shopping Centre",
+    "Brockley Rise / Chandos"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.588,
+   "vehicle_count": 10
+  },
+  {
+   "route": "P13",
+   "service_class": "regular",
+   "termini": [
+    "Streatham Station",
+    "New Cross Sainsbury's"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.733,
+   "vehicle_count": 11
+  },
+  {
+   "route": "P4",
+   "service_class": "regular",
+   "termini": [
+    "Lewisham Station",
+    "Brixton Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus StreetLite DF",
+   "vehicle_share": 1.0,
+   "vehicle_count": 18
+  },
+  {
+   "route": "P5",
+   "service_class": "regular",
+   "termini": [
+    "Elephant & Castle / Newington Causeway",
+    "Patmore Estate / Drury House"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Caetano E.City Gold",
+   "vehicle_share": 0.529,
+   "vehicle_count": 9
+  },
+  {
+   "route": "R1",
+   "service_class": "regular",
+   "termini": [
+    "Grovelands Road",
+    "High Street / Worlds End Lane"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis ADL",
+   "vehicle_share": 0.611,
+   "vehicle_count": 11
+  },
+  {
+   "route": "R10",
+   "service_class": "regular",
+   "termini": [
+    "Orpington Bus Station",
+    "High Street / Green Street Green"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 1.0,
+   "vehicle_count": 2
+  },
+  {
+   "route": "R11",
+   "service_class": "regular",
+   "termini": [
+    "Sidcup / Queen Mary's Hospital",
+    "High Street / Worlds End Lane"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 1.0,
+   "vehicle_count": 19
+  },
+  {
+   "route": "R2",
+   "service_class": "regular",
+   "termini": [
+    "Orpington Police Station",
+    "East Hill"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.9,
+   "vehicle_count": 9
+  },
+  {
+   "route": "R3",
+   "service_class": "regular",
+   "termini": [
+    "Princess Royal University Hospital",
+    "Orpington Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis ADL",
+   "vehicle_share": 0.929,
+   "vehicle_count": 13
+  },
+  {
+   "route": "R4",
+   "service_class": "regular",
+   "termini": [
+    "Augustine Road",
+    "Princess Royal University Hospital"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.917,
+   "vehicle_count": 11
+  },
+  {
+   "route": "R5",
+   "service_class": "regular",
+   "termini": [
+    "Orpington Bus Station",
+    "High Street / Green Street Green"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 1.0,
+   "vehicle_count": 4
+  },
+  {
+   "route": "R68",
+   "service_class": "regular",
+   "termini": [
+    "Kew Retail Park",
+    "Hampton Court Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.524,
+   "vehicle_count": 11
+  },
+  {
+   "route": "R7",
+   "service_class": "regular",
+   "termini": [
+    "Chelsfield Village / Five Bells",
+    "Chislehurst Sainsbury's"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.5,
+   "vehicle_count": 4
+  },
+  {
+   "route": "R70",
+   "service_class": "regular",
+   "termini": [
+    "Nurserylands Shopping Centre",
+    "Richmond / Manor Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.75,
+   "vehicle_count": 12
+  },
+  {
+   "route": "R8",
+   "service_class": "regular",
+   "termini": [
+    "Orpington Bus Station",
+    "Lebanon Gardens"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis ADL",
+   "vehicle_share": 0.667,
+   "vehicle_count": 2
+  },
+  {
+   "route": "R9",
+   "service_class": "regular",
+   "termini": [
+    "Orpington Bus Station",
+    "Tintagel Road / Gillmans Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H MMC",
+   "vehicle_share": 0.375,
+   "vehicle_count": 3
+  },
+  {
+   "route": "S1",
+   "service_class": "regular",
+   "termini": [
+    "Banstead / Marks & Spencer",
+    "Victoria Road / Lavender Fields"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 1.0,
+   "vehicle_count": 15
+  },
+  {
+   "route": "S2",
+   "service_class": "regular",
+   "termini": [
+    "Epsom Clock Tower",
+    "St Helier Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 1.0,
+   "vehicle_count": 9
+  },
+  {
+   "route": "S3",
+   "service_class": "regular",
+   "termini": [
+    "Belmont Station",
+    "Malden Manor Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 14
+  },
+  {
+   "route": "S4",
+   "service_class": "regular",
+   "termini": [
+    "Waddon Marsh Sainsbury's",
+    "Sutton / Marshall's Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.462,
+   "vehicle_count": 6
+  },
+  {
+   "route": "SCS",
+   "service_class": "regular",
+   "termini": [
+    "Millennium Way",
+    "Seagull Lane"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 1.0,
+   "vehicle_count": 5
+  },
+  {
+   "route": "SL1",
+   "service_class": "regular",
+   "termini": [
+    "North Finchley Bus Station",
+    "Walthamstow Central Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H City",
+   "vehicle_share": 0.929,
+   "vehicle_count": 13
+  },
+  {
+   "route": "SL10",
+   "service_class": "regular",
+   "termini": [
+    "North Finchley High Road",
+    "Harrow Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 1.0,
+   "vehicle_count": 16
+  },
+  {
+   "route": "SL11",
+   "service_class": "regular",
+   "termini": [
+    "North Greenwich Station",
+    "Gayton Road / Abbey Wood Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus NRM",
+   "vehicle_share": 0.815,
+   "vehicle_count": 22
+  },
+  {
+   "route": "SL2",
+   "service_class": "regular",
+   "termini": [
+    "Walthamstow Bus Station",
+    "North Woolwich Ferry"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 400H City",
+   "vehicle_share": 1.0,
+   "vehicle_count": 18
+  },
+  {
+   "route": "SL3",
+   "service_class": "regular",
+   "termini": [
+    "Thamesmead Town Centre",
+    "Bromley North Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis ADL",
+   "vehicle_share": 0.944,
+   "vehicle_count": 17
+  },
+  {
+   "route": "SL4",
+   "service_class": "regular",
+   "termini": [
+    "West India Avenue",
+    "Grove Park Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD",
+   "vehicle_share": 1.0,
+   "vehicle_count": 20
+  },
+  {
+   "route": "SL5",
+   "service_class": "regular",
+   "termini": [
+    "Bromley North Station",
+    "Park Street"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD",
+   "vehicle_share": 1.0,
+   "vehicle_count": 12
+  },
+  {
+   "route": "SL6",
+   "service_class": "regular",
+   "termini": [
+    "West Croydon Bus Station",
+    "Russell Square"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis ADL",
+   "vehicle_share": 1.0,
+   "vehicle_count": 12
+  },
+  {
+   "route": "SL7",
+   "service_class": "regular",
+   "termini": [
+    "West Croydon Bus Station",
+    "Heathrow Central Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 2",
+   "vehicle_share": 1.0,
+   "vehicle_count": 24
+  },
+  {
+   "route": "SL8",
+   "service_class": "regular",
+   "termini": [
+    "Uxbridge Station",
+    "White City Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV EvoSeti",
+   "vehicle_share": 1.0,
+   "vehicle_count": 29
+  },
+  {
+   "route": "SL9",
+   "service_class": "regular",
+   "termini": [
+    "Heathrow Central Bus Station",
+    "Harrow Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 1.0,
+   "vehicle_count": 19
+  },
+  {
+   "route": "U1",
+   "service_class": "regular",
+   "termini": [
+    "Ruislip Station",
+    "West Drayton Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.652,
+   "vehicle_count": 15
+  },
+  {
+   "route": "U10",
+   "service_class": "regular",
+   "termini": [
+    "Uxbridge Station",
+    "Glenhurst Avenue"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 1.0,
+   "vehicle_count": 4
+  },
+  {
+   "route": "U2",
+   "service_class": "regular",
+   "termini": [
+    "Brunel University",
+    "Belmont Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.88,
+   "vehicle_count": 22
+  },
+  {
+   "route": "U3",
+   "service_class": "regular",
+   "termini": [
+    "Uxbridge Station",
+    "Heathrow Central Bus Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.552,
+   "vehicle_count": 16
+  },
+  {
+   "route": "U4",
+   "service_class": "regular",
+   "termini": [
+    "Prologis Park",
+    "Belmont Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.552,
+   "vehicle_count": 16
+  },
+  {
+   "route": "U5",
+   "service_class": "regular",
+   "termini": [
+    "York Road",
+    "Blyth Road"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 400EV City",
+   "vehicle_share": 0.6,
+   "vehicle_count": 12
+  },
+  {
+   "route": "U7",
+   "service_class": "regular",
+   "termini": [
+    "Uxbridge Station",
+    "Lombardy Retail Park"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.857,
+   "vehicle_count": 6
+  },
+  {
+   "route": "U9",
+   "service_class": "regular",
+   "termini": [
+    "Uxbridge Station",
+    "Harefield Hospital"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.8,
+   "vehicle_count": 4
+  },
+  {
+   "route": "W11",
+   "service_class": "regular",
+   "termini": [
+    "Chingford Hall Estate",
+    "Walthamstow Bus Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Switch Mobility Optare",
+   "vehicle_share": 0.688,
+   "vehicle_count": 11
+  },
+  {
+   "route": "W12",
+   "service_class": "regular",
+   "termini": [
+    "Rensburg Road",
+    "Cross Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis ADL",
+   "vehicle_share": 0.762,
+   "vehicle_count": 16
+  },
+  {
+   "route": "W13",
+   "service_class": "regular",
+   "termini": [
+    "Leyton Mills",
+    "St Thomas of Canterbury Church"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV",
+   "vehicle_share": 1.0,
+   "vehicle_count": 19
+  },
+  {
+   "route": "W14",
+   "service_class": "regular",
+   "termini": [
+    "Whipps Cross Bus Stand",
+    "Loughton Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Volvo MCV",
+   "vehicle_share": 1.0,
+   "vehicle_count": 10
+  },
+  {
+   "route": "W15",
+   "service_class": "regular",
+   "termini": [
+    "William Morris School",
+    "Hackney Town Hall"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "BYD ADL Enviro 200 MMC (EV)",
+   "vehicle_share": 1.0,
+   "vehicle_count": 35
+  },
+  {
+   "route": "W16",
+   "service_class": "regular",
+   "termini": [
+    "Chingford Mount",
+    "Leytonstone Station / Grove Green Road"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 0.789,
+   "vehicle_count": 15
+  },
+  {
+   "route": "W19",
+   "service_class": "regular",
+   "termini": [
+    "Staffa Road",
+    "Hainault Street"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 0.857,
+   "vehicle_count": 24
+  },
+  {
+   "route": "W3",
+   "service_class": "regular",
+   "termini": [
+    "Northumberland Park",
+    "Finsbury Park Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Volvo Wrightbus Eclipse Gemini 3",
+   "vehicle_share": 0.703,
+   "vehicle_count": 26
+  },
+  {
+   "route": "W4",
+   "service_class": "regular",
+   "termini": [
+    "Ulster Gardens",
+    "Ferry Lane Primary School"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 18
+  },
+  {
+   "route": "W5",
+   "service_class": "regular",
+   "termini": [
+    "Archway Station",
+    "Harringay Sainsbury's"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Switch Mobility Optare",
+   "vehicle_share": 0.769,
+   "vehicle_count": 10
+  },
+  {
+   "route": "W6",
+   "service_class": "regular",
+   "termini": [
+    "Southgate Station",
+    "Edmonton Green Bus Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200 MMC",
+   "vehicle_share": 1.0,
+   "vehicle_count": 11
+  },
+  {
+   "route": "W7",
+   "service_class": "regular",
+   "termini": [
+    "Muswell Hill Broadway",
+    "Finsbury Park Station"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.882,
+   "vehicle_count": 15
+  },
+  {
+   "route": "W8",
+   "service_class": "regular",
+   "termini": [
+    "Chase Farm Hospital / Main Entrance",
+    "Picketts Lock Centre"
+   ],
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "BYD",
+   "vehicle_share": 0.944,
+   "vehicle_count": 17
+  },
+  {
+   "route": "W9",
+   "service_class": "regular",
+   "termini": [
+    "Chase Farm Hospital / Main Entrance",
+    "Southgate Station"
+   ],
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Enviro 200",
+   "vehicle_share": 1.0,
+   "vehicle_count": 14
+  }
+ ]
+}

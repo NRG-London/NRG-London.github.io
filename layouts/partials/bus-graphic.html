@@ -1,0 +1,155 @@
+{{- /*
+  bus-graphic — the off-register screenprint bus, inline SVG.
+
+  Neil's artwork, from `static/images/bus/bus-{double,single}-decker-screenprint.svg`,
+  reproduced here as a template rather than referenced as a file for two reasons:
+  the route number has to go into the destination blind, and the two print layers
+  have to be addressable so the red plate can land a beat after the ink.
+
+  The palette is his and it is already the site's: ink #1a2332, paper #f3f6f4,
+  rule #8a9490 — verbatim from main.css — plus the bus red. Every var() carries a
+  literal fallback, the house rule from ngc2.css: a component that silently loses
+  a colour when dropped into a page is worse than one that repeats a hex.
+
+  PERFORMANCE, and why the animation is where it is
+  -------------------------------------------------
+  Both print layers are filtered: fractal-noise grain on the red, a displacement
+  wobble on the ink. Those are expensive, and a filtered subtree is re-rasterised
+  whenever anything inside it moves. So nothing inside a filtered group is ever
+  animated. The whole <svg> slides in on a compositor-friendly transform, and the
+  red plate only fades — see `ngbus.css`.
+
+  Filter ids are suffixed per instance. Two buses on one page with the same ids
+  would both resolve to the first definition, which is harmless while they are
+  identical and a silent bug the moment they are not.
+
+  Params:
+    deck   "double" | "single"   (default "double")
+    route  route number for the blind; omit for a blank blind
+    id     unique suffix for the filter ids (default: the route, or "hero")
+    class  extra classes on the <svg>
+    label  accessible name; a sensible one is derived when omitted
+*/ -}}
+
+{{- $deck := (.deck | default "double") -}}
+{{- $route := (.route | default "") -}}
+{{- $uid := (.id | default (cond (ne $route "") $route "hero")) | urlize -}}
+{{- $class := (.class | default "") -}}
+{{- $double := eq $deck "double" -}}
+
+{{- /* The blind is a fixed-width strip, so long route names step the type down
+       rather than overflowing it. */ -}}
+{{- $len := len $route -}}
+{{- $fs := cond (le $len 3) 11.5 (cond (eq $len 4) 10.0 8.5) -}}
+
+{{- $label := .label -}}
+{{- if not $label -}}
+  {{- $kind := cond $double "Double decker bus" "Single decker bus" -}}
+  {{- $label = cond (ne $route "") (printf "%s, route %s" $kind $route) $kind -}}
+{{- end -}}
+
+{{- if $double -}}
+<svg class="ngbus-bus ngbus-bus--double {{ $class }}" viewBox="0 0 420 280"
+     role="img" aria-label="{{ $label }}" focusable="false">
+  <defs>
+    <filter id="ngbus-grain-{{ $uid }}" x="-8%" y="-8%" width="116%" height="116%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="4" result="t"/>
+      <feColorMatrix in="t" type="saturate" values="0" result="tg"/>
+      <feComponentTransfer in="tg" result="ta"><feFuncA type="linear" slope="0.5"/></feComponentTransfer>
+      <feComposite in="ta" in2="SourceAlpha" operator="in" result="g"/>
+      <feBlend in="SourceGraphic" in2="g" mode="multiply"/>
+    </filter>
+    <filter id="ngbus-wobble-{{ $uid }}" x="-8%" y="-8%" width="116%" height="116%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.016" numOctaves="2" seed="21" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+
+  {{- /* the red plate, printed a fraction off register */}}
+  <g class="ngbus-bus__red" transform="translate(-7 6)" filter="url(#ngbus-grain-{{ $uid }})">
+    <path d="M26 232 L26 44 Q26 30 44 30 L384 30 Q400 30 400 46 L400 232 Z" fill="var(--bus-red, #d6342c)"/>
+    <circle cx="108" cy="240" r="26" fill="var(--bus-red, #d6342c)"/>
+    <circle cx="330" cy="240" r="26" fill="var(--bus-red, #d6342c)"/>
+  </g>
+
+  {{- /* the ink plate */}}
+  <g class="ngbus-bus__ink" filter="url(#ngbus-wobble-{{ $uid }})" fill="none"
+     stroke="var(--ink, #1a2332)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="108" cy="238" r="26" fill="var(--paper, #f3f6f4)"/>
+    <circle cx="330" cy="238" r="26" fill="var(--paper, #f3f6f4)"/>
+    <circle cx="108" cy="238" r="9" fill="var(--ink, #1a2332)" stroke="none"/>
+    <circle cx="330" cy="238" r="9" fill="var(--ink, #1a2332)" stroke="none"/>
+    <path d="M26 232 L26 44 Q26 30 44 30 L384 30 Q400 30 400 46 L400 232 Z"/>
+    <g fill="var(--paper, #f3f6f4)">
+      <rect x="42" y="48" width="48" height="52"/>
+      <rect x="98" y="48" width="48" height="52"/>
+      <rect x="154" y="48" width="48" height="52"/>
+      <rect x="210" y="48" width="48" height="52"/>
+      <rect x="272" y="56" width="112" height="44"/>
+      <rect x="42" y="128" width="48" height="50"/>
+      <rect x="98" y="128" width="48" height="50"/>
+      <rect x="154" y="128" width="48" height="50"/>
+      <rect x="300" y="128" width="84" height="54"/>
+      <rect x="212" y="124" width="46" height="102"/>
+    </g>
+    <rect x="272" y="36" width="112" height="16" fill="var(--ink, #1a2332)"/>
+    {{- with $route }}
+    <text class="ngbus-bus__blind" x="328" y="48" text-anchor="middle"
+          font-size="{{ $fs }}" stroke="none" fill="var(--paper, #f3f6f4)">{{ . }}</text>
+    {{- end }}
+    <line x1="235" y1="124" x2="235" y2="226"/>
+    <line x1="26" y1="114" x2="400" y2="114"/>
+    <line x1="26" y1="204" x2="400" y2="204"/>
+    <circle cx="388" cy="212" r="7" fill="var(--paper, #f3f6f4)"/>
+    <path d="M22 262 L404 258" stroke="var(--mid-grey, #8a9490)" stroke-width="2"/>
+  </g>
+</svg>
+{{- else -}}
+<svg class="ngbus-bus ngbus-bus--single {{ $class }}" viewBox="0 0 420 200"
+     role="img" aria-label="{{ $label }}" focusable="false">
+  <defs>
+    <filter id="ngbus-grain-{{ $uid }}" x="-8%" y="-8%" width="116%" height="116%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="4" result="t"/>
+      <feColorMatrix in="t" type="saturate" values="0" result="tg"/>
+      <feComponentTransfer in="tg" result="ta"><feFuncA type="linear" slope="0.5"/></feComponentTransfer>
+      <feComposite in="ta" in2="SourceAlpha" operator="in" result="g"/>
+      <feBlend in="SourceGraphic" in2="g" mode="multiply"/>
+    </filter>
+    <filter id="ngbus-wobble-{{ $uid }}" x="-8%" y="-8%" width="116%" height="116%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.016" numOctaves="2" seed="21" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+
+  <g class="ngbus-bus__red" transform="translate(-7 6)" filter="url(#ngbus-grain-{{ $uid }})">
+    <path d="M24 152 L24 40 Q24 24 42 24 L380 24 Q396 24 396 42 L396 152 Z" fill="var(--bus-red, #d6342c)"/>
+    <circle cx="98" cy="160" r="25" fill="var(--bus-red, #d6342c)"/>
+    <circle cx="326" cy="160" r="25" fill="var(--bus-red, #d6342c)"/>
+  </g>
+
+  <g class="ngbus-bus__ink" filter="url(#ngbus-wobble-{{ $uid }})" fill="none"
+     stroke="var(--ink, #1a2332)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="98" cy="158" r="25" fill="var(--paper, #f3f6f4)"/>
+    <circle cx="326" cy="158" r="25" fill="var(--paper, #f3f6f4)"/>
+    <circle cx="98" cy="158" r="9" fill="var(--ink, #1a2332)" stroke="none"/>
+    <circle cx="326" cy="158" r="9" fill="var(--ink, #1a2332)" stroke="none"/>
+    <path d="M24 152 L24 40 Q24 24 42 24 L380 24 Q396 24 396 42 L396 152 Z"/>
+    <g fill="var(--paper, #f3f6f4)">
+      <rect x="40" y="56" width="52" height="52"/>
+      <rect x="100" y="56" width="52" height="52"/>
+      <rect x="160" y="56" width="52" height="52"/>
+      <rect x="300" y="58" width="84" height="50"/>
+      <rect x="222" y="52" width="46" height="96"/>
+    </g>
+    <rect x="298" y="34" width="86" height="16" fill="var(--ink, #1a2332)"/>
+    {{- with $route }}
+    <text class="ngbus-bus__blind" x="341" y="46" text-anchor="middle"
+          font-size="{{ $fs }}" stroke="none" fill="var(--paper, #f3f6f4)">{{ . }}</text>
+    {{- end }}
+    <line x1="245" y1="52" x2="245" y2="148"/>
+    <line x1="24" y1="128" x2="396" y2="128"/>
+    <circle cx="386" cy="136" r="7" fill="var(--paper, #f3f6f4)"/>
+    <path d="M20 184 L404 180" stroke="var(--mid-grey, #8a9490)" stroke-width="2"/>
+  </g>
+</svg>
+{{- end -}}

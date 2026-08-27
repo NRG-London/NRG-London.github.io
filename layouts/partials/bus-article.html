@@ -1,0 +1,36 @@
+{{- /*
+  bus-article — "a" or "an" for a vehicle model name.
+
+  Called with the model string. Needed because the model is interpolated into a
+  sentence and the fleet changes: "a Alexander Dennis Enviro400H City" was the
+  first thing that gave the page away as machine-written.
+
+  The rule is sound, not spelling — "an" goes before a vowel SOUND. Two cases:
+
+  1. Ordinary words: first letter is a vowel. Alexander, Optare, Irizar -> "an";
+     BYD, Volvo, Wrightbus, VDL, Switch, Scania, Caetano -> "a". That covers
+     every manufacturer currently in the fleet data.
+  2. Initialisms read letter by letter, where the letter's NAME starts with a
+     vowel: an MCV ("em"), an FTR ("ef"), an NRM ("en"). Spelling alone gets
+     these backwards, so an all-capitals head word is tested against the letters
+     whose names begin with a vowel sound instead.
+
+  Both rules still miss the small class of vowel-spelt words that open on a
+  consonant sound — "a Euro 6", "a Unibus". None are in the data today; if one
+  appears, add it to $CONSONANT_VOWELS below rather than reworking this.
+*/ -}}
+{{- $model := . | default "" -}}
+{{- $first := index (split $model " ") 0 -}}
+{{- $head := upper (substr $first 0 1) -}}
+
+{{- $CONSONANT_VOWELS := slice "EURO" "EUROPEAN" "UNI" "UNIBUS" "ONE" -}}
+{{- $LETTER_NAME_VOWELS := slice "A" "E" "F" "H" "I" "L" "M" "N" "O" "R" "S" "X" -}}
+
+{{- $an := in (slice "A" "E" "I" "O" "U") $head -}}
+{{- if and (gt (len $first) 1) (eq $first (upper $first)) -}}
+  {{- /* all capitals: an initialism, so go by the letter's name */ -}}
+  {{- $an = in $LETTER_NAME_VOWELS $head -}}
+{{- end -}}
+{{- range $CONSONANT_VOWELS }}{{ if hasPrefix (upper $first) . }}{{ $an = false }}{{ end }}{{ end -}}
+
+{{- cond $an "an" "a" -}}

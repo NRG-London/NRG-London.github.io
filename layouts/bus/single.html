@@ -1,0 +1,182 @@
+{{ define "main" }}
+{{- $route := .Params.route -}}
+{{- $h := index site.Data.bus.routes $route -}}
+{{- $w := site.Data.bus.weekly -}}
+{{- $row := index (where $w.routes "route" $route) 0 -}}
+
+<div class="page-header">
+  <a href="/campaigns/bus-performance/" class="back-link">&larr; All bus routes</a>
+  <h1>{{ .Title }}</h1>
+  <div class="page-meta"><span class="tag">Transport</span></div>
+</div>
+
+<div class="page-content ngbus">
+
+  {{- /* The blind carries the route number, so the illustration says which page
+         you are on, and the deck is the one the route actually runs — from the
+         BODS registration joined to the fleet audit, not guessed from the
+         number. */ -}}
+  <div class="ngbus-hero">
+    <figure class="ngbus-hero__figure">
+      {{ partial "bus-graphic.html" (dict
+          "deck" ($h.deck | default "double") "route" $route "id" $route
+          "class" "ngbus-bus--animate") }}
+      {{- with $h.vehicle_model }}
+      {{- /* "Usually", not "always": vehicle_share says how much of the route's
+             observed fleet this model is, and most routes run a mix. */ -}}
+      <figcaption class="ngbus-hero__caption">Usually
+        {{ partial "bus-article.html" . }} {{ . }}.
+        {{- if eq $h.service_class "night" }} Night route.{{ end }}
+        {{- if eq $h.service_class "school" }} School service.{{ end }}
+      </figcaption>
+      {{- end }}
+    </figure>
+    {{- if $row.ewt_min }}
+    <p class="ngbus-hero__stat">{{ lang.FormatNumber 1 $row.ewt_min }} min<small>excess wait
+      in the week ending {{ dateFormat "2 January 2006" $w.week_ending }}, against a London
+      middle of {{ lang.FormatNumber 1 $w.summary.median_ewt_min }} min.</small></p>
+    {{- else }}
+    <p class="ngbus-hero__stat">No data<small>too little of this week was captured at
+      route {{ $route }}'s termini to publish a figure. This is a gap in the observation,
+      not a verdict on the route.</small></p>
+    {{- end }}
+  </div>
+
+  {{- /* The strapline is the same fact in the language a passenger uses. Built
+         from the worse of the two termini: a rider stands at one end, not at an
+         average of both. */ -}}
+  {{- $worst := 0.0 }}{{ $worstName := "" -}}
+  {{- range $row.termini }}
+    {{- if and .p_wait_gt10 (gt .p_wait_gt10 $worst) }}{{ $worst = .p_wait_gt10 }}{{ $worstName = .name }}{{ end }}
+  {{- end }}
+  {{- if gt $worst 0.0 }}
+    {{- /* "one trip in four", not "one trip in 4": this is the one sentence on
+           the page written the way a person would say it out loud, and a
+           numeral in the middle of it breaks that. Above ten, the numeral is
+           the clearer form again. */ -}}
+    {{- $n := string (int (math.Round (div 1.0 $worst))) -}}
+    {{- /* dict keys must be strings in Hugo; an integer key is a build error. */ -}}
+    {{- $words := dict "2" "two" "3" "three" "4" "four" "5" "five" "6" "six"
+                       "7" "seven" "8" "eight" "9" "nine" "10" "ten" -}}
+    {{- $inN := or (index $words $n) $n -}}
+  <p class="ngbus-strap">A passenger turning up at {{ $worstName }} without checking the
+    times waits more than ten minutes on about
+    {{ if lt $worst 0.5 }}one trip in {{ $inN }}{{ else }}{{ lang.FormatPercent 0 (mul $worst 100) }} of trips{{ end }}.</p>
+  {{- end }}
+
+  <div class="ngbus-termini">
+    {{- range $row.termini }}
+    <div class="ngbus-terminus">
+      <div class="ngbus-terminus__name">{{ .name }}</div>
+      <dl>
+        <dt>Excess wait</dt>
+        <dd>{{ if .ewt_min }}{{ lang.FormatNumber 1 .ewt_min }} min{{ else }}<span class="ngbus-nd" title="Too little data this week">no data</span>{{ end }}</dd>
+        <dt>Wait &gt; 10 min</dt>
+        <dd>{{ if .p_wait_gt10 }}{{ lang.FormatPercent 0 (mul .p_wait_gt10 100) }}{{ else }}<span class="ngbus-nd" title="Too little data this week">no data</span>{{ end }}</dd>
+        <dt>Longest gap</dt>
+        <dd>{{ if .worst_gap_min }}{{ .worst_gap_min }} min{{ else }}<span class="ngbus-nd" title="Too little data this week">no data</span>{{ end }}</dd>
+        <dt>Departures seen</dt>
+        <dd>{{ if .departures }}{{ lang.FormatNumber 0 .departures }}{{ if .scheduled }} of {{ lang.FormatNumber 0 .scheduled }}{{ end }}{{ else }}<span class="ngbus-nd" title="Too little data this week">no data</span>{{ end }}</dd>
+        <dt>Coverage</dt>
+        <dd>{{ lang.FormatPercent 0 (mul .coverage 100) }}</dd>
+      </dl>
+    </div>
+    {{- end }}
+  </div>
+
+  {{- /* The chart is drawn by ngbus-chart.js into this box. The weekly figures
+         below it are NOT a fallback bolted on afterwards — they are the page's
+         primary disclosure, present in the HTML whether or not any JavaScript
+         runs, and they are what a screen reader gets instead of an SVG. That is
+         a better bargain than baking an SVG server-side, which is what the rail
+         page has to do because a table of 160 four-week periods would be
+         unreadable. Seventeen weeks is not. */ -}}
+  <div class="ngbus-chart" id="ngbus-chart">
+    <div class="ngbus-chart__title">Week by week</div>
+    <div class="ngbus-chart__subtitle" id="ngbus-chart-sub">Excess wait time at each terminus, in minutes.</div>
+    <div class="ngbus-controls">
+      <div class="ngbus-chips" role="group" aria-label="Which measure to plot">
+        <button type="button" class="ngbus-chip" data-metric="ewt" aria-pressed="true">Excess wait</button>
+        <button type="button" class="ngbus-chip" data-metric="p" aria-pressed="false">Wait &gt; 10 min</button>
+      </div>
+    </div>
+    <div class="ngbus-chart__plot" id="ngbus-chart-plot"></div>
+    <div class="ngbus-legend" id="ngbus-chart-legend"></div>
+  </div>
+
+  <details class="ngbus-weeks">
+    <summary>The weekly figures</summary>
+    <div class="ngbus-tablewrap">
+      <table class="ngbus-table">
+        <thead>
+          <tr>
+            <th scope="col">Week ending</th>
+            {{- range $h.termini }}
+            <th scope="col">{{ .name }}</th>
+            {{- end }}
+          </tr>
+        </thead>
+        <tbody>
+          {{- $termini := $h.termini }}
+          {{- range $i, $week := $w.weeks }}
+          <tr>
+            <td>{{ dateFormat "2 Jan 2006" $week }}</td>
+            {{- range $termini }}
+              {{- $c := index .series $i }}
+              {{- if and $c.ewt_min (ge $c.coverage $w.coverage_threshold) }}
+            <td>{{ lang.FormatNumber 1 $c.ewt_min }} min · {{ lang.FormatPercent 0 (mul $c.p_wait_gt10 100) }}</td>
+              {{- else }}
+            <td><span class="ngbus-nd" title="Nothing was captured in this week">no data</span></td>
+              {{- end }}
+            {{- end }}
+          </tr>
+          {{- end }}
+        </tbody>
+      </table>
+    </div>
+  </details>
+
+  {{- /* Only the outages that fall inside the window on show. Naming a hole
+         from before the chart starts tells the reader about a gap they cannot
+         see and makes them hunt for it. */ -}}
+  {{- $first := index $w.weeks 0 }}{{ $last := index $w.weeks (sub (len $w.weeks) 1) -}}
+  {{- $shown := where (where $w.holes "end" ">=" $first) "start" "<=" $last -}}
+  {{- with $shown }}
+  <p class="ngbus-holes">
+    {{- range . }}
+    <strong>No data {{ dateFormat "2 January" .start }} to {{ dateFormat "2 January 2006" .end }}.</strong>
+    {{ .reason }}.
+    {{- end }}
+  </p>
+  {{- end }}
+
+  <p class="ngbus-attr">
+    {{ $w.attribution }}
+    Excess wait time and P(wait &gt; 10 min) are computed from observed bus positions,
+    weekdays 07:00&ndash;22:00. <a href="/bus/how-this-is-measured/">How this is measured</a>.
+    {{- if $w.sample }} <strong>These are sample figures, not measurements.</strong>{{ end }}
+    Not affiliated with Transport for London; not for planning a journey.
+  </p>
+
+  {{- /* Everything the chart needs, and nothing more: the series for each
+         terminus, the week labels, and the known outages so a gap can be
+         labelled rather than inferred. */ -}}
+  {{- $series := slice -}}
+  {{- range $h.termini -}}
+    {{- $ewt := slice }}{{ $p := slice }}{{ $cov := slice -}}
+    {{- range .series -}}
+      {{- $ok := and .ewt_min (ge .coverage $w.coverage_threshold) -}}
+      {{- $ewt = $ewt | append (cond $ok .ewt_min nil) -}}
+      {{- $p = $p | append (cond $ok .p_wait_gt10 nil) -}}
+      {{- $cov = $cov | append .coverage -}}
+    {{- end -}}
+    {{- $series = $series | append (slice (dict "name" .name "ewt" $ewt "p" $p "coverage" $cov)) -}}
+  {{- end -}}
+  <script type="application/json" id="ngbus-chart-data">{{ dict
+      "route" $route "weeks" $w.weeks "holes" $w.holes "series" $series
+      | jsonify | safeJS }}</script>
+</div>
+
+{{ partial "bus-assets.html" . }}
+<script src="/js/ngbus-chart.js?v=1" defer></script>
+{{ end }}

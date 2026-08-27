@@ -1,0 +1,14 @@
+{{ define "main" }}
+{{- /* Plain prose inside the /bus/ section. Selected with `layout: article` in
+       front matter, so it does not collide with bus/single.html, which is the
+       route-page template and assumes a `route` param. */ -}}
+<div class="page-header">
+  <a href="/campaigns/bus-performance/" class="back-link">&larr; Bus performance</a>
+  <h1>{{ .Title }}</h1>
+  {{ with .Params.category }}<div class="page-meta"><span class="tag">{{ . }}</span></div>{{ end }}
+</div>
+
+<div class="page-content">
+  {{ .Content }}
+</div>
+{{ end }}

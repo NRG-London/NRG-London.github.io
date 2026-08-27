@@ -1,0 +1,44 @@
+{{- /*
+  Content adapter — one page per bus route, built from data/bus/weekly.json.
+
+  ~616 pages and not one content file on disk. The alternative was generating
+  616 stub markdown files, which would mean 616 changed files in every weekly
+  data refresh; this way a refresh touches the data and nothing else.
+
+  Hugo lowercases page paths, so route N136 is served at /bus/n136/. Every link
+  to a route page must agree: templates use `lower`, and ngbus-table.js has a
+  slug() doing the same thing.
+
+  Each page carries only its identity in params. The weekly series is read from
+  site.Data.bus.routes.<route> by layouts/bus/single.html — putting a whole
+  history into page params would hold all 616 of them in memory at once for no
+  gain.
+
+  All three unlisting switches are set here, exactly as the rail page sets them
+  in front matter: `build.list: never` keeps these out of site.Pages so they
+  cannot leak into /campaigns/, the homepage or related-campaigns.html;
+  `sitemap.disable` keeps them out of sitemap.xml; `noindex` is honoured by
+  layouts/partials/head.html. Drop all three when the pages go public.
+*/ -}}
+
+{{- $d := site.Data.bus.weekly -}}
+{{- if not $d -}}
+  {{- errorf "content/bus/_content.gotmpl: no data/bus/weekly.json. Run scripts/make_bus_sample.py." -}}
+{{- end -}}
+
+{{- range $d.routes -}}
+  {{- $.AddPage (dict
+      "path" (lower .route)
+      "kind" "page"
+      "title" (printf "Bus route %s" .route)
+      "description" (printf "Excess wait time and reliability for London bus route %s, week by week." .route)
+      "build" (dict "list" "never" "render" "always")
+      "sitemap" (dict "disable" true)
+      "params" (dict
+        "route" .route
+        "deck" .deck
+        "vehicle_model" .vehicle_model
+        "noindex" true
+      )
+  ) -}}
+{{- end -}}

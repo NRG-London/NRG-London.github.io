@@ -1,0 +1,148 @@
+{{- /*
+  bus-league — the all-London bus league table.
+
+  Usage:
+    {{< bus-league >}}
+    {{< bus-league rows=30 >}}
+
+  Reads data/bus/weekly.json (site.Data.bus.weekly), written either by
+  scripts/make_bus_sample.py or, later, by the weekly sweep in E:\Road Data.
+
+  PROGRESSIVE ENHANCEMENT, the same bargain the rail chart strikes
+  ---------------------------------------------------------------
+  The worst `rows` routes are rendered here as real HTML, sparklines and all. A
+  reader with JavaScript off, a crawler, or a feed reader gets a correct,
+  house-styled, complete table rather than an empty box. `ngbus-table.js` then
+  takes over with the full ~600 rows, sorting and search — and replaces the body
+  at identical geometry, so nothing jumps.
+
+  Why a table at all, on a site that has never had one: 600 routes are a list.
+  Every other data page here is a chart with a tooltip carrying the numbers,
+  which works beautifully for 24 rail operators and would hide 599 bus routes
+  behind a hover.
+
+  Needs: /css/ngbus.css, /js/ngbus-table.js
+*/ -}}
+
+{{- $d := site.Data.bus.weekly -}}
+{{- if not $d -}}
+  {{- errorf "bus-league: no data/bus/weekly.json (page %s). Run scripts/make_bus_sample.py." .Page.File.Path -}}
+{{- end -}}
+
+{{- $rows := int (.Get "rows" | default 20) -}}
+{{- $all := $d.routes -}}
+{{- $reporting := where $all "ewt_min" "!=" nil -}}
+{{- $worst := first $rows (sort $reporting "ewt_min" "desc") -}}
+
+{{- /* Bar scale: the 99th-percentile-ish worst, so one freak route does not
+       squash every other bar into invisibility. */ -}}
+{{- $max := 1.0 -}}
+{{- range $reporting }}{{ if gt .ewt_min $max }}{{ $max = .ewt_min }}{{ end }}{{ end -}}
+
+{{- /* Sparkline domain, shared by every row so the shapes are comparable.
+       A per-row domain would make a flat good route and a flat bad route draw
+       the same picture. */ -}}
+{{- $slo := 0.0 }}{{ $shi := $max -}}
+
+<div class="ngbus ngbus-league" id="ngbus-league">
+
+  <div class="ngbus-controls">
+    <div class="ngbus-chips" role="group" aria-label="Which routes to show">
+      <button type="button" class="ngbus-chip" data-view="worst" aria-pressed="true">Longest waits</button>
+      <button type="button" class="ngbus-chip" data-view="best" aria-pressed="false">Shortest waits</button>
+      <button type="button" class="ngbus-chip" data-view="improved" aria-pressed="false">Most improved</button>
+      <button type="button" class="ngbus-chip" data-view="all" aria-pressed="false">Every route</button>
+    </div>
+    <label class="ngbus-search">
+      <span class="ngbus-sr">Find a route</span>
+      <input type="search" id="ngbus-q" placeholder="Find a route, e.g. 157 or N155"
+             autocomplete="off" spellcheck="false">
+    </label>
+  </div>
+
+  <div class="ngbus-tablewrap">
+    <table class="ngbus-table">
+      <caption class="ngbus-sr">
+        Bus route performance for the week ending {{ dateFormat "2 January 2006" $d.week_ending }}
+      </caption>
+      <thead>
+        <tr>
+          <th scope="col" class="ngbus-rank">#</th>
+          <th scope="col" data-sort="route">Route</th>
+          <th scope="col" data-sort="ewt" aria-sort="descending">Excess wait</th>
+          <th scope="col" data-sort="p">Wait &gt; 10 min</th>
+          <th scope="col" data-sort="delta">Change</th>
+          <th scope="col">Trend</th>
+          <th scope="col" data-sort="coverage">Coverage</th>
+        </tr>
+      </thead>
+      <tbody id="ngbus-body">
+        {{- range $i, $r := $worst }}
+        <tr>
+          <td class="ngbus-rank">{{ add $i 1 }}</td>
+          <td class="ngbus-route">
+            <a href="/bus/{{ lower $r.route }}/">{{ $r.route }}</a>
+            {{- with $r.termini }}
+            <span class="ngbus-route__where">{{ delimit (apply . "index" "." "name") " ↔ " }}</span>
+            {{- end }}
+          </td>
+          <td class="ngbus-metric ngbus-metric--lead">
+            <span class="ngbus-metric__bar" style="width:{{ math.Round (mul (div $r.ewt_min $max) 46) }}px"></span>
+            <span class="ngbus-metric__val">{{ lang.FormatNumber 1 $r.ewt_min }} min</span>
+          </td>
+          <td>{{ lang.FormatPercent 0 (mul $r.p_wait_gt10 100) }}</td>
+          <td>
+            {{- if eq $r.delta nil }}
+            <span class="ngbus-nd" title="No comparable earlier week">no data</span>
+            {{- else if gt $r.delta 0.05 }}
+            <span class="ngbus-delta ngbus-delta--up" title="Compared with the week ending {{ dateFormat "2 Jan 2006" $r.delta_from }}">+{{ lang.FormatNumber 2 $r.delta }}</span>
+            {{- else if lt $r.delta -0.05 }}
+            <span class="ngbus-delta ngbus-delta--down" title="Compared with the week ending {{ dateFormat "2 Jan 2006" $r.delta_from }}">{{ lang.FormatNumber 2 $r.delta }}</span>
+            {{- else }}
+            <span class="ngbus-delta ngbus-delta--flat" title="Compared with the week ending {{ dateFormat "2 Jan 2006" $r.delta_from }}">no change</span>
+            {{- end }}
+          </td>
+          <td>{{ partial "bus-spark.html" (dict "values" $r.spark "lo" $slo "hi" $shi "label" (printf "Weekly excess wait for route %s" $r.route)) }}</td>
+          <td>{{ lang.FormatPercent 0 (mul $r.coverage 100) }}</td>
+        </tr>
+        {{- end }}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="ngbus-foot">
+    <span class="ngbus-count" id="ngbus-count">
+      Showing the {{ len $worst }} longest waits of {{ len $reporting }} routes reporting.
+      {{ sub (len $all) (len $reporting) }} routes had too little data to publish.
+    </span>
+    <span>Week ending {{ dateFormat "2 January 2006" $d.week_ending }} · {{ $d.window }}</span>
+  </div>
+
+  {{- /* jsonify escapes < > &, so the payload cannot close this tag. safeJS
+         stops Go's contextual escaper from re-encoding the JSON as a JS string,
+         which would leave JSON.parse() parsing a string. Same trick as
+         ng-chart2.html.
+
+         One dict per route with one-letter keys. The obvious compaction —
+         positional arrays — is not available: Hugo's `append` spreads a slice
+         argument into its elements, so appending a row flattens all 616 of them
+         into one long list of scalars, and wrapping the row to stop that makes
+         the outer value a [][]interface{} which cannot be appended to a
+         []interface{} at all. Short keys cost about 12 KB across the whole
+         table and cannot be got wrong. */ -}}
+  {{- $payload := slice -}}
+  {{- range $all -}}
+    {{- $where := "" -}}
+    {{- with .termini }}{{ $where = delimit (apply . "index" "." "name") " ↔ " }}{{ end -}}
+    {{- $payload = $payload | append (dict
+        "r" .route "e" .ewt_min "p" .p_wait_gt10 "d" .delta
+        "f" .delta_from "c" .coverage "s" .spark "w" $where) -}}
+  {{- end -}}
+  <script type="application/json" id="ngbus-league-data">{{ dict
+      "week" $d.week_ending "window" $d.window "max" $max
+      "sparkWeeks" $d.spark_weeks "threshold" $d.coverage_threshold
+      "rows" $payload | jsonify | safeJS }}</script>
+</div>
+
+{{- partial "bus-assets.html" . }}
+<script src="/js/ngbus-table.js?v=1" defer></script>

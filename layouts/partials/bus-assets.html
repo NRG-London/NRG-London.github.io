@@ -1,0 +1,13 @@
+{{- /*
+  bus-assets — load the bus stylesheet once per page, however many bus
+  components the page holds. Same Page.Scratch guard as ng-chart2.html.
+
+  The ?v= is bumped by hand when the file changes. The rail engine ships its
+  four assets with no version query at all, which means a browser holding a
+  cached ngc2-live.js can pair an old engine with a fresh spec — a real gap, and
+  not one worth copying.
+*/ -}}
+{{- if not (.Page.Scratch.Get "ngbusAssets") -}}
+  {{- .Page.Scratch.Set "ngbusAssets" true }}
+<link rel="stylesheet" href="/css/ngbus.css?v=1">
+{{- end -}}

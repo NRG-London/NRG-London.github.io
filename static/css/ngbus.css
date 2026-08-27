@@ -1,0 +1,542 @@
+/* ==========================================================================
+   ngbus.css — bus performance pages (league table, route pages, hero bus)
+
+   Loaded by the bus shortcodes and layouts, not by head.html, so it costs
+   nothing on the rest of the site.
+
+   OWNERSHIP: unlike ngc2.* and the crime chart assets, these files are
+   maintained here, in the Hugo repo. Nothing in E:\Road Data writes CSS or JS
+   into this site — it writes data/bus/*.json and stops. So this file is safe to
+   edit in place, which ngc2.css emphatically is not.
+
+   House rule, inherited from ngc2.css: NO :root block — the host page owns the
+   palette — and every var() carries a literal fallback. A component that
+   silently loses a colour when dropped into a page is worse than one that
+   repeats a hex.
+
+   Colour policy: the bus red is DECORATION, never data. It says "London bus",
+   and if it also meant "bad" the reader would have to hold two meanings for one
+   hue. Severity is carried by the site's sequential blue ramp
+   (--blue-light #E2EEF7 → --blue-dark #004D80), and the single warm accent
+   --amber is spent, as everywhere else on this site, on the one number that
+   matters.
+   ========================================================================== */
+
+.ngbus {
+  --bus-red: #d6342c;
+  /* Line colours, not fill colours. Copied from the validated trio in
+     ngc2-core.js:38-95 — a 2-3px amber line comes in at 2.17:1 against the
+     surface, below the 3:1 floor, so the line weight uses a darkened amber. */
+  --bus-line-a: #b48544;
+  --bus-line-b: #4A5A6B;
+  --bus-band: #DDE3DF;
+  font-family: var(--sans, 'DM Sans', system-ui, sans-serif);
+  color: var(--ink, #1a2332);
+}
+
+.ngbus :is(h2, h3) { font-family: var(--sans, 'DM Sans', system-ui, sans-serif); }
+.ngbus [hidden] { display: none !important; }
+
+/* Visually hidden but reachable by a screen reader. Table captions and the
+   search label are announced, not drawn. */
+.ngbus-sr {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+
+/* ── THE BUS ───────────────────────────────────────────────────────────────
+   Both plates are filtered (grain on the red, displacement wobble on the ink),
+   and a filtered subtree re-rasterises whenever anything inside it moves. So
+   the slide is on the <svg> itself — one composited layer, filters rasterised
+   once — and the red plate only ever changes opacity. Nothing inside a filtered
+   group is animated. Moving the plate's transform instead cost ~7x the frame
+   time on a mid-range laptop.
+   ------------------------------------------------------------------------- */
+
+.ngbus-bus {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.ngbus-bus__blind {
+  font-family: var(--sans, 'DM Sans', system-ui, sans-serif);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+@keyframes ngbus-pull-in {
+  from { transform: translate3d(-7%, 0, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+@keyframes ngbus-plate-down {
+  from { opacity: 0; }
+  to   { opacity: 0.92; }
+}
+
+.ngbus-bus__red { opacity: 0.92; }
+
+.ngbus-bus--animate {
+  /* Slightly overshooting ease-out: the bus arrives and settles, rather than
+     gliding to a mathematical stop. */
+  animation: ngbus-pull-in 900ms cubic-bezier(0.22, 0.9, 0.3, 1.02) both;
+  will-change: transform;
+}
+.ngbus-bus--animate .ngbus-bus__red {
+  /* The red plate lands a beat after the ink. That lag is the whole screenprint
+     gag, and 220ms is about where it reads as a second pass rather than a bug. */
+  animation: ngbus-plate-down 420ms ease-out 220ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ngbus-bus--animate,
+  .ngbus-bus--animate .ngbus-bus__red { animation: none; }
+  .ngbus-bus--animate .ngbus-bus__red { opacity: 0.92; }
+}
+
+
+/* ── HERO ──────────────────────────────────────────────────────────────── */
+
+.ngbus-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: 1.5rem 2rem;
+  align-items: center;
+  margin: 0 0 2.25rem;
+}
+
+.ngbus-hero__figure { margin: 0; }
+
+.ngbus-hero__stat {
+  font-family: var(--serif, 'Libre Baskerville', Georgia, serif);
+  font-size: clamp(2.4rem, 7vw, 3.4rem);
+  line-height: 1.05;
+  color: var(--blue-dark, #004d80);
+  font-variant-numeric: tabular-nums;
+}
+.ngbus-hero__stat small {
+  display: block;
+  margin-top: 0.1rem;
+  font-family: var(--sans, 'DM Sans', system-ui, sans-serif);
+  font-size: 0.82rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1.45;
+  color: var(--mid-grey, #8a9490);
+}
+
+.ngbus-hero__caption {
+  margin-top: 0.55rem;
+  font-size: 0.82rem;
+  color: var(--mid-grey, #8a9490);
+}
+
+@media (max-width: 640px) {
+  .ngbus-hero { grid-template-columns: 1fr; gap: 1rem; }
+  .ngbus-hero__figure { max-width: 340px; }
+}
+
+
+/* ── CONTROLS ──────────────────────────────────────────────────────────────
+   Chips match .ngl2-chip on the rail page: blue when active, not amber. Amber
+   is the data highlight colour on this site, and spending it on UI chrome makes
+   the chrome compete with the numbers.
+   ------------------------------------------------------------------------- */
+
+.ngbus-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin: 0 0 0.9rem;
+}
+
+.ngbus-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+
+.ngbus-chip {
+  font: inherit;
+  font-size: 0.82rem;
+  line-height: 1;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--warm-grey, #dde3df);
+  border-radius: 999px;
+  background: var(--white, #ffffff);
+  color: var(--ink, #1a2332);
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+}
+.ngbus-chip:hover:not(:disabled) { border-color: var(--blue-muted, #5a9fd4); }
+.ngbus-chip[aria-pressed="true"] {
+  background: var(--blue-light, #E2EEF7);
+  border-color: var(--blue, #0070BA);
+  color: var(--blue-dark, #004d80);
+  font-weight: 600;
+}
+.ngbus-chip:disabled { opacity: 0.45; cursor: not-allowed; }
+.ngbus-chip:focus-visible,
+.ngbus-search input:focus-visible {
+  outline: 2px solid var(--blue, #0070BA);
+  outline-offset: 2px;
+}
+
+.ngbus-search { margin-left: auto; }
+.ngbus-search input {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.45rem 0.7rem;
+  min-width: 12rem;
+  border: 1px solid var(--warm-grey, #dde3df);
+  border-radius: 4px;
+  background: var(--white, #ffffff);
+  color: var(--ink, #1a2332);
+}
+.ngbus-search input::placeholder { color: var(--mid-grey, #8a9490); }
+
+.ngbus-count {
+  font-size: 0.78rem;
+  color: var(--mid-grey, #8a9490);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 560px) {
+  .ngbus-search { margin-left: 0; width: 100%; }
+  .ngbus-search input { width: 100%; }
+}
+
+
+/* ── THE LEAGUE TABLE ──────────────────────────────────────────────────────
+   The first table on this site. Everything data-shaped here has been a chart
+   with a tooltip; 600 routes are a list, and pretending otherwise would mean
+   hiding 599 of them behind a hover.
+
+   The table scrolls inside its own box. The page body must never scroll
+   sideways — on a phone that is the difference between a table and a mess.
+   ------------------------------------------------------------------------- */
+
+.ngbus-tablewrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--warm-grey, #dde3df);
+  border-radius: 6px;
+  background: var(--white, #ffffff);
+  max-height: 34rem;
+  overflow-y: auto;
+}
+
+.ngbus-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.ngbus-table th,
+.ngbus-table td {
+  padding: 0.5rem 0.75rem;
+  text-align: right;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--warm-grey, #dde3df);
+}
+.ngbus-table th:first-child,
+.ngbus-table td:first-child,
+.ngbus-table th:nth-child(2),
+.ngbus-table td:nth-child(2) { text-align: left; }
+
+.ngbus-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--paper, #f3f6f4);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mid-grey, #8a9490);
+  border-bottom: 1px solid var(--warm-grey, #dde3df);
+}
+
+.ngbus-table thead th button {
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.ngbus-table thead th button:hover { color: var(--blue, #0070BA); }
+.ngbus-table thead th[aria-sort] button { color: var(--blue-dark, #004d80); }
+.ngbus-table thead th[aria-sort] button::after {
+  content: " \25BE";                                   /* ▾ */
+  font-size: 0.9em;
+}
+.ngbus-table thead th[aria-sort="ascending"] button::after { content: " \25B4"; }
+
+.ngbus-table tbody tr:hover { background: var(--blue-light, #E2EEF7); }
+.ngbus-table tbody tr:last-child td { border-bottom: 0; }
+
+.ngbus-rank { color: var(--mid-grey, #8a9490); width: 2.5rem; }
+
+.ngbus-route a {
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-decoration: none;
+  color: var(--blue-dark, #004d80);
+}
+.ngbus-route a:hover { color: var(--ink, #1a2332); text-decoration: underline; }
+.ngbus-route__where {
+  display: block;
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: var(--mid-grey, #8a9490);
+  white-space: normal;
+  max-width: 20rem;
+}
+
+/* The headline number, with its own magnitude behind it. A bar in the site's
+   sequential blue rather than a red/green scale: this is one quantity getting
+   larger, not a good/bad judgement, and a diverging scale would assert a
+   midpoint the data does not have. */
+.ngbus-metric { position: relative; }
+.ngbus-metric__bar {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.3rem;
+  height: 3px;
+  background: var(--blue, #0070BA);
+  opacity: 0.42;
+  border-radius: 2px;
+  pointer-events: none;
+}
+.ngbus-metric__val { position: relative; font-weight: 600; }
+.ngbus-metric--lead .ngbus-metric__val { color: var(--blue-dark, #004d80); }
+
+/* "no data" is a first-class state, not an empty cell. A dash reads as a small
+   number and a zero reads as perfect punctuality; both would flatter a route we
+   simply did not watch. */
+.ngbus-nd {
+  color: var(--mid-grey, #8a9490);
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-variant-numeric: normal;
+  border-bottom: 1px dotted var(--mid-grey, #8a9490);
+  cursor: help;
+}
+
+.ngbus-delta { font-size: 0.82rem; }
+.ngbus-delta--up { color: var(--blue-dark, #004d80); }      /* waits got longer */
+.ngbus-delta--down { color: var(--teal, #3F8E7E); }         /* waits got shorter */
+.ngbus-delta--flat { color: var(--mid-grey, #8a9490); }
+
+.ngbus-spark { display: block; width: 78px; height: 22px; margin-left: auto; }
+.ngbus-spark__line { fill: none; stroke: var(--bus-line-a, #b48544); stroke-width: 1.6;
+                     stroke-linecap: round; stroke-linejoin: round; }
+.ngbus-spark__dot { fill: var(--bus-line-a, #b48544); }
+.ngbus-spark__gap { fill: var(--bus-band, #DDE3DF); opacity: 0.75; }
+
+.ngbus-empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--mid-grey, #8a9490);
+  font-size: 0.9rem;
+}
+
+.ngbus-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  justify-content: space-between;
+  margin-top: 0.6rem;
+  font-size: 0.75rem;
+  color: var(--mid-grey, #8a9490);
+}
+
+@media (max-width: 640px) {
+  .ngbus-table th, .ngbus-table td { padding: 0.45rem 0.55rem; }
+  .ngbus-route__where { max-width: 11rem; }
+}
+
+
+/* ── ROUTE TIMELINE CHART ─────────────────────────────────────────────────── */
+
+.ngbus-chart {
+  margin: 1.5rem 0 0.5rem;
+  padding: 1.25rem 1.25rem 1rem;
+  border: 1px solid var(--warm-grey, #dde3df);
+  border-radius: 6px;
+  background: var(--white, #ffffff);
+}
+.ngbus-chart__title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 0.15rem;
+}
+.ngbus-chart__subtitle {
+  font-size: 0.82rem;
+  color: var(--mid-grey, #8a9490);
+  margin-bottom: 0.85rem;
+}
+.ngbus-chart__plot svg { display: block; width: 100%; height: auto; }
+
+.ngbus-ax { fill: var(--mid-grey, #8a9490); font-size: 11px; font-variant-numeric: tabular-nums; }
+.ngbus-grid { stroke: var(--warm-grey, #dde3df); stroke-width: 1; }
+.ngbus-base { stroke: var(--mid-grey, #8a9490); stroke-width: 1.5; }
+.ngbus-hole { fill: var(--bus-band, #DDE3DF); opacity: 0.55; }
+.ngbus-hole__label { fill: var(--mid-grey, #8a9490); font-size: 10.5px; letter-spacing: 0.04em; }
+.ngbus-line { fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.ngbus-line--a { stroke: var(--bus-line-a, #b48544); }
+.ngbus-line--b { stroke: var(--bus-line-b, #4A5A6B); }
+.ngbus-dot--a { fill: var(--bus-line-a, #b48544); }
+.ngbus-dot--b { fill: var(--bus-line-b, #4A5A6B); }
+
+.ngbus-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  margin-top: 0.6rem;
+  font-size: 0.78rem;
+  color: var(--mid-grey, #8a9490);
+}
+.ngbus-legend__item { display: inline-flex; align-items: center; gap: 0.35rem; }
+.ngbus-legend__swatch { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+
+
+/* ── ROUTE PAGE ───────────────────────────────────────────────────────────── */
+
+.ngbus-strap {
+  font-family: var(--serif, 'Libre Baskerville', Georgia, serif);
+  font-size: 1.12rem;
+  line-height: 1.6;
+  color: var(--deep, #243142);
+  margin: 0 0 1.5rem;
+  padding-left: 1rem;
+  border-left: 3px solid var(--blue-light, #E2EEF7);
+}
+
+.ngbus-termini {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+.ngbus-terminus {
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--warm-grey, #dde3df);
+  border-radius: 6px;
+  background: var(--white, #ffffff);
+}
+.ngbus-terminus__name {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--mid-grey, #8a9490);
+  margin-bottom: 0.5rem;
+}
+.ngbus-terminus dl { display: grid; grid-template-columns: 1fr auto; gap: 0.3rem 1rem; }
+.ngbus-terminus dt { font-size: 0.82rem; color: var(--mid-grey, #8a9490); }
+.ngbus-terminus dd {
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.ngbus-attr {
+  margin-top: 2rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--warm-grey, #dde3df);
+  font-size: 0.74rem;
+  line-height: 1.55;
+  color: var(--mid-grey, #8a9490);
+}
+
+.ngbus-az {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 1.5rem 0;
+}
+.ngbus-az a {
+  display: inline-block;
+  min-width: 3.1rem;
+  padding: 0.35rem 0.5rem;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid var(--warm-grey, #dde3df);
+  border-radius: 4px;
+  background: var(--white, #ffffff);
+  color: var(--blue-dark, #004d80);
+}
+.ngbus-az a:hover { border-color: var(--blue, #0070BA); background: var(--blue-light, #E2EEF7); }
+.ngbus-az a[data-nodata="1"] { color: var(--mid-grey, #8a9490); }
+
+
+/* ── ROUTE PAGE: outages, weekly figures, hover readout ─────────────────── */
+
+.ngbus-holes {
+  margin: 1rem 0 0;
+  padding: 0.7rem 0.9rem;
+  border-left: 3px solid var(--bus-band, #DDE3DF);
+  background: var(--white, #ffffff);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--mid-grey, #8a9490);
+}
+.ngbus-holes strong { color: var(--ink, #1a2332); }
+
+.ngbus-weeks { margin: 1.25rem 0 0; }
+.ngbus-weeks summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--blue-dark, #004d80);
+  padding: 0.4rem 0;
+}
+.ngbus-weeks summary:focus-visible { outline: 2px solid var(--blue, #0070BA); outline-offset: 2px; }
+.ngbus-weeks .ngbus-tablewrap { margin-top: 0.5rem; max-height: 26rem; }
+.ngbus-weeks .ngbus-table th:first-child,
+.ngbus-weeks .ngbus-table td:first-child { text-align: left; }
+.ngbus-weeks .ngbus-table th:nth-child(2),
+.ngbus-weeks .ngbus-table td:nth-child(2) { text-align: right; }
+
+/* The readout follows the plot, so it is positioned inside the chart card and
+   offset by a percentage of the plot width rather than by pixels — the SVG is
+   fluid and a pixel offset would drift as the column narrows. */
+.ngbus-chart { position: relative; }
+.ngbus-tip {
+  position: absolute;
+  top: 4.5rem;
+  transform: translateX(-50%);
+  z-index: 2;
+  pointer-events: none;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--warm-grey, #dde3df);
+  border-radius: 4px;
+  background: var(--white, #ffffff);
+  box-shadow: 0 2px 10px rgba(26, 35, 50, 0.12);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.ngbus-tip[hidden] { display: none; }
+
+.ngbus-hit { cursor: crosshair; }
+
+@media (max-width: 640px) {
+  /* Fingers do not hover. The weekly figures table below the chart is the
+     touch-friendly way to read exact numbers, and it is always there. */
+  .ngbus-tip { display: none; }
+}

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 280" width="420" height="280" role="img" aria-label="Double decker bus, screenprint style">
+  <title>Double decker bus — off-register screenprint</title>
+  <defs>
+    <filter id="ngbus-dd-grain" x="-8%" y="-8%" width="116%" height="116%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="4" result="t"></feTurbulence>
+      <feColorMatrix in="t" type="saturate" values="0" result="tg"></feColorMatrix>
+      <feComponentTransfer in="tg" result="ta"><feFuncA type="linear" slope="0.5"></feFuncA></feComponentTransfer>
+      <feComposite in="ta" in2="SourceAlpha" operator="in" result="g"></feComposite>
+      <feBlend in="SourceGraphic" in2="g" mode="multiply"></feBlend>
+    </filter>
+    <filter id="ngbus-dd-wobble" x="-8%" y="-8%" width="116%" height="116%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.016" numOctaves="2" seed="21" result="n"></feTurbulence>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap>
+    </filter>
+  </defs>
+
+  
+  <g transform="translate(-7 6)" filter="url(#ngbus-dd-grain)" opacity="0.92">
+    <path d="M26 232 L26 44 Q26 30 44 30 L384 30 Q400 30 400 46 L400 232 Z" fill="#d6342c"></path>
+    <circle cx="108" cy="240" r="26" fill="#d6342c"></circle>
+    <circle cx="330" cy="240" r="26" fill="#d6342c"></circle>
+  </g>
+
+  
+  <g filter="url(#ngbus-dd-wobble)" fill="none" stroke="#1a2332" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="108" cy="238" r="26" fill="#f3f6f4"></circle>
+    <circle cx="330" cy="238" r="26" fill="#f3f6f4"></circle>
+    <circle cx="108" cy="238" r="9" fill="#1a2332" stroke="none"></circle>
+    <circle cx="330" cy="238" r="9" fill="#1a2332" stroke="none"></circle>
+    <path d="M26 232 L26 44 Q26 30 44 30 L384 30 Q400 30 400 46 L400 232 Z"></path>
+    <g fill="#f3f6f4">
+      <rect x="42" y="48" width="48" height="52"></rect>
+      <rect x="98" y="48" width="48" height="52"></rect>
+      <rect x="154" y="48" width="48" height="52"></rect>
+      <rect x="210" y="48" width="48" height="52"></rect>
+      <rect x="272" y="56" width="112" height="44"></rect>
+      <rect x="42" y="128" width="48" height="50"></rect>
+      <rect x="98" y="128" width="48" height="50"></rect>
+      <rect x="154" y="128" width="48" height="50"></rect>
+      <rect x="300" y="128" width="84" height="54"></rect>
+      <rect x="212" y="124" width="46" height="102"></rect>
+    </g>
+    <rect x="272" y="36" width="112" height="16" fill="#1a2332"></rect>
+    <line x1="235" y1="124" x2="235" y2="226"></line>
+    <line x1="26" y1="114" x2="400" y2="114"></line>
+    <line x1="26" y1="204" x2="400" y2="204"></line>
+    <circle cx="388" cy="212" r="7" fill="#f3f6f4"></circle>
+    <path d="M22 262 L404 258" stroke="#8a9490" stroke-width="2"></path>
+  </g>
+</svg>

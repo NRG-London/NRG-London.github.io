@@ -1,0 +1,60 @@
+{{- /*
+  bus-spark — a sparkline of weekly EWT, rendered server-side.
+
+  Server-side because the league table's first twenty rows are real HTML: a
+  reader with JavaScript off, or a crawler, gets the trend as well as the
+  numbers. `ngbus-table.js` draws the identical shape for rows it adds later —
+  same geometry constants, so a sorted table does not visibly re-draw.
+
+  Drawn as one <line> per adjacent pair rather than as a polyline, which makes
+  gaps fall out for free: a pair with a missing end simply has no line. Missing
+  weeks are then shaded, so a gap reads as "not measured" rather than as a
+  straight line drawn through the outage — which is exactly the lie the whole
+  page exists to avoid.
+
+  Coordinates are printed to 2dp. Full float64 precision costs ~17 characters
+  per number and twenty sparklines' worth of it is several KB of page weight
+  that no one can see.
+
+  Params: values (slice, nulls allowed), lo, hi (domain), label
+*/ -}}
+
+{{- $v := .values -}}
+{{- $n := len $v -}}
+{{- $lo := .lo -}}
+{{- $hi := .hi -}}
+{{- $span := sub $hi $lo -}}
+{{- if le $span 0.0 }}{{ $span = 1.0 }}{{ end -}}
+
+{{- $W := 78.0 }}{{ $H := 22.0 }}{{ $pad := 2.0 -}}
+{{- $step := cond (gt $n 1) (div (sub $W (mul $pad 2)) (float (sub $n 1))) 0.0 -}}
+
+<svg class="ngbus-spark" viewBox="0 0 78 22" role="img" preserveAspectRatio="none"
+     aria-label="{{ .label | default "Weekly trend" }}" focusable="false">
+  {{- /* shade the weeks with no measurement */ -}}
+  {{- range $i, $y := $v }}
+    {{- if eq $y nil }}
+      {{- $x := add $pad (mul $step (float $i)) }}
+  <rect class="ngbus-spark__gap" x="{{ printf "%.2f" (sub $x (div $step 2)) }}" y="0"
+        width="{{ printf "%.2f" (math.Max $step 3.0) }}" height="{{ $H }}"/>
+    {{- end }}
+  {{- end }}
+  {{- range $i, $y := $v }}
+    {{- if and (lt (add $i 1) $n) (ne $y nil) }}
+      {{- $next := index $v (add $i 1) }}
+      {{- if ne $next nil }}
+        {{- $x1 := add $pad (mul $step (float $i)) }}
+        {{- $x2 := add $pad (mul $step (float (add $i 1))) }}
+        {{- $y1 := sub (sub $H $pad) (mul (div (sub $y $lo) $span) (sub $H (mul $pad 2))) }}
+        {{- $y2 := sub (sub $H $pad) (mul (div (sub $next $lo) $span) (sub $H (mul $pad 2))) }}
+  <line class="ngbus-spark__line" x1="{{ printf "%.2f" $x1 }}" y1="{{ printf "%.2f" $y1 }}" x2="{{ printf "%.2f" $x2 }}" y2="{{ printf "%.2f" $y2 }}"/>
+      {{- end }}
+    {{- end }}
+  {{- end }}
+  {{- /* the current week, if it reported */ -}}
+  {{- $lastv := index $v (sub $n 1) }}
+  {{- if ne $lastv nil }}
+    {{- $ly := sub (sub $H $pad) (mul (div (sub $lastv $lo) $span) (sub $H (mul $pad 2))) }}
+  <circle class="ngbus-spark__dot" cx="{{ sub $W $pad }}" cy="{{ printf "%.2f" $ly }}" r="1.9"/>
+  {{- end }}
+</svg>
