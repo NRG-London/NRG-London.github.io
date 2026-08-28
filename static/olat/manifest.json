@@ -52,6 +52,18 @@
  "coords": "coords.bin",
  "overlay": "overlay.png",
  "images": "v/{slug}.png",
+ "weights": [
+  {
+   "id": "jobs",
+   "label": "jobs",
+   "file": "weights/jobs.bin",
+   "total": 5879380,
+   "units": "jobs",
+   "note": "London jobs only. The canonical destination set covers the GLA area, so jobs outside the London boundary are not counted -- which systematically understates outer-London centres that genuinely reach Slough, Watford, Brentwood or Redhill within the cutoff. Comparisons on the site (step-free vs full network, PT vs PT+car) put both sides inside the same boundary, so the differences are unaffected.",
+   "source": "Business Register and Employment Survey : open access 2024 Employment -- LSOA21, London region (E12000007), Nomis TYPE151",
+   "licence": "Open Government Licence v3.0"
+  }
+ ],
  "origins": [
   {
    "slug": "west-end",

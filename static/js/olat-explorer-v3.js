@@ -98,8 +98,56 @@
 
   function fmt(n) { return n.toLocaleString("en-GB"); }
 
+  /* ---- access to jobs ----------------------------------------------------
+     "Reachable postcodes" counts places; this counts what is actually AT those
+     places. The weight vector is shared by every network, so the number follows
+     the mode toggles and the scenario toggle with no extra data. 45 minutes is
+     the headline cutoff; in the isochrone view the existing slider drives it,
+     which turns that slider into the exploration control for the stat. */
+  var JOBS_ANCHOR = 45;
+  var statsToken = 0;
+
+  function compact(n) {
+    if (n >= 1e6) return (n / 1e6).toFixed(n < 1e7 ? 2 : 1).replace(/\.?0+$/, "") + "M";
+    if (n >= 1e3) return Math.round(n / 1e3) + "k";
+    return Math.round(n).toLocaleString("en-GB");
+  }
+
+  function jobsCutoff() {
+    return (view === "iso" && threshold != null) ? threshold : JOBS_ANCHOR;
+  }
+
+  function jobsClause() {
+    var cut = jobsCutoff();
+    var o = r.opportunityWithin(cut);
+    if (!o) return "";                       // no weight layer deployed -> omit
+    return " · " + compact(o.sum) + " London jobs within " + cut + " min" +
+      (o.pct != null ? " (" + o.pct.toFixed(0) + "% of London's " +
+        compact(o.total) + ")" : "");
+  }
+
+  /* With a scenario on, the change is the point -- "step-free costs this centre
+     39% of its 45-minute job access". That needs the baseline image for the same
+     origin, a second fetch, so it lands asynchronously and is dropped if the
+     origin, mode, scenario or threshold moved on in the meantime. */
+  function appendScenarioJobsDelta(baseText, token) {
+    if (!activeScenario) return;
+    var cut = jobsCutoff();
+    var now = r.opportunityWithin(cut);
+    if (!now) return;
+    r.baselineOpportunityWithin(cut).then(function (was) {
+      if (token !== statsToken || !was || !was.sum) return;
+      var pct = (now.sum - was.sum) / was.sum * 100;
+      if (Math.abs(pct) < 0.5) return;       // no story in a rounding-level change
+      statsEl.textContent = baseText + " — " + (pct < 0 ? "down " : "up ") +
+        Math.abs(pct).toFixed(0) + "% from " + compact(was.sum) +
+        " on the full network";
+    });
+  }
+
   function updateStats() {
     if (!r._ch) return;
+    var token = ++statsToken;
     if (isTime()) {
       var reach = r.reachableCount();
       var s = fmt(reach) + " of " + fmt(r.N) + " postcodes reachable (" +
@@ -108,7 +156,9 @@
         var c = r.catchmentWithin(threshold);
         s += " · " + c.pct.toFixed(1) + "% reachable within " + threshold + " min";
       }
+      s += jobsClause();
       statsEl.textContent = s;
+      appendScenarioJobsDelta(s, token);
     } else {
       var st = diffStats(view);
       var what = view === "diff-car" ? "Car" : "E-bike";

@@ -155,7 +155,7 @@
 
   function rowHtml(r, rank) {
     var ewt = r[R.EWT], p = r[R.P], d = r[R.DELTA];
-    var out = ['<tr>'];
+    var out = ['<tr data-href="/bus/' + slug(r[R.ROUTE]) + '/">'];
 
     out.push('<td class="ngbus-rank">' + (rank == null ? '' : rank) + '</td>');
 
@@ -324,6 +324,48 @@
     });
     th.textContent = '';
     th.appendChild(btn);
+  });
+
+  /* ---- the whole row navigates -------------------------------------------
+     Three testers out of three clicked the row rather than the route number:
+     the hover highlight promises a target the size of the row, so the row is
+     what has to respond.
+
+     Delegated rather than per-row, because the body is rewritten on every sort,
+     search and view change — a listener per row would have to be re-attached
+     616 times a keystroke.
+
+     Deliberately NOT done by stretching the anchor across the row with an
+     absolutely-positioned ::after, which is the usual trick. That overlay sits
+     above the cells, and it would swallow both the `title` tooltips that explain
+     "no data" and which week a change is measured against, and any attempt to
+     select a number to copy. A click handler leaves the cells alone. */
+  body.addEventListener('click', function (e) {
+    var tr = e.target.closest ? e.target.closest('tr[data-href]') : null;
+    if (!tr) return;
+
+    /* The real anchor handles itself, including ctrl/cmd-click. */
+    if (e.target.closest('a')) return;
+
+    /* Someone dragging across a figure to copy it is not clicking a row. */
+    var sel = window.getSelection && window.getSelection();
+    if (sel && String(sel).length > 0) return;
+
+    if (e.metaKey || e.ctrlKey || e.shiftKey) {
+      window.open(tr.dataset.href, '_blank', 'noopener');
+      return;
+    }
+    window.location.href = tr.dataset.href;
+  });
+
+  /* Middle-click opens a new tab, the way a link does. Without this the row is
+     a link that behaves like one only for left-handed clicks. */
+  body.addEventListener('auxclick', function (e) {
+    if (e.button !== 1) return;
+    var tr = e.target.closest ? e.target.closest('tr[data-href]') : null;
+    if (!tr || e.target.closest('a')) return;
+    e.preventDefault();
+    window.open(tr.dataset.href, '_blank', 'noopener');
   });
 
   if (query) {

@@ -1,0 +1,51 @@
+{{- /*
+  bus-place — a stop name as a reader should see it.
+
+  TfL's stop names carry interchange markup, and it comes straight through the
+  feed into our data:
+
+      <>      Underground        "Aldgate Station <>"
+      #       National Rail      "Anerley Station #"
+      >t<     Tram               "Addington Village Interchange >t<"
+      >lol<   London Overground  "Walthamstow Bus Station <> >lol<"
+      [dlr]   DLR                "Blackwall Station [dlr]"
+
+  307 of the 722 terminus names in the live data have at least one, and they were
+  being printed verbatim — "Morden Station <>" on the 157's page, which reads as
+  a bug rather than as an interchange symbol.
+
+  This strips them at DISPLAY time only. The underlying data keeps whatever TfL
+  sent, so nothing is lost and the decision is reversible; if these pages ever
+  want to say "this terminus is on the Northern line", the information is still
+  in the file. It is dropped here because a page about bus waiting times has no
+  use for it and no room to explain it.
+
+  Everything server-side goes through this, including the JSON payloads handed to
+  the table and the chart, so no cleaning is needed in JavaScript.
+
+  A RETURNING partial — it ends in `return`, not in output. Printing the value
+  instead would render it into an HTML context and escape it on the way out, so
+  "Queen Mary's Hospital" reached jsonify as "Queen Mary&#39;s Hospital" and the
+  table then displayed the entity literally. Returning hands back a plain string
+  and lets each caller escape it correctly for wherever it is going.
+
+  Usage: {{ partial "bus-place.html" .name }}
+*/ -}}
+
+{{- $s := . | default "" -}}
+
+{{- /* Mode tokens first, before the bare <> and # they sit alongside:
+       >t< and >lol< would otherwise be left as fragments. */ -}}
+{{- $s = replaceRE `(?i)>[a-z]+<` " " $s -}}
+{{- $s = replaceRE `(?i)\[[a-z]+\]` " " $s -}}
+{{- $s = replaceRE `<>` " " $s -}}
+{{- $s = replaceRE `#` " " $s -}}
+
+{{- /* Tidy what the removals leave behind: doubled spaces, and separators that
+       have lost the word next to them ("Stn  / Rectory Rd"). */ -}}
+{{- $s = replaceRE `\s+` " " $s -}}
+{{- $s = replaceRE `\s*/\s*` " / " $s -}}
+{{- $s = replaceRE `^[\s/]+` "" $s -}}
+{{- $s = replaceRE `[\s/]+$` "" $s -}}
+
+{{ return $s }}

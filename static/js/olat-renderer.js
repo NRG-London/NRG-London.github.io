@@ -48,6 +48,8 @@
     this.px = null; this.py = null;     // pixel coords at canvas resolution
     this.overlay = null;                // HTMLImageElement
     this.cache = {};                    // image URL -> {R,G,B} Uint8Array(N)
+    this.weights = {};                  // opportunity layer id -> Float32Array(N)
+    this.weightMeta = {};               // opportunity layer id -> manifest entry (+ total)
     this.pending = {};                  // image URL -> Promise
     this._imgTpl = null;                // null = baseline (manifest.images); else scenario dir
     this.origin = null;                 // current origin record
@@ -94,7 +96,7 @@
         self.W = backW; self.H = Math.round(backW * m.canvas.height / m.canvas.width);
         self.canvas.width = self.W; self.canvas.height = self.H;
         self.R = m.dotRadiusRef * (self.W / m.canvas.width);
-        return Promise.all([self._loadCoords(), self._loadOverlay()]);
+        return Promise.all([self._loadCoords(), self._loadOverlay(), self._loadWeights()]);
       })
       .then(function () { self._project(); return self; });
   };
@@ -138,6 +140,55 @@
   };
 
   /* ---- the verified transform (spec 4.1): lon/lat -> pixel --------------- */
+  /* ---- opportunity weight vectors (jobs, ...) ---------------------------
+     One float32 per destination in the same Hilbert order as coords.bin, shared
+     by every network -- a weight describes the destination, not the journey. So
+     "jobs within N minutes" works for every mode and every scenario off one
+     ~140 kB file, with no per-scenario cost.
+
+     Absence is not an error: a deployment whose manifest has no `weights` simply
+     has the feature off, and the explorer omits the clause. A PRESENT but stale
+     file IS an error -- the header carries the index hash for exactly that. */
+  OlatRenderer.prototype._loadWeights = function () {
+    var self = this;
+    var layers = (this.manifest && this.manifest.weights) || [];
+    if (!layers.length) return Promise.resolve();
+    return Promise.all(layers.map(function (layer) {
+      return fetch(self.base + layer.file)
+        .then(function (r) {
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          return r.arrayBuffer();
+        })
+        .then(function (buf) {
+          var dv = new DataView(buf);
+          var magic = String.fromCharCode(dv.getUint8(0), dv.getUint8(1),
+                                          dv.getUint8(2), dv.getUint8(3));
+          if (magic !== "OLW1") throw new Error("bad magic " + magic);
+          var n = dv.getUint32(4, true);
+          if (n !== self.N) throw new Error("N " + n + " != manifest N " + self.N);
+          var hh = "";
+          for (var b = 8; b < 16; b++) hh += ("0" + dv.getUint8(b).toString(16)).slice(-2);
+          if (self.manifest.indexHash.slice(0, 16) !== hh)
+            throw new Error("index hash mismatch -- rebuild weights + images together");
+          var w = new Float32Array(buf, 16, n);
+          var total = 0;
+          for (var i = 0; i < n; i++) total += w[i];
+          self.weights[layer.id] = w;
+          // Sum the vector rather than trusting the manifest's rounded figure, so
+          // the percentage denominator is exactly the numerator's universe.
+          self.weightMeta[layer.id] = {
+            id: layer.id, label: layer.label || layer.id, units: layer.units || "",
+            note: layer.note || "", source: layer.source || "", total: total
+          };
+        })
+        .catch(function (e) {
+          // A broken weight layer must not take the map down with it.
+          if (window.console) console.warn("olat: weight layer '" + layer.id +
+                                           "' not loaded (" + e.message + ")");
+        });
+    })).then(function () { });
+  };
+
   OlatRenderer.prototype._project = function () {
     var n = this.N, lon = this.coords.lon, lat = this.coords.lat;
     var u = new Float32Array(n), v = new Float32Array(n);
@@ -216,8 +267,14 @@
     this._imgTpl = dir ? dir.replace(/\/?$/, "/") + "{slug}.png" : null;
   };
   OlatRenderer.prototype._loadImage = function (slug) {
+    return this._loadChannelsFrom(slug, this._imgTpl);
+  };
+  // Fetch+decode one origin's channels from an explicit template (null = baseline).
+  // The cache is keyed by full URL, so a scenario's image and the baseline's for the
+  // same origin coexist -- which is what lets the stats line quote both at once.
+  OlatRenderer.prototype._loadChannelsFrom = function (slug, tpl) {
     var self = this;
-    var url = this._imgUrl(slug);
+    var url = this.base + (tpl || this.manifest.images).replace("{slug}", slug);
     if (this.cache[url]) return Promise.resolve(this.cache[url]);
     if (this.pending[url]) return this.pending[url];
     var p = fetch(url)
@@ -298,14 +355,17 @@
   };
 
   /* per-destination minutes for the current mode, from the composed channels */
+  OlatRenderer.prototype._composeTimes = function (ch, out) {
+    var N = this.N, R = ch.R, G = ch.G, B = ch.B;
+    if (!out) out = new Uint8Array(N);
+    if (this.ebike && this.car) { for (var i = 0; i < N; i++) out[i] = G[i] < B[i] ? G[i] : B[i]; }
+    else if (this.ebike) { out.set(G); }
+    else if (this.car) { out.set(B); }
+    else { out.set(R); }
+    return out;
+  };
   OlatRenderer.prototype._recompute = function () {
-    var ch = this._ch, N = this.N;
-    var t = this._times || (this._times = new Uint8Array(N));
-    var R = ch.R, G = ch.G, B = ch.B;
-    if (this.ebike && this.car) { for (var i = 0; i < N; i++) t[i] = G[i] < B[i] ? G[i] : B[i]; }
-    else if (this.ebike) { t.set(G); }
-    else if (this.car) { t.set(B); }
-    else { t.set(R); }
+    this._times = this._composeTimes(this._ch, this._times || new Uint8Array(this.N));
   };
 
   /* ---- colour LUTs ------------------------------------------------------- */
@@ -674,6 +734,36 @@
     for (var i = 0; i < N; i++) if (t[i] <= minutes) c++;
     return { count: c, pct: c / N * 100 };
   };
+  /* ---- opportunity access ------------------------------------------------
+     jobsWithin(T) = sum of the weight vector over destinations reachable in <= T
+     minutes on the CURRENT mode and CURRENT network. Unreachable destinations
+     carry the sentinel (120), so any threshold below it excludes them naturally.
+     Returns null when no weight layer is loaded, so callers can simply omit the
+     clause. */
+  OlatRenderer.prototype._sumWeights = function (times, minutes, id) {
+    var w = this.weights[id || "jobs"], meta = this.weightMeta[id || "jobs"];
+    if (!w || !times) return null;
+    var N = this.N, s = 0;
+    for (var i = 0; i < N; i++) if (times[i] <= minutes) s += w[i];
+    return { sum: s, total: meta.total, pct: meta.total ? s / meta.total * 100 : null,
+             meta: meta };
+  };
+  OlatRenderer.prototype.opportunityWithin = function (minutes, id) {
+    return this._sumWeights(this._times, minutes, id);
+  };
+  /* Same figure on the BASELINE network for the current origin and mode -- the
+     "step-free costs you X" comparison. Resolves to null when the baseline is
+     already what is on screen, or when the extra image cannot be fetched. */
+  OlatRenderer.prototype.baselineOpportunityWithin = function (minutes, id) {
+    if (!this._imgTpl || !this.origin) return Promise.resolve(null);
+    var self = this;
+    return this._loadChannelsFrom(this.origin.slug, null).then(function (ch) {
+      var t = self._composeTimes(ch, self._baseTimes ||
+                                     (self._baseTimes = new Uint8Array(self.N)));
+      return self._sumWeights(t, minutes, id);
+    }).catch(function () { return null; });
+  };
+
   OlatRenderer.prototype.reachableCount = function () {
     var t = this._times, N = this.N, sent = this.sentinel, c = 0;
     for (var i = 0; i < N; i++) if (t[i] < sent) c++;

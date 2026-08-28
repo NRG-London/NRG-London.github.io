@@ -78,12 +78,15 @@
       </thead>
       <tbody id="ngbus-body">
         {{- range $i, $r := $worst }}
-        <tr>
+        {{- /* The whole row navigates, wired up by ngbus-table.js. The anchor
+               below stays the real link — it is what a keyboard and a screen
+               reader use, and it is what works with no JavaScript at all. */ -}}
+        <tr data-href="/bus/{{ lower $r.route }}/">
           <td class="ngbus-rank">{{ add $i 1 }}</td>
           <td class="ngbus-route">
             <a href="/bus/{{ lower $r.route }}/">{{ $r.route }}</a>
             {{- with $r.termini }}
-            <span class="ngbus-route__where">{{ delimit (apply . "index" "." "name") " ↔ " }}</span>
+            <span class="ngbus-route__where">{{ delimit (apply (apply . "index" "." "name") "partial" "bus-place.html" ".") " ↔ " }}</span>
             {{- end }}
           </td>
           <td class="ngbus-metric ngbus-metric--lead">
@@ -133,7 +136,9 @@
   {{- $payload := slice -}}
   {{- range $all -}}
     {{- $where := "" -}}
-    {{- with .termini }}{{ $where = delimit (apply . "index" "." "name") " ↔ " }}{{ end -}}
+    {{- /* Cleaned here, so the JSON handed to ngbus-table.js never carries TfL's
+           interchange markup and no JavaScript has to know about it. */ -}}
+    {{- with .termini }}{{ $where = delimit (apply (apply . "index" "." "name") "partial" "bus-place.html" ".") " ↔ " }}{{ end -}}
     {{- $payload = $payload | append (dict
         "r" .route "e" .ewt_min "p" .p_wait_gt10 "d" .delta
         "f" .delta_from "c" .coverage "s" .spark "w" $where) -}}
@@ -145,4 +150,4 @@
 </div>
 
 {{- partial "bus-assets.html" . }}
-<script src="/js/ngbus-table.js?v=1" defer></script>
+<script src="/js/ngbus-table.js?v=2" defer></script>

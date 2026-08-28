@@ -9,5 +9,9 @@
 */ -}}
 {{- if not (.Page.Scratch.Get "ngbusAssets") -}}
   {{- .Page.Scratch.Set "ngbusAssets" true }}
-<link rel="stylesheet" href="/css/ngbus.css?v=1">
+<link rel="stylesheet" href="/css/ngbus.css?v=6">
+{{- /* Purely additive: the bus is already drawn and coloured by the CSS. This
+       only starts the entry animation and strips it again when it finishes.
+       See ngbus-bus.js for why that separation exists. */}}
+<script src="/js/ngbus-bus.js?v=2" defer></script>
 {{- end -}}

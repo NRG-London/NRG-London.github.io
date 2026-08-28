@@ -51,20 +51,141 @@
 
 
 /* ── THE BUS ───────────────────────────────────────────────────────────────
-   Both plates are filtered (grain on the red, displacement wobble on the ink),
-   and a filtered subtree re-rasterises whenever anything inside it moves. So
-   the slide is on the <svg> itself — one composited layer, filters rasterised
-   once — and the red plate only ever changes opacity. Nothing inside a filtered
-   group is animated. Moving the plate's transform instead cost ~7x the frame
-   time on a mid-range laptop.
+   Both plates are filtered (fractal-noise grain on the red, a displacement
+   wobble on the ink), and a filtered subtree re-rasterises whenever anything
+   inside it moves. So the slide is on the <svg> itself and the red plate only
+   ever changes opacity. Nothing inside a filtered group is animated; moving the
+   plate's transform instead cost ~7x the frame time on a mid-range laptop.
+
+   THE WIREFRAME BUG, and why the animation is built the way it is now
+   ------------------------------------------------------------------
+   The first version sometimes finished with no red at all — an ink-line bus
+   that stayed that way until you scrolled, then popped into colour. Two things
+   made that possible, and both are designed out:
+
+   1. The resting state depended on the animation. `animation-fill-mode: both`
+      holds the final keyframe, so "red is visible" was a property of a
+      COMPLETED animation rather than of the element. Anything that stopped the
+      animation reaching its end left the plate at `opacity: 0`.
+   2. `will-change: transform` promoted the <svg> to its own compositor layer
+      for the life of the page. Chrome intermittently fails to paint SVG filter
+      output into a freshly promoted layer; the content stays blank until
+      something forces a repaint. Scrolling forces a repaint — which is exactly
+      the symptom that was reported.
+
+   So: the red plate is opaque in plain CSS, always, and `will-change` is gone.
+   `backwards` fill means the keyframes can only ever hide something DURING the
+   run; the moment it ends the element falls back to its own CSS. The wireframe
+   state is unreachable except in the first 360ms of a run.
+
+   AND THE ANIMATION STARTS FROM CSS, NOT FROM SCRIPT
+   -------------------------------------------------
+   An earlier version had JavaScript add an `is-running` class once the bus
+   scrolled into view. That reintroduced a different visible fault: CSS painted
+   the bus at rest, then the class arrived a frame or two later, `backwards`
+   fill snapped it off-stage, and it drove in again. The bus appeared, vanished
+   and re-entered.
+
+   Declaring the animation here means the very first painted frame is already
+   the first frame of the run — there is no settled state to flash. The script
+   is now only a tidy-up: it strips the class once the run is over so nothing
+   animation-shaped is left on the element. It has nothing to arm, so a browser
+   that never loads it still sees the whole animation and still ends correct.
    ------------------------------------------------------------------------- */
 
 .ngbus-bus {
+  /* The motion, in one place. `/labs/bus/` overrides exactly these to field-test
+     alternatives, so whatever wins there ports back as four numbers. */
+  /* Variant D from /labs/bus/, chosen 28 Aug. The bus starts a length and a half
+     outside the stage and brakes at the stop. The first version travelled 7% of
+     its own width inside a box that never clipped it, so there was nothing for
+     it to arrive from — the note every tester gave, and the reason these numbers
+     are as large as they are. */
+  --bus-travel: -150%;        /* how far left it starts, as a share of its width */
+  --bus-scale-from: 1;        /* <1 grows into place; D does not use it */
+  --bus-duration: 1250ms;
+  --bus-delay: 0ms;           /* set when something else has to happen first */
+  --bus-plate-delay: 360ms;   /* how late the red plate lands */
+  --bus-plate-duration: 420ms;
+  /* Fast in, then settles hard — something with brakes rather than a glide. */
+  --bus-ease: cubic-bezier(0.16, 0.84, 0.28, 1);
+
   display: block;
   width: 100%;
   height: auto;
   overflow: visible;
 }
+
+/* ── THE STAGE: a bus pulling up at a stop ─────────────────────────────────
+   The stop is scenery and never moves. It is the fixed thing that makes the
+   moving thing read as an arrival.
+
+   The clipping at the left edge is not tidying-up, it IS the effect: the bus
+   begins a length and a half outside the stage and drives in.
+
+   Widths are shares of the stage, and both SVGs are drawn at the SAME scale
+   because the stop's width is set to 160/420 of the bus's — 160 and 420 being
+   their viewBox widths. Bottom-aligning then lines the two painted roads up,
+   because bus-stop.html pads its viewBox to give the stop the same footroom the
+   bus has. Change the bus's 78% and the stop follows automatically.
+   ------------------------------------------------------------------------- */
+
+.ngbus-stage {
+  position: relative;
+  /* One number governs the pair. The stop derives from it, so they cannot drift
+     out of scale — and the total has to stay under 100% or the stop runs off the
+     right-hand edge and the stage's own overflow:hidden crops its flag. */
+  --stage-bus: 82%;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+.ngbus-stage .ngbus-bus { flex: 0 0 auto; width: var(--stage-bus); }
+.ngbus-stage .ngbus-stop {
+  flex: 0 0 auto;
+  width: calc(var(--stage-bus) * 160 / 420);
+  /* Negative on purpose. The stop's flag occupies only x=52-108 of its 160-unit
+     canvas, so most of its box is empty air; laid out honestly the bus would
+     halt a third of a bus-length short of the flag. Pulling it back puts the
+     flag just ahead of the bus's front, where a real one stands. The two road
+     lines overlap into one continuous road, which is the other reason this
+     works rather than merely fits.
+
+     The two numbers are tied: the gap between the bus's front and the flag is
+     0.172 x --stage-bus + this margin, so raising the bus size without pulling
+     the margin down opens the gap again. At 82% and -10% the gap is ~4% of the
+     stage and the flag's right edge lands at ~93%, which fills the column
+     without touching the edge. */
+  margin-left: -10%;
+  display: block;
+  height: auto;
+}
+.ngbus-stage--nostop .ngbus-bus { width: 100%; }
+
+/* Each drawing's own road, suppressed when it is standing on the stage's. */
+.ngbus-stage .ngbus-road { display: none; }
+
+.ngbus-stage__road {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  /* The road sits 20 units above the bottom of the bus's 420-wide viewBox, and
+     one unit is (--stage-bus / 420) of the stage's WIDTH. A percentage padding
+     resolves against the containing block's width — which is the reference
+     needed here, and the reason this is padding rather than height. The box is
+     40 units deep so the line can sit at its middle. */
+  padding-bottom: calc(var(--stage-bus) * 40 / 420);
+  pointer-events: none;
+}
+.ngbus-stage__road svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* The stop is scenery: fully drawn in plain CSS, never waiting on a script. */
+.ngbus-stop__red { opacity: 0.92; }
 
 .ngbus-bus__blind {
   font-family: var(--sans, 'DM Sans', system-ui, sans-serif);
@@ -72,33 +193,39 @@
   letter-spacing: 0.06em;
 }
 
+/* The resting state, owned by plain CSS and never by an animation. */
+.ngbus-bus__red { opacity: 0.92; }
+
 @keyframes ngbus-pull-in {
-  from { transform: translate3d(-7%, 0, 0); }
-  to   { transform: translate3d(0, 0, 0); }
+  from { transform: translate3d(var(--bus-travel), 0, 0) scale(var(--bus-scale-from)); }
+  to   { transform: translate3d(0, 0, 0) scale(1); }
 }
 @keyframes ngbus-plate-down {
   from { opacity: 0; }
-  to   { opacity: 0.92; }
+  /* No `to`: the element's own 0.92 is the end state, so the keyframes cannot
+     become the only thing keeping the plate visible. */
 }
 
-.ngbus-bus__red { opacity: 0.92; }
-
-.ngbus-bus--animate {
-  /* Slightly overshooting ease-out: the bus arrives and settles, rather than
-     gliding to a mathematical stop. */
-  animation: ngbus-pull-in 900ms cubic-bezier(0.22, 0.9, 0.3, 1.02) both;
-  will-change: transform;
+.ngbus-bus--anim {
+  animation: ngbus-pull-in var(--bus-duration) var(--bus-ease) var(--bus-delay) backwards;
+  /* No will-change. An active transform animation gets composited on its own
+     anyway, transiently; the persistent hint was what let the filter raster go
+     missing. */
 }
-.ngbus-bus--animate .ngbus-bus__red {
+.ngbus-bus--anim .ngbus-bus__red {
   /* The red plate lands a beat after the ink. That lag is the whole screenprint
-     gag, and 220ms is about where it reads as a second pass rather than a bug. */
-  animation: ngbus-plate-down 420ms ease-out 220ms both;
+     gag, and 220ms is about where it reads as a second pass rather than a bug.
+     `backwards`, not `both`: the from-state applies during the delay only, and
+     afterwards the plate falls back to its own opacity rather than to a value
+     the animation has to survive long enough to set. */
+  animation: ngbus-plate-down var(--bus-plate-duration) ease-out var(--bus-plate-delay) backwards;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ngbus-bus--animate,
-  .ngbus-bus--animate .ngbus-bus__red { animation: none; }
-  .ngbus-bus--animate .ngbus-bus__red { opacity: 0.92; }
+  /* No fill to unwind: with `backwards`, an animation that never runs leaves the
+     element exactly as the rules above drew it. */
+  .ngbus-bus--anim,
+  .ngbus-bus--anim .ngbus-bus__red { animation: none; }
 }
 
 
@@ -281,6 +408,10 @@
 .ngbus-table thead th[aria-sort="ascending"] button::after { content: " \25B4"; }
 
 .ngbus-table tbody tr:hover { background: var(--blue-light, #E2EEF7); }
+/* The whole row navigates (see ngbus-table.js). Three testers out of three
+   tried to click the row rather than the route number, so the hover highlight
+   was promising something only the link delivered. */
+.ngbus-table tbody tr[data-href] { cursor: pointer; }
 .ngbus-table tbody tr:last-child td { border-bottom: 0; }
 
 .ngbus-rank { color: var(--mid-grey, #8a9490); width: 2.5rem; }

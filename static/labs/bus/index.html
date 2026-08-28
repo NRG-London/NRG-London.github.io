@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Bus animation tests — NeilGarratt.com labs</title>
+
+<!--
+  A workbench, not a page. Lives in static/ so it bypasses Hugo entirely, the
+  same arrangement as /labs/crime/ and /labs/morph/.
+
+  It loads the REAL production stylesheet and the REAL production starter
+  script, so the first run of every bus below is the code that would ship. Each
+  variant overrides only the custom properties the production CSS already
+  exposes — --bus-travel, --bus-scale-from, --bus-duration, --bus-delay and the
+  two plate values. Whatever wins ports back as numbers, not as new code.
+
+  The bus stop is the exception twice over: it is a STAND-IN drawing, and its
+  entrances are prototyped here rather than in ngbus.css. If a stop wins, the
+  real one comes from the same Claude Design session that drew the buses and the
+  chosen entrance moves into production then.
+-->
+
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="/css/ngbus.css?v=3">
+
+<style>
+  body { padding: 2rem 1.25rem 5rem; }
+  .lab { max-width: 1100px; margin: 0 auto; }
+  .lab h1 { font-family: var(--serif); font-size: 2rem; line-height: 1.15; margin-bottom: 0.4rem; }
+  .lab .lede { color: var(--mid-grey); max-width: 46rem; margin-bottom: 1.5rem; font-size: 0.95rem; }
+  .lab .warn {
+    border-left: 3px solid var(--amber); padding: 0.6rem 0.9rem; margin-bottom: 1.75rem;
+    background: var(--white); font-size: 0.85rem; max-width: 46rem;
+  }
+  .lab h2.sec {
+    font-family: var(--serif); font-size: 1.35rem; margin: 2.5rem 0 0.3rem;
+    padding-top: 1.5rem; border-top: 1px solid var(--warm-grey);
+  }
+  .lab .sec-note { color: var(--mid-grey); font-size: 0.88rem; margin-bottom: 1.25rem; max-width: 46rem; }
+
+  .bar {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center;
+    padding: 0.7rem 0; margin-bottom: 1.5rem;
+    background: var(--paper); border-bottom: 1px solid var(--warm-grey);
+  }
+  .bar strong { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em;
+                color: var(--mid-grey); margin-right: 0.3rem; }
+
+  .grid { display: grid; gap: 1.5rem; align-items: start;
+          grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr)); }
+
+  .card {
+    border: 1px solid var(--warm-grey); border-radius: 6px;
+    background: var(--white); padding: 1.1rem 1.1rem 0.9rem;
+  }
+  .card h3 { font-size: 1.02rem; font-weight: 600; margin-bottom: 0.15rem; }
+  .card .why { font-size: 0.83rem; color: var(--mid-grey); margin-bottom: 0.8rem; min-height: 2.6em; }
+  .card .settings {
+    font-size: 0.72rem; color: var(--mid-grey); font-family: ui-monospace, Menlo, Consolas, monospace;
+    margin-top: 0.6rem; padding-top: 0.6rem; border-top: 1px solid var(--warm-grey);
+    white-space: pre-wrap; word-break: break-word;
+  }
+
+  /* The stage is what makes an arrival read as an arrival: without a clipping
+     edge the bus only ever shifts a little within its own box, which is the
+     note every tester gave. */
+  .stage {
+    position: relative; overflow: hidden;
+    display: flex; align-items: flex-end; gap: 0;
+    min-height: 90px;
+  }
+  .stage .ngbus-bus { flex: 0 0 auto; }
+  .stage.has-stop .ngbus-road { display: none; }
+  .stage__road {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding-bottom: calc(78% * 40 / 420);
+    pointer-events: none;
+  }
+  .stage__road svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+
+  /* The stop shares the bus's viewBox HEIGHT (280) but is 90 wide against the
+     bus's 420, so to draw at the same scale its width must be 90/420 of the
+     bus's. Sized by eye it came out a third too tall and floated above the road;
+     flex-end then lines the two ground lines up. */
+  .stop { flex: 0 0 auto; margin-left: 1.5%; align-self: flex-end; }
+
+  /* ── SECTION 1: how the bus arrives ─────────────────────────────────────
+     Nothing here but overrides of the production custom properties. */
+
+  /* A — exactly what is live now. */
+  #v-a .ngbus-bus { width: 100%; }
+
+  /* B — smaller, so the same journey is more of its own lengths. */
+  #v-b .ngbus-bus {
+    width: 62%;
+    --bus-travel: -160%;
+    --bus-duration: 1100ms;
+    --bus-plate-delay: 300ms;
+  }
+
+  /* C — full size, but genuinely off-stage to start. */
+  #v-c .ngbus-bus {
+    width: 100%;
+    --bus-travel: -118%;
+    --bus-duration: 1200ms;
+    --bus-plate-delay: 340ms;
+  }
+
+  /* D — pulls up at a stop that is simply already there. */
+  #v-d .ngbus-bus, .stop-demo .ngbus-bus {
+    width: 78%;
+    --bus-travel: -150%;
+    --bus-duration: 1250ms;
+    --bus-plate-delay: 360ms;
+    /* Eases in fast then settles hard, like something with brakes. */
+    --bus-ease: cubic-bezier(0.16, 0.84, 0.28, 1);
+  }
+  #v-d .stop { width: calc(78% * 160 / 420); margin-left: -9%; }
+
+  /* E — grows into place. */
+  #v-e .ngbus-bus {
+    width: 100%;
+    --bus-travel: -45%;
+    --bus-scale-from: 0.82;
+    --bus-duration: 1000ms;
+    --bus-plate-delay: 300ms;
+  }
+
+  /* F — the combination I would ship. */
+  #v-f .ngbus-bus {
+    width: 72%;
+    --bus-travel: -150%;
+    --bus-scale-from: 0.94;
+    --bus-duration: 1150ms;
+    --bus-plate-delay: 320ms;
+    --bus-plate-duration: 460ms;
+    --bus-ease: cubic-bezier(0.18, 0.82, 0.26, 1.015);
+  }
+
+  /* The stop is scenery: fully drawn in plain CSS, never waiting on a script.
+     Four animated entrances were tried and rejected — see the note in the page. */
+  .ngbus-stop { display: block; width: 100%; height: auto; }
+  .ngbus-stop__red { opacity: 0.92; }
+
+  /* Slow motion, for looking at the plate lag rather than feeling it. */
+  .slowmo .ngbus-bus--anim { animation-duration: calc(var(--bus-duration) * 4); }
+  .slowmo .ngbus-bus--anim .ngbus-bus__red {
+    animation-duration: calc(var(--bus-plate-duration) * 4);
+    animation-delay: calc(var(--bus-plate-delay) * 4);
+  }
+
+  /* Simulate the reduced-motion path without changing an OS setting. */
+  .force-still .ngbus-bus--anim,
+  .force-still .ngbus-bus--anim .ngbus-bus__red { animation: none !important; }
+</style>
+</head>
+<body>
+<div class="lab ngbus">
+
+  <h1>Bus animation tests</h1>
+  <p class="lede">Entries for the little bus, on the real production stylesheet.
+    Each one overrides only the motion variables the live CSS already exposes, so
+    picking a winner means copying numbers into <code>ngbus.css</code> — no new code.
+    Try them on a phone as well as a laptop; the note that the arrival is too small
+    came mostly from big screens.</p>
+
+  <p class="warn"><strong>The bus stop is a stand-in</strong> — drawn here to test
+    whether the idea works, not to be shipped. If a stop variant wins, the real one
+    comes from the same Claude Design session as the buses, in the same palette and
+    line weight, and the chosen entrance moves into production with it.</p>
+
+  <div class="bar">
+    <strong>All</strong>
+    <button type="button" class="ngbus-chip" id="replay-all">Replay all</button>
+    <button type="button" class="ngbus-chip" id="slowmo" aria-pressed="false">Slow motion ×4</button>
+    <button type="button" class="ngbus-chip" id="still" aria-pressed="false">Reduced motion</button>
+    <span class="ngbus-count">Each card replays on its own too.</span>
+  </div>
+
+  <h2 class="sec">1. How the bus arrives</h2>
+  <p class="sec-note">The thing your testers were reacting to: today the bus travels
+    7% of its own width inside a box that never clips it, so there is nothing for it
+    to arrive <em>from</em>. Everything below adds a clipping stage.</p>
+  <div class="grid" id="grid-bus"></div>
+
+  <h2 class="sec">2. How the stop appears</h2>
+  <p class="sec-note">Four entrances were tried here — the stop planting itself before
+    the bus, the sign popping on as the bus landed, the pole drawing up and the sign
+    dropping onto it. All rejected on 28 Aug in favour of a stop that is simply already
+    standing there. Street furniture that assembles itself in front of you is a joke
+    that works once, and these pages are meant to be revisited. Removed rather than
+    left here to rot; the CSS is in the git history if it is ever wanted again.</p>
+
+</div>
+
+<script src="/js/ngbus-bus.js?v=2"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ---- the bus, mirroring layouts/partials/bus-graphic.html ------------- */
+  function bus(uid, route, deck) {
+    var dd = deck !== 'single';
+    var vb = dd ? '0 0 420 280' : '0 0 420 200';
+    var defs =
+      '<defs>' +
+      '<filter id="lg-' + uid + '" x="-8%" y="-8%" width="116%" height="116%">' +
+        '<feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="4" result="t"/>' +
+        '<feColorMatrix in="t" type="saturate" values="0" result="tg"/>' +
+        '<feComponentTransfer in="tg" result="ta"><feFuncA type="linear" slope="0.5"/></feComponentTransfer>' +
+        '<feComposite in="ta" in2="SourceAlpha" operator="in" result="g"/>' +
+        '<feBlend in="SourceGraphic" in2="g" mode="multiply"/>' +
+      '</filter>' +
+      '<filter id="lw-' + uid + '" x="-8%" y="-8%" width="116%" height="116%">' +
+        '<feTurbulence type="fractalNoise" baseFrequency="0.016" numOctaves="2" seed="21" result="n"/>' +
+        '<feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/>' +
+      '</filter></defs>';
+
+    var body = dd
+      ? 'M26 232 L26 44 Q26 30 44 30 L384 30 Q400 30 400 46 L400 232 Z'
+      : 'M24 152 L24 40 Q24 24 42 24 L380 24 Q396 24 396 42 L396 152 Z';
+    var w1 = dd ? [108, 238, 26] : [98, 158, 25];
+    var w2 = dd ? [330, 238, 26] : [326, 158, 25];
+
+    var red = '<g class="ngbus-bus__red" transform="translate(-7 6)" filter="url(#lg-' + uid + ')">' +
+      '<path d="' + body + '" fill="var(--bus-red, #d6342c)"/>' +
+      '<circle cx="' + w1[0] + '" cy="' + (w1[1] + 2) + '" r="' + w1[2] + '" fill="var(--bus-red, #d6342c)"/>' +
+      '<circle cx="' + w2[0] + '" cy="' + (w2[1] + 2) + '" r="' + w2[2] + '" fill="var(--bus-red, #d6342c)"/></g>';
+
+    var windows = dd
+      ? '<rect x="42" y="48" width="48" height="52"/><rect x="98" y="48" width="48" height="52"/>' +
+        '<rect x="154" y="48" width="48" height="52"/><rect x="210" y="48" width="48" height="52"/>' +
+        '<rect x="272" y="56" width="112" height="44"/><rect x="42" y="128" width="48" height="50"/>' +
+        '<rect x="98" y="128" width="48" height="50"/><rect x="154" y="128" width="48" height="50"/>' +
+        '<rect x="300" y="128" width="84" height="54"/><rect x="212" y="124" width="46" height="102"/>'
+      : '<rect x="40" y="56" width="52" height="52"/><rect x="100" y="56" width="52" height="52"/>' +
+        '<rect x="160" y="56" width="52" height="52"/><rect x="300" y="58" width="84" height="50"/>' +
+        '<rect x="222" y="52" width="46" height="96"/>';
+
+    var blind = dd
+      ? '<rect x="272" y="36" width="112" height="16" fill="var(--ink, #1a2332)"/>' +
+        '<text class="ngbus-bus__blind" x="328" y="48" text-anchor="middle" font-size="11.5" stroke="none" fill="var(--paper, #f3f6f4)">' + route + '</text>'
+      : '<rect x="298" y="34" width="86" height="16" fill="var(--ink, #1a2332)"/>' +
+        '<text class="ngbus-bus__blind" x="341" y="46" text-anchor="middle" font-size="11.5" stroke="none" fill="var(--paper, #f3f6f4)">' + route + '</text>';
+
+    var detail = dd
+      ? '<line x1="235" y1="124" x2="235" y2="226"/><line x1="26" y1="114" x2="400" y2="114"/>' +
+        '<line x1="26" y1="204" x2="400" y2="204"/><circle cx="388" cy="212" r="7" fill="var(--paper, #f3f6f4)"/>' +
+        '<path d="M22 262 L404 258" stroke="var(--mid-grey, #8a9490)" stroke-width="2"/>'
+      : '<line x1="245" y1="52" x2="245" y2="148"/><line x1="24" y1="128" x2="396" y2="128"/>' +
+        '<circle cx="386" cy="136" r="7" fill="var(--paper, #f3f6f4)"/>' +
+        '<path d="M20 184 L404 180" stroke="var(--mid-grey, #8a9490)" stroke-width="2"/>';
+
+    var ink = '<g class="ngbus-bus__ink" filter="url(#lw-' + uid + ')" fill="none" ' +
+      'stroke="var(--ink, #1a2332)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">' +
+      '<circle cx="' + w1[0] + '" cy="' + w1[1] + '" r="' + w1[2] + '" fill="var(--paper, #f3f6f4)"/>' +
+      '<circle cx="' + w2[0] + '" cy="' + w2[1] + '" r="' + w2[2] + '" fill="var(--paper, #f3f6f4)"/>' +
+      '<circle cx="' + w1[0] + '" cy="' + w1[1] + '" r="9" fill="var(--ink, #1a2332)" stroke="none"/>' +
+      '<circle cx="' + w2[0] + '" cy="' + w2[1] + '" r="9" fill="var(--ink, #1a2332)" stroke="none"/>' +
+      '<path d="' + body + '"/><g fill="var(--paper, #f3f6f4)">' + windows + '</g>' + blind + detail + '</g>';
+
+    return '<svg class="ngbus-bus ngbus-bus--anim ngbus-bus--' + (dd ? 'double' : 'single') +
+      '" viewBox="' + vb + '" role="img" aria-label="Bus, route ' + route + '" focusable="false">' +
+      defs + red + ink + '</svg>';
+  }
+
+  /* ---- the bus stop, Neil's artwork -----------------------------------
+     From static/images/bus/bus-stop-screenprint.svg, same as the production
+     partial. Redrawn 28 Aug to stand 150 units tall against the double decker's
+     230, on a canvas whose road sits exactly where the bus's does — so no
+     padding is needed to put the two on one road. */
+  function stop(uid) {
+    return '<svg class="ngbus-stop" viewBox="0 0 160 280" role="presentation" aria-hidden="true" focusable="false">' +
+      '<defs>' +
+      '<filter id="lsg-' + uid + '" x="-8%" y="-8%" width="116%" height="116%">' +
+        '<feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="4" result="t"/>' +
+        '<feColorMatrix in="t" type="saturate" values="0" result="tg"/>' +
+        '<feComponentTransfer in="tg" result="ta"><feFuncA type="linear" slope="0.5"/></feComponentTransfer>' +
+        '<feComposite in="ta" in2="SourceAlpha" operator="in" result="g"/>' +
+        '<feBlend in="SourceGraphic" in2="g" mode="multiply"/>' +
+      '</filter>' +
+      '<filter id="lsw-' + uid + '" x="-8%" y="-8%" width="116%" height="116%">' +
+        '<feTurbulence type="fractalNoise" baseFrequency="0.016" numOctaves="2" seed="21" result="n"/>' +
+        '<feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/>' +
+      '</filter></defs>' +
+      '<g class="ngbus-stop__red" transform="translate(-7 6)" filter="url(#lsg-' + uid + ')">' +
+        '<circle cx="80" cy="127" r="13" fill="var(--bus-red, #d6342c)"/>' +
+        '<rect x="60" y="160" width="40" height="34" fill="var(--bus-red, #d6342c)"/>' +
+      '</g>' +
+      '<g class="ngbus-stop__ink" filter="url(#lsw-' + uid + ')" fill="none" ' +
+        'stroke="var(--ink, #1a2332)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">' +
+        '<rect x="77" y="144" width="6" height="17" fill="var(--paper, #f3f6f4)"/>' +
+        '<rect x="77" y="193" width="6" height="61" fill="var(--paper, #f3f6f4)"/>' +
+        '<rect x="66" y="254" width="28" height="7" fill="var(--paper, #f3f6f4)"/>' +
+        '<rect x="52" y="110" width="56" height="34"/>' +
+        '<circle cx="80" cy="127" r="13"/>' +
+        '<rect x="64" y="122" width="32" height="9" fill="var(--paper, #f3f6f4)"/>' +
+        '<rect x="60" y="160" width="40" height="34"/>' +
+        '<line x1="67" y1="171" x2="93" y2="171" stroke-width="2"/>' +
+        '<line x1="67" y1="182" x2="86" y2="182" stroke-width="2"/>' +
+        '<path d="M8 262 L152 258" stroke="var(--mid-grey, #8a9490)" stroke-width="2"/>' +
+      '</g></svg>';
+  }
+
+  /* The stage's own road, as shipped: the bus and the stop each carry one in the
+     source artwork, and side by side those two lines meet at slightly different
+     heights and slopes — a seam under the front of the bus. In a stage both are
+     hidden and this is drawn across the whole width instead. */
+  var ROAD = '<div class="stage__road" aria-hidden="true">' +
+    '<svg viewBox="0 0 420 40" preserveAspectRatio="none" focusable="false">' +
+    '<path d="M6 23.4 L74 22.6 L142 23.2 L210 21.4 L278 20.4 L346 18.5 L414 17.4" ' +
+    'fill="none" stroke="var(--mid-grey, #8a9490)" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round"/></svg></div>';
+
+  /* ---- section 1: the bus ----------------------------------------------- */
+  var BUS_VARIANTS = [
+    { id: 'a', name: 'A — As it is now', route: '157', deck: 'double',
+      why: 'The baseline. Travels 7% of its own width inside an unclipped box, so there is nothing for it to arrive from.',
+      settings: '--bus-travel: -7%   --bus-duration: 900ms   width: 100%' },
+    { id: 'b', name: 'B — Smaller, longer run', route: 'SL7', deck: 'double',
+      why: 'Roughly the same journey time, but the bus is 62% of the column, so it covers well over a bus-length. The suggestion from the testers who said it felt small.',
+      settings: '--bus-travel: -160%   --bus-duration: 1100ms   width: 62%' },
+    { id: 'c', name: 'C — Full size, off-stage start', route: '463', deck: 'single',
+      why: 'Unchanged size, but it begins entirely outside the frame and drives in. The most literal reading of "make it arrive".',
+      settings: '--bus-travel: -118%   --bus-duration: 1200ms   width: 100%' },
+    { id: 'd', name: 'D — Pulls up at a stop  ·  SHIPPED', route: '127', deck: 'double', stop: '',
+      why: 'Chosen 28 Aug and now live. Gives the arrival somewhere to arrive at, and a reason to stop where it stops. Braking ease rather than an overshoot. The stop never moves — it is the fixed thing that makes the moving thing read as arriving.',
+      settings: '--bus-travel: -150%   --bus-duration: 1250ms   --bus-plate-delay: 360ms   --bus-ease: cubic-bezier(.16,.84,.28,1)   bus 68% of stage, stop width derived from it' },
+    { id: 'e', name: 'E — Grows into place', route: 'N155', deck: 'double',
+      why: 'Shorter travel, but it scales up from 0.82 as it comes, so it reads as approaching rather than sliding.',
+      settings: '--bus-travel: -45%   --bus-scale-from: 0.82   --bus-duration: 1000ms' },
+    { id: 'f', name: 'F — The combination', route: '154', deck: 'double',
+      why: 'Smaller, a full run in from off-stage, and a barely-there scale so it settles into the frame rather than stopping dead. My pick of this section.',
+      settings: '--bus-travel: -150%   --bus-scale-from: 0.94   --bus-duration: 1150ms   width: 72%' }
+  ];
+
+  function card(v, kind) {
+    var stopMarkup = '';
+    if (kind === 'stop') stopMarkup = '<div class="stop">' + stop(v.id, v.mod) + '</div>';
+    else if (v.stop !== undefined) stopMarkup = '<div class="stop">' + stop(v.id, '') + '</div>';
+    return '<section class="card' + (kind === 'stop' ? ' stop-demo' : '') + '" id="v-' + v.id + '">' +
+      '<h3>' + v.name + '</h3>' +
+      '<p class="why">' + v.why + '</p>' +
+      '<div class="stage' + (v.stop !== undefined ? ' has-stop' : '') + '">' +
+        (v.stop !== undefined ? ROAD : '') +
+        bus(v.id, v.route, v.deck || 'double') + stopMarkup + '</div>' +
+      '<p style="margin-top:.6rem"><button type="button" class="ngbus-chip" data-replay="' + v.id + '">Replay</button></p>' +
+      '<div class="settings">' + v.settings + '</div>' +
+      '</section>';
+  }
+
+  document.getElementById('grid-bus').innerHTML =
+    BUS_VARIANTS.map(function (v) { return card(v, 'bus'); }).join('');
+
+  /* ---- running and replaying -------------------------------------------
+     The first run of every bus is the production path exactly: the animation is
+     declared in ngbus.css and starts on the first painted frame, and
+     ngbus-bus.js strips the class once it is over. Replaying therefore means
+     putting the class back and letting it run again. */
+
+  function replayCard(card) {
+    var bus = card.querySelector('.ngbus-bus');
+    if (!bus) return;
+    bus.classList.remove('ngbus-bus--anim');
+    void bus.getBoundingClientRect();          // force the removal to take effect
+    bus.classList.add('ngbus-bus--anim');
+    bus.addEventListener('animationend', function done(e) {
+      if (e.target !== bus || e.animationName !== 'ngbus-pull-in') return;
+      bus.removeEventListener('animationend', done);
+      bus.classList.remove('ngbus-bus--anim');
+    });
+  }
+
+  document.querySelectorAll('.grid').forEach(function (grid) {
+    grid.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-replay]');
+      if (b) replayCard(document.getElementById('v-' + b.dataset.replay));
+    });
+  });
+
+  document.getElementById('replay-all').addEventListener('click', function () {
+    document.querySelectorAll('.card').forEach(replayCard);
+  });
+
+  function toggle(id, cls) {
+    var btn = document.getElementById(id);
+    btn.addEventListener('click', function () {
+      var on = btn.getAttribute('aria-pressed') !== 'true';
+      btn.setAttribute('aria-pressed', String(on));
+      document.body.classList.toggle(cls, on);
+      document.querySelectorAll('.card').forEach(replayCard);
+    });
+  }
+  toggle('slowmo', 'slowmo');
+  toggle('still', 'force-still');
+
+})();
+</script>
+</body>
+</html>

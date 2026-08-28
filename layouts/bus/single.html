@@ -18,9 +18,8 @@
          number. */ -}}
   <div class="ngbus-hero">
     <figure class="ngbus-hero__figure">
-      {{ partial "bus-graphic.html" (dict
-          "deck" ($h.deck | default "double") "route" $route "id" $route
-          "class" "ngbus-bus--animate") }}
+      {{ partial "bus-stage.html" (dict
+          "deck" ($h.deck | default "double") "route" $route "id" $route) }}
       {{- with $h.vehicle_model }}
       {{- /* "Usually", not "always": vehicle_share says how much of the route's
              observed fleet this model is, and most routes run a mix. */ -}}
@@ -47,7 +46,7 @@
          average of both. */ -}}
   {{- $worst := 0.0 }}{{ $worstName := "" -}}
   {{- range $row.termini }}
-    {{- if and .p_wait_gt10 (gt .p_wait_gt10 $worst) }}{{ $worst = .p_wait_gt10 }}{{ $worstName = .name }}{{ end }}
+    {{- if and .p_wait_gt10 (gt .p_wait_gt10 $worst) }}{{ $worst = .p_wait_gt10 }}{{ $worstName = partial "bus-place.html" .name }}{{ end }}
   {{- end }}
   {{- if gt $worst 0.0 }}
     {{- /* "one trip in four", not "one trip in 4": this is the one sentence on
@@ -67,7 +66,7 @@
   <div class="ngbus-termini">
     {{- range $row.termini }}
     <div class="ngbus-terminus">
-      <div class="ngbus-terminus__name">{{ .name }}</div>
+      <div class="ngbus-terminus__name">{{ partial "bus-place.html" .name }}</div>
       <dl>
         <dt>Excess wait</dt>
         <dd>{{ if .ewt_min }}{{ lang.FormatNumber 1 .ewt_min }} min{{ else }}<span class="ngbus-nd" title="Too little data this week">no data</span>{{ end }}</dd>
@@ -112,7 +111,7 @@
           <tr>
             <th scope="col">Week ending</th>
             {{- range $h.termini }}
-            <th scope="col">{{ .name }}</th>
+            <th scope="col">{{ partial "bus-place.html" .name }}</th>
             {{- end }}
           </tr>
         </thead>
@@ -170,7 +169,7 @@
       {{- $p = $p | append (cond $ok .p_wait_gt10 nil) -}}
       {{- $cov = $cov | append .coverage -}}
     {{- end -}}
-    {{- $series = $series | append (slice (dict "name" .name "ewt" $ewt "p" $p "coverage" $cov)) -}}
+    {{- $series = $series | append (slice (dict "name" (partial "bus-place.html" .name) "ewt" $ewt "p" $p "coverage" $cov)) -}}
   {{- end -}}
   <script type="application/json" id="ngbus-chart-data">{{ dict
       "route" $route "weeks" $w.weeks "holes" $w.holes "series" $series

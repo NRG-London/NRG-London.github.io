@@ -7,7 +7,8 @@
   an isochrone threshold, click-to-read, and reference map layers.
   Usage: {{< olat-explorer-v3 default="croydon" >}}
   Data:  data/olat_v3.json (borough shapes) + data/olat_centres.json (centres).
-  Assets: static/olat/{manifest.json,coords.bin,overlay.png,v/<slug>.png,ref-*.png}
+  Assets: static/olat/{manifest.json,coords.bin,overlay.png,v/<slug>.png,ref-*.png,
+          weights/<layer>.bin}
   Script: static/js/olat-renderer.js + static/js/olat-explorer-v3.js
   NB: ?v=N on assets is a manual cache-buster; bump it whenever an asset changes.
 */ -}}
@@ -97,6 +98,7 @@
       <button type="button" class="olat-mode-toggle olat3-layer" data-layer="map" aria-pressed="false">Map</button>
       <button type="button" class="olat-mode-toggle olat3-layer" data-layer="stations" aria-pressed="false">Stations</button>
       <button type="button" class="olat-mode-toggle olat3-layer" data-layer="carownership" aria-pressed="false" title="Average cars or vans per household, Census 2021, TS045 at LSOA level.">Car ownership</button>
+      <button type="button" class="olat-mode-toggle olat3-layer" data-layer="jobs" aria-pressed="false" title="Workplace jobs per hectare, BRES 2024 at LSOA level. Where the jobs counted by the &quot;jobs within 45 minutes&quot; figure actually are.">Jobs density</button>
       <label class="olat3-fade">
         <span class="olat3-fade-label">Fade</span>
         <input type="range" id="olat3-fade" min="15" max="100" step="5" value="70" disabled
@@ -107,6 +109,12 @@
         <div class="olat3-legend-bar"></div>
         <div class="olat3-legend-ticks"><span>0</span><span>0.5</span><span>1</span><span>1.5</span><span>2</span></div>
         <span class="olat3-legend-src">Census 2021 · TS045 · LSOA · OGL v3</span>
+      </div>
+      <div class="olat3-legend" id="olat3-legend-jobs" hidden aria-hidden="true">
+        <span class="olat3-legend-title">Jobs per hectare</span>
+        <div class="olat3-legend-bar is-jobs"></div>
+        <div class="olat3-legend-ticks"><span>0</span><span>3</span><span>16</span><span>71</span><span>300+</span></div>
+        <span class="olat3-legend-src">BRES 2024 · LSOA · ONS via Nomis · OGL v3</span>
       </div>
     </div>
   </details>
@@ -123,6 +131,7 @@
       <img class="olat3-ref" id="olat3-ref-rail" data-src="/olat/ref-rail.png?v=5" alt="" hidden>
       <img class="olat3-ref" id="olat3-ref-stations" data-src="/olat/ref-stations.png?v=5" alt="" hidden>
       <img class="olat3-ref" id="olat3-ref-carownership" data-src="/olat/ref-carownership.png?v=1" alt="" hidden>
+      <img class="olat3-ref" id="olat3-ref-jobs" data-src="/olat/ref-jobs.png?v=1" alt="" hidden>
     </div>
     <svg viewBox="{{ delimit $olat.viewBox " " }}" preserveAspectRatio="none"
          xmlns="http://www.w3.org/2000/svg" aria-hidden="false" role="group"

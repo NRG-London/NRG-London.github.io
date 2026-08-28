@@ -1,0 +1,76 @@
+{{- /*
+  bus-stop — the screenprint bus stop, inline SVG.
+
+  Neil's artwork, from `static/images/bus/bus-stop-screenprint.svg`, reproduced
+  as a template for the same two reasons the bus is: the filter ids have to be
+  unique per instance, and the two print plates have to be addressable.
+
+  It is scenery. It does not animate — the bus arrives at it, and something that
+  is already standing there is what makes the arrival read as an arrival.
+
+  Drawn to sit beside the buses: 150 units tall against the double decker's 230,
+  which is about the 2.8m-flag-to-4.4m-bus ratio of the real thing, at the same
+  2.6 stroke weight. The first version was drawn as a standalone illustration and
+  stood 20% TALLER than a double decker, with a roundel the size of a bus wheel.
+  Scaling that down in CSS would have thinned its ink and broken the one thing
+  that makes the set look like a set, so it was redrawn instead.
+
+  GROUND-LINE ALIGNMENT
+  ---------------------
+  The bus and the stop are separate SVGs sat side by side and bottom-aligned, so
+  their painted roads only meet if each sits the same distance above the bottom
+  of its own viewBox:
+
+      double decker   road ~260 of 280   ->  20 units of space below it
+      single decker   road ~182 of 200   ->  18 units
+      stop            road ~260 of 280   ->  20 units
+
+  The stop now matches the double decker exactly, so it needs no adjustment
+  there. Beside a single decker it is trimmed by two units, which is the whole
+  reason this is a template and not an <img>.
+
+  Params:
+    deck   "double" | "single"  — which bus it is standing beside (default double)
+    id     unique suffix for the filter ids
+*/ -}}
+
+{{- $deck := (.deck | default "double") -}}
+{{- $uid := (.id | default "stop") | urlize -}}
+{{- $h := cond (eq $deck "single") 278 280 -}}
+
+<svg class="ngbus-stop" viewBox="0 0 160 {{ $h }}" role="presentation" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="ngstop-grain-{{ $uid }}" x="-8%" y="-8%" width="116%" height="116%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="4" result="t"/>
+      <feColorMatrix in="t" type="saturate" values="0" result="tg"/>
+      <feComponentTransfer in="tg" result="ta"><feFuncA type="linear" slope="0.5"/></feComponentTransfer>
+      <feComposite in="ta" in2="SourceAlpha" operator="in" result="g"/>
+      <feBlend in="SourceGraphic" in2="g" mode="multiply"/>
+    </filter>
+    <filter id="ngstop-wobble-{{ $uid }}" x="-8%" y="-8%" width="116%" height="116%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.016" numOctaves="2" seed="21" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+
+  {{- /* the red plate, printed a fraction off register */}}
+  <g class="ngbus-stop__red" transform="translate(-7 6)" filter="url(#ngstop-grain-{{ $uid }})">
+    <circle cx="80" cy="127" r="13" fill="var(--bus-red, #d6342c)"/>
+    <rect x="60" y="160" width="40" height="34" fill="var(--bus-red, #d6342c)"/>
+  </g>
+
+  {{- /* the ink plate */}}
+  <g class="ngbus-stop__ink" filter="url(#ngstop-wobble-{{ $uid }})" fill="none"
+     stroke="var(--ink, #1a2332)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="77" y="144" width="6" height="17" fill="var(--paper, #f3f6f4)"/>
+    <rect x="77" y="193" width="6" height="61" fill="var(--paper, #f3f6f4)"/>
+    <rect x="66" y="254" width="28" height="7" fill="var(--paper, #f3f6f4)"/>
+    <rect x="52" y="110" width="56" height="34"/>
+    <circle cx="80" cy="127" r="13"/>
+    <rect x="64" y="122" width="32" height="9" fill="var(--paper, #f3f6f4)"/>
+    <rect x="60" y="160" width="40" height="34"/>
+    <line x1="67" y1="171" x2="93" y2="171" stroke-width="2"/>
+    <line x1="67" y1="182" x2="86" y2="182" stroke-width="2"/>
+    <path class="ngbus-road" d="M8 262 L152 258" stroke="var(--mid-grey, #8a9490)" stroke-width="2"/>
+  </g>
+</svg>

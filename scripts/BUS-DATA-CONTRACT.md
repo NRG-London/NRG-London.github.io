@@ -1,4 +1,4 @@
-# Bus performance data contract — v0.3
+# Bus performance data contract — v0.4
 
 **What the website expects, so the pipeline in `E:\Road Data` can write it.**
 Written 27 Aug 2026 by the front-end build, against the draft contract in that
@@ -64,6 +64,41 @@ permanently unmeasured.
 
 **Once the weekly sweep emits `deck`, `vehicle_model`, `service_class` and
 `termini` itself, this file and its exporter retire.**
+
+## Headway routes and timetabled routes are two different measurements
+
+**Excess wait time only means anything on a high-frequency route.** Where buses
+run every 20 minutes or less, a rider turns up and waits, and EWT is the right
+number. Where they run to a published timetable — the S4 and its like — a rider
+consults the timetable and turns up for a departure, and the question is not
+"how long did I wait" but "did it go when it said it would". The right metric
+there is on-time percentage against the timetable.
+
+This is not a refinement to file for later. It is currently visible on the live
+page: 30 routes report a **negative** excess wait, down to −3.75 minutes on the
+166, all at 98% coverage. A negative EWT is EWT being computed on a population it
+does not describe, and because the league table sorts on it, "shortest waits"
+currently ranks the routes where the metric applies least.
+
+What the front end needs, once the backend separates them:
+
+```jsonc
+{
+  "route": "S4",
+  "frequency_type": "timetabled",   // "headway" | "timetabled"
+  "ewt_min": null,                  // null on a timetabled route, NOT computed
+  "p_wait_gt10": null,
+  "on_time_pct": 0.86,              // the timetabled equivalent
+  "on_time_window": "-1 to +5 min"  // what "on time" counted as
+}
+```
+
+Given `frequency_type`, the page can rank the two populations separately rather
+than pretending one number covers both, and a timetabled route's page can lead
+with punctuality instead of a wait it cannot honestly quote. Until the field
+exists the front end has no way to tell the two apart, so it shows what it is
+given — which is the right behaviour, and the reason the problem is visible at
+all.
 
 ## Seven changes from the draft in HANDOVER-bus-website.md
 

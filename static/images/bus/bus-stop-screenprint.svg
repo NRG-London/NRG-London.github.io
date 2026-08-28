@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 280" width="160" height="280" role="img" aria-label="Bus stop, screenprint style">
+  <title>Bus stop flag and timetable — off-register screenprint</title>
+  <defs>
+    <filter id="ngstop-grain" x="-8%" y="-8%" width="116%" height="116%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="4" result="t"></feTurbulence>
+      <feColorMatrix in="t" type="saturate" values="0" result="tg"></feColorMatrix>
+      <feComponentTransfer in="tg" result="ta"><feFuncA type="linear" slope="0.5"></feFuncA></feComponentTransfer>
+      <feComposite in="ta" in2="SourceAlpha" operator="in" result="g"></feComposite>
+      <feBlend in="SourceGraphic" in2="g" mode="multiply"></feBlend>
+    </filter>
+    <filter id="ngstop-wobble" x="-8%" y="-8%" width="116%" height="116%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.016" numOctaves="2" seed="21" result="n"></feTurbulence>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap>
+    </filter>
+  </defs>
+
+  
+  <g transform="translate(-7 6)" filter="url(#ngstop-grain)" opacity="0.92">
+    <circle cx="80" cy="127" r="13" fill="#d6342c"></circle>
+    <rect x="60" y="160" width="40" height="34" fill="#d6342c"></rect>
+  </g>
+
+  
+  <g filter="url(#ngstop-wobble)" fill="none" stroke="#1a2332" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="77" y="144" width="6" height="17" fill="#f3f6f4"></rect>
+    <rect x="77" y="193" width="6" height="61" fill="#f3f6f4"></rect>
+    <rect x="66" y="254" width="28" height="7" fill="#f3f6f4"></rect>
+    <rect x="52" y="110" width="56" height="34"></rect>
+    <circle cx="80" cy="127" r="13"></circle>
+    <rect x="64" y="122" width="32" height="9" fill="#f3f6f4"></rect>
+    <rect x="60" y="160" width="40" height="34"></rect>
+    <line x1="67" y1="171" x2="93" y2="171" stroke-width="2"></line>
+    <line x1="67" y1="182" x2="86" y2="182" stroke-width="2"></line>
+    <path d="M8 262 L152 258" stroke="#8a9490" stroke-width="2"></path>
+  </g>
+</svg>

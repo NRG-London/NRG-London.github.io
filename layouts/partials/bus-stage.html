@@ -1,0 +1,57 @@
+{{- /*
+  bus-stage — a bus pulling up at a stop.
+
+  The shipped arrangement, chosen from /labs/bus/ (variant D): the bus drives in
+  from off-stage and brakes beside a stop that is already standing there. The
+  stop never moves. It is the fixed thing that makes the moving thing read as
+  arriving — without it the bus was only sliding a little inside its own box,
+  which is what every tester noticed.
+
+  The stage clips at its left edge. That clipping IS the effect: the bus starts
+  a full length and a half outside it.
+
+  Params:
+    deck   "double" | "single"
+    route  route number for the destination blind; omit for a blank blind
+    id     unique suffix for the filter ids in both SVGs
+    stop   false to leave the stop out
+*/ -}}
+
+{{- $deck := (.deck | default "double") -}}
+{{- $id := (.id | default "hero") -}}
+{{- $withStop := ne (.stop | default true) false -}}
+
+<div class="ngbus-stage{{ if not $withStop }} ngbus-stage--nostop{{ end }}">
+  {{- if $withStop }}
+  {{- /* One road for the pair. The bus and the stop each carry their own in the
+         source artwork, and side by side those two lines meet at slightly
+         different heights and slopes — a visible seam under the front of the
+         bus. Inside a stage both are hidden and this one is drawn across the
+         whole width instead. It cannot live inside the bus's SVG: that one
+         drives in, and the road has to stay still. */ -}}
+  <div class="ngbus-stage__road" aria-hidden="true">
+    {{- /* Drawn with a little jitter rather than as a straight rule. The buses'
+           own roads get their unevenness from the displacement filter, which is
+           no use here: this box is stretched to the stage with
+           preserveAspectRatio="none", and a turbulence filter stretched that far
+           smears rather than wobbles. Six waypoints a unit either side of true
+           do the same job and survive any width.
+
+           No vector-effect: letting the stroke scale with the box lands it at
+           ~1.35px, which is what the buses' own 2-unit road drew at. Pinned at
+           2px it came out heavier than the 2.6-unit ink around it and read as a
+           printed rule rather than a pencil line. */ -}}
+    <svg viewBox="0 0 420 40" preserveAspectRatio="none" focusable="false">
+      <path d="M6 23.4 L74 22.6 L142 23.2 L210 21.4 L278 20.4 L346 18.5 L414 17.4"
+            fill="none" stroke="var(--mid-grey, #8a9490)" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  {{- end }}
+  {{ partial "bus-graphic.html" (dict
+      "deck" $deck "route" (.route | default "") "id" $id
+      "class" "ngbus-bus--anim") }}
+  {{- if $withStop }}
+  {{ partial "bus-stop.html" (dict "deck" $deck "id" $id) }}
+  {{- end }}
+</div>

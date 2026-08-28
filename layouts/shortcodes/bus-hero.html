@@ -27,9 +27,9 @@
 
 <div class="ngbus ngbus-hero">
   <figure class="ngbus-hero__figure">
-    {{ partial "bus-graphic.html" (dict
-        "deck" $deck "route" $route "id" (printf "hero-%s" (.Page.File.ContentBaseName | default "x"))
-        "class" "ngbus-bus--animate") }}
+    {{ partial "bus-stage.html" (dict
+        "deck" $deck "route" $route
+        "id" (printf "hero-%s" (.Page.File.ContentBaseName | default "x"))) }}
     {{- with $caption }}<figcaption class="ngbus-hero__caption">{{ . }}</figcaption>{{ end }}
   </figure>
   {{- if $stat }}
