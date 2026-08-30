@@ -1,0 +1,82 @@
+{{- /*
+  bus-hours — when in the day a route's journeys get cut short.
+
+  Renders `curtailment_detail.per_10_days_by_hour`: 24 values, each the number of
+  curtailments in that hour per 10 days the route was observed.
+
+  DRAWN PER DAY, NOT PER TEN DAYS, and that is the whole point of this comment.
+  The contract's unit is an analyst's normalisation, and putting it on the page
+  beside a four-week total meant the reader was holding two different units and
+  asked to reconcile them. Route 38 read "345 in four weeks" next to "peak 15.0
+  per 10 days" — and 345 over 28 days is 123 per 10 days, so the two looked
+  irreconcilable. They were not: 15.0 was the peak in a single HOUR, and the
+  label never said so. Every hour divided by ten gives journeys per hour on an
+  average day, and those bars now SUM TO the daily rate printed above the chart.
+  A reader can see twelve a day and watch the bars add up to twelve.
+
+  Server-rendered, like `bus-spark.html` and for the same reason: these numbers
+  are the point of the block, and a reader with no JavaScript should get them.
+  The figures are also listed underneath in the page, so this is the picture and
+  not the record.
+
+  An hour with `null` was not observed enough to say — shaded, never drawn as a
+  zero. An hour with 0.0 IS a measurement and draws as a flat baseline, which is
+  why every test below is against nil and not for truthiness: in Go templates
+  `if 0.0` is false, and "no curtailments in this hour" is the commonest and most
+  welcome reading on the whole page.
+
+  Params: values (24 slice, nulls allowed), label
+*/ -}}
+
+{{- $raw := .values -}}
+{{- $n := len $raw -}}
+
+{{- /* Per 10 days in the contract; per day on the page. */ -}}
+{{- $v := slice -}}
+{{- range $raw }}{{ $v = $v | append (cond (eq . nil) nil (div . 10.0)) }}{{ end -}}
+
+{{- $hi := 0.0 }}{{ $peakHour := 0 -}}
+{{- range $i, $y := $v }}{{ if and (ne $y nil) (gt $y $hi) }}{{ $hi = $y }}{{ $peakHour = $i }}{{ end }}{{ end -}}
+{{- if le $hi 0.0 }}{{ $hi = 1.0 }}{{ end -}}
+
+{{- $W := 480.0 }}{{ $H := 132.0 }}{{ $plot := 96.0 }}{{ $pad := 4.0 -}}
+{{- $step := div (sub $W (mul $pad 2)) (float $n) -}}
+{{- $bw := mul $step 0.66 -}}
+
+<svg class="ngbus-hours" viewBox="0 0 480 132" role="img"
+     aria-label="{{ .label | default "Curtailments by hour of day" }}" focusable="false">
+  {{- /* baseline */}}
+  <line class="ngbus-hours__base" x1="{{ $pad }}" y1="{{ $plot }}" x2="{{ sub $W $pad }}" y2="{{ $plot }}"/>
+
+  {{- range $i, $y := $v }}
+    {{- $x := add $pad (mul $step (float $i)) -}}
+    {{- $cx := add $x (div $step 2) -}}
+    {{- if eq $y nil }}
+  <rect class="ngbus-hours__gap" x="{{ printf "%.2f" $x }}" y="0"
+        width="{{ printf "%.2f" $step }}" height="{{ $plot }}"/>
+    {{- else }}
+      {{- $h := mul (div $y $hi) (sub $plot 6.0) -}}
+      {{- /* A measured zero still gets a mark, so the hour reads as counted
+             rather than as missing. */ -}}
+      {{- if lt $h 1.5 }}{{ $h = 1.5 }}{{ end }}
+  <rect class="ngbus-hours__bar" x="{{ printf "%.2f" (sub $cx (div $bw 2)) }}"
+        y="{{ printf "%.2f" (sub $plot $h) }}"
+        width="{{ printf "%.2f" $bw }}" height="{{ printf "%.2f" $h }}" rx="1"/>
+    {{- end }}
+    {{- if in (slice 0 6 12 18) $i }}
+      {{- /* Midnight's bar is half a step from the left edge, so a centred label
+             hangs off the viewBox and gets clipped. Anchor the first one to the
+             start instead of nudging every other label out of true. */ -}}
+      {{- $anchor := cond (eq $i 0) "start" "middle" -}}
+      {{- $lx := cond (eq $i 0) $pad $cx -}}
+  <text class="ngbus-hours__ax" x="{{ printf "%.2f" $lx }}" y="{{ add $plot 16 }}"
+        text-anchor="{{ $anchor }}">{{ printf "%02d:00" $i }}</text>
+    {{- end }}
+  {{- end }}
+
+  {{- /* Naming the hour as well as the height: "1.5 a day" alone leaves the
+         reader hunting along the axis for which bar it was. */ -}}
+  <text class="ngbus-hours__ax ngbus-hours__peak" x="{{ sub $W 8.0 }}" y="12" text-anchor="end">
+    busiest hour {{ printf "%02d:00" $peakHour }} — {{ lang.FormatNumber 1 $hi }} a day
+  </text>
+</svg>

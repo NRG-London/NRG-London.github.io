@@ -1,4 +1,4 @@
-# Bus performance data contract — v0.4
+# Bus performance data contract — v0.9
 
 **What the website expects, so the pipeline in `E:\Road Data` can write it.**
 Written 27 Aug 2026 by the front-end build, against the draft contract in that
@@ -23,6 +23,13 @@ hash guard to stop its publish clobbering the crime charts.
 Hugo `data/` files are read at build time and never copied into `public/`, so
 there is no public URL, no cache-buster to bump, and no runtime fetch. A data
 refresh is a page change: write the files, commit, push, CI rebuilds.
+
+**This is the right place and the cost is fine.** `data/bus` is 10.6 MB raw
+across 631 route files, and a weekly emit rewrites all of them — but JSON with
+repeated keys compresses about 13:1, so the whole directory is 0.8 MB packed and
+each emit costs at most that in history, less once git deltas it against the
+previous version. Against a `.git` already at 580 MB (the deck.gl bundles and
+map imagery), it is not the thing to worry about. No change needed.
 
 The route filename is the route as printed — `157.json`, `N155.json`, `X26.json`.
 Case is preserved in the data; the **page URL is lowercased by Hugo**
@@ -64,6 +71,127 @@ permanently unmeasured.
 
 **Once the weekly sweep emits `deck`, `vehicle_model`, `service_class` and
 `termini` itself, this file and its exporter retire.**
+
+## Gaps are permanent, and the page now has three treatments for them
+
+The source has been down for a month, for a single day (TfL sent BODS nothing),
+and for part of a day. That is not a run of bad luck to be waited out — it is
+what this data is like. The front end therefore distinguishes three states
+rather than two:
+
+| State | How it arrives | How it draws |
+|---|---|---|
+| **Nothing** | `null` metrics, `coverage` under `coverage_threshold` | "no data" in tables; the line breaks; never a zero |
+| **Thin** | metrics present, `coverage` under 0.9 | a pale column behind the plot, "thin" beside the figure in the weekly table, and the exact coverage in the chart tooltip |
+| **Declared outage** | the date range appears in `holes` | a stronger band, labelled "no data", plus a named note under the page |
+
+**39% of published week-cells in the live data sit between 0.6 and 0.98
+coverage**, so "thin" is the common case, not an edge one. A week resting on
+three days' watching plotted identically to a week resting on five was the
+weakest point on the page.
+
+**`holes` is now generated from the coverage masks — 24 entries and growing.**
+Granted in a stronger form than asked for. Two consequences the front end had to
+absorb, both worth knowing before touching this code:
+
+1. **A hole no longer means a missing week.** Nineteen of the twenty-four are
+   partial days — two or three hours gone from an otherwise ordinary Tuesday —
+   and the week they fall in publishes fine. The old chart banded any week that
+   touched a hole, which with the complete list blacked out **16 of 44 weeks on
+   the 157, several at 98% coverage**. The band now derives from coverage alone:
+   no terminus cleared the publish threshold that week. `holes` supplies the
+   *reason*, never the *verdict*.
+2. **Expect dozens, and rising.** They are a hover away on the chart — each week
+   names the gaps that touch it — and collected in a `<details>` under the page,
+   collapsed, one per line. As a running paragraph 24 of them took up half the
+   page height and answered a question nobody arrived with.
+
+`reason` is still printed verbatim, and the wording is doing real work: "no bus
+service on Christmas Day" reads as a fact about the network, where "gap in the
+volunteer BODS archive" reads as a fact about us. Keep that distinction.
+
+**The thin threshold stays at 0.9.** With coverage measured properly it now
+marks 6.8% of cells rather than 39%, and 52% sit at exactly 1.0. It is doing what
+it was meant to do — the earlier figure was measuring the old heuristic.
+
+## Curtailments — the front end is built and waiting
+
+Built 28 Aug against the additions relayed from the sweep, and dormant until the
+data carries them. Every part of it is conditional on the fields being present,
+so the pages render exactly as they do today until the first emit lands, and
+nothing needs deploying in step with it.
+
+**What the pages do with each field**
+
+| Field | Where it shows |
+|---|---|
+| `routes[].curtailment_rate` | a **Cut short** column in the league table, a sortable header, and a **Most cut short** view ranking by rate (not count, so a busy trunk route does not top the list for being busy) |
+| `routes[].curtailments` | the row's tooltip — "N journeys cut short in the week" |
+| `routes[].flags` containing `"curtailments"` | the figure is set in bold blue: these are the routes where curtailment is the notable thing, and the ones with a detail block |
+| `summary.curtailments_week` | a network line under the table |
+| `series[].curtailment_rate` | a third measure on the route timeline, beside excess wait and P(wait>10) |
+| `curtailment_detail` | a "Journeys cut short" block on the route page: the count, the hour profile as a 24-bar chart, and the turn-point stops |
+
+**The emit landed 28 Aug 23:23 and the pages read it correctly.** Recorded here
+because two details differed from the relay:
+
+* **`curtailment_detail.weeks` is the LIST of week-endings covered, not a count
+  of them.** Printing it produced a raw JSON array in the middle of a sentence.
+  The page now takes its length and names the span.
+* **Those weeks are not necessarily consecutive.** The 157's four are 28 Jun,
+  12 Jul, 19 Jul and 26 Jul — 5 Jul is missing. So the page says "four weeks of
+  observation, 28 June to 26 July" rather than "the last four weeks", which
+  would claim a run that was never watched.
+
+Point 1 below was honoured: 43 routes came through at exactly `0.0` and render
+"0.0%", 37 as `null` and render "no data". That distinction is working.
+
+**Units: the page converts, and says what it is showing**
+
+`per_10_days_by_hour` is an analyst's normalisation, and putting it on a page
+beside a four-week total gave the reader two units and no way to reconcile them.
+Route 38 read "345 in four weeks" next to "peak 15.0 per 10 days" — and 345 over
+28 days is 123 per 10 days, so the two looked impossible. They were not: 15.0 was
+the peak in a single HOUR and the label never said so.
+
+The field is unchanged and still wanted in that form. The page now divides by ten
+and draws **journeys per hour on an average day**, so the bars sum to a daily rate
+printed in the lead sentence — 345 in four weeks becomes "about 12 a day", the
+bars come to 12.4, and the busiest hour is labelled "13:00 — 1.5 a day". Nothing
+on the page is in a unit the reader has to convert.
+
+`turn_stops` is likewise a top five, covering between 52% and 100% of a route's
+total across the live data. Five counts that visibly fail to add up to the
+headline is the same species of puzzle, so the page states the remainder: "the
+other 22 turned round somewhere else along the route."
+
+**Four things the emit needs to get right**
+
+1. **`curtailment_rate` must be `0.0`, not `null`, when a route genuinely cut
+   nothing short.** The page draws a hard line between "none" and "not measured",
+   and that line is the whole ethic of these pages. In the fixture 235 of 631
+   routes sit at exactly 0.0 and render "0.0%"; 113 are null and render
+   "no data". If zero arrives as null, hundreds of well-run routes will be
+   reported as unmeasured.
+
+2. **`per_10_days_by_hour` must have exactly 24 entries**, one per hour from
+   00:00, with `null` for an hour with too little observation. A `null` is shaded
+   as unobserved; a `0.0` draws a minimum-height bar, so an hour with no
+   curtailments still reads as counted rather than missing.
+
+3. **`weekly.json`'s `week_ending` is not always the last entry in `weeks`.**
+   Today it is 2026-07-26 while the series runs to 2026-08-30 through the
+   outage — correct, and the pages handle it, but anything computing "this week"
+   must look the date up rather than take `series[-1]`. Doing exactly that
+   produced a fixture with no curtailments anywhere and cost half an hour.
+
+4. **`turn_stops[].name` may carry TfL's interchange markup** (`<>`, `#`, `>t<`,
+   `[dlr]`) — no action needed, the page strips it through `bus-place.html` like
+   every other stop name. Sending it raw is fine.
+
+**Not needed:** a per-terminus curtailment figure in `weekly.json`'s `termini[]`
+snapshot. The route page reads the time series for that, and the terminus cards
+stay about waiting.
 
 ## Headway routes and timetabled routes are two different measurements
 

@@ -4,6 +4,13 @@
 {{- $w := site.Data.bus.weekly -}}
 {{- $row := index (where $w.routes "route" $route) 0 -}}
 
+{{- /* Curtailments are an additive contract change. Everything about them on
+       this page is conditional on the data carrying them, so until the sweep
+       emits the fields the route page renders exactly as it did. Tested against
+       nil rather than for truth — nought is a real and common value. */ -}}
+{{- $anyCur := false -}}
+{{- range $h.termini }}{{ range .series }}{{ if ne .curtailment_rate nil }}{{ $anyCur = true }}{{ end }}{{ end }}{{ end -}}
+
 <div class="page-header">
   <a href="/campaigns/bus-performance/" class="back-link">&larr; All bus routes</a>
   <h1>{{ .Title }}</h1>
@@ -30,7 +37,7 @@
       </figcaption>
       {{- end }}
     </figure>
-    {{- if $row.ewt_min }}
+    {{- if ne $row.ewt_min nil }}
     <p class="ngbus-hero__stat">{{ lang.FormatNumber 1 $row.ewt_min }} min<small>excess wait
       in the week ending {{ dateFormat "2 January 2006" $w.week_ending }}, against a London
       middle of {{ lang.FormatNumber 1 $w.summary.median_ewt_min }} min.</small></p>
@@ -53,11 +60,7 @@
            the page written the way a person would say it out loud, and a
            numeral in the middle of it breaks that. Above ten, the numeral is
            the clearer form again. */ -}}
-    {{- $n := string (int (math.Round (div 1.0 $worst))) -}}
-    {{- /* dict keys must be strings in Hugo; an integer key is a build error. */ -}}
-    {{- $words := dict "2" "two" "3" "three" "4" "four" "5" "five" "6" "six"
-                       "7" "seven" "8" "eight" "9" "nine" "10" "ten" -}}
-    {{- $inN := or (index $words $n) $n -}}
+    {{- $inN := partial "bus-words.html" (math.Round (div 1.0 $worst)) -}}
   <p class="ngbus-strap">A passenger turning up at {{ $worstName }} without checking the
     times waits more than ten minutes on about
     {{ if lt $worst 0.5 }}one trip in {{ $inN }}{{ else }}{{ lang.FormatPercent 0 (mul $worst 100) }} of trips{{ end }}.</p>
@@ -69,13 +72,13 @@
       <div class="ngbus-terminus__name">{{ partial "bus-place.html" .name }}</div>
       <dl>
         <dt>Excess wait</dt>
-        <dd>{{ if .ewt_min }}{{ lang.FormatNumber 1 .ewt_min }} min{{ else }}<span class="ngbus-nd" title="Too little data this week">no data</span>{{ end }}</dd>
+        <dd>{{ if ne .ewt_min nil }}{{ lang.FormatNumber 1 .ewt_min }} min{{ else }}<span class="ngbus-nd" title="Too little data this week">no data</span>{{ end }}</dd>
         <dt>Wait &gt; 10 min</dt>
-        <dd>{{ if .p_wait_gt10 }}{{ lang.FormatPercent 0 (mul .p_wait_gt10 100) }}{{ else }}<span class="ngbus-nd" title="Too little data this week">no data</span>{{ end }}</dd>
+        <dd>{{ if ne .p_wait_gt10 nil }}{{ lang.FormatPercent 0 (mul .p_wait_gt10 100) }}{{ else }}<span class="ngbus-nd" title="Too little data this week">no data</span>{{ end }}</dd>
         <dt>Longest gap</dt>
-        <dd>{{ if .worst_gap_min }}{{ .worst_gap_min }} min{{ else }}<span class="ngbus-nd" title="Too little data this week">no data</span>{{ end }}</dd>
+        <dd>{{ if ne .worst_gap_min nil }}{{ .worst_gap_min }} min{{ else }}<span class="ngbus-nd" title="Too little data this week">no data</span>{{ end }}</dd>
         <dt>Departures seen</dt>
-        <dd>{{ if .departures }}{{ lang.FormatNumber 0 .departures }}{{ if .scheduled }} of {{ lang.FormatNumber 0 .scheduled }}{{ end }}{{ else }}<span class="ngbus-nd" title="Too little data this week">no data</span>{{ end }}</dd>
+        <dd>{{ if ne .departures nil }}{{ lang.FormatNumber 0 .departures }}{{ if ne .scheduled nil }} of {{ lang.FormatNumber 0 .scheduled }}{{ end }}{{ else }}<span class="ngbus-nd" title="Too little data this week">no data</span>{{ end }}</dd>
         <dt>Coverage</dt>
         <dd>{{ lang.FormatPercent 0 (mul .coverage 100) }}</dd>
       </dl>
@@ -97,6 +100,9 @@
       <div class="ngbus-chips" role="group" aria-label="Which measure to plot">
         <button type="button" class="ngbus-chip" data-metric="ewt" aria-pressed="true">Excess wait</button>
         <button type="button" class="ngbus-chip" data-metric="p" aria-pressed="false">Wait &gt; 10 min</button>
+        {{- if $anyCur }}
+        <button type="button" class="ngbus-chip" data-metric="cur" aria-pressed="false">Cut short</button>
+        {{- end }}
       </div>
     </div>
     <div class="ngbus-chart__plot" id="ngbus-chart-plot"></div>
@@ -122,8 +128,13 @@
             <td>{{ dateFormat "2 Jan 2006" $week }}</td>
             {{- range $termini }}
               {{- $c := index .series $i }}
-              {{- if and $c.ewt_min (ge $c.coverage $w.coverage_threshold) }}
-            <td>{{ lang.FormatNumber 1 $c.ewt_min }} min · {{ lang.FormatPercent 0 (mul $c.p_wait_gt10 100) }}</td>
+              {{- if and (ne $c.ewt_min nil) (ge $c.coverage $w.coverage_threshold) }}
+            {{- /* A week can publish on far less than a full week's watching —
+                   39% of published cells in the live data sit between 60% and
+                   98% coverage. The chart shades those; this is the same fact
+                   for a reader with no JavaScript, who has only this table. */ -}}
+            <td>{{ lang.FormatNumber 1 $c.ewt_min }} min · {{ lang.FormatPercent 0 (mul $c.p_wait_gt10 100) }}
+              {{- if lt $c.coverage 0.9 }} <span class="ngbus-thinmark" title="Only {{ lang.FormatPercent 0 (mul $c.coverage 100) }} of the expected observations were recorded in this week">thin</span>{{ end }}</td>
               {{- else }}
             <td><span class="ngbus-nd" title="Nothing was captured in this week">no data</span></td>
               {{- end }}
@@ -135,19 +146,117 @@
     </div>
   </details>
 
+  {{- with $h.curtailment_detail }}
+  <section class="ngbus-curtblock">
+    <h2 class="ngbus-curtblock__title">Journeys cut short</h2>
+    {{- /* `weeks` is the LIST of week-endings the count covers, not a number of
+           them — printing it directly put a raw JSON array in the middle of the
+           sentence. They are not necessarily consecutive either: the 157's four
+           are 28 Jun, 12, 19 and 26 Jul, with 5 Jul missing, so "the last four
+           weeks" would claim a run that was never observed. Say how many weeks
+           were watched and name the span instead. */ -}}
+    {{- $wk := .weeks }}{{ $n := 0 }}{{ $span := "" -}}
+    {{- if reflect.IsSlice $wk -}}
+      {{- $n = len $wk -}}
+      {{- if gt $n 0 -}}
+        {{- $span = printf "%s to %s" (dateFormat "2 January" (index $wk 0))
+                                      (dateFormat "2 January 2006" (index $wk (sub $n 1))) -}}
+      {{- end -}}
+    {{- else -}}
+      {{- $n = int $wk -}}
+    {{- end -}}
+    {{- /* The rate, not just the total. A four-week count is a number nobody can
+           picture; "about twelve a day" is one anybody can. It is also what makes
+           the chart below legible, because the bars there are per day and add up
+           to this figure — the two numbers on this page were previously in
+           different units with nothing saying so. */ -}}
+    {{- $days := mul $n 7 -}}
+    {{- $perDay := cond (gt $days 0) (div (float .curtailments) (float $days)) 0.0 -}}
+    <p class="ngbus-curtblock__lead">
+      <strong>{{ lang.FormatNumber 0 .curtailments }}</strong> journeys on route {{ $route }} were
+      turned back before the end of the line over {{ partial "bus-words.html" $n }}
+      {{ cond (eq $n 1) "week" "weeks" }} of watching{{ with $span }}, {{ . }}{{ end }} —
+      <strong>{{ if lt $perDay 1.0 }}fewer than one a day{{ else }}about
+        {{ if ge $perDay 10.0 }}{{ lang.FormatNumber 0 $perDay }}{{ else }}{{ lang.FormatNumber 1 $perDay }}{{ end }}
+        a day{{ end }}</strong>.
+      The bus terminates early and turns round, so anyone waiting further along the route waits for
+      the next one instead: a cancellation that only the far half of the route ever sees.
+    </p>
+    {{- with .per_10_days_by_hour }}
+    {{ partial "bus-hours.html" (dict "values" .
+        "label" (printf "Journeys cut short by hour of day on route %s" $route)) }}
+    <p class="ngbus-curtblock__note">Where those journeys fall across the day. Each bar is the
+      number cut short in that hour on an average day, so the bars together come to the daily figure
+      above. Hours the route was not watched enough to say are shaded rather than drawn as nought.</p>
+    {{- end }}
+    {{- /* `turn_stops` is a top-five, not the whole list: across the live data it
+           accounts for anywhere between 52% and 100% of a route's total. Five
+           counts that visibly fail to add up to the headline is the same species
+           of puzzle as the hour profile was, so the remainder is stated. */ -}}
+    {{- $total := .curtailments -}}
+    {{- with .turn_stops }}
+    {{- $listed := 0 }}{{ range . }}{{ $listed = add $listed .count }}{{ end -}}
+    <h3 class="ngbus-curtblock__sub">Where they turn round</h3>
+    <ul class="ngbus-turnstops">
+      {{- range . }}
+      <li>
+        <span class="ngbus-turnstops__name">{{ partial "bus-place.html" .name }}</span>
+        <span class="ngbus-turnstops__count">{{ lang.FormatNumber 0 .count }}</span>
+      </li>
+      {{- end }}
+    </ul>
+    {{- $rest := sub $total $listed }}
+    {{- if gt $rest 0 }}
+    <p class="ngbus-curtblock__note">The {{ partial "bus-words.html" (len .) }} places used most
+      often. The other {{ lang.FormatNumber 0 $rest }} turned round somewhere else along the
+      route.</p>
+    {{- end }}
+    {{- end }}
+  </section>
+  {{- end }}
+
   {{- /* Only the outages that fall inside the window on show. Naming a hole
          from before the chart starts tells the reader about a gap they cannot
          see and makes them hunt for it. */ -}}
   {{- $first := index $w.weeks 0 }}{{ $last := index $w.weeks (sub (len $w.weeks) 1) -}}
   {{- $shown := where (where $w.holes "end" ">=" $first) "start" "<=" $last -}}
+  {{- /* Collapsed, and one gap per line. The sweep now generates these from the
+         coverage masks rather than anyone maintaining a list, so there are two
+         dozen and there will be more as the backfill deepens — as a single
+         running paragraph it took up half the page and answered a question
+         almost nobody had arrived with. The answer belongs on the chart, where
+         hovering a week names the gap behind it; this is the full record for
+         whoever wants it. */ -}}
   {{- with $shown }}
-  <p class="ngbus-holes">
-    {{- range . }}
-    <strong>No data {{ dateFormat "2 January" .start }} to {{ dateFormat "2 January 2006" .end }}.</strong>
-    {{ .reason }}.
-    {{- end }}
-  </p>
+  <details class="ngbus-holes">
+    <summary>Gaps in the record for this period ({{ len . }})</summary>
+    <p class="ngbus-holes__hint">Hover a week on the chart above and it will name the gap behind
+      it. Most are a few missing hours on an otherwise ordinary day.</p>
+    <ul class="ngbus-holelist">
+      {{- range . }}
+      <li>
+        <span class="ngbus-holelist__when">
+          {{- if eq .start .end }}{{ dateFormat "2 Jan 2006" .start }}
+          {{- else }}{{ dateFormat "2 Jan" .start }} &ndash; {{ dateFormat "2 Jan 2006" .end }}{{ end -}}
+        </span>
+        <span class="ngbus-holelist__why">{{ .reason }}</span>
+      </li>
+      {{- end }}
+    </ul>
+  </details>
   {{- end }}
+
+  {{- /* Onward to the operator's own page. TfL's timetable URLs are simply the
+         route in lower case — the same slug our own pages use — and the pattern
+         holds across every shape of route name on this site: numbered, night,
+         school and the letter-prefixed locals were all checked. The aria-label
+         names the route because "TfL's official page" on its own is no use to
+         anyone reading a list of links out of context. */ -}}
+  <p class="ngbus-tfl">
+    For latest timetable and route information, see
+    <a href="https://tfl.gov.uk/bus/timetable/{{ lower $route }}"
+       aria-label="Transport for London's official page for route {{ $route }}">TfL's official page</a>.
+  </p>
 
   <p class="ngbus-attr">
     {{ $w.attribution }}
@@ -162,20 +271,22 @@
          labelled rather than inferred. */ -}}
   {{- $series := slice -}}
   {{- range $h.termini -}}
-    {{- $ewt := slice }}{{ $p := slice }}{{ $cov := slice -}}
+    {{- $ewt := slice }}{{ $p := slice }}{{ $cov := slice }}{{ $cur := slice -}}
     {{- range .series -}}
-      {{- $ok := and .ewt_min (ge .coverage $w.coverage_threshold) -}}
+      {{- $ok := and (ne .ewt_min nil) (ge .coverage $w.coverage_threshold) -}}
       {{- $ewt = $ewt | append (cond $ok .ewt_min nil) -}}
       {{- $p = $p | append (cond $ok .p_wait_gt10 nil) -}}
+      {{- $cur = $cur | append (cond (and (ne .curtailment_rate nil) (ge .coverage $w.coverage_threshold)) .curtailment_rate nil) -}}
       {{- $cov = $cov | append .coverage -}}
     {{- end -}}
-    {{- $series = $series | append (slice (dict "name" (partial "bus-place.html" .name) "ewt" $ewt "p" $p "coverage" $cov)) -}}
+    {{- $series = $series | append (slice (dict "name" (partial "bus-place.html" .name) "ewt" $ewt "p" $p "cur" $cur "coverage" $cov)) -}}
   {{- end -}}
   <script type="application/json" id="ngbus-chart-data">{{ dict
       "route" $route "weeks" $w.weeks "holes" $w.holes "series" $series
+      "threshold" $w.coverage_threshold
       | jsonify | safeJS }}</script>
 </div>
 
 {{ partial "bus-assets.html" . }}
-<script src="/js/ngbus-chart.js?v=1" defer></script>
+<script src="/js/ngbus-chart.js?v=4" defer></script>
 {{ end }}

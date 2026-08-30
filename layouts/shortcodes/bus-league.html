@@ -44,6 +44,14 @@
        the same picture. */ -}}
 {{- $slo := 0.0 }}{{ $shi := $max -}}
 
+{{- /* Curtailments arrive as an additive contract change, so every part of this
+       table that shows them is conditional on the data actually carrying them.
+       Until the sweep emits the fields the page renders exactly as it did.
+       `where ... "!=" nil` also covers the key being absent altogether. */ -}}
+{{- $curted := where $all "curtailment_rate" "!=" nil -}}
+{{- $hasCurt := gt (len $curted) 0 -}}
+{{- $cols := cond $hasCurt 8 7 -}}
+
 <div class="ngbus ngbus-league" id="ngbus-league">
 
   <div class="ngbus-controls">
@@ -51,6 +59,9 @@
       <button type="button" class="ngbus-chip" data-view="worst" aria-pressed="true">Longest waits</button>
       <button type="button" class="ngbus-chip" data-view="best" aria-pressed="false">Shortest waits</button>
       <button type="button" class="ngbus-chip" data-view="improved" aria-pressed="false">Most improved</button>
+      {{- if $hasCurt }}
+      <button type="button" class="ngbus-chip" data-view="curtailed" aria-pressed="false">Most cut short</button>
+      {{- end }}
       <button type="button" class="ngbus-chip" data-view="all" aria-pressed="false">Every route</button>
     </div>
     <label class="ngbus-search">
@@ -73,6 +84,9 @@
           <th scope="col" data-sort="p">Wait &gt; 10 min</th>
           <th scope="col" data-sort="delta">Change</th>
           <th scope="col">Trend</th>
+          {{- if $hasCurt }}
+          <th scope="col" data-sort="curt" title="Share of journeys turned back before the end of the route">Cut short</th>
+          {{- end }}
           <th scope="col" data-sort="coverage">Coverage</th>
         </tr>
       </thead>
@@ -106,6 +120,18 @@
             {{- end }}
           </td>
           <td>{{ partial "bus-spark.html" (dict "values" $r.spark "lo" $slo "hi" $shi "label" (printf "Weekly excess wait for route %s" $r.route)) }}</td>
+          {{- if $hasCurt }}
+          <td class="ngbus-curt{{ if in $r.flags "curtailments" }} ngbus-curt--flagged{{ end }}">
+            {{- /* Tested against nil, not for truth: nought curtailments is a
+                   real and welcome measurement, and `if 0.0` is false in a Go
+                   template. Most routes will read 0%. */ -}}
+            {{- if eq $r.curtailment_rate nil }}
+            <span class="ngbus-nd" title="Too little data this week">no data</span>
+            {{- else }}
+            <span title="{{ $r.curtailments }} journeys cut short in the week">{{ lang.FormatPercent 1 (mul $r.curtailment_rate 100) }}</span>
+            {{- end }}
+          </td>
+          {{- end }}
           <td>{{ lang.FormatPercent 0 (mul $r.coverage 100) }}</td>
         </tr>
         {{- end }}
@@ -118,6 +144,9 @@
       Showing the {{ len $worst }} longest waits of {{ len $reporting }} routes reporting.
       {{ sub (len $all) (len $reporting) }} routes had too little data to publish.
     </span>
+    {{- with $d.summary.curtailments_week }}
+    <span class="ngbus-count">{{ lang.FormatNumber 0 . }} journeys cut short across the network.</span>
+    {{- end }}
     <span>Week ending {{ dateFormat "2 January 2006" $d.week_ending }} · {{ $d.window }}</span>
   </div>
 
@@ -139,15 +168,22 @@
     {{- /* Cleaned here, so the JSON handed to ngbus-table.js never carries TfL's
            interchange markup and no JavaScript has to know about it. */ -}}
     {{- with .termini }}{{ $where = delimit (apply (apply . "index" "." "name") "partial" "bus-place.html" ".") " ↔ " }}{{ end -}}
-    {{- $payload = $payload | append (dict
+    {{- $row := dict
         "r" .route "e" .ewt_min "p" .p_wait_gt10 "d" .delta
-        "f" .delta_from "c" .coverage "s" .spark "w" $where) -}}
+        "f" .delta_from "c" .coverage "s" .spark "w" $where -}}
+    {{- if $hasCurt }}
+      {{- $row = merge $row (dict
+          "cu" .curtailment_rate "cn" .curtailments
+          "cx" (in .flags "curtailments")) -}}
+    {{- end -}}
+    {{- $payload = $payload | append $row -}}
   {{- end -}}
   <script type="application/json" id="ngbus-league-data">{{ dict
       "week" $d.week_ending "window" $d.window "max" $max
       "sparkWeeks" $d.spark_weeks "threshold" $d.coverage_threshold
+      "hasCurt" $hasCurt "cols" $cols
       "rows" $payload | jsonify | safeJS }}</script>
 </div>
 
 {{- partial "bus-assets.html" . }}
-<script src="/js/ngbus-table.js?v=2" defer></script>
+<script src="/js/ngbus-table.js?v=3" defer></script>

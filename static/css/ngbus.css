@@ -522,6 +522,9 @@
 .ngbus-grid { stroke: var(--warm-grey, #dde3df); stroke-width: 1; }
 .ngbus-base { stroke: var(--mid-grey, #8a9490); stroke-width: 1.5; }
 .ngbus-hole { fill: var(--bus-band, #DDE3DF); opacity: 0.55; }
+/* A weaker version of the same problem, so a weaker version of the same mark:
+   the week published, but on visibly less watching than its neighbours. */
+.ngbus-thin { fill: var(--bus-band, #DDE3DF); opacity: 0.22; }
 .ngbus-hole__label { fill: var(--mid-grey, #8a9490); font-size: 10.5px; letter-spacing: 0.04em; }
 .ngbus-line { fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 .ngbus-line--a { stroke: var(--bus-line-a, #b48544); }
@@ -539,6 +542,18 @@
 }
 .ngbus-legend__item { display: inline-flex; align-items: center; gap: 0.35rem; }
 .ngbus-legend__swatch { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+/* Shadings read as areas, so their key is a block rather than a line. */
+.ngbus-legend__band { width: 14px; height: 11px; border-radius: 2px; display: inline-block; }
+.ngbus-legend__band.ngbus-hole { background: var(--bus-band, #DDE3DF); opacity: 0.75; }
+.ngbus-legend__band.ngbus-thin { background: var(--bus-band, #DDE3DF); opacity: 0.35; }
+
+.ngl2-cov { display: block; margin-top: 0.2rem; color: var(--mid-grey, #8a9490); }
+
+.ngbus-thinmark {
+  font-size: 0.72rem; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--mid-grey, #8a9490); border-bottom: 1px dotted var(--mid-grey, #8a9490);
+  cursor: help; font-variant-numeric: normal;
+}
 
 
 /* ── ROUTE PAGE ───────────────────────────────────────────────────────────── */
@@ -582,6 +597,14 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Sits between the data caveats and the disclaimer: the last thing on the page
+   that is of any practical use to someone who actually wants to catch the bus. */
+.ngbus-tfl {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
 .ngbus-attr {
   margin-top: 2rem;
   padding-top: 0.75rem;
@@ -616,16 +639,34 @@
 
 /* ── ROUTE PAGE: outages, weekly figures, hover readout ─────────────────── */
 
-.ngbus-holes {
-  margin: 1rem 0 0;
-  padding: 0.7rem 0.9rem;
-  border-left: 3px solid var(--bus-band, #DDE3DF);
-  background: var(--white, #ffffff);
-  font-size: 0.82rem;
-  line-height: 1.55;
-  color: var(--mid-grey, #8a9490);
+.ngbus-holes { margin: 1.25rem 0 0; }
+.ngbus-holes > summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--blue-dark, #004d80);
+  padding: 0.4rem 0;
 }
-.ngbus-holes strong { color: var(--ink, #1a2332); }
+.ngbus-holes > summary:focus-visible { outline: 2px solid var(--blue, #0070BA); outline-offset: 2px; }
+.ngbus-holes__hint {
+  font-size: 0.8rem; line-height: 1.55; color: var(--mid-grey, #8a9490);
+  margin: 0.3rem 0 0.6rem;
+}
+
+.ngbus-holelist { list-style: none; margin: 0; padding: 0; font-size: 0.82rem; line-height: 1.5; }
+.ngbus-holelist li {
+  display: grid;
+  grid-template-columns: 10.5rem 1fr;
+  gap: 0 0.9rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--warm-grey, #dde3df);
+}
+.ngbus-holelist li:last-child { border-bottom: 0; }
+.ngbus-holelist__when { font-weight: 600; font-variant-numeric: tabular-nums; }
+.ngbus-holelist__why { color: var(--mid-grey, #8a9490); }
+@media (max-width: 560px) {
+  .ngbus-holelist li { grid-template-columns: 1fr; gap: 0.1rem; }
+}
 
 .ngbus-weeks { margin: 1.25rem 0 0; }
 .ngbus-weeks summary {
@@ -659,10 +700,21 @@
   box-shadow: 0 2px 10px rgba(26, 35, 50, 0.12);
   font-size: 0.78rem;
   line-height: 1.45;
-  white-space: nowrap;
+  white-space: normal;
+  max-width: 20rem;
   font-variant-numeric: tabular-nums;
 }
 .ngbus-tip[hidden] { display: none; }
+/* The named gap behind a week, set apart from the figures above it. */
+.ngl2-gap {
+  display: block;
+  margin-top: 0.35rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--warm-grey, #dde3df);
+  color: var(--mid-grey, #8a9490);
+  font-variant-numeric: normal;
+}
+.ngl2-gap strong { color: var(--ink, #1a2332); }
 
 .ngbus-hit { cursor: crosshair; }
 
@@ -671,3 +723,62 @@
      touch-friendly way to read exact numbers, and it is always there. */
   .ngbus-tip { display: none; }
 }
+
+
+/* ── CURTAILMENTS ─────────────────────────────────────────────────────────
+   Journeys turned back before the end of the route. A different failure from a
+   long wait — the bus came, it just did not go where it said — so it gets its
+   own column and its own block rather than being folded into excess wait.
+
+   Same colour policy as everything else here: severity rides the site's
+   sequential blue, and the bus red stays decoration. Nothing on this page uses
+   red to mean bad.
+   ------------------------------------------------------------------------ */
+
+.ngbus-curt { font-variant-numeric: tabular-nums; }
+/* The backend flags routes that cross its reporting threshold — those are the
+   ones with a detail block on their page, and the only ones where this figure
+   is the notable thing about the route. */
+.ngbus-curt--flagged { font-weight: 600; color: var(--blue-dark, #004d80); }
+
+.ngbus-curtblock {
+  margin: 2rem 0 0;
+  padding: 1.25rem 1.25rem 1.1rem;
+  border: 1px solid var(--warm-grey, #dde3df);
+  border-radius: 6px;
+  background: var(--white, #ffffff);
+}
+.ngbus-curtblock__title { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.5rem; }
+.ngbus-curtblock__sub {
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--mid-grey, #8a9490); margin: 1.25rem 0 0.5rem;
+}
+.ngbus-curtblock__lead {
+  font-size: 0.92rem; line-height: 1.6; color: var(--ink, #1a2332); margin-bottom: 1rem;
+}
+.ngbus-curtblock__lead strong { font-variant-numeric: tabular-nums; }
+.ngbus-curtblock__note {
+  font-size: 0.78rem; line-height: 1.5; color: var(--mid-grey, #8a9490); margin-top: 0.5rem;
+}
+
+.ngbus-hours { display: block; width: 100%; height: auto; }
+.ngbus-hours__bar { fill: var(--blue, #0070BA); opacity: 0.55; }
+/* An hour nobody watched, shaded rather than drawn as a zero — the same rule the
+   sparkline and the timeline follow. */
+.ngbus-hours__gap { fill: var(--bus-band, #DDE3DF); opacity: 0.6; }
+.ngbus-hours__base { stroke: var(--mid-grey, #8a9490); stroke-width: 1; }
+.ngbus-hours__ax {
+  fill: var(--mid-grey, #8a9490); font-size: 10.5px;
+  font-family: var(--sans, 'DM Sans', system-ui, sans-serif);
+  font-variant-numeric: tabular-nums;
+}
+.ngbus-hours__peak { font-size: 10px; }
+
+.ngbus-turnstops { list-style: none; margin: 0; padding: 0; }
+.ngbus-turnstops li {
+  display: flex; justify-content: space-between; gap: 1rem;
+  padding: 0.4rem 0; border-bottom: 1px solid var(--warm-grey, #dde3df);
+  font-size: 0.88rem;
+}
+.ngbus-turnstops li:last-child { border-bottom: 0; }
+.ngbus-turnstops__count { font-variant-numeric: tabular-nums; font-weight: 600; }

@@ -26,6 +26,11 @@
        c  coverage  0-1
        s  spark     array of weekly EWT, nulls allowed
        w  where     "Terminus A ↔ Terminus B"
+
+   Present only once the sweep emits curtailments (spec.hasCurt says so):
+       cu curtailment_rate  0-1, or null
+       cn curtailments      journeys cut short this week
+       cx flagged           route tripped the backend's reporting threshold
    ========================================================================== */
 
 (function () {
@@ -43,7 +48,14 @@
     return;   // leave the server-rendered rows exactly as they are
   }
 
-  var R = { ROUTE: 'r', EWT: 'e', P: 'p', DELTA: 'd', FROM: 'f', COV: 'c', SPARK: 's', WHERE: 'w' };
+  var R = { ROUTE: 'r', EWT: 'e', P: 'p', DELTA: 'd', FROM: 'f', COV: 'c', SPARK: 's', WHERE: 'w',
+            CURT: 'cu', CURTN: 'cn', CFLAG: 'cx' };
+
+  /* Curtailments are additive: the column, the chip and the sort key all exist
+     only when the data carries them. Until the sweep emits the fields this file
+     behaves exactly as it did. */
+  var hasCurt = !!spec.hasCurt;
+  var COLS = spec.cols || 7;
   var rows = spec.rows || [];
   var body = document.getElementById('ngbus-body');
   var countEl = document.getElementById('ngbus-count');
@@ -191,6 +203,19 @@
 
     out.push('<td>' + spark(r[R.SPARK] || [], 0, spec.max,
                             'Weekly excess wait for route ' + r[R.ROUTE]) + '</td>');
+
+    if (hasCurt) {
+      var cu = r[R.CURT];
+      /* `cu == null` and not `!cu`: nought journeys cut short is a real
+         measurement, and the commonest one. */
+      out.push('<td class="ngbus-curt' + (r[R.CFLAG] ? ' ngbus-curt--flagged' : '') + '">' +
+        (cu == null
+          ? nd('Too little data this week')
+          : '<span title="' + (r[R.CURTN] || 0) + ' journeys cut short in the week">' +
+            (cu * 100).toFixed(1) + '%</span>') +
+        '</td>');
+    }
+
     out.push('<td>' + Math.round((r[R.COV] || 0) * 100) + '%</td>');
     out.push('</tr>');
     return out.join('');
@@ -230,6 +255,18 @@
                note: 'The ' + list.length + ' shortest waits of ' +
                      reporting(rows).length + ' routes reporting.' };
     }
+    if (state.view === 'curtailed') {
+      /* Ranked by rate rather than by count, so a busy trunk route does not top
+         the list simply for being busy. Routes with no figure are excluded
+         outright rather than sorted to the bottom. */
+      list = list.filter(function (r) { return r[R.CURT] != null; })
+                 .sort(byNumber(R.CURT, 'desc')).slice(0, TOP_N);
+      return { list: list, ranked: true,
+               note: list.length
+                 ? 'The ' + list.length + ' routes turning back the largest share of ' +
+                   'their journeys before the end of the line.'
+                 : 'No route has a curtailment figure this week.' };
+    }
     if (state.view === 'improved') {
       /* Improvement means a shorter wait than the comparison week. Routes with
          no comparison are excluded outright rather than treated as unchanged —
@@ -254,7 +291,7 @@
     if (state.sort === 'route') {
       return state.dir === 'asc' ? byNatural : function (a, b) { return byNatural(b, a); };
     }
-    var key = { ewt: R.EWT, p: R.P, delta: R.DELTA, coverage: R.COV }[state.sort];
+    var key = { ewt: R.EWT, p: R.P, delta: R.DELTA, coverage: R.COV, curt: R.CURT }[state.sort];
     return key == null ? byNatural : byNumber(key, state.dir);
   }
 
@@ -263,7 +300,7 @@
   function render() {
     var sel = select();
     if (!sel.list.length) {
-      body.innerHTML = '<tr><td colspan="7" class="ngbus-empty">' +
+      body.innerHTML = '<tr><td colspan="' + COLS + '" class="ngbus-empty">' +
                        'No routes match. Try a route number, or a terminus name.</td></tr>';
     } else {
       var html = [];
@@ -296,7 +333,8 @@
       if (query) query.value = '';
       /* Each view carries the sort it means, so the header arrows never
          contradict the chip that is lit. */
-      state.sort = state.view === 'improved' ? 'delta' : 'ewt';
+      state.sort = state.view === 'improved' ? 'delta'
+                 : state.view === 'curtailed' ? 'curt' : 'ewt';
       state.dir = (state.view === 'best' || state.view === 'improved') ? 'asc' : 'desc';
       render();
     });

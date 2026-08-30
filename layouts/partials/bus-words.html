@@ -1,0 +1,18 @@
+{{- /*
+  bus-words — a small number as a word, for sentences a person reads aloud.
+
+  "one trip in four", "four weeks of observation". Numerals in the middle of a
+  plain-English sentence are what gives machine-written prose away, and these
+  pages have exactly two sentences that are meant to sound spoken.
+
+  Above ten the numeral is the clearer form again, so it is returned unchanged.
+  A returning partial, like bus-place.html: printing the value instead would
+  render it into an HTML context on the way out.
+
+  Usage: {{ partial "bus-words.html" 4 }}  ->  four
+*/ -}}
+{{- $n := . -}}
+{{- $words := dict "0" "no" "1" "one" "2" "two" "3" "three" "4" "four" "5" "five"
+                   "6" "six" "7" "seven" "8" "eight" "9" "nine" "10" "ten" -}}
+{{- $key := string (int $n) -}}
+{{- return (or (index $words $key) $key) -}}
