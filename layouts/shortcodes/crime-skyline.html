@@ -57,7 +57,7 @@
   var ok=false; try{ ok=!!(window.WebGL2RenderingContext && document.createElement('canvas').getContext('webgl2')); }catch(e){}
   if(ok){
     var f=document.createElement('iframe');
-    f.src='/interactive/crime-skyline/?v=4';
+    f.src='/interactive/crime-skyline/?v=5';
     f.title='Interactive 3D map of London crime concentration';
     f.setAttribute('scrolling','no'); f.setAttribute('allow','fullscreen'); f.setAttribute('allowfullscreen','');
     box.insertBefore(f, box.firstChild);
