@@ -2928,6 +2928,15 @@
      one the handler was created for. */
   var hoverTimer = null, HOVER_DELAY = 450;
 
+  /* Hover tooltips are for pointers, and only pointers. A touch tap fires a
+     synthetic mouseenter and never a mouseleave, so on a phone the tooltip
+     appeared by itself and could not be dismissed. Touch has the definitions
+     toggle instead — which is what it was built for. */
+  var HOVER_OK = !window.matchMedia
+    || window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  function cancelHover() { clearTimeout(hoverTimer); }
+
   function tipContent(key, kind) {
     var tier = byKey[state.parent];
     var title, body, note = '';
@@ -2958,8 +2967,13 @@
       i.textContent = t.note;
       tipEl.appendChild(i);
     }
-    tipEl.hidden = false;
     var r = btn.getBoundingClientRect();
+    // A pending hover timer can outlive its chip: selecting a category rebuilds
+    // the whole row, so by the time it fires the button is detached and its
+    // rect is all zeros — which clamped the tooltip into the top-left corner
+    // with nothing to dismiss it. No layout, no tooltip.
+    if (!r.width && !r.height) { hideTip(); return; }
+    tipEl.hidden = false;
     tipEl.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 296)) + 'px';
     tipEl.style.top = (r.bottom + 8) + 'px';
     state.tipKey = key;
@@ -2967,13 +2981,14 @@
   function hideTip() { tipEl.hidden = true; state.tipKey = null; }
 
   function wireTip(btn, kind, keyOf) {
+    if (!HOVER_OK) return;
     btn.addEventListener('mouseenter', function () {
       if (state.definitions) return;
-      clearTimeout(hoverTimer);
+      cancelHover();
       hoverTimer = setTimeout(function () { showTip(btn, keyOf(), kind); }, HOVER_DELAY);
     });
     btn.addEventListener('mouseleave', function () {
-      clearTimeout(hoverTimer);
+      cancelHover();
       if (!state.definitions) hideTip();
     });
   }
@@ -3041,10 +3056,19 @@
     hideTip();
     setMore(!state.moreOpen);
   });
+  // Any tap outside a chip dismisses, in either mode. This used to fire only
+  // in definitions mode, which left a stuck tooltip with no way out.
   document.addEventListener('click', function () {
     if (state.moreOpen) setMore(false);
-    if (state.definitions && !tipEl.hidden) hideTip();
+    cancelHover();
+    if (!tipEl.hidden) hideTip();
   });
+  window.addEventListener('scroll', function () {
+    // The tooltip is position:fixed, so a scroll leaves it pointing at
+    // nothing. Cheaper to dismiss than to track.
+    cancelHover();
+    if (!tipEl.hidden) hideTip();
+  }, { passive: true });
 
   /* ================================================================
      THE SHOWING ROW — "soap bubbles"
@@ -3369,6 +3393,7 @@
   }
 
   function selectParent(key) {
+    cancelHover();
     if (key === state.parent) { setMore(false); return; }
     state.parent = key;
     state.crime = key;                 // land on the category's own total
@@ -3380,6 +3405,7 @@
   }
 
   function selectCrime(key) {
+    cancelHover();
     if (key === state.crime) return;
     state.crime = key;
     window.__setView({ crime: key });
