@@ -27,8 +27,8 @@ One hex map that toggles between stop-and-search intensity and crime on the SAME
 <p class="ev"><strong>STATUS &mdash; 2026-09-01. chart3 SHIPPED, lab kept.</strong>
 The compact layout is now on the <a href="/campaigns/tracking-london-crime/">live crime
 chart</a>. Unlike chart2, this page is <em>not</em> retired: it carries no implementation
-of its own &mdash; it inlines the working-tree engines and is rebuilt by
-<code>build_lab.py</code> &mdash; so there is nothing here to drift out of step, and it
+of its own &mdash; it inlines the working copies of the engines and is rebuilt from them
+&mdash; so there is nothing here to drift out of step, and it
 does one thing the live page cannot, which is force a layout the device would not choose.
 It stays as the device workbench. What it was for is below.</p>
 
@@ -55,7 +55,9 @@ A candidate replacement for the category selector on the <a href="/campaigns/tra
     <a href="chart3/?mode=wide"><code>?mode=wide</code></a> &mdash; each pins one layout, so a
     desktop can be shown the phone's menu and a phone the desktop's. The readout at the top
     of the page names the mode it picked, the card and plot widths, and the size the axis
-    text is actually rendering at. Eye checklists are on the page itself.</li>
+    text is actually rendering at. Eye checklists are on the page itself. Rebuilt from the
+    working copy of the chart engines, so it shows whatever is currently checked out
+    rather than what is published.</li>
   <li><a href="v1/"><code>v1/</code></a> &mdash; the merged chart. Useful params: <a href="v1/?tier=hexes"><code>?tier=hexes</code></a> &middot; <a href="v1/?tier=hexes&amp;mode=street"><code>?tier=hexes&amp;mode=street</code></a> &middot; <a href="v1/?hud=1"><code>?hud=1</code></a> (fps + state overlay) &middot; <code>?radius=220|120|70</code> (pin a hex band, disables zoom bands) &middot; <code>?m=&lt;metric&gt;&amp;y=&lt;year|all&gt;</code></li>
   <li><a href="ss1/"><code>ss1/</code></a> &mdash; stop and search vs crime, hex-only. Useful params: <a href="ss1/?m=tfp"><code>?m=tfp</code></a> &middot; <a href="ss1/?m=searches_drugs&amp;y=2023"><code>?m=searches_drugs&amp;y=2023</code></a> &middot; <a href="ss1/?mode=street"><code>?mode=street</code></a> &middot; <a href="ss1/?hud=1"><code>?hud=1</code></a> &middot; <code>?radius=220|120|70</code>. Metrics: <code>searches_all searches_drugs searches_weapons positive_all</code> + the 8 crime keys.</li>
   <li><s><code>chart2/</code></s> &mdash; two-tier category menu, now shipped to <a href="/campaigns/tracking-london-crime/">the live chart</a>. Things to try on a phone: the <strong>&ldquo;More&rdquo;</strong> chip (it takes the chosen category&rsquo;s name when you pick one from behind it) &middot; the <strong>&#9432; definitions</strong> toggle, then tap any chip to read what it counts &middot; the <strong>download</strong> button, top right &middot; category changes on <em>Sexual offences</em>, the one category whose &ldquo;also&rdquo; box holds both kinds at once.</li>
@@ -84,7 +86,7 @@ A candidate replacement for the category selector on the <a href="/campaigns/tra
 
 <h2>How to run</h2>
 <p><code>hugo server</code> from the repo root, then <a href="http://localhost:1313/labs/crime/">http://localhost:1313/labs/crime/</a> &mdash; the hex tiles are fetched over HTTP, <code>file://</code> won't load them.</p>
-<p class="ev">Data + build live in <code>E:\Crime Data\platform\investigations\crime_map_v2\</code> (v1) and <code>...\investigations\stop_search_map\</code> (ss1) &mdash; each folder's FINDINGS.md is the record; the pages are emitted by <code>make_crime_map_html.py</code> / <code>make_ss_map_html.py</code> and copied here with their <code>d/</code> data folders.</p>
+<p class="ev">Each of these is built offline from the crime data platform and copied here with its <code>d/</code> data folder; every investigation keeps its own written record of method and results alongside its build script.</p>
 </section>
 
 <section id="chart2-notes">

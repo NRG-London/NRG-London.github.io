@@ -3,6 +3,12 @@
    Animated, interactive bars in the house style. The 2D companion to
    the deck.gl viz: chip buttons, and a cubic swoosh between views.
 
+   Three layouts, chosen from one measurement of the card and never
+   from the user agent — wide (chip rows), portrait (two native
+   selects) and landscape (the menu stands beside the chart). A chart
+   too narrow for its menu is the commonest way one of these becomes
+   unusable, and a phone is not the only thing that is narrow.
+
    charts.js renders by building an SVG string and assigning innerHTML,
    which destroys every element on every render — nothing can tween.
    This engine keeps a stable, keyed DOM instead and interpolates it.
@@ -15,7 +21,15 @@
    Public API:
      NGLive.mount(hostId, spec)   -> instance
      instance.set(dim, key)
+     instance.setMany(view)
      instance.view()              -> current selection
+     instance.mode()              -> 'wide' | 'portrait' | 'landscape'
+     instance.setMode(m)          -> pin one, or null to measure again
+     instance.setTransition(ms)
+     instance.setFilename(fn)     -> the page names its own download
+     instance.setExportMeta(fn)   -> ...and adds to the PNG's metadata
+     instance.settle()            -> jump any transition to its end
+     instance.refresh()
      window.__setView / __setTransition  (capture-driver hooks)
    ================================================================ */
 (function (global) {
@@ -683,7 +697,7 @@
       // already a string and the live svg is free to go back to being compact.
       // Restoring here rather than in the .then() is what keeps the swap
       // invisible; if that ever stops being true the export goes narrow, which
-      // verify_export.py checks for.
+      // the export check asserts.
       if (wide) endWideRender();
       running
         .catch(function (err) {

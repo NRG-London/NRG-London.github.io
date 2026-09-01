@@ -421,6 +421,72 @@
     return chunk;
   }
 
+  /* ---------- XMP ----------
+     The iTXt chunks above are the PNG-native way to carry this, and a PNG
+     reader will find every one of them. An OPERATING SYSTEM will not: Windows
+     Explorer's Details tab, macOS's Get Info and most "image properties" panels
+     read XMP and nothing else, so a file full of correct iTXt keywords shows up
+     with nothing but its dimensions. Neil found exactly that.
+
+     So the same facts go in twice. This is not duplication to be tidied away
+     later — the two are read by different things, and dropping either loses a
+     reader. The packet is an UNCOMPRESSED iTXt chunk keyed `XML:com.adobe.xmp`,
+     which is where Adobe's PNG spec puts it and where Windows looks.
+
+     Only the human-facing fields go in here. The chart's own figures stay in
+     the iTXt chunks, where length costs nothing and no properties panel is
+     going to render a hundred numbers anyway. */
+  var XMP_KEY = 'XML:com.adobe.xmp';
+
+  function xesc(v) {
+    return String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  // dc:title, dc:description and dc:rights are language alternatives, not plain
+  // strings; a bare value is silently ignored by strict readers.
+  function alt(tag, v) {
+    return v ? '<' + tag + '><rdf:Alt><rdf:li xml:lang="x-default">' + xesc(v)
+             + '</rdf:li></rdf:Alt></' + tag + '>' : '';
+  }
+  function seq(tag, kind, v) {
+    return v ? '<' + tag + '><rdf:' + kind + '><rdf:li>' + xesc(v)
+             + '</rdf:li></rdf:' + kind + '></' + tag + '>' : '';
+  }
+  function plain(tag, v) {
+    return v ? '<' + tag + '>' + xesc(v) + '</' + tag + '>' : '';
+  }
+
+  function xmpPacket(meta) {
+    var when = meta['Creation Time'] || '';
+    var body =
+        alt('dc:title', meta['Title'])
+      + alt('dc:description', meta['Description'])
+      + alt('dc:rights', meta['Copyright'])
+      + seq('dc:creator', 'Seq', meta['Author'])
+      + seq('dc:subject', 'Bag', meta['Category'])
+      + plain('dc:source', meta['Source'])
+      + plain('xmp:CreateDate', when)
+      + plain('xmp:MetadataDate', when)
+      + plain('xmp:CreatorTool', meta['Software'])
+      + plain('photoshop:DateCreated', when)
+      + plain('photoshop:Source', meta['Source'])
+      + plain('photoshop:Credit', meta['Credit'])
+      + plain('photoshop:Headline', meta['Title'])
+      + alt('exif:UserComment', meta['Description']);
+    return '<?xpacket begin="\uFEFF" id="W5M0MpCehiHzreSzNTczkc9d"?>'
+         + '<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="'
+         + xesc(meta['Software'] || 'NeilGarratt.com') + '">'
+         + '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">'
+         + '<rdf:Description rdf:about=""'
+         + ' xmlns:dc="http://purl.org/dc/elements/1.1/"'
+         + ' xmlns:xmp="http://ns.adobe.com/xap/1.0/"'
+         + ' xmlns:photoshop="http://ns.adobe.com/photoshop/1.0/"'
+         + ' xmlns:exif="http://ns.adobe.com/exif/1.0/">'
+         + body
+         + '</rdf:Description></rdf:RDF></x:xmpmeta>'
+         + '<?xpacket end="w"?>';
+  }
+
   /* Inserted straight after IHDR, which the spec requires to be first and
      which is always 25 bytes: 8 signature + 4 length + 4 type + 13 data + 4
      CRC. Everything else is copied through untouched. */
@@ -432,6 +498,7 @@
       var head = png.subarray(0, 33);          // signature + IHDR
       var rest = png.subarray(33);
       var chunks = keys.map(function (k) { return itxtChunk(k, String(meta[k])); });
+      chunks.unshift(itxtChunk(XMP_KEY, xmpPacket(meta)));
       var extra = chunks.reduce(function (n, c) { return n + c.length; }, 0);
       var out = new Uint8Array(head.length + extra + rest.length);
       var o = 0;
@@ -452,9 +519,12 @@
       'Title': card.title,
       'Author': 'Neil Garratt',
       'Copyright': '© ' + year + ' Neil Garratt. ' + tag,
-      'Creation Time': now.toISOString().slice(0, 10),
+      // Full ISO rather than a bare date: XMP carries this to Explorer's
+      // "Date taken", and a date-only value shows there as midnight.
+      'Creation Time': now.toISOString().replace(/\.\d+Z$/, 'Z'),
       'Description': [card.subtitle, card.note].filter(Boolean).join(' '),
       'Source': (card.source || '').replace(/^Source:\s*/, ''),
+      'Credit': tag,
       'Software': tag + ' chart tool'
     };
   }

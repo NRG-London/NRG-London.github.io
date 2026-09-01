@@ -1,6 +1,6 @@
 /* ================================================================
    NeilGarratt.com — Chart component
-   The publishable half of the style guide's CSS: the .ng-chart card,
+   The publishable half of the house chart styles: the .ng-chart card,
    the .ngc-* SVG text scale, the legends, and the .ngl-* controls
    that charts-live.js reveals on an interactive chart.
 
@@ -13,7 +13,8 @@
    and its border to currentColor: an invalid var() does not fall back
    to the previous declaration, it makes the property invalid. A
    component that silently loses a colour when dropped into a page is
-   worse than one that repeats a hex. Fallbacks are from palette.py.
+   worse than one that repeats a hex. The fallbacks are the house
+   palette's own values, written out rather than referenced.
 
    Ships to the site as /css/ng-chart.css.
    ================================================================ */
@@ -83,10 +84,13 @@
 
 /* ================================================================
    LIVE CONTROLS (.ngl-*)
-   Pale-blue pills throughout. The primary row (crime type) is larger
-   than the modifier rows, but every active chip reads the same, so the
-   controls stay clearly chrome and never compete with the data.
-   Amber is reserved for the data itself.
+   Pale-blue pills throughout. A chart's primary dimension row is
+   larger than its modifier rows, but every active chip reads the same,
+   so the controls stay clearly chrome and never compete with the data.
+
+   Amber is spent on the data, and on exactly one piece of chrome: the
+   crime tier of the two-tier menu, where it marks the single series
+   the bars are actually showing. Everywhere else, blue.
 
    The controls are hidden until charts-live.js mounts, so a reader
    with JS off never sees dead buttons under a static chart.
