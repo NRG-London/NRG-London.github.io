@@ -563,6 +563,36 @@ body {
 .ngv-def b { color: var(--ink, #1a2332); font-weight: 700; }
 .ngv-def[hidden] { display: none; }
 
+/* ── the host page has opinions about <p> and <h3> ──
+   This card is dropped into an article, and the article's own rules are
+   MORE SPECIFIC than the component's: `.page-content p` is (0,2,0) and
+   `.ngl-note` is (0,1,0), so the caveat note lands at 16.8px body size
+   with a 24px margin instead of 11.5px italic chrome with none. Loading
+   ng-chart.css after main.css does not help — specificity is decided
+   before order.
+
+   Measured on the live page at 390px: 892px of card against the 707px
+   the same markup produces in a page with a CSS reset. 185 pixels, all
+   of it inherited, on the layout with the least room to spare.
+
+   Restated here at (0,3,0), which beats an article's (0,2,0) whatever
+   the load order. Compact only, deliberately: the desktop card has
+   carried these margins since it shipped and changing it is a separate
+   decision, not a bug fix smuggled into a phone layout. */
+.ng-chart.ng-chart--compact .ng-chart__title { margin: 0; }
+.ng-chart.ng-chart--compact .ng-chart__subtitle { margin: 0.3rem 0 0; }
+.ng-chart.ng-chart--compact .ngl-note {
+  font-size: 0.72rem; line-height: 1.5; margin: 0.7rem 0 0;
+}
+.ng-chart.ng-chart--compact .ngl-note:empty { margin: 0; }
+.ng-chart.ng-chart--compact .ngv-sum,
+.ng-chart.ng-chart--compact .ngv-hint {
+  font-size: 0.7rem; line-height: 1.45; margin: 0;
+}
+.ng-chart.ng-chart--compact .ngv-def {
+  font-size: 0.76rem; line-height: 1.5; margin: 0;
+}
+
 /* ── sideways ──
    The card becomes two columns: chart left, the whole menu right. The
    nav and the modifier rows are separate children, so charts-live.js
@@ -628,7 +658,7 @@ body {
     <a href="/campaigns/tracking-london-crime/">live chart</a>. This page stays as
     the workbench: it inlines the WORKING-TREE copies of the engines rather than the
     published ones, so it shows whatever is currently checked out, and it can force a
-    layout the device would not otherwise choose. Built 01 Sep 2026 14:00.
+    layout the device would not otherwise choose. Built 01 Sep 2026 14:06.
   </p>
 
   <div class="lab-hud" id="lab-hud"></div>
