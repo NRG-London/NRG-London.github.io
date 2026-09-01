@@ -480,14 +480,14 @@ body {
    ================================================================ */
 .ng-chart.ng-chart--compact { padding: 1.1rem 1rem 1rem; }
 .ng-chart--compact .ng-chart__title { font-size: 1.05rem; padding-right: 2.4rem; }
-.ng-chart--compact .ng-chart__subtitle { font-size: 0.8rem; margin-top: 0.3rem; }
+.ng-chart[data-tone].ng-chart--compact .ng-chart__subtitle { font-size: 0.8rem; margin: 0.3rem 0 0; }
 .ng-chart--compact .ng-chart__plot { margin: 0.9rem 0 0.3rem; }
 .ng-chart--compact .ng-chart__foot {
   margin-top: 0.6rem; padding-top: 0.6rem; font-size: 0.68rem; gap: 0.4rem;
 }
 .ng-chart--compact .ngv-nav { margin-top: 10px; padding-top: 10px; gap: 7px; }
 .ng-chart--compact .ngv-summary { margin-left: 0; gap: 8px; }
-.ng-chart--compact .ngv-hint { margin-left: 0; }
+.ng-chart[data-tone].ng-chart--compact .ngv-hint { margin: 0; }
 .ng-chart--compact .ngl-controls { margin-top: 10px; padding-top: 10px; gap: 0.4rem; }
 
 /* One line per modifier row. The 76px label column and the full-width
@@ -563,36 +563,6 @@ body {
 .ngv-def b { color: var(--ink, #1a2332); font-weight: 700; }
 .ngv-def[hidden] { display: none; }
 
-/* ── the host page has opinions about <p> and <h3> ──
-   This card is dropped into an article, and the article's own rules are
-   MORE SPECIFIC than the component's: `.page-content p` is (0,2,0) and
-   `.ngl-note` is (0,1,0), so the caveat note lands at 16.8px body size
-   with a 24px margin instead of 11.5px italic chrome with none. Loading
-   ng-chart.css after main.css does not help — specificity is decided
-   before order.
-
-   Measured on the live page at 390px: 892px of card against the 707px
-   the same markup produces in a page with a CSS reset. 185 pixels, all
-   of it inherited, on the layout with the least room to spare.
-
-   Restated here at (0,3,0), which beats an article's (0,2,0) whatever
-   the load order. Compact only, deliberately: the desktop card has
-   carried these margins since it shipped and changing it is a separate
-   decision, not a bug fix smuggled into a phone layout. */
-.ng-chart.ng-chart--compact .ng-chart__title { margin: 0; }
-.ng-chart.ng-chart--compact .ng-chart__subtitle { margin: 0.3rem 0 0; }
-.ng-chart.ng-chart--compact .ngl-note {
-  font-size: 0.72rem; line-height: 1.5; margin: 0.7rem 0 0;
-}
-.ng-chart.ng-chart--compact .ngl-note:empty { margin: 0; }
-.ng-chart.ng-chart--compact .ngv-sum,
-.ng-chart.ng-chart--compact .ngv-hint {
-  font-size: 0.7rem; line-height: 1.45; margin: 0;
-}
-.ng-chart.ng-chart--compact .ngv-def {
-  font-size: 0.76rem; line-height: 1.5; margin: 0;
-}
-
 /* ── sideways ──
    The card becomes two columns: chart left, the whole menu right. The
    nav and the modifier rows are separate children, so charts-live.js
@@ -630,6 +600,48 @@ body {
 .ng-chart[data-tone="bold"] .ngv-def { color: rgba(243,246,244,0.62); }
 .ng-chart[data-tone="bold"] .ngv-def b { color: var(--paper, #f3f6f4); }
 
+/* ================================================================
+   HOLDING THE CARD'S OWN TYPOGRAPHY (.ng-chart[data-tone] ...)
+   The card is dropped into an article, and the article's rules are
+   MORE SPECIFIC than this component's: `.page-content p` is (0,2,0)
+   where `.ngl-note` is (0,1,0). Loading this file after main.css does
+   not help, because specificity is decided before order.
+
+   So the caveat note arrived at 16.8px body size with a 24px margin
+   instead of 11.5px italic chrome with none, the summary line the same,
+   and the <h3> title picked up 32px above and 12px below. On a phone
+   that came to 185 inherited pixels; on a desktop the note simply
+   shouts a caveat that is meant to be quiet.
+
+   Restated at (0,3,0) so it holds whatever the host says and whatever
+   order the stylesheets load in. `[data-tone]` is what buys the third
+   step — every card carries one, set by the shortcode, the preview
+   template and NGCharts.renderOne alike.
+
+   This is the same argument the file header makes about colour: a
+   component that silently loses its typography when dropped into a page
+   is worse than one that repeats itself. The title and subtitle margins
+   are declared here for the first time — the component never had an
+   opinion and was quietly relying on whatever reset the host provided.
+   ================================================================ */
+.ng-chart[data-tone] .ng-chart__title { margin: 0; }
+.ng-chart[data-tone] .ng-chart__subtitle {
+  font-size: 0.9rem; line-height: 1.5; margin: 0.35rem 0 0;
+}
+.ng-chart[data-tone] .ngl-note {
+  font-size: 0.72rem; line-height: 1.5; margin: 0.7rem 0 0;
+}
+.ng-chart[data-tone] .ngl-note:empty { margin: 0; }
+.ng-chart[data-tone] .ngv-sum {
+  font: italic 400 0.7rem/1.45 var(--sans, 'DM Sans', system-ui, sans-serif); margin: 0;
+}
+.ng-chart[data-tone] .ngv-hint {
+  font: italic 400 0.7rem/1.45 var(--sans, 'DM Sans', system-ui, sans-serif); margin: 0 0 0 82px;
+}
+.ng-chart[data-tone] .ngv-def {
+  font: 400 0.76rem/1.5 var(--sans, 'DM Sans', system-ui, sans-serif); margin: 0;
+}
+
 /* screen-reader-only live region */
 .ngl-sr {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
@@ -658,7 +670,7 @@ body {
     <a href="/campaigns/tracking-london-crime/">live chart</a>. This page stays as
     the workbench: it inlines the WORKING-TREE copies of the engines rather than the
     published ones, so it shows whatever is currently checked out, and it can force a
-    layout the device would not otherwise choose. Built 01 Sep 2026 14:06.
+    layout the device would not otherwise choose. Built 01 Sep 2026 15:04.
   </p>
 
   <div class="lab-hud" id="lab-hud"></div>
@@ -4047,9 +4059,15 @@ body {
 
   /* ---------- compose ----------
      Same running order as the card on the page: eyebrow, title, subtitle,
-     chart, legend, caveat note, rule, source and tag. The note is above the
-     rule for the same reason it is on the page — a caveat that can be cropped
-     away from the bars it qualifies is not a caveat. */
+     chart, legend, rule, source and tag, caveat note.
+
+     The note comes AFTER the attribution, which is the opposite of where it
+     started. When the source line moved up above the selection pills — so that
+     a reader cropping a screenshot to the title and the bars still takes the
+     provenance with them — the page put the note below it, and this file was
+     not moved with it. The two then disagreed for a release: the page read
+     rule / source / note and the downloaded PNG read note / rule / source. The
+     export exists to be the same picture as the page, so it follows the page. */
   function compose(figure) {
     var card = readCard(figure);
     if (!card.svg) return Promise.reject(new Error('no chart svg to export'));
@@ -4122,13 +4140,6 @@ body {
       });
     }
 
-    var noteLines = wrap(card.note, T.note.size, T.note.weight, SANS, inner);
-    if (noteLines.length) {
-      y += T.note.gapAfter + T.note.size;
-      body += block(noteLines, PAD, y, T.note, sub, SANS, { 'font-style': 'italic' });
-      y += (noteLines.length - 1) * T.note.line;
-    }
-
     y += T.foot.gapBefore;
     body += line({ x1: PAD, x2: W - PAD, y1: y, y2: y, stroke: rule, 'stroke-width': 1 });
     y += T.foot.gapBefore + T.foot.size;
@@ -4136,11 +4147,22 @@ body {
       x: PAD, y: y, 'font-family': SANS, 'font-size': T.foot.size,
       'font-style': 'italic', fill: sub
     });
+    // The tag stays camel-case here while the page sets it in caps. That is
+    // deliberate and not a drift: on screen the all-caps reads as a mark, but a
+    // PNG can end up on a printout or a slide, where NeilGarratt.com is a URL
+    // somebody has to type. Do not "fix" one to match the other.
     body += text(card.tag, {
       x: W - PAD, y: y, 'text-anchor': 'end', 'font-family': SANS,
       'font-size': T.foot.size, 'font-weight': 600, 'letter-spacing': 0.7,
       fill: sub
     });
+
+    var noteLines = wrap(card.note, T.note.size, T.note.weight, SANS, inner);
+    if (noteLines.length) {
+      y += T.note.gapAfter + T.note.size;
+      body += block(noteLines, PAD, y, T.note, sub, SANS, { 'font-style': 'italic' });
+      y += (noteLines.length - 1) * T.note.line;
+    }
     var H = y + PAD;
 
     return fontFaceCss().then(function (faces) {

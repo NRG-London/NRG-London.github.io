@@ -207,9 +207,15 @@
 
   /* ---------- compose ----------
      Same running order as the card on the page: eyebrow, title, subtitle,
-     chart, legend, caveat note, rule, source and tag. The note is above the
-     rule for the same reason it is on the page — a caveat that can be cropped
-     away from the bars it qualifies is not a caveat. */
+     chart, legend, rule, source and tag, caveat note.
+
+     The note comes AFTER the attribution, which is the opposite of where it
+     started. When the source line moved up above the selection pills — so that
+     a reader cropping a screenshot to the title and the bars still takes the
+     provenance with them — the page put the note below it, and this file was
+     not moved with it. The two then disagreed for a release: the page read
+     rule / source / note and the downloaded PNG read note / rule / source. The
+     export exists to be the same picture as the page, so it follows the page. */
   function compose(figure) {
     var card = readCard(figure);
     if (!card.svg) return Promise.reject(new Error('no chart svg to export'));
@@ -282,13 +288,6 @@
       });
     }
 
-    var noteLines = wrap(card.note, T.note.size, T.note.weight, SANS, inner);
-    if (noteLines.length) {
-      y += T.note.gapAfter + T.note.size;
-      body += block(noteLines, PAD, y, T.note, sub, SANS, { 'font-style': 'italic' });
-      y += (noteLines.length - 1) * T.note.line;
-    }
-
     y += T.foot.gapBefore;
     body += line({ x1: PAD, x2: W - PAD, y1: y, y2: y, stroke: rule, 'stroke-width': 1 });
     y += T.foot.gapBefore + T.foot.size;
@@ -296,11 +295,22 @@
       x: PAD, y: y, 'font-family': SANS, 'font-size': T.foot.size,
       'font-style': 'italic', fill: sub
     });
+    // The tag stays camel-case here while the page sets it in caps. That is
+    // deliberate and not a drift: on screen the all-caps reads as a mark, but a
+    // PNG can end up on a printout or a slide, where NeilGarratt.com is a URL
+    // somebody has to type. Do not "fix" one to match the other.
     body += text(card.tag, {
       x: W - PAD, y: y, 'text-anchor': 'end', 'font-family': SANS,
       'font-size': T.foot.size, 'font-weight': 600, 'letter-spacing': 0.7,
       fill: sub
     });
+
+    var noteLines = wrap(card.note, T.note.size, T.note.weight, SANS, inner);
+    if (noteLines.length) {
+      y += T.note.gapAfter + T.note.size;
+      body += block(noteLines, PAD, y, T.note, sub, SANS, { 'font-style': 'italic' });
+      y += (noteLines.length - 1) * T.note.line;
+    }
     var H = y + PAD;
 
     return fontFaceCss().then(function (faces) {
