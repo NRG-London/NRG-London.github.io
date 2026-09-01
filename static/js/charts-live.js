@@ -262,11 +262,15 @@
     };
   }
 
-  /* Bars whose period is short of data get the quiet treatment rather than a
-     footnote the reader has to go and find:
+  /* Bars the reader should not take at face value get the quiet treatment
+     rather than a footnote they have to go and find:
        - coverage.material   a force didn't file; the bar is genuinely low
        - provisionalFrom     the population denominator is carried forward
-       - complete === false  a part-period being shown under --partial flag   */
+       - pandemic            a real figure, but not a comparable one
+       - complete === false  a part-period being shown under --partial flag
+
+     Every one of these is inert when the spec does not carry the field, so a
+     chart built without them is unaffected.                                  */
   /* Coverage is read from THIS series, never merged across the group. A London
      bar must not go grey because Lincolnshire failed to file — there is no
      Lincolnshire data on screen — and in a grouped chart only the affected
@@ -292,6 +296,19 @@
     // grouped chart.
     if (view.encoding === 'rate' && dataset.provisionalFrom != null
         && ci >= dataset.provisionalFrom) {
+      return C.mix(base, theme.dark ? C.DEEP : '#ffffff', 0.45);
+    }
+
+    // A pandemic year is a real figure but not a comparable one, and that is
+    // the same class of caveat as a carried-forward denominator: the bar's
+    // height is right, the reading needs a footnote. So it takes the same
+    // softened treatment rather than a new one — two quiet caveats that look
+    // alike are easier to learn than two that do not.
+    //
+    // Applied in EVERY encoding, unlike the provisional fade: it is the crime
+    // that was distorted, not the divisor. The two cannot collide in practice
+    // — provisional periods are the most recent, pandemic ones are 2020-22.
+    if (dataset.pandemic && dataset.pandemic[ci]) {
       return C.mix(base, theme.dark ? C.DEEP : '#ffffff', 0.45);
     }
     return base;
@@ -398,6 +415,13 @@
           btns[(i + (e.key === 'ArrowRight' ? 1 : btns.length - 1)) % btns.length].focus();
         });
 
+        // Chips go in their own flex box so a wrapped row aligns to a clean
+        // left edge instead of sliding under its own label.
+        var chipBox = document.createElement('div');
+        chipBox.className = 'ngv-modchips';
+        while (row.children.length > 1) chipBox.appendChild(row.children[1]);
+        row.appendChild(chipBox);
+
         rows[dim.key] = row;
         box.appendChild(row);
       });
@@ -421,9 +445,21 @@
     // is about.
     var noteEl = document.createElement('p');
     noteEl.className = 'ngl-note';
+    // Order: chart, source and attribution, then the caveats, then the
+    // controls. A reader cropping a screenshot to the title and the bars keeps
+    // the source line; the caveats sit just under it.
     var foot = figure && figure.querySelector('.ng-chart__foot');
-    if (foot) figure.insertBefore(noteEl, foot);
+    if (foot && foot.nextSibling) figure.insertBefore(noteEl, foot.nextSibling);
+    else if (foot) figure.appendChild(noteEl);
     else (figure || host).insertBefore(noteEl, controls.box);
+
+    // The tier nav's tooltip. position:fixed, so it lives on the body rather
+    // than inside a card that may clip it.
+    var tipEl = document.createElement('div');
+    tipEl.className = 'ngv-tip';
+    tipEl.setAttribute('role', 'tooltip');
+    tipEl.hidden = true;
+    document.body.appendChild(tipEl);
 
     /* ---------- download ----------
        Only built when chart-export.js is present, the same bargain the controls
@@ -460,7 +496,8 @@
       if (pendingFinish) pendingFinish();
       downloadBtn.disabled = true;
       downloadBtn.setAttribute('data-busy', '1');
-      global.NGExport.download(figure, downloadFilename())
+      global.NGExport.download(figure, downloadFilename(),
+                              metaFn ? metaFn() : null)
         .catch(function (err) {
           if (global.console) console.error('chart download failed', err);
           live.textContent = 'Sorry — the chart could not be downloaded.';
@@ -472,8 +509,22 @@
     }
 
     /* Named from the chips the reader actually chose, so the file says what it
-       is once it is sitting in a Downloads folder among fifty others. */
+       is once it is sitting in a Downloads folder among fifty others.
+
+       A page that drives the chart through its own navigation knows more about
+       the view than the engine does — a two-tier menu keeps its category
+       outside spec.dims entirely — so it can supply a name instead, via
+       instance.setFilename(). Unused, this is exactly what it always was. */
+    var filenameFn = null, metaFn = null;
+    function setFilenameFn(fn) { filenameFn = fn; }
+    function setMetaFn(fn) { metaFn = fn; }
+    function viewCopy() { return JSON.parse(JSON.stringify(view)); }
+
     function downloadFilename() {
+      if (filenameFn) {
+        var supplied = filenameFn();
+        if (supplied) return supplied;
+      }
       var parts = [spec.id];
       spec.dims.forEach(function (dim) {
         var chosen = null;
@@ -482,6 +533,704 @@
       });
       return parts.join('-').toLowerCase()
         .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') + '.png';
+    }
+
+    /* ================================================================
+       TWO-TIER CATEGORY NAV
+       Built only when the spec carries `tiers`. Without it the engine draws
+       the chip row per dimension exactly as before, so a spec that predates
+       this — or any other chart mounted on this engine — is unaffected.
+
+       The category is deliberately NOT a dimension: it is navigation, and a
+       leaf may appear under more than one parent, which spec.dims cannot say.
+       ================================================================ */
+    if (spec.tiers && spec.tiers.length) buildTierNav();
+
+    function buildTierNav() {
+  var byKey = {};
+  spec.tiers.forEach(function (t) { byKey[t.key] = t; });
+  var pinned = spec.pinned;
+  var hidden = spec.tiers.filter(function (t) { return pinned.indexOf(t.key) === -1; });
+
+  var GAP = 6, PILL_H = 30;
+  var REDUCED = window.matchMedia
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var DUR = REDUCED ? 0 : 750;
+  function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+  function copyV(v) { return { x: v.x, y: v.y, w: v.w, op: v.op }; }
+  var ease = easeCubicInOut;
+
+  var navState = { parent: null, crime: spec.initial.crime,
+                moreOpen: false, definitions: false, tipKey: null };
+  var pills = [], anim = null, lastW = 0, alsoTarget = null;
+
+  /* ---------- scaffold ---------- */
+  var nav = navEl('div', 'ngv-nav');
+  var catRow = navRow('Category');
+  var showRow = navRow('Showing');
+  var showStack = navEl('div', 'ngv-stack');
+  var canvas = navEl('div', 'ngv-canvas');
+  var alsoClip = navEl('div', 'ngv-alsoclip');
+  var alsoBox = navEl('div', 'ngv-also');
+  alsoClip.appendChild(alsoBox);
+  showStack.appendChild(canvas);
+  showStack.appendChild(alsoClip);
+  showRow.el.removeChild(showRow.chips);
+  showRow.el.appendChild(showStack);
+
+  var moreWrap = navEl('div', 'ngv-more-wrap');
+  var moreBtn = navEl('button', 'ngv-chip ngv-chip--parent ngv-more');
+  moreBtn.type = 'button';
+  moreBtn.setAttribute('aria-haspopup', 'true');
+  var moreMenu = navEl('div', 'ngv-menu');
+  moreMenu.hidden = true;
+  moreWrap.appendChild(moreBtn);
+  moreWrap.appendChild(moreMenu);
+
+  var summary = navEl('div', 'ngv-summary');
+  var sumLine = navEl('p', 'ngv-sum');
+  var infoBtn = navEl('button', 'ngv-info');
+  infoBtn.type = 'button';
+  infoBtn.innerHTML = '&#9432; definitions';
+  infoBtn.setAttribute('aria-pressed', 'false');
+  summary.appendChild(sumLine);
+  summary.appendChild(infoBtn);
+  var hint = navEl('p', 'ngv-hint');
+  hint.textContent = 'Definitions on — tap any chip to read what it counts; '
+                   + 'tap the button again to go back to selecting.';
+  hint.hidden = true;
+
+  nav.appendChild(catRow.el);
+  nav.appendChild(showRow.el);
+  nav.appendChild(summary);
+  nav.appendChild(hint);
+  figure.insertBefore(nav, figure.querySelector('.ngl-controls'));
+
+  function navEl(tag, cls) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    return n;
+  }
+  function navRow(label) {
+    var r = navEl('div', 'ngv-row');
+    var lab = navEl('span', 'ngv-row__label');
+    lab.textContent = label;
+    r.appendChild(lab);
+    var chips = navEl('div', 'ngv-chips');
+    r.appendChild(chips);
+    return { el: r, chips: chips };
+  }
+  function labelFor(k) { return (spec.copy[k] && spec.copy[k].label) || k; }
+  function shortFor(k) { return spec.short[k] || labelFor(k); }
+
+  /* ---------- tooltips ----------
+     Keys are read from the element at hover time, never closed over: a pill is
+     RECYCLED across category changes, so the chip under the cursor is not the
+     one the handler was created for. */
+  var hoverTimer = null, HOVER_DELAY = 450;
+
+  /* Hover tooltips are for pointers, and only pointers. A touch tap fires a
+     synthetic mouseenter and never a mouseleave, so on a phone the tooltip
+     appeared by itself and could not be dismissed. Touch has the definitions
+     toggle instead — which is what it was built for. */
+  var HOVER_OK = !window.matchMedia
+    || window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  function cancelHover() { clearTimeout(hoverTimer); }
+
+  function tipContent(key, kind) {
+    var tier = byKey[navState.parent];
+    var title, body, note = '';
+    if (kind === 'child' && key === tier.key) {
+      title = 'Total — ' + tier.label;
+      body = 'The whole "' + tier.label + '" category: the sum of the '
+           + tier.split.length + ' crime types shown.';
+    } else {
+      title = labelFor(key);
+      body = spec.definitions[key] || '';
+    }
+    if (kind === 'also') {
+      var a = spec.alsoNotes[tier.key + '|' + key];
+      if (a) note = a.note;
+    }
+    return { title: title, body: body, note: note };
+  }
+
+  function showTip(btn, key, kind) {
+    var t = tipContent(key, kind);
+    tipEl.innerHTML = '';
+    var b = document.createElement('b');
+    b.textContent = t.title;
+    tipEl.appendChild(b);
+    tipEl.appendChild(document.createTextNode(t.body));
+    if (t.note) {
+      var i = document.createElement('i');
+      i.textContent = t.note;
+      tipEl.appendChild(i);
+    }
+    var r = btn.getBoundingClientRect();
+    // A pending hover timer can outlive its chip: selecting a category rebuilds
+    // the whole row, so by the time it fires the button is detached and its
+    // rect is all zeros — which clamped the tooltip into the top-left corner
+    // with nothing to dismiss it. No layout, no tooltip.
+    if (!r.width && !r.height) { hideTip(); return; }
+    tipEl.hidden = false;
+    tipEl.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 296)) + 'px';
+    tipEl.style.top = (r.bottom + 8) + 'px';
+    navState.tipKey = key;
+  }
+  function hideTip() { tipEl.hidden = true; navState.tipKey = null; }
+
+  function wireTip(btn, kind, keyOf) {
+    if (!HOVER_OK) return;
+    btn.addEventListener('mouseenter', function () {
+      if (navState.definitions) return;
+      cancelHover();
+      hoverTimer = setTimeout(function () { showTip(btn, keyOf(), kind); }, HOVER_DELAY);
+    });
+    btn.addEventListener('mouseleave', function () {
+      cancelHover();
+      if (!navState.definitions) hideTip();
+    });
+  }
+
+  /* ---------- category row (unchanged: a plain wrapping flex row) ---------- */
+  function chip(key, label, kind, selected) {
+    var b = navEl('button', 'ngv-chip ngv-chip--' + kind);
+    b.type = 'button';
+    b.textContent = label;
+    b.dataset.key = key;
+    b.setAttribute('aria-selected', String(!!selected));
+    wireTip(b, kind, function () { return b.dataset.key; });
+    b.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (navState.definitions) {
+        if (navState.tipKey === b.dataset.key) hideTip();
+        else showTip(b, b.dataset.key, kind);
+        return;
+      }
+      hideTip();
+      if (kind === 'parent') selectParent(b.dataset.key);
+      else selectCrime(b.dataset.key);
+    });
+    return b;
+  }
+
+  function buildCategoryRow() {
+    catRow.chips.textContent = '';
+    pinned.forEach(function (k) {
+      catRow.chips.appendChild(chip(k, shortFor(k), 'parent', navState.parent === k));
+    });
+    catRow.chips.appendChild(moreWrap);
+
+    var inMore = hidden.some(function (t) { return t.key === navState.parent; });
+    moreBtn.textContent = (inMore ? shortFor(navState.parent) : 'More') + ' ▾';
+    moreBtn.setAttribute('aria-selected', String(inMore));
+
+    moreMenu.textContent = '';
+    hidden.forEach(function (t) {
+      var b = navEl('button');
+      b.type = 'button';
+      // Short form here too: the dropdown is the same row of buttons by
+      // another name, and a reader should not meet two names for one thing.
+      b.textContent = shortFor(t.key);
+      b.dataset.key = t.key;
+      b.setAttribute('aria-selected', String(navState.parent === t.key));
+      wireTip(b, 'parent', function () { return t.key; });
+      b.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (navState.definitions) { showTip(b, t.key, 'parent'); return; }
+        selectParent(t.key);
+        setMore(false);
+      });
+      moreMenu.appendChild(b);
+    });
+  }
+
+  function setMore(open) {
+    navState.moreOpen = open;
+    moreMenu.hidden = !open;
+    moreBtn.setAttribute('aria-expanded', String(open));
+  }
+  moreBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    hideTip();
+    setMore(!navState.moreOpen);
+  });
+  // Any tap outside a chip dismisses, in either mode. This used to fire only
+  // in definitions mode, which left a stuck tooltip with no way out.
+  document.addEventListener('click', function () {
+    if (navState.moreOpen) setMore(false);
+    cancelHover();
+    if (!tipEl.hidden) hideTip();
+  });
+  window.addEventListener('scroll', function () {
+    // The tooltip is position:fixed, so a scroll leaves it pointing at
+    // nothing. Cheaper to dismiss than to track.
+    cancelHover();
+    if (!tipEl.hidden) hideTip();
+  }, { passive: true });
+
+  /* ================================================================
+     THE SHOWING ROW — "soap bubbles"
+     Pills are recycled by POSITION: pill i stays pill i, squeezes to its new
+     width, and crossfades its label at the halfway point. Surplus pills
+     inflate in or deflate away. One master clock, everything driven off one
+     eased t, interpolated in pixel space — the same discipline as the bars.
+     ================================================================ */
+  function paint(r) {
+    var st = r.el.style, w = Math.max(0, r.cur.w);
+    st.left = r.cur.x + 'px';
+    st.top = r.cur.y + 'px';
+    st.width = w + 'px';
+    // Under border-box a pill cannot shrink below its own padding, which pops
+    // at about 24px. Animating the padding with the width removes the floor.
+    var pad = Math.min(12, Math.max(0, w / 2 - 2));
+    st.paddingLeft = pad + 'px';
+    st.paddingRight = pad + 'px';
+    st.opacity = r.cur.op;
+  }
+
+  var measurer = null;
+  function measure(label) {
+    if (!measurer) {
+      measurer = navEl('button', 'ngv-pill ngv-measure');
+      measurer.setAttribute('aria-hidden', 'true');
+      measurer.tabIndex = -1;
+      measurer.style.cssText = 'visibility:hidden;left:-9999px;top:0';
+      canvas.appendChild(measurer);
+    }
+    measurer.textContent = label;
+    return measurer.offsetWidth;
+  }
+
+  // Simulate flex-wrap, because the pills are absolutely positioned and the
+  // browser will not do it for us.
+  function flowLayout(list, W) {
+    var x = 0, y = 0, pos = [];
+    list.forEach(function (it) {
+      if (x > 0 && x + it.w > W) { x = 0; y += PILL_H + GAP; }
+      pos.push({ x: x, y: y });
+      x += it.w + GAP;
+    });
+    return { pos: pos, height: y + PILL_H };
+  }
+
+  // 'TOTAL' is a stable key so the Total pill recycles across categories
+  // instead of exiting and re-entering on every change.
+  function childList() {
+    var t = byKey[navState.parent];
+    var useShort = t.key === 'total';
+    var out = [{ key: 'TOTAL', crime: t.key, label: 'Total' }];
+    t.split.forEach(function (k) {
+      out.push({ key: k, crime: k, label: useShort ? shortFor(k) : labelFor(k) });
+    });
+    return out;
+  }
+
+  function makePill(it) {
+    var b = navEl('button', 'ngv-pill');
+    b.type = 'button';
+    var sp = document.createElement('span');
+    sp.textContent = it.label;
+    b.appendChild(sp);
+    b.dataset.key = it.crime;
+    b.setAttribute('aria-selected', String(it.crime === navState.crime));
+    wireTip(b, 'child', function () { return b.dataset.key; });
+    b.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (navState.definitions) {
+        if (navState.tipKey === b.dataset.key) hideTip();
+        else showTip(b, b.dataset.key, 'child');
+        return;
+      }
+      hideTip();
+      selectCrime(b.dataset.key);
+    });
+    canvas.appendChild(b);
+    return b;
+  }
+
+  /* Two kinds live in this box and one heading cannot describe both.
+     Sexual offences proves it: rape at knifepoint IS inside the sexual
+     offences total, while soliciting is counted under miscellaneous crimes.
+     "Related, not in this total" was true of the second and flatly false of
+     the first. Each kind now gets its own heading, and a heading only appears
+     when it has chips — so the six single-kind boxes look much as before. */
+  var ALSO_HEADS = {
+    inside: 'Also inside this total',
+    outside: 'Related, counted elsewhere'
+  };
+
+  function buildAlso(list) {
+    alsoBox.textContent = '';
+    var parent = navState.parent;
+    ['inside', 'outside'].forEach(function (kind) {
+      var keys = list.filter(function (k) {
+        var a = spec.alsoNotes[parent + '|' + k];
+        return a && a.kind === kind;
+      });
+      if (!keys.length) return;
+      var group = navEl('div', 'ngv-also__group');
+      var head = navEl('span', 'ngv-also__head');
+      head.textContent = ALSO_HEADS[kind];
+      var chips = navEl('div', 'ngv-also__chips');
+      keys.forEach(function (k) {
+        chips.appendChild(chip(k, labelFor(k), 'also', k === navState.crime));
+      });
+      group.appendChild(head);
+      group.appendChild(chips);
+      alsoBox.appendChild(group);
+    });
+  }
+
+  function syncSelection() {
+    [].forEach.call(canvas.querySelectorAll('.ngv-pill:not(.ngv-measure)'), function (b) {
+      b.setAttribute('aria-selected', String(b.dataset.key === navState.crime));
+    });
+    [].forEach.call(alsoBox.querySelectorAll('.ngv-chip'), function (b) {
+      b.setAttribute('aria-selected', String(b.dataset.key === navState.crime));
+    });
+  }
+
+  /* Static layout: first paint, font load, resize. */
+  function instantLayout() {
+    if (anim) return;
+    var W = canvas.clientWidth;
+    if (!W || (W === lastW && pills.length)) return;
+    lastW = W;
+    var list = childList();
+    list.forEach(function (it) { it.w = measure(it.label); });
+    var lay = flowLayout(list, W);
+    pills.forEach(function (p) { p.el.remove(); });
+    pills = list.map(function (it, i) {
+      var node = makePill(it);
+      var rec = { el: node, span: node.firstChild, key: it.key,
+                  cur: { x: lay.pos[i].x, y: lay.pos[i].y, w: it.w, op: 1 } };
+      paint(rec);
+      return rec;
+    });
+    canvas.style.height = lay.height + 'px';
+    var also = byKey[navState.parent].also;
+    buildAlso(also);
+    if (also.length) {
+      alsoClip.style.display = 'block';
+      alsoClip.style.height = 'auto';
+      alsoClip.style.marginTop = '8px';
+      alsoClip.style.opacity = '1';
+      alsoClip.style.height = alsoClip.offsetHeight + 'px';
+    } else {
+      alsoClip.style.display = 'none';
+      alsoClip.style.height = '0';
+      alsoClip.style.marginTop = '0';
+    }
+    syncSelection();
+  }
+
+  function alsoTween() {
+    var list = byKey[navState.parent].also;
+    var h0 = alsoClip.style.display === 'none' ? 0 : alsoClip.offsetHeight;
+    var m0 = h0 > 0 ? 8 : 0;
+    buildAlso(list);
+    var h1 = 0, m1 = list.length ? 8 : 0;
+    if (list.length) {
+      alsoClip.style.display = 'block';
+      alsoClip.style.height = 'auto';
+      h1 = alsoClip.offsetHeight;
+    } else if (h0 === 0) {
+      alsoClip.style.display = 'none';
+      return null;
+    }
+    alsoClip.style.height = h0 + 'px';
+    alsoClip.style.marginTop = m0 + 'px';
+    alsoTarget = { h: h1, show: list.length > 0 };
+    return function (e) {
+      alsoClip.style.height = (h0 + (h1 - h0) * e) + 'px';
+      alsoClip.style.marginTop = (m0 + (m1 - m0) * e) + 'px';
+      alsoClip.style.opacity = h1 === 0 ? String(1 - e) : h0 === 0 ? String(e) : '1';
+    };
+  }
+
+  function tween() {
+    var W = canvas.clientWidth;
+    if (!W) { instantLayout(); return; }
+    var list = childList();
+    list.forEach(function (it) { it.w = measure(it.label); });
+    var lay = flowLayout(list, W);
+    var startH = canvas.offsetHeight;
+
+    // The old set is whatever is truly on screen. A click mid-flight retargets
+    // from the current interpolated values rather than restarting, so nothing
+    // ever snaps.
+    var old = anim
+      ? anim.recs.map(function (r) {
+          return { el: r.el, span: r.span, exit: r.mode === 'exit', cur: copyV(r.cur) };
+        })
+      : pills.map(function (p) {
+          return { el: p.el, span: p.span, exit: false, cur: copyV(p.cur) };
+        });
+    if (anim) { cancelAnimationFrame(anim.raf); anim = null; }
+
+    var recs = [];
+    var live = old.filter(function (p) { return !p.exit; })
+      .sort(function (a, b) { return a.cur.y - b.cur.y || a.cur.x - b.cur.x; });
+
+    list.forEach(function (it, i) {
+      var to = { x: lay.pos[i].x, y: lay.pos[i].y, w: it.w, op: 1 };
+      if (i < live.length) {
+        var p = live[i];
+        recs.push({ el: p.el, span: p.span, newCrime: it.crime, newLabel: it.label,
+                    from: copyV(p.cur), to: to, mode: 'morph', swapped: false,
+                    cur: copyV(p.cur) });
+      } else {
+        var node = makePill(it);
+        var rec = { el: node, span: node.firstChild,
+                    from: { x: to.x, y: to.y, w: 0, op: 0 }, to: to,
+                    mode: 'enter', cur: { x: to.x, y: to.y, w: 0, op: 0 } };
+        paint(rec);
+        recs.push(rec);
+      }
+    });
+    live.slice(list.length).forEach(function (p) {
+      recs.push({ el: p.el, span: p.span, from: copyV(p.cur),
+                  to: { x: p.cur.x, y: p.cur.y, w: 0, op: 0 },
+                  mode: 'exit', cur: copyV(p.cur) });
+    });
+    old.filter(function (p) { return p.exit; }).forEach(function (p) {
+      recs.push({ el: p.el, span: p.span, from: copyV(p.cur),
+                  to: { x: p.cur.x, y: p.cur.y, w: 0, op: 0 },
+                  mode: 'exit', cur: copyV(p.cur) });
+    });
+
+    // Leavers under survivors under arrivals, so overlap never looks wrong.
+    recs.forEach(function (r) {
+      r.el.style.zIndex = r.mode === 'exit' ? '1' : r.mode === 'enter' ? '3' : '2';
+      if (r.mode === 'exit') r.el.style.pointerEvents = 'none';
+    });
+
+    var stepAlso = alsoTween();
+    var t0 = null;
+
+    function frame(ts) {
+      if (t0 === null) t0 = ts;
+      var t = DUR <= 0 ? 1 : Math.min((ts - t0) / DUR, 1);
+      var e = ease(t);
+      recs.forEach(function (r) {
+        r.cur.x = r.from.x + (r.to.x - r.from.x) * e;
+        r.cur.y = r.from.y + (r.to.y - r.from.y) * e;
+        r.cur.w = r.from.w + (r.to.w - r.from.w) * e;
+        if (r.mode === 'exit') r.cur.op = r.from.op * (1 - e);
+        else if (r.mode === 'enter') r.cur.op = e;
+        else r.cur.op = 1;
+        if (r.mode === 'morph') {
+          r.span.style.opacity = e < 0.5 ? String(1 - e * 2) : String((e - 0.5) * 2);
+          if (e >= 0.5 && !r.swapped) {
+            r.swapped = true;
+            r.span.textContent = r.newLabel;
+            r.el.dataset.key = r.newCrime;
+            r.el.setAttribute('aria-selected', String(r.newCrime === navState.crime));
+          }
+        }
+        paint(r);
+      });
+      canvas.style.height = (startH + (lay.height - startH) * e) + 'px';
+      if (stepAlso) stepAlso(e);
+      if (t < 1) { anim.raf = requestAnimationFrame(frame); return; }
+      settleTween(recs, lay);
+    }
+    anim = { recs: recs, raf: requestAnimationFrame(frame) };
+  }
+
+  function settleTween(recs, lay) {
+    pills = [];
+    recs.forEach(function (r) {
+      if (r.mode === 'exit') { r.el.remove(); return; }
+      r.cur = copyV(r.to);
+      paint(r);
+      r.span.style.opacity = '1';
+      r.el.style.zIndex = '2';
+      pills.push({ el: r.el, span: r.span, cur: r.cur });
+    });
+    canvas.style.height = lay.height + 'px';
+    if (alsoTarget) {
+      if (!alsoTarget.show) {
+        alsoClip.style.display = 'none';
+        alsoClip.style.height = '0';
+        alsoClip.style.marginTop = '0';
+      } else {
+        alsoClip.style.height = alsoTarget.h + 'px';
+        alsoClip.style.opacity = '1';
+      }
+      alsoTarget = null;
+    }
+    anim = null;
+    syncSelection();
+  }
+
+  /* ---------- copy, crossfaded rather than cut ---------- */
+  function fadeSwap(node, text) {
+    if (node.textContent === text) return;
+    if (DUR <= 0) { node.textContent = text; return; }
+    clearTimeout(node._swap);
+    node.style.opacity = '0';
+    node._swap = setTimeout(function () {
+      node.textContent = text;
+      node.style.opacity = '1';
+    }, 180);
+  }
+
+  function summaryText() {
+    var t = byKey[navState.parent];
+    if (t.also.indexOf(navState.crime) !== -1) {
+      var a = spec.alsoNotes[t.key + '|' + navState.crime];
+      return a ? a.note : '';
+    }
+    if (t.key === 'knife') {
+      return 'Knife crime incorporates offences from the other categories — '
+           + 'each of these is also counted in its own crime type.';
+    }
+    return shortFor(t.key) + ' is the sum of the ' + t.split.length
+         + ' crime types shown.';
+  }
+
+  function selectParent(key) {
+    cancelHover();
+    if (key === navState.parent) { setMore(false); return; }
+    navState.parent = key;
+    navState.crime = key;                 // land on the category's own total
+    setMore(false);
+    buildCategoryRow();
+    tween();
+    setMany({ crime: key });
+    fadeSwap(sumLine, summaryText());
+  }
+
+  function selectCrime(key) {
+    cancelHover();
+    if (key === navState.crime) return;
+    navState.crime = key;
+    setMany({ crime: key });
+    syncSelection();
+    fadeSwap(sumLine, summaryText());
+  }
+
+  // Resize and font load re-lay-out instantly, and only when idle.
+  window.addEventListener('resize', instantLayout);
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function () { lastW = 0; instantLayout(); });
+  }
+
+  /* The downloaded file has to survive a Downloads folder. The engine names
+     it from spec.dims, and this chart keeps its category and crime OUTSIDE
+     dims — so every chart from one session arrived as the same name with
+     "(1)", "(2)", "(3)" after it. The keys are already unique, so they do it:
+
+       crime-chart-theft-shoplifting-jan-london-counts.png
+       crime-chart-knife-robbery-apr-vs-rest-indexed.png
+       crime-chart-sexual-total-jan-london-per-1000.png
+
+     Where a crime key already carries its category — knife_robbery under
+     Knife crime — the prefix is dropped rather than stuttered back. */
+  var FILE_PERIOD = { cy: 'jan', fy: 'apr', r12: '12' };
+  var FILE_COMPARE = { london: 'london', rew: 'vs-rest' };
+  var FILE_SHOW = { count: 'counts', index: 'indexed', rate: 'per-1000' };
+
+  setFilenameFn(function () {
+    var v = viewCopy();
+    var parent = navState.parent, crime = navState.crime, subject;
+    if (crime === parent) subject = parent + '-total';
+    else if (crime.indexOf(parent + '_') === 0) subject = crime;
+    else subject = parent + '-' + crime;
+    return ['crime-chart', subject,
+            FILE_PERIOD[v.period] || v.period,
+            FILE_COMPARE[v.compare] || v.compare,
+            FILE_SHOW[v.encoding] || v.encoding]
+      .join('-').toLowerCase().replace(/_/g, '-')
+      .replace(/[^a-z0-9-]+/g, '-').replace(/-+/g, '-')
+      .replace(/^-|-$/g, '') + '.png';
+  });
+
+  /* What the engine cannot know: which categories are selected, which release
+     of the data the figures came from, what this category counts, and the
+     figures themselves.
+
+     The vintage matters most. Home Office revises its whole back-series every
+     quarter, so a chart without it cannot be reproduced later even by us.
+
+     The figures matter for the same reason a source line does: a chart that
+     has travelled a long way from this website can still be checked without
+     anyone having to come back and ask. */
+  setMetaFn(function () {
+    var v = viewCopy();
+    var ds = spec.datasets[v.crime + '|' + v.period];
+    var tier = byKey[navState.parent];
+    var figures = '';
+    if (ds) {
+      figures = ds.series.map(function (s) {
+        return s.name + ' - ' + ds.categories.map(function (c, i) {
+          return c + ': ' + (s.values[i] == null ? 'no data' : s.values[i]);
+        }).join('; ');
+      }).join(' | ');
+    }
+    return {
+      'Category': tier.label + ' › '
+                + (v.crime === tier.key ? 'Total' : labelFor(v.crime)),
+      'View': 'category=' + navState.parent + '; crime=' + v.crime
+            + '; period=' + v.period + '; compare=' + v.compare
+            + '; show=' + v.encoding,
+      'Counts': spec.definitions[v.crime] || '',
+      'Data vintage': 'Home Office release ' + (spec.meta && spec.meta.vintage),
+      'Figures': figures,
+      'URL': 'https://neilgarratt.com/campaigns/tracking-london-crime/'
+    };
+  });
+
+  infoBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    navState.definitions = !navState.definitions;
+    infoBtn.setAttribute('aria-pressed', String(navState.definitions));
+    hint.hidden = !navState.definitions;
+    hideTip();
+  });
+
+  // Roving arrow keys within each row, matching the engine's chip rows.
+  [catRow.chips, showStack].forEach(function (scope) {
+    scope.addEventListener('keydown', function (e) {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      // Pills are absolutely positioned and recycled, so DOM order is creation
+      // order rather than reading order. Sort by where they actually are.
+      var btns = [].slice.call(
+        scope.querySelectorAll('.ngv-pill:not(.ngv-measure),.ngv-chip'))
+        .sort(function (a, b) {
+          var ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect();
+          return (ra.top - rb.top) || (ra.left - rb.left);
+        });
+      var i = btns.indexOf(document.activeElement);
+      if (i === -1) return;
+      e.preventDefault();
+      btns[(i + (e.key === 'ArrowRight' ? 1 : btns.length - 1)) % btns.length].focus();
+    });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { hideTip(); setMore(false); }
+  });
+
+  // Open on whichever row carries the initial view.
+  var startParent = spec.initial.crime;
+  if (!byKey[startParent]) {
+    spec.tiers.forEach(function (t) {
+      if (t.split.indexOf(spec.initial.crime) !== -1 && !byKey[startParent]) {
+        startParent = t.key;
+      }
+    });
+  }
+  navState.parent = byKey[startParent] ? startParent : spec.tiers[0].key;
+  navState.crime = spec.initial.crime;
+  buildCategoryRow();
+  instantLayout();            // first paint has nothing to animate from
+  sumLine.textContent = summaryText();
+  setMany({ crime: navState.crime });
+
     }
 
     /* ---------- state ---------- */
@@ -952,6 +1701,11 @@
         html += '<div class="ngl-tooltip__note">Population carried forward '
              + 'from the last published estimate.</div>';
       }
+      // Deliberately terse. What a pandemic did to street crime does not need
+      // explaining, and a paragraph here would read as excuse-making.
+      if (ds.pandemic && ds.pandemic[bar.catIndex]) {
+        html += '<div class="ngl-tooltip__note">Pandemic affected year.</div>';
+      }
       tooltip.innerHTML = html;
       tooltip.setAttribute('data-show', '1');
 
@@ -975,6 +1729,10 @@
       setMany: setMany,
       view: function () { return JSON.parse(JSON.stringify(view)); },
       setTransition: function (ms) { duration = ms; },
+      setFilename: function (fn) { filenameFn = fn; },
+      // Extra PNG metadata the page knows and the engine cannot: which
+      // categories are selected, the data vintage, the figures themselves.
+      setExportMeta: function (fn) { metaFn = fn; },
       // Jump any in-flight transition to its end state, removing the exiting
       // nodes. Anything that reads the DOM rather than watches it — the export,
       // a capture driver — wants the settled chart, not a frame of the swoosh.

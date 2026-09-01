@@ -75,7 +75,24 @@
   {{- $view = merge $view (dict $dim (or $given (index $spec.initial $dim))) -}}
 {{- end -}}
 
-{{- /* Reject a dimension that does not exist before it silently does nothing. */ -}}
+{{- /* Reject a value that does not exist before it silently does nothing.
+       "crime" is NOT a dimension on a two-tier chart — it is navigation, and a
+       leaf can sit under more than one category, which dims cannot express —
+       so it is checked against the keys the tiers name. Without this the only
+       symptom of a typo is the missing-baked-SVG error further down, which
+       blames the wrong thing. */ -}}
+{{- if $spec.tiers -}}
+  {{- $crimes := slice -}}
+  {{- range $spec.tiers -}}
+    {{- $crimes = $crimes | append .key -}}
+    {{- range .split }}{{ $crimes = $crimes | append . }}{{ end -}}
+    {{- range .also }}{{ $crimes = $crimes | append . }}{{ end -}}
+  {{- end -}}
+  {{- if not (in $crimes $view.crime) -}}
+    {{- errorf "ng-chart: crime=%q is not one of this chart's categories on page %s"
+        $view.crime $.Page.File.Path -}}
+  {{- end -}}
+{{- end -}}
 {{- range $d := $spec.dims -}}
   {{- $chosen := index $view $d.key -}}
   {{- $keys := slice -}}
@@ -101,18 +118,29 @@
 {{- $copy := index $spec.copy $view.crime -}}
 {{- $frame := $spec.frame -}}
 
-{{- /* Only what charts-live.js actually reads. Dropping meta, frame and the
-       baked SVGs keeps tens of kilobytes of duplicate payload out of the page —
-       the SVG is already in the markup above, and the engine never reads it. */ -}}
+{{- /* Only what charts-live.js actually reads. Dropping frame and the baked
+       SVGs keeps tens of kilobytes of duplicate payload out of the page — the
+       SVG is already in the markup above, and the engine never reads it.
+
+       Keep this list in step with the engine: it denies by default, so a field
+       added to the spec and read by the engine arrives here as undefined and
+       the feature silently does nothing. Only the vintage is taken from meta,
+       for the exported PNG's provenance. */ -}}
 {{- $payload := dict
       "id" $spec.id
       "tone" $spec.tone
       "palette" $spec.palette
       "dims" $spec.dims
+      "tiers" $spec.tiers
+      "pinned" $spec.pinned
+      "short" $spec.short
+      "definitions" $spec.definitions
+      "alsoNotes" $spec.alsoNotes
       "availability" $spec.availability
       "datasets" $spec.datasets
       "copy" $spec.copy
       "notes" $spec.notes
+      "meta" (dict "vintage" $spec.meta.vintage)
       "initial" $view -}}
 
 <figure class="ng-chart" data-tone="{{ $spec.tone | default "editorial" }}">

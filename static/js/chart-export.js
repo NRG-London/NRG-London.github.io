@@ -25,7 +25,7 @@
    REQUIRES chart-core.js (for INK/PAPER/DEEP and esc).
 
    Public API:
-     NGExport.download(figure, filename) -> Promise<void>
+     NGExport.download(figure, filename, meta) -> Promise<void>
      NGExport.compose(figure)            -> Promise<string>   (the SVG; tests)
      NGExport.FONT_URLS                  -> overridable, for tests
    ================================================================ */
@@ -349,14 +349,120 @@
     setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
   }
 
-  function download(figure, filename) {
+  /* ---------- metadata ----------
+     Written into the PNG, not the SVG. The SVG is an intermediate that is
+     rasterised and discarded, so anything put there would never leave the
+     browser; the PNG is the file that travels, and PNG has a real metadata
+     standard for exactly this.
+
+     iTXt rather than tEXt: tEXt is Latin-1 only and this copy carries em
+     dashes, middots and pound signs. iTXt is UTF-8 and just as widely read —
+     ExifTool, ImageMagick, Pillow and most image viewers all handle it.
+
+     The point is that a chart which has travelled far from this website can
+     still say what it is, where the figures came from, when it was made, and
+     which release of the data it was built on. Home Office revises its whole
+     back-series every quarter, so a chart without its vintage cannot be
+     reproduced even by us. */
+  var CRC_TABLE = (function () {
+    var t = [], c, n, k;
+    for (n = 0; n < 256; n++) {
+      c = n;
+      for (k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+      t[n] = c >>> 0;
+    }
+    return t;
+  })();
+
+  function crc32(bytes) {
+    var c = 0xffffffff;
+    for (var i = 0; i < bytes.length; i++) {
+      c = CRC_TABLE[(c ^ bytes[i]) & 0xff] ^ (c >>> 8);
+    }
+    return (c ^ 0xffffffff) >>> 0;
+  }
+
+  function itxtChunk(keyword, text) {
+    var enc = new TextEncoder();
+    // keyword   compressionFlag compressionMethod languageTag  
+    // translatedKeyword   text
+    var head = enc.encode(keyword);
+    var body = enc.encode(text);
+    var data = new Uint8Array(head.length + 5 + body.length);
+    var o = 0;
+    data.set(head, o); o += head.length;
+    data[o++] = 0;      // null after keyword
+    data[o++] = 0;      // not compressed
+    data[o++] = 0;      // compression method (ignored when uncompressed)
+    data[o++] = 0;      // empty language tag
+    data[o++] = 0;      // empty translated keyword
+    data.set(body, o);
+
+    var type = enc.encode('iTXt');
+    var chunk = new Uint8Array(12 + data.length);
+    var dv = new DataView(chunk.buffer);
+    dv.setUint32(0, data.length);
+    chunk.set(type, 4);
+    chunk.set(data, 8);
+    var forCrc = new Uint8Array(4 + data.length);
+    forCrc.set(type, 0);
+    forCrc.set(data, 4);
+    dv.setUint32(8 + data.length, crc32(forCrc));
+    return chunk;
+  }
+
+  /* Inserted straight after IHDR, which the spec requires to be first and
+     which is always 25 bytes: 8 signature + 4 length + 4 type + 13 data + 4
+     CRC. Everything else is copied through untouched. */
+  function withMetadata(blob, meta) {
+    var keys = Object.keys(meta || {}).filter(function (k) { return meta[k]; });
+    if (!keys.length) return Promise.resolve(blob);
+    return blob.arrayBuffer().then(function (buf) {
+      var png = new Uint8Array(buf);
+      var head = png.subarray(0, 33);          // signature + IHDR
+      var rest = png.subarray(33);
+      var chunks = keys.map(function (k) { return itxtChunk(k, String(meta[k])); });
+      var extra = chunks.reduce(function (n, c) { return n + c.length; }, 0);
+      var out = new Uint8Array(head.length + extra + rest.length);
+      var o = 0;
+      out.set(head, o); o += head.length;
+      chunks.forEach(function (c) { out.set(c, o); o += c.length; });
+      out.set(rest, o);
+      return new Blob([out], { type: 'image/png' });
+    });
+  }
+
+  /* What the exporter can work out for itself, from the card it just drew. */
+  function baseMetadata(figure) {
+    var card = readCard(figure);
+    var now = new Date();
+    var year = now.getFullYear();
+    var tag = card.tag || 'NeilGarratt.com';
+    return {
+      'Title': card.title,
+      'Author': 'Neil Garratt',
+      'Copyright': '© ' + year + ' Neil Garratt. ' + tag,
+      'Creation Time': now.toISOString().slice(0, 10),
+      'Description': [card.subtitle, card.note].filter(Boolean).join(' '),
+      'Source': (card.source || '').replace(/^Source:\s*/, ''),
+      'Software': tag + ' chart tool'
+    };
+  }
+
+  function download(figure, filename, meta) {
+    var info = baseMetadata(figure);
+    if (meta) {
+      Object.keys(meta).forEach(function (k) { if (meta[k]) info[k] = meta[k]; });
+    }
     return compose(figure)
       .then(toBlob)
+      .then(function (blob) { return withMetadata(blob, info); })
       .then(function (blob) { save(blob, filename || 'chart.png'); });
   }
 
   global.NGExport = {
     download: download, compose: compose, toBlob: toBlob,
+    withMetadata: withMetadata, baseMetadata: baseMetadata,
     FONT_URLS: FONT_URLS, WIDTH: W, SCALE: SCALE,
     // Tests point FONT_URLS at a dead path to exercise the fallback; without
     // this the first export's cached promise would answer for the second.

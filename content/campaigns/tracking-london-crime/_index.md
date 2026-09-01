@@ -11,7 +11,7 @@ summary: "How much crime is there in London, and is it getting better or worse? 
 
 > Is crime in London rising or falling? Is it high or low compared with the rest of England and Wales? Cut through the arguments to the facts with my interactive London crime chart.
 
-Many claims and counter-claims are made about London crime, when the truth should be easy to find as all the figures are freely available. But it's hard to make sense of a sea of numbers, which is where my interactive London Crime Chart comes in. Explore 18 types of crime from bicycle theft to homicide, get the true picture of how crime in London has changed over time and how it compares with the rest of England and Wales.
+Many claims and counter-claims are made about London crime, when the truth should be easy to find as all the figures are freely available. But it's hard to make sense of a sea of numbers, which is where my interactive London Crime Chart comes in. Explore 63 types of crime from bicycle theft to homicide, get the true picture of how crime in London has changed over time and how it compares with the rest of England and Wales.
 
 {{< ng-chart slug="london-crime-charts" crime="shoplifting" >}}
 

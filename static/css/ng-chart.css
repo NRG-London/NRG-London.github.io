@@ -207,6 +207,145 @@
   color: var(--paper, #f3f6f4); background: rgba(243,246,244,0.10);
 }
 
+
+/* ================================================================
+   TWO-TIER CATEGORY MENU (.ngv-*)
+   A category row over that category's crime types. Blue is the
+   category tier, amber the crime tier, dashed means "not one of the
+   crime types the total above is made of". That grammar carries the
+   meaning and is not decoration.
+
+   Rendered by charts-live.js only when the spec carries `tiers`;
+   without it the engine draws its per-dimension chip rows as before.
+
+   Every row is a fixed 76px label column plus a flex:1 chip area, so
+   a wrapped row aligns to a clean left edge rather than sliding under
+   its own label. The modifier rows below take the same grammar, which
+   is what .ngv-modchips is for.
+   ================================================================ */
+  .ngv-nav{
+    display:flex; flex-direction:column; gap:8px;
+    margin-top:14px; padding-top:12px; border-top:1px solid var(--warm-grey, #dde3df);
+  }
+  .ngv-row{display:flex; gap:6px; align-items:flex-start}
+  .ngv-row__label{
+    font:700 .6rem var(--sans, 'DM Sans', system-ui, sans-serif); letter-spacing:.1em; text-transform:uppercase;
+    color:var(--mid-grey, #8a9490); flex:none; width:76px; padding-top:.55rem;
+  }
+  .ngv-chips{display:flex; flex-wrap:wrap; gap:6px; flex:1; min-width:0}
+  .ngv-stack{display:flex; flex-direction:column; gap:8px; flex:1; min-width:0}
+
+  .ngv-chip{
+    appearance:none; cursor:pointer; font-family:var(--sans, 'DM Sans', system-ui, sans-serif); font-weight:600;
+    line-height:1.2; border-radius:999px; font-size:.72rem; padding:.42rem .75rem;
+    background:var(--white, #fff); border:1px solid var(--warm-grey, #dde3df); color:var(--chip-ink, #6b7570);
+    transition:background-color .15s,color .15s,border-color .15s;
+  }
+  .ngv-chip:hover{color:var(--ink, #1a2332)}
+  .ngv-chip:focus-visible{outline:2px solid var(--blue, #0070BA); outline-offset:2px}
+
+  .ngv-chip--parent[aria-selected="true"]{
+    color:var(--blue-dark, #004d80); background:var(--blue-light, #E2EEF7); border-color:var(--blue-muted, #5a9fd4);
+  }
+  .ngv-chip--also{color:var(--amber-deep, #8a5c15); border-color:var(--amber, #E0A24E); border-style:dashed}
+  .ngv-chip--also[aria-selected="true"]{background:var(--amber-light, #FBF1E2); border-color:var(--amber-deep, #8a5c15)}
+
+  /* ── the Showing row is a tween canvas, not a flex row ──
+     Pills are absolutely positioned and their x / y / width are interpolated
+     in pixel space over a stable keyed DOM, the same discipline charts-live.js
+     uses for the bars. Height is fixed at 30px and never animates; width does.
+     Rebuilding the row and then animating the container was the earlier
+     mistake — it reads as a flicker because the content changes before the
+     motion starts. */
+  .ngv-canvas{position:relative; overflow:hidden}
+  .ngv-pill{
+    position:absolute; box-sizing:border-box; appearance:none; cursor:pointer;
+    font-family:var(--sans, 'DM Sans', system-ui, sans-serif); font-size:.72rem; font-weight:600;
+    height:30px; line-height:28px; padding:0 12px;
+    text-align:center; white-space:nowrap; overflow:hidden; border-radius:999px;
+    background:var(--white, #fff); border:1px solid var(--amber, #E0A24E); color:var(--amber-deep, #8a5c15);
+    transition:background-color .15s, color .15s;
+  }
+  .ngv-pill:hover{background:var(--amber-light, #FBF1E2)}
+  .ngv-pill[aria-selected="true"]{background:var(--amber, #E0A24E); color:var(--ink, #1a2332)}
+  .ngv-pill:focus-visible{outline:2px solid var(--blue, #0070BA); outline-offset:2px}
+  .ngv-pill span{display:inline-block}
+  /* A padding-free clipper: animating the padded box's own height floors at
+     ~20px under border-box and pops. The clipper reaches a true zero. */
+  .ngv-alsoclip{overflow:hidden}
+
+  /* The More chip doubles as the dropdown trigger. Dashed while it is not
+     itself a category; when a hidden category is chosen it takes that
+     category's name and the selected-parent styling, so the current state
+     is never invisible. */
+  .ngv-more-wrap{position:relative}
+  .ngv-more{display:inline-flex; align-items:center; gap:6px; border-style:dashed}
+  .ngv-more[aria-selected="true"]{border-style:solid}
+  .ngv-menu{
+    position:absolute; left:0; top:calc(100% + 6px); width:280px; z-index:30;
+    background:var(--white, #fff); border:1px solid var(--warm-grey, #dde3df);
+    box-shadow:0 8px 24px rgba(0,0,0,.08); padding:8px;
+    display:grid; grid-template-columns:1fr; gap:2px;
+  }
+  .ngv-menu[hidden]{display:none}
+  .ngv-menu button{
+    appearance:none; cursor:pointer; width:100%; text-align:left;
+    font:600 .72rem var(--sans, 'DM Sans', system-ui, sans-serif); padding:.38rem .6rem; border-radius:2px;
+    background:transparent; border:0; color:var(--chip-ink, #6b7570);
+  }
+  .ngv-menu button:hover{background:var(--paper, #f3f6f4); color:var(--ink, #1a2332)}
+  .ngv-menu button[aria-selected="true"]{background:var(--blue-light, #E2EEF7); color:var(--blue-dark, #004d80)}
+
+  /* `also` gets a box rather than a divider: a dashed chip on the same line
+     as solid ones was being read as just another sub-category. */
+  .ngv-also{
+    box-sizing:border-box; border:1px dashed var(--amber, #E0A24E);
+    background:var(--amber-light, #FBF1E2); padding:9px 10px;
+  }
+  .ngv-also{display:flex; flex-direction:column; gap:9px}
+  .ngv-also__group{display:flex; flex-direction:column; gap:6px}
+  .ngv-also__head{
+    display:block; font:700 .58rem var(--sans, 'DM Sans', system-ui, sans-serif); letter-spacing:.09em;
+    text-transform:uppercase; color:var(--amber-deep, #8a5c15);
+  }
+  .ngv-also__chips{display:flex; flex-wrap:wrap; gap:6px}
+
+  .ngv-summary{display:flex; align-items:center; gap:10px; margin-left:82px}
+  .ngv-sum{
+    font:italic 400 .7rem var(--sans, 'DM Sans', system-ui, sans-serif); color:var(--mid-grey, #8a9490); margin:0; flex:1;
+    transition:opacity .18s;
+  }
+  .ng-chart__title{transition:opacity .18s}
+  .ngv-info{
+    appearance:none; cursor:pointer; flex:none; white-space:nowrap;
+    font:600 .64rem var(--sans, 'DM Sans', system-ui, sans-serif); padding:.3rem .6rem; border-radius:999px;
+    background:var(--white, #fff); border:1px solid var(--warm-grey, #dde3df); color:var(--mid-grey, #8a9490);
+  }
+  .ngv-info[aria-pressed="true"]{
+    background:var(--blue-light, #E2EEF7); border-color:var(--blue-muted, #5a9fd4); color:var(--blue-dark, #004d80);
+  }
+  .ngv-hint{font:italic 400 .7rem var(--sans, 'DM Sans', system-ui, sans-serif); color:var(--blue, #0070BA); margin:0 0 0 82px}
+  .ngv-hint[hidden]{display:none}
+
+  .ngv-tip{
+    position:fixed; z-index:60; max-width:280px; pointer-events:none;
+    background:var(--deep, #243142); color:#f3f6f4; border:1px solid #3B4A5E; border-radius:3px;
+    padding:9px 11px; font:400 .74rem/1.45 var(--sans, 'DM Sans', system-ui, sans-serif);
+    box-shadow:0 4px 14px rgba(26,35,50,.18);
+  }
+  .ngv-tip[hidden]{display:none}
+  .ngv-tip b{color:var(--blue-muted, #5a9fd4); display:block; margin-bottom:2px}
+  .ngv-tip i{color:rgba(243,246,244,.62); display:block; margin-top:5px}
+
+  /* Modifier rows take the same grammar. charts-live.js puts the label and
+     the buttons in one wrapping flex row, so its chips slide under the label
+     when they wrap; the prototype re-wraps them to match. */
+  .ngl-controls{margin-top:14px; padding-top:12px; border-top:1px solid var(--warm-grey, #dde3df)}
+  .ngl-chiprow{gap:6px; align-items:flex-start}
+  .ngl-chiprow__label{width:76px; min-width:76px; flex:none; padding-top:.45rem; margin-right:0}
+  .ngv-modchips{display:flex; flex-wrap:wrap; gap:6px; flex:1; min-width:0}
+  .ngl-chiprow--sub .ngl-chip{font-size:.68rem; padding:.34rem .62rem}
+
 /* screen-reader-only live region */
 .ngl-sr {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
