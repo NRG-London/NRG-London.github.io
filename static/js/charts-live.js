@@ -161,17 +161,39 @@
   // footnote rather than a value.
   function valFontSize(theme) { return theme.dark ? 16 : 14; }
 
+  /* How much room the y-axis labels actually need. `.ngc-axis` is 13px in
+     ng-chart.css and nothing overrides it — the bold tone changes the value and
+     category sizes but not this one — so the size is a constant here rather
+     than a theme lookup. tickDx is the label's own offset from the axis, and
+     EDGE matches the compact right margin, so the widest label ends up the same
+     distance from the left edge as the axis does from the right — which is the
+     symmetry a fixed 56px gutter did not have. It is also the slack that covers
+     estimateTextWidth being an estimate: it is measured from a table of DM Sans
+     advances, not from the browser, so a couple of pixels either way is normal
+     and clipping the axis would not be. */
+  var AXIS_FONT = 13, AXIS_EDGE = 6;
+  function axisGutter(labels, G) {
+    var w = 0;
+    for (var i = 0; i < labels.length; i++) {
+      w = Math.max(w, C.estimateTextWidth(labels[i], AXIS_FONT));
+    }
+    return Math.ceil(w + Math.abs(G.tickDx) + AXIS_EDGE);
+  }
+
   /* ================================================================
      LAYOUT
      Pure: view -> pixel geometry. Everything the animator needs, keyed.
      ================================================================ */
-  function computeLayout(spec, view, theme) {
+  function computeLayout(spec, view, theme, compactW, compactH) {
     var dataset = spec.datasets[view.crime + '|' + view.period];
     var grouped = view.compare === 'rew' && dataset.series.length > 1;
     var G = grouped ? C.GEOM.gbar : C.GEOM.vbar;
-    var W = G.W, H = G.H, m = G.m;
-    var iw = W - m.l - m.r, ih = H - m.t - m.b;
 
+    /* The scale is settled BEFORE the margins, because on a compact chart the
+       left margin is measured from the axis labels and they cannot be written
+       until the scale is known. niceScale needs only the data and the tick
+       count, neither of which depends on a margin, so there is no circularity
+       — but the order matters and is easy to undo by accident. */
     var nS = grouped ? dataset.series.length : 1;
     var values = [];
     for (var s = 0; s < nS; s++) values.push(deriveValues(dataset, s, view.encoding));
@@ -182,6 +204,19 @@
     });
     var maxV = all.length ? Math.max.apply(null, all) : 1;
     var sc = C.niceScale(0, maxV, G.ticks);
+    var tickLabels = sc.ticks.map(function (t) {
+      return formatTick(t, view.encoding, sc.step);
+    });
+
+    // A compact chart is the same geometry at the plot's true pixel width, so
+    // its type renders at the size chart-core chose rather than at whatever a
+    // scaled-down viewBox leaves of it — and with margins measured rather than
+    // reserved, because 14 wasted pixels out of 316 is a bar and a half.
+    if (compactW) {
+      G = C.compactGeom(G, compactW, compactH, axisGutter(tickLabels, G));
+    }
+    var W = G.W, H = G.H, m = G.m;
+    var iw = W - m.l - m.r, ih = H - m.t - m.b;
     var y = C.lin(sc.min, sc.max, m.t + ih, m.t);
     var baseline = y(0);
 
@@ -224,10 +259,12 @@
 
     return {
       W: W, H: H, m: m, iw: iw, ih: ih, grouped: grouped, baseline: baseline,
+      // Every drawing site reads its constants from here rather than from
+      // C.GEOM directly, so a compact render cannot half-happen.
+      G: G,
       step: sc.step,
-      ticks: sc.ticks.map(function (t) {
-        return { key: String(t), value: t, y: y(t),
-                 label: formatTick(t, view.encoding, sc.step) };
+      ticks: sc.ticks.map(function (t, i) {
+        return { key: String(t), value: t, y: y(t), label: tickLabels[i] };
       }),
       bars: bars, cats: catLabels, dataset: dataset, values: values,
       encoding: view.encoding,
@@ -336,6 +373,114 @@
     var raf = null;
     var pendingFinish = null;
 
+    /* ================================================================
+       LAYOUT MODE
+       Three, and one measurement decides between them: how wide the CARD is,
+       and how tall the viewport is.
+
+         wide       the two-tier chip menu, as it has always been
+         portrait   a phone held upright. The menu is two native selects.
+         landscape  a phone turned sideways. Height is the scarce thing, so
+                    the chart takes the left and the menu stands beside it.
+
+       Measured, not sniffed. The chart is inline in a page, so a narrow column
+       on a wide screen is exactly as narrow as a phone, and a phone in
+       landscape is not narrow at all. A user-agent test gets both wrong.
+
+       The CARD is measured rather than the plot, deliberately: in landscape the
+       plot shrinks to make room for the side column, so choosing the mode from
+       the plot's width would shrink it below the threshold and flip the mode
+       back — a chart that oscillates on every resize.
+
+       Why 620: measured on the live page. At a 560px card the category row
+       already wraps to three lines and the menu stands 364px tall against a
+       284px chart. At 704 it is two lines and the balance is right. */
+    var WIDE_MIN_CARD = 620;
+    var SHORT_VIEWPORT = 560;
+    var mode = 'wide', forcedMode = null, forceWide = false;
+    var curGeom = C.GEOM.vbar;
+    var applyNavMode = null;      // set by buildTierNav, if this chart has tiers
+    var syncNav = null;           // ...and so is this
+
+    function plotWidth() {
+      return Math.round(host.getBoundingClientRect().width) || 0;
+    }
+    /* The width the compact viewBox should use, or 0 for "draw it wide". */
+    function compactPlotW() {
+      if (forceWide || mode === 'wide') return 0;
+      return plotWidth();
+    }
+    /* Sideways, the whole viewport is about 390px tall and the chart is only
+       one of five things that has to fit in it, so the height is pinned rather
+       than taken from a width there is plenty of. Upright, 0 means "work it out
+       from the width" — see compactHeight in chart-core. */
+    function compactPlotH() {
+      return mode === 'landscape' ? C.COMPACT_H_SHORT : 0;
+    }
+    function pickMode() {
+      if (forcedMode) return forcedMode;
+      if (!figure) return 'wide';
+      var cardW = Math.round(figure.getBoundingClientRect().width);
+      if (!cardW) return mode;
+      if (cardW < WIDE_MIN_CARD) return 'portrait';
+      if ((global.innerHeight || 9999) < SHORT_VIEWPORT) return 'landscape';
+      return 'wide';
+    }
+    function applyMode(next) {
+      if (next === mode) return false;
+      mode = next;
+      if (figure) {
+        figure.classList.toggle('ng-chart--compact', mode !== 'wide');
+        figure.classList.toggle('ng-chart--portrait', mode === 'portrait');
+        figure.classList.toggle('ng-chart--landscape', mode === 'landscape');
+      }
+      sideColumn(mode === 'landscape');
+      if (applyNavMode) applyNavMode(mode);
+      return true;
+    }
+
+    /* Landscape stands the menu beside the chart. Flexbox can put two children
+       on one line, but the menu is two separate children — the nav and the
+       modifier rows — and they have to stack inside that line. So they move
+       into a wrapper for the duration rather than the stylesheet pinning grid
+       rows it would have to guess the number of. */
+    var sideEl = null;
+    function sideColumn(on) {
+      if (!figure) return;
+      var nav = figure.querySelector('.ngv-nav');
+      var ctl = figure.querySelector('.ngl-controls');
+      if (on) {
+        if (!sideEl) {
+          sideEl = document.createElement('div');
+          sideEl.className = 'ngl-side';
+        }
+        if (!sideEl.parentNode) figure.appendChild(sideEl);
+        if (nav) sideEl.appendChild(nav);
+        if (ctl) sideEl.appendChild(ctl);
+      } else if (sideEl && sideEl.parentNode) {
+        if (nav) figure.insertBefore(nav, sideEl);
+        if (ctl) figure.insertBefore(ctl, sideEl);
+        sideEl.parentNode.removeChild(sideEl);
+      }
+    }
+
+    /* A resize changes the compact viewBox even when the mode does not, because
+       the viewBox tracks the plot's true width. Debounced, and re-rendered with
+       transitions off: a rotation is not a view change and should not swoosh. */
+    var resizeTimer = null;
+    function onResize() {
+      var changed = applyMode(pickMode());
+      if (!changed && mode === 'wide') return;
+      var d = duration;
+      duration = 1;
+      refresh();
+      duration = d;
+    }
+    global.addEventListener('resize', function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(onResize, 150);
+    });
+
     /* ---------- scaffold ---------- */
     host.textContent = '';
     var svg = svgEl('svg', {
@@ -348,7 +493,7 @@
     var gTicks = svgEl('g', { 'class': 'ngl-ticks' });
     var baselineEl = svgEl('line', {
       stroke: theme.axisColor, 'stroke-width': C.GEOM.vbar.baseW
-    });
+    });   // restated from curGeom on every refresh
     svg.appendChild(gGrid);
     svg.appendChild(baselineEl);
     svg.appendChild(gBars);
@@ -486,6 +631,40 @@
       return b;
     }
 
+    /* ---------- exporting from a compact chart ----------
+       A downloaded PNG is the same image whoever downloaded it. That was the
+       point of composing the frame ourselves rather than screenshotting, and a
+       compact chart would break it: 313 units wide against a 760-unit frame,
+       the picture stranded in the left third.
+
+       So a compact chart is redrawn at full geometry for the length of the
+       export and put back. The plot's height is pinned and the svg faded to
+       nothing first, so the page neither jumps nor blinks — the reader sees the
+       button go busy and nothing else. */
+    function beginWideRender() {
+      if (mode === 'wide') return false;
+      forceWide = true;
+      host.style.height = host.getBoundingClientRect().height + 'px';
+      svg.style.opacity = '0';
+      var d = duration;
+      duration = 1;
+      refresh();
+      if (pendingFinish) pendingFinish();
+      duration = d;
+      return true;
+    }
+    function endWideRender() {
+      if (!forceWide) return;
+      forceWide = false;
+      var d = duration;
+      duration = 1;
+      refresh();
+      if (pendingFinish) pendingFinish();
+      duration = d;
+      host.style.height = '';
+      svg.style.opacity = '';
+    }
+
     function runDownload() {
       if (downloadBtn.disabled) return;
       // Land the transition first. A chart caught mid-swoosh still holds the
@@ -494,10 +673,19 @@
       // fading through each other. The reader asked for the view they chose,
       // which is where the animation is going, not a frame of it.
       if (pendingFinish) pendingFinish();
+      var wide = beginWideRender();
       downloadBtn.disabled = true;
       downloadBtn.setAttribute('data-busy', '1');
-      global.NGExport.download(figure, downloadFilename(),
-                              metaFn ? metaFn() : null)
+      var running = global.NGExport.download(figure, downloadFilename(),
+                              metaFn ? metaFn() : null);
+      // NGExport.compose() serialises the chart synchronously, before it waits
+      // on anything, so by the time download() has returned the picture is
+      // already a string and the live svg is free to go back to being compact.
+      // Restoring here rather than in the .then() is what keeps the swap
+      // invisible; if that ever stops being true the export goes narrow, which
+      // verify_export.py checks for.
+      if (wide) endWideRender();
+      running
         .catch(function (err) {
           if (global.console) console.error('chart download failed', err);
           live.textContent = 'Sorry — the chart could not be downloaded.';
@@ -600,11 +788,126 @@
                    + 'tap the button again to go back to selecting.';
   hint.hidden = true;
 
+  /* ---------- compact: the same two tiers as two native selects ----------
+     Below a 620px card the chip menu stands 609px tall against a 177px chart:
+     four times the chart, and neither fits on the screen with the other. The
+     two tiers become two dropdowns, 60px in all.
+
+     NATIVE, not a custom menu. The OS picker is the one control every phone
+     owner already knows; it scrolls fourteen items without trapping the page,
+     it truncates the closed label itself and shows the whole of it when open,
+     and <optgroup> gives the "also" fences a heading for free. A hand-built
+     menu would have to earn all four back. */
+  var comp = navEl('div', 'ngv-compact');
+  var compCat = selectField(comp, 'Category', 'ngv-sel--cat');
+  var compCrime = selectField(comp, 'Crime type', 'ngv-sel--crime');
+  var defBox = navEl('p', 'ngv-def');
+  defBox.hidden = true;
+  comp.hidden = true;
+
   nav.appendChild(catRow.el);
   nav.appendChild(showRow.el);
+  nav.appendChild(comp);
   nav.appendChild(summary);
   nav.appendChild(hint);
+  nav.appendChild(defBox);
   figure.insertBefore(nav, figure.querySelector('.ngl-controls'));
+
+  function selectField(parent, caption, cls) {
+    // A <label> wrapping its control needs no id/for pair to associate them,
+    // and cannot fall out of step with one.
+    var wrap = navEl('label', 'ngv-sel ' + cls);
+    var cap = navEl('span', 'ngv-sel__cap');
+    cap.textContent = caption;
+    var sel = navEl('select', 'ngv-sel__control');
+    wrap.appendChild(cap);
+    wrap.appendChild(sel);
+    parent.appendChild(wrap);
+    return sel;
+  }
+
+  function opt(value, label, selected) {
+    var o = document.createElement('option');
+    o.value = value;
+    o.textContent = label;
+    if (selected) o.selected = true;
+    return o;
+  }
+
+  function fillCompactCat() {
+    compCat.textContent = '';
+    spec.tiers.forEach(function (t) {
+      compCat.appendChild(opt(t.key, shortFor(t.key), t.key === navState.parent));
+    });
+  }
+
+  /* The category's own name is the first group's heading, so the closed pair
+     reads "Theft / Total" and the open picker reads "Theft > Total". The two
+     also-headings are the ones the chip menu uses, unchanged: a fenced set is
+     a fenced set whether it is a box or a group. */
+  function fillCompactCrime() {
+    var t = byKey[navState.parent];
+    compCrime.textContent = '';
+    var main = document.createElement('optgroup');
+    main.label = t.label;
+    main.appendChild(opt(t.key, 'Total', t.key === navState.crime));
+    t.split.forEach(function (k) {
+      main.appendChild(opt(k, labelFor(k), k === navState.crime));
+    });
+    compCrime.appendChild(main);
+    ['inside', 'outside'].forEach(function (kind) {
+      var keys = (t.also || []).filter(function (k) {
+        var a = spec.alsoNotes[t.key + '|' + k];
+        return a && a.kind === kind;
+      });
+      if (!keys.length) return;
+      var g = document.createElement('optgroup');
+      g.label = ALSO_HEADS[kind];
+      keys.forEach(function (k) {
+        g.appendChild(opt(k, labelFor(k), k === navState.crime));
+      });
+      compCrime.appendChild(g);
+    });
+  }
+
+  /* On a phone a definition is not a tooltip. There is nothing to hover, the
+     chip that would have carried it is now a row inside an OS picker, and a
+     floating box is exactly what put an undismissable tooltip in the corner of
+     the screen last time. The same button opens a line of prose under the menu
+     instead: same copy, same toggle, nothing floating. */
+  function updateDef() {
+    var t = tipContent(navState.crime, 'child');
+    defBox.textContent = '';
+    var b = document.createElement('b');
+    b.textContent = t.title;
+    defBox.appendChild(b);
+    defBox.appendChild(document.createTextNode(' ' + t.body));
+  }
+
+  compCat.addEventListener('change', function () { selectParent(compCat.value); });
+  compCrime.addEventListener('change', function () { selectCrime(compCrime.value); });
+
+  /* One state, two presentations. Both trees are built once and the mode shows
+     one of them, so nothing is torn down on a rotation and no document-level
+     listener is ever registered twice. */
+  applyNavMode = function (m) {
+    var isCompact = m !== 'wide';
+    hideTip();
+    setMore(false);
+    catRow.el.hidden = isCompact;
+    showRow.el.hidden = isCompact;
+    comp.hidden = !isCompact;
+    hint.hidden = !navState.definitions || isCompact;
+    defBox.hidden = !navState.definitions || !isCompact;
+    if (isCompact) {
+      fillCompactCat();
+      fillCompactCrime();
+      updateDef();
+    } else {
+      lastW = 0;
+      instantLayout();
+    }
+  };
 
   function navEl(tag, cls) {
     var n = document.createElement(tag);
@@ -642,7 +945,9 @@
     var tier = byKey[navState.parent];
     var title, body, note = '';
     if (kind === 'child' && key === tier.key) {
-      title = 'Total — ' + tier.label;
+      // "Total — Theft", but just "Total recorded crime" for the category
+      // that is already called that: the prefix would stutter.
+      title = /^total/i.test(tier.label) ? tier.label : 'Total — ' + tier.label;
       body = 'The whole "' + tier.label + '" category: the sum of the '
            + tier.split.length + ' crime types shown.';
     } else {
@@ -891,6 +1196,11 @@
     [].forEach.call(alsoBox.querySelectorAll('.ngv-chip'), function (b) {
       b.setAttribute('aria-selected', String(b.dataset.key === navState.crime));
     });
+    if (compCat.options.length) compCat.value = navState.parent;
+    if (compCrime.options.length) {
+      compCrime.value = navState.crime;
+      updateDef();
+    }
   }
 
   /* Static layout: first paint, font load, resize. */
@@ -1100,10 +1410,48 @@
     navState.crime = key;                 // land on the category's own total
     setMore(false);
     buildCategoryRow();
-    tween();
+    if (mode === 'wide') {
+      tween();
+    } else {
+      fillCompactCat();
+      fillCompactCrime();
+    }
     setMany({ crime: key });
     fadeSwap(sumLine, summaryText());
   }
+
+  /* Which category to show a crime under. A leaf can sit beneath several —
+     knife-involved rape is under Sexual offences and under Knife crime — so the
+     one already open wins, and a reader driven to a crime they can already see
+     is not dragged out of the category they were reading. */
+  function parentFor(crime) {
+    if (byKey[crime]) return crime;
+    var cur = byKey[navState.parent];
+    if (cur && (cur.split.indexOf(crime) !== -1
+                || (cur.also || []).indexOf(crime) !== -1)) return navState.parent;
+    var found = null;
+    spec.tiers.forEach(function (t) {
+      if (!found && t.split.indexOf(crime) !== -1) found = t.key;
+    });
+    spec.tiers.forEach(function (t) {
+      if (!found && (t.also || []).indexOf(crime) !== -1) found = t.key;
+    });
+    return found || navState.parent;
+  }
+
+  syncNav = function (crime) {
+    if (crime === navState.crime) return;
+    var parent = parentFor(crime);
+    navState.crime = crime;
+    if (parent !== navState.parent) {
+      navState.parent = parent;
+      buildCategoryRow();
+      if (mode === 'wide') tween();
+      else { fillCompactCat(); fillCompactCrime(); }
+    }
+    syncSelection();
+    fadeSwap(sumLine, summaryText());
+  };
 
   function selectCrime(key) {
     cancelHover();
@@ -1189,7 +1537,9 @@
     e.stopPropagation();
     navState.definitions = !navState.definitions;
     infoBtn.setAttribute('aria-pressed', String(navState.definitions));
-    hint.hidden = !navState.definitions;
+    hint.hidden = !navState.definitions || mode !== 'wide';
+    defBox.hidden = !navState.definitions || mode === 'wide';
+    if (!defBox.hidden) updateDef();
     hideTip();
   });
 
@@ -1215,16 +1565,11 @@
     if (e.key === 'Escape') { hideTip(); setMore(false); }
   });
 
-  // Open on whichever row carries the initial view.
-  var startParent = spec.initial.crime;
-  if (!byKey[startParent]) {
-    spec.tiers.forEach(function (t) {
-      if (t.split.indexOf(spec.initial.crime) !== -1 && !byKey[startParent]) {
-        startParent = t.key;
-      }
-    });
-  }
-  navState.parent = byKey[startParent] ? startParent : spec.tiers[0].key;
+  // Open on whichever row carries the initial view, by the same rule that
+  // decides it later. navState.parent is seeded to the first tier so parentFor
+  // has a fallback to return before anything has been chosen.
+  navState.parent = spec.tiers[0].key;
+  navState.parent = parentFor(spec.initial.crime);
   navState.crime = spec.initial.crime;
   buildCategoryRow();
   instantLayout();            // first paint has nothing to animate from
@@ -1271,6 +1616,10 @@
         if (view[dim] !== next[dim]) { view[dim] = next[dim]; dirty = true; }
       });
       if (!dirty) return;                            // never restart a transition
+      // The menu is not the only thing that can change the view: __setView, a
+      // capture harness and a deep link all come in here. Without this the
+      // chart drew one crime while the selects still named another.
+      if (syncNav) syncNav(view.crime);
       refresh();
     }
 
@@ -1293,8 +1642,10 @@
 
     /* ---------- render ---------- */
     function refresh() {
-      var target = computeLayout(spec, view, theme);
+      var target = computeLayout(spec, view, theme, compactPlotW(), compactPlotH());
+      curGeom = target.G;
       svg.setAttribute('viewBox', '0 0 ' + target.W + ' ' + target.H);
+      baselineEl.setAttribute('stroke-width', curGeom.baseW);
       baselineEl.setAttribute('x1', target.m.l);
       baselineEl.setAttribute('x2', target.m.l + target.iw);
       baselineEl.setAttribute('y1', target.baseline);
@@ -1592,7 +1943,7 @@
       label.setAttribute('x', x + w / 2);
       // Placement follows the animated geometry, so a bar that grows past the
       // point where its label fits above the cap moves it inside as it goes.
-      var place = C.valueLabelPlacement(y, h, C.GEOM.vbar);
+      var place = C.valueLabelPlacement(y, h, target.G);
       label.setAttribute('y', place.y);
       label.setAttribute('fill', place.inside
         ? C.readableOn(lerpColor(from.fill, to.fill, e))
@@ -1608,7 +1959,7 @@
       var g = svgEl('g', {
         'class': 'ngl-bar', tabindex: '0', role: 'img', 'data-key': b.key
       });
-      g.appendChild(svgEl('rect', { rx: C.GEOM.vbar.rx, fill: b.fill }));
+      g.appendChild(svgEl('rect', { rx: curGeom.rx, fill: b.fill }));
       var label = svgEl('text', {
         'class': 'ngc-t ngc-val ngl-vallabel', 'text-anchor': 'middle',
         fill: theme.text, 'font-weight': 600, opacity: 0
@@ -1626,7 +1977,7 @@
     function createTick(t) {
       var n = svgEl('text', {
         'class': 'ngc-t ngc-axis', 'text-anchor': 'end', fill: theme.sub,
-        x: layoutM().l + C.GEOM.vbar.tickDx, y: t.y + C.GEOM.vbar.tickDy, opacity: 0
+        x: layoutM().l + curGeom.tickDx, y: t.y + curGeom.tickDy, opacity: 0
       });
       n.textContent = t.label;
       gTicks.appendChild(n);
@@ -1643,9 +1994,9 @@
       }
       var m = layoutM();
       var n = svgEl('line', {
-        x1: m.l, x2: m.l + (C.GEOM.vbar.W - m.l - m.r),
+        x1: m.l, x2: m.l + (curGeom.W - m.l - m.r),
         y1: t.y, y2: t.y, stroke: theme.gridColor,
-        'stroke-width': C.GEOM.vbar.gridW, opacity: 0
+        'stroke-width': curGeom.gridW, opacity: 0
       });
       gGrid.appendChild(n);
       nodes.grid[t.key] = n;
@@ -1663,7 +2014,10 @@
       return n;
     }
 
-    function layoutM() { return (layout || computeLayout(spec, view, theme)).m; }
+    function layoutM() {
+      return (layout
+        || computeLayout(spec, view, theme, compactPlotW(), compactPlotH())).m;
+    }
 
     /* ---------- tooltip ---------- */
     function showTip(key, node) {
@@ -1721,7 +2075,11 @@
       if (e.key === 'Escape') hideTip();
     });
 
-    /* ---------- go ---------- */
+    /* ---------- go ----------
+       The mode is chosen BEFORE the first render. Deciding afterwards would
+       draw the wide chart, measure it, and redraw — a visible flash on exactly
+       the devices this is for. */
+    applyMode(pickMode());
     refresh();
 
     var instance = {
@@ -1729,6 +2087,14 @@
       setMany: setMany,
       view: function () { return JSON.parse(JSON.stringify(view)); },
       setTransition: function (ms) { duration = ms; },
+      // Which layout is in force, and an override for testing one device's
+      // mode on another's screen. null hands the decision back to the measurer.
+      mode: function () { return mode; },
+      setMode: function (m) {
+        forcedMode = m || null;
+        if (applyMode(pickMode())) { var d = duration; duration = 1; refresh(); duration = d; }
+        else { refresh(); }
+      },
       setFilename: function (fn) { filenameFn = fn; },
       // Extra PNG metadata the page knows and the engine cannot: which
       // categories are selected, the data vintage, the figures themselves.

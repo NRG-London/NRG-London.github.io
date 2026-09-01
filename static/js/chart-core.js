@@ -330,10 +330,21 @@
     return w * fontSize * _ADV_MARGIN;
   }
 
-  /* "2023/24" -> "23/24". Anything else is returned unchanged, so a label with
-     no shorter form simply skips that rung of the ladder. */
+  /* "2023/24" -> "23/24", and "2013" -> "13". Anything else is returned
+     unchanged, so a label with no shorter form simply skips that rung of the
+     ladder and goes straight to rotation.
+
+     The calendar-year rung matters most on a phone. Thirteen four-digit years
+     will not sit horizontally in a 316px chart, so the whole axis tipped to 45
+     degrees and took 25px of height with it — on the one layout where height is
+     the scarce thing. Two digits fit, and the subtitle has already said which
+     century. The pattern is deliberately year-shaped rather than "any four
+     digits": a bare count of 2013 is not a year and must not lose its
+     thousands. */
   function shortenLabel(s) {
-    return String(s).replace(/^\d{2}(\d{2})\/(\d{2})$/, '$1/$2');
+    return String(s)
+      .replace(/^\d{2}(\d{2})\/(\d{2})$/, '$1/$2')
+      .replace(/^(?:19|20)(\d{2})$/, '$1');
   }
 
   var _FIT = 0.95;          // of the slot; leaves a hairline between neighbours
@@ -405,6 +416,73 @@
     return { show: false, labels: null, fontSize: 0, rung: -1 };
   }
 
+  /* ---------- compact geometry ----------
+     A phone gives this chart about 313 CSS pixels. Scaling the 760-unit viewBox
+     down to fit renders the 13px axis labels at 5.4 CSS px: not small, but below
+     the size at which text is text.
+
+     The fix is not a bigger font. It is to STOP SCALING. On a narrow screen the
+     viewBox is set to the plot's true pixel width, so one unit is one pixel and
+     every size chosen in this file — 13px ticks, 13.5px years, the 22-unit drop
+     below the axis — renders at the size it was chosen to be. The chart gives up
+     width rather than legibility, and fitCategoryLabels does with a narrower
+     slot exactly what it always does: shorten the years, then rotate them.
+
+     Height follows the width. A FIXED height was the first attempt and it was
+     wrong: the narrower the phone, the more portrait-shaped the chart became,
+     until on an iPhone SE a 248px-wide plot stood 325px tall. Bars that are
+     taller than the chart is wide are not more readable, they just push the
+     menu off the bottom of the screen — which is the problem this whole layout
+     exists to solve.
+
+     Three to one is close to the desktop's shape and leaves a phone's card
+     about 70px shorter than a fixed 300 did. The floor stops a very narrow
+     screen squeezing the plot to nothing; the ceiling stops a chart at the top
+     of the compact range growing taller than the desktop one. */
+  var COMPACT_RATIO = 0.75;
+  var COMPACT_H_MIN = 190, COMPACT_H_MAX = 300;
+  var COMPACT_H_SHORT = 250;      // sideways, where the viewport is ~390px tall
+
+  function compactHeight(W) {
+    return Math.max(COMPACT_H_MIN,
+                    Math.min(COMPACT_H_MAX, Math.round(W * COMPACT_RATIO)));
+  }
+
+  function compactGeom(base, W, H, gutter) {
+    var g = {};
+    for (var k in base) if (Object.prototype.hasOwnProperty.call(base, k)) g[k] = base[k];
+    g.W = W;
+    g.H = H || compactHeight(W);
+    // One gridline fewer. Five bands read as a grid on a 430px desktop plot and
+    // as hatching on a 190px phone one, and the coarser scale usually shortens
+    // the axis labels too, which the measured gutter then hands to the bars.
+    g.ticks = 4;
+
+    /* Every margin here exists to hold something, and on a phone each one is
+       measured against what it actually has to hold rather than reserved.
+
+       LEFT is the y-axis labels, and it is the caller that knows them: 56px is
+       sized for the widest figure the chart could ever print, and an axis
+       reading "100k" wants 42 while one reading "0.5" wants 32. The desktop has
+       the pixels to spare and keeps its fixed margin — which is also what the
+       downloaded PNG is drawn at, so the exported image is unaffected.
+
+       BOTTOM held 54px for a category label sitting 22px below the axis; the
+       other 32 were slack. A rotated label still gets its room, because
+       fitCategoryLabels returns extraBottom and computeLayout adds it to the
+       height AFTER the plot area has been measured.
+
+       RIGHT only has to clear the last bar. */
+    g.m = {
+      t: base.m.t,
+      r: 8,
+      b: 34,
+      l: gutter ? Math.max(18, gutter) : base.m.l
+    };
+    g.barCap = 56;
+    return g;
+  }
+
   /* Ink or white, whichever reads on `bg`. */
   function readableOn(bg) {
     var r = hexToRgb(bg);
@@ -422,6 +500,8 @@
     valueLabelPlacement: valueLabelPlacement, readableOn: readableOn,
     decimalsFor: decimalsFor, decimalsForSig: decimalsForSig,
     fitCategoryLabels: fitCategoryLabels, fitValueLabels: fitValueLabels,
+    compactGeom: compactGeom, compactHeight: compactHeight,
+    COMPACT_H_SHORT: COMPACT_H_SHORT,
     shortenLabel: shortenLabel, estimateTextWidth: estimateTextWidth
   };
 })(window);

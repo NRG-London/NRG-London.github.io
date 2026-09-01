@@ -24,7 +24,15 @@
 The data pipeline (server-side pointy-top hex binning in BNG, 3 zoom bands, 8 police.uk metrics &times; 6 periods, plus the ward skyline data passed through untouched) verified 51/51 against DuckDB and reconciles the shipped hotspot chart's totals to zero delta. v1 below is the first merged page: ward tier is the shipped skyline v4 behaviour transplanted; hex tier is NEW &mdash; a <code>ColumnLayer</code> over the server roster, so metric <em>and year</em> switches ease per-hex (the old chart re-binned client-side and could only sink-and-swap the whole field, and had no years at all). Band changes and tier changes use the sink&rarr;swap&rarr;rise ease. Everything here is throwaway lab work: unlinked, noindexed, nothing on the live site depends on it.</p>
 <p class="ev"><strong>STATUS &mdash; 2026-08-20 (later). ss1 lab is up.</strong>
 One hex map that toggles between stop-and-search intensity and crime on the SAME grid &mdash; "is police activity concentrated where crime is?". Searches and crime live on different rosters, so the page merges them into a client-side UNION roster per band; every switch (search&harr;search, crime&harr;crime, <em>search&harr;crime</em>) then eases per-hex, so you see the towers move between where crime is and where searches happen. Smoke 8/8 PASS incl. a cell-value honesty leg against the raw JSON. Data caveats (8% unmapped searches pre-Oct-2024, missing Met Nov 2022, anonymised snap points) are in the page's "About this data" footer.</p>
-<p class="ev"><strong>STATUS &mdash; 2026-09-01. chart3 lab is up.</strong>
+<p class="ev"><strong>STATUS &mdash; 2026-09-01. chart3 SHIPPED, lab kept.</strong>
+The compact layout is now on the <a href="/campaigns/tracking-london-crime/">live crime
+chart</a>. Unlike chart2, this page is <em>not</em> retired: it carries no implementation
+of its own &mdash; it inlines the working-tree engines and is rebuilt by
+<code>build_lab.py</code> &mdash; so there is nothing here to drift out of step, and it
+does one thing the live page cannot, which is force a layout the device would not choose.
+It stays as the device workbench. What it was for is below.</p>
+
+<p class="ev"><strong>STATUS &mdash; 2026-09-01 (earlier). chart3 lab went up.</strong>
 The <a href="/campaigns/tracking-london-crime/">live crime chart</a> on a phone. Measured
 at 390px before any of this: the card stood <strong>1474px tall</strong> &mdash; 803px of
 menu under a 177px chart, four times the chart, with neither fitting on a screen with the
