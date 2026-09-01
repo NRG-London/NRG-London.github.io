@@ -674,7 +674,7 @@ body {
     <a href="/campaigns/tracking-london-crime/">live chart</a>. This page stays as
     the workbench: it inlines the WORKING-TREE copies of the engines rather than the
     published ones, so it shows whatever is currently checked out, and it can force a
-    layout the device would not otherwise choose. Built 01 Sep 2026 15:26.
+    layout the device would not otherwise choose. Built 01 Sep 2026 16:00.
   </p>
 
   <div class="lab-hud" id="lab-hud"></div>
@@ -4379,6 +4379,27 @@ body {
     });
   }
 
+  /* ISO 8601 in LOCAL time with an explicit offset — 2026-09-01T15:24:35+01:00
+     — rather than the UTC form toISOString() gives.
+
+     Both name the same instant, so both are correct, but they are not read the
+     same way. Windows Explorer takes the wall-clock digits and ignores the zone
+     entirely, so a chart made at 15:54 in British Summer Time was filed under
+     14:54. The offset form survives that: a reader that honours the zone gets
+     the right instant, and a reader that only looks at the digits gets the
+     right local time. The Z form is only correct for the first kind.
+
+     Nothing here is guessed from a locale — getTimezoneOffset is the machine's
+     own answer, in minutes BEHIND UTC, hence the negation. */
+  function isoLocal(d) {
+    function p2(n) { return (n < 10 ? '0' : '') + n; }
+    var off = -d.getTimezoneOffset();
+    var abs = Math.abs(off);
+    return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate())
+         + 'T' + p2(d.getHours()) + ':' + p2(d.getMinutes()) + ':' + p2(d.getSeconds())
+         + (off < 0 ? '-' : '+') + p2(Math.floor(abs / 60)) + ':' + p2(abs % 60);
+  }
+
   /* What the exporter can work out for itself, from the card it just drew. */
   function baseMetadata(figure) {
     var card = readCard(figure);
@@ -4390,8 +4411,9 @@ body {
       'Author': 'Neil Garratt',
       'Copyright': '© ' + year + ' Neil Garratt. ' + tag,
       // Full ISO rather than a bare date: XMP carries this to Explorer's
-      // "Date taken", and a date-only value shows there as midnight.
-      'Creation Time': now.toISOString().replace(/\.\d+Z$/, 'Z'),
+      // "Date taken", and a date-only value shows there as midnight. Local
+      // with an offset rather than UTC — see isoLocal above.
+      'Creation Time': isoLocal(now),
       'Description': [card.subtitle, card.note].filter(Boolean).join(' '),
       'Source': (card.source || '').replace(/^Source:\s*/, ''),
       'Credit': tag,
