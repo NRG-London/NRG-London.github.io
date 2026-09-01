@@ -492,11 +492,17 @@ body {
 
 /* One line per modifier row. The 76px label column and the full-width
    label the old 560px media query fell back to both cost a whole line
-   each; three rows went from 194px to about 95px. */
+   each; three rows went from 194px to about 95px.
+
+   The horizontal padding is tighter than it looks like it needs to be
+   because of the narrowest phone in the test set: an iPhone SE leaves
+   246px, and "Compare / London only / vs rest of E&W" came to 250. Four
+   pixels wrapped two rows and cost 60px of card. Vertical padding is
+   untouched — that is the touch target. */
 .ng-chart--compact .ngl-chiprow__label {
-  width: 3.5rem; min-width: 3.5rem; font-size: 0.56rem; padding-top: 0.4rem;
+  width: 3rem; min-width: 3rem; font-size: 0.56rem; padding-top: 0.4rem;
 }
-.ng-chart--compact .ngl-chiprow--sub .ngl-chip { font-size: 0.68rem; padding: 0.34rem 0.6rem; }
+.ng-chart--compact .ngl-chiprow--sub .ngl-chip { font-size: 0.68rem; padding: 0.34rem 0.5rem; }
 
 /* ── the two selects ──
    Native, so the OS picker does the scrolling, the truncating and the
@@ -621,7 +627,7 @@ body {
     <a href="/campaigns/tracking-london-crime/">tracking-london-crime</a> is
     untouched: this page carries its own inlined copies of the engines, so
     nothing on the site changes until the sprint is published. What is new here
-    is the <b>compact layout for narrow and short screens</b>. Built 01 Sep 2026 11:42.
+    is the <b>compact layout for narrow and short screens</b>. Built 01 Sep 2026 12:14.
   </p>
 
   <div class="lab-hud" id="lab-hud"></div>
@@ -1155,17 +1161,35 @@ body {
      width rather than legibility, and fitCategoryLabels does with a narrower
      slot exactly what it always does: shorten the years, then rotate them.
 
-     Height is fixed rather than proportional. Vertical space is the scarce thing
-     on a phone, and 300px leaves a 232px bar area under a card that also has to
-     carry a title, a source line and a whole menu on one screen. */
-  var COMPACT_H = 300;
+     Height follows the width. A FIXED height was the first attempt and it was
+     wrong: the narrower the phone, the more portrait-shaped the chart became,
+     until on an iPhone SE a 248px-wide plot stood 325px tall. Bars that are
+     taller than the chart is wide are not more readable, they just push the
+     menu off the bottom of the screen — which is the problem this whole layout
+     exists to solve.
+
+     Three to one is close to the desktop's shape and leaves a phone's card
+     about 70px shorter than a fixed 300 did. The floor stops a very narrow
+     screen squeezing the plot to nothing; the ceiling stops a chart at the top
+     of the compact range growing taller than the desktop one. */
+  var COMPACT_RATIO = 0.75;
+  var COMPACT_H_MIN = 190, COMPACT_H_MAX = 300;
   var COMPACT_H_SHORT = 250;      // sideways, where the viewport is ~390px tall
+
+  function compactHeight(W) {
+    return Math.max(COMPACT_H_MIN,
+                    Math.min(COMPACT_H_MAX, Math.round(W * COMPACT_RATIO)));
+  }
 
   function compactGeom(base, W, H, gutter) {
     var g = {};
     for (var k in base) if (Object.prototype.hasOwnProperty.call(base, k)) g[k] = base[k];
     g.W = W;
-    g.H = H || COMPACT_H;
+    g.H = H || compactHeight(W);
+    // One gridline fewer. Five bands read as a grid on a 430px desktop plot and
+    // as hatching on a 190px phone one, and the coarser scale usually shortens
+    // the axis labels too, which the measured gutter then hands to the bars.
+    g.ticks = 4;
 
     /* Every margin here exists to hold something, and on a phone each one is
        measured against what it actually has to hold rather than reserved.
@@ -1209,8 +1233,8 @@ body {
     valueLabelPlacement: valueLabelPlacement, readableOn: readableOn,
     decimalsFor: decimalsFor, decimalsForSig: decimalsForSig,
     fitCategoryLabels: fitCategoryLabels, fitValueLabels: fitValueLabels,
-    compactGeom: compactGeom,
-    COMPACT_H: COMPACT_H, COMPACT_H_SHORT: COMPACT_H_SHORT,
+    compactGeom: compactGeom, compactHeight: compactHeight,
+    COMPACT_H_SHORT: COMPACT_H_SHORT,
     shortenLabel: shortenLabel, estimateTextWidth: estimateTextWidth
   };
 })(window);
@@ -2075,9 +2099,11 @@ body {
       return plotWidth();
     }
     /* Sideways, the whole viewport is about 390px tall and the chart is only
-       one of five things that has to fit in it. */
+       one of five things that has to fit in it, so the height is pinned rather
+       than taken from a width there is plenty of. Upright, 0 means "work it out
+       from the width" — see compactHeight in chart-core. */
     function compactPlotH() {
-      return mode === 'landscape' ? C.COMPACT_H_SHORT : C.COMPACT_H;
+      return mode === 'landscape' ? C.COMPACT_H_SHORT : 0;
     }
     function pickMode() {
       if (forcedMode) return forcedMode;
