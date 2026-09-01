@@ -87,6 +87,23 @@ body {
 .lab-checks label { display: block; margin-bottom: 0.55rem; }
 .lab-checks input { margin-right: 0.4rem; }
 .lab-checks p { color: var(--mid-grey); font-size: 0.8rem; margin-bottom: 0.7rem; }
+.lab-pick {
+  margin-top: 2.2rem; padding-top: 1rem; border-top: 1px solid var(--warm-grey);
+}
+.lab-pick h2 { font: 700 0.95rem var(--sans); margin-bottom: 0.4rem; }
+.lab-pick p { font-size: 0.8rem; color: var(--mid-grey); margin-bottom: 0.7rem; }
+.lab-pick ol { font-size: 0.82rem; margin: 0 0 0.8rem 1.1rem; }
+.lab-pick li { margin-bottom: 0.9rem; }
+.lab-pick select {
+  display: block; width: 100%; max-width: 22rem; margin-top: 0.25rem;
+  font: 600 0.82rem var(--sans); color: var(--ink); background: var(--white);
+  border: 1px solid var(--warm-grey); border-radius: 6px; padding: 0.5rem 0.6rem;
+}
+.lab-ua {
+  font: 400 0.68rem/1.5 var(--sans); color: var(--mid-grey);
+  word-break: break-all; background: var(--white);
+  border: 1px solid var(--warm-grey); padding: 0.45rem 0.6rem;
+}
 .lab-checks code {
   background: var(--white); border: 1px solid var(--warm-grey);
   padding: 0 0.25rem; font-size: 0.9em;
@@ -604,7 +621,7 @@ body {
     <a href="/campaigns/tracking-london-crime/">tracking-london-crime</a> is
     untouched: this page carries its own inlined copies of the engines, so
     nothing on the site changes until the sprint is published. What is new here
-    is the <b>compact layout for narrow and short screens</b>. Built 01 Sep 2026 11:17.
+    is the <b>compact layout for narrow and short screens</b>. Built 01 Sep 2026 11:42.
   </p>
 
   <div class="lab-hud" id="lab-hud"></div>
@@ -626,6 +643,35 @@ body {
       <span class="ng-chart__tag">NeilGarratt.com</span>
     </div>
   </figure>
+
+  <div class="lab-pick">
+    <h2>Picker experiment &mdash; does your phone make you press &ldquo;Done&rdquo;?</h2>
+    <p>On a desktop a <code>&lt;select&gt;</code> drops open and one click both chooses and
+      closes it. Some Android browsers &mdash; Samsung Internet in particular &mdash; open a
+      bottom sheet instead and want a second press to confirm. That is the browser's
+      decision, not the page's, but two things about the control <em>might</em> tip it one
+      way or the other: whether the list is grouped, and how long it is. These three are
+      identical to the chart's own crime picker except in those two respects. Open each and
+      note whether choosing an item closes it by itself.</p>
+    <ol>
+      <li><label><b>A &mdash; grouped, long.</b> Exactly what the chart uses.
+        <select id="pick-a"></select></label></li>
+      <li><label><b>B &mdash; the same options, ungrouped.</b> If this one closes by itself
+        and A does not, the <code>&lt;optgroup&gt;</code> headings are the cost and we can
+        weigh them against the press.
+        <select id="pick-b"></select></label></li>
+      <li><label><b>C &mdash; three options, ungrouped.</b> If B still asks and this one does
+        not, it is the length that triggers the sheet.
+        <select id="pick-c"></select></label></li>
+    </ol>
+    <p>If all three behave the same, it is simply what that browser does with a
+      <code>&lt;select&gt;</code>, and the only way round it would be a hand-built menu
+      &mdash; which costs the OS scrolling, the free truncation and the accessibility that
+      made native the right call. Worth knowing either way. It is also worth opening the
+      page in <b>Chrome</b> on the same phone: if Chrome behaves and Samsung Internet does
+      not, that settles it.</p>
+    <p class="lab-ua" id="lab-ua"></p>
+  </div>
 
   <div class="lab-checks">
     <h2>Eye checklist — portrait</h2>
@@ -1115,15 +1161,33 @@ body {
   var COMPACT_H = 300;
   var COMPACT_H_SHORT = 250;      // sideways, where the viewport is ~390px tall
 
-  function compactGeom(base, W, H) {
+  function compactGeom(base, W, H, gutter) {
     var g = {};
     for (var k in base) if (Object.prototype.hasOwnProperty.call(base, k)) g[k] = base[k];
     g.W = W;
     g.H = H || COMPACT_H;
-    // The left margin holds axis text, which has not changed size, so it does
-    // not change either. Only the right margin gives way — it exists to clear
-    // the last bar, and 10px does that.
-    g.m = { t: base.m.t, r: 10, b: base.m.b, l: base.m.l };
+
+    /* Every margin here exists to hold something, and on a phone each one is
+       measured against what it actually has to hold rather than reserved.
+
+       LEFT is the y-axis labels, and it is the caller that knows them: 56px is
+       sized for the widest figure the chart could ever print, and an axis
+       reading "100k" wants 42 while one reading "0.5" wants 32. The desktop has
+       the pixels to spare and keeps its fixed margin — which is also what the
+       downloaded PNG is drawn at, so the exported image is unaffected.
+
+       BOTTOM held 54px for a category label sitting 22px below the axis; the
+       other 32 were slack. A rotated label still gets its room, because
+       fitCategoryLabels returns extraBottom and computeLayout adds it to the
+       height AFTER the plot area has been measured.
+
+       RIGHT only has to clear the last bar. */
+    g.m = {
+      t: base.m.t,
+      r: 8,
+      b: 34,
+      l: gutter ? Math.max(18, gutter) : base.m.l
+    };
     g.barCap = 56;
     return g;
   }
@@ -1761,6 +1825,25 @@ body {
   // footnote rather than a value.
   function valFontSize(theme) { return theme.dark ? 16 : 14; }
 
+  /* How much room the y-axis labels actually need. `.ngc-axis` is 13px in
+     ng-chart.css and nothing overrides it — the bold tone changes the value and
+     category sizes but not this one — so the size is a constant here rather
+     than a theme lookup. tickDx is the label's own offset from the axis, and
+     EDGE matches the compact right margin, so the widest label ends up the same
+     distance from the left edge as the axis does from the right — which is the
+     symmetry a fixed 56px gutter did not have. It is also the slack that covers
+     estimateTextWidth being an estimate: it is measured from a table of DM Sans
+     advances, not from the browser, so a couple of pixels either way is normal
+     and clipping the axis would not be. */
+  var AXIS_FONT = 13, AXIS_EDGE = 6;
+  function axisGutter(labels, G) {
+    var w = 0;
+    for (var i = 0; i < labels.length; i++) {
+      w = Math.max(w, C.estimateTextWidth(labels[i], AXIS_FONT));
+    }
+    return Math.ceil(w + Math.abs(G.tickDx) + AXIS_EDGE);
+  }
+
   /* ================================================================
      LAYOUT
      Pure: view -> pixel geometry. Everything the animator needs, keyed.
@@ -1769,13 +1852,12 @@ body {
     var dataset = spec.datasets[view.crime + '|' + view.period];
     var grouped = view.compare === 'rew' && dataset.series.length > 1;
     var G = grouped ? C.GEOM.gbar : C.GEOM.vbar;
-    // A compact chart is the same geometry at the plot's true pixel width,
-    // so its type renders at the size chart-core chose rather than at
-    // whatever a scaled-down viewBox leaves of it.
-    if (compactW) G = C.compactGeom(G, compactW, compactH);
-    var W = G.W, H = G.H, m = G.m;
-    var iw = W - m.l - m.r, ih = H - m.t - m.b;
 
+    /* The scale is settled BEFORE the margins, because on a compact chart the
+       left margin is measured from the axis labels and they cannot be written
+       until the scale is known. niceScale needs only the data and the tick
+       count, neither of which depends on a margin, so there is no circularity
+       — but the order matters and is easy to undo by accident. */
     var nS = grouped ? dataset.series.length : 1;
     var values = [];
     for (var s = 0; s < nS; s++) values.push(deriveValues(dataset, s, view.encoding));
@@ -1786,6 +1868,19 @@ body {
     });
     var maxV = all.length ? Math.max.apply(null, all) : 1;
     var sc = C.niceScale(0, maxV, G.ticks);
+    var tickLabels = sc.ticks.map(function (t) {
+      return formatTick(t, view.encoding, sc.step);
+    });
+
+    // A compact chart is the same geometry at the plot's true pixel width, so
+    // its type renders at the size chart-core chose rather than at whatever a
+    // scaled-down viewBox leaves of it — and with margins measured rather than
+    // reserved, because 14 wasted pixels out of 316 is a bar and a half.
+    if (compactW) {
+      G = C.compactGeom(G, compactW, compactH, axisGutter(tickLabels, G));
+    }
+    var W = G.W, H = G.H, m = G.m;
+    var iw = W - m.l - m.r, ih = H - m.t - m.b;
     var y = C.lin(sc.min, sc.max, m.t + ih, m.t);
     var baseline = y(0);
 
@@ -1832,9 +1927,8 @@ body {
       // C.GEOM directly, so a compact render cannot half-happen.
       G: G,
       step: sc.step,
-      ticks: sc.ticks.map(function (t) {
-        return { key: String(t), value: t, y: y(t),
-                 label: formatTick(t, view.encoding, sc.step) };
+      ticks: sc.ticks.map(function (t, i) {
+        return { key: String(t), value: t, y: y(t), label: tickLabels[i] };
       }),
       bars: bars, cats: catLabels, dataset: dataset, values: values,
       encoding: view.encoding,
@@ -4218,6 +4312,54 @@ body {
   window.addEventListener('resize', function () { setTimeout(hudUpdate, 220); });
   figure.addEventListener('click', function () { setTimeout(hudUpdate, 60); });
   figure.addEventListener('change', function () { setTimeout(hudUpdate, 900); });
+
+  /* The experiment's three pickers, built from the real schema so they are the
+     same length and carry the same names as the control being tested. Sexual
+     offences is the category used because it is the one whose list carries both
+     kinds of "also" at once, so grouped and ungrouped differ most. */
+  (function () {
+    var tier = null;
+    spec.tiers.forEach(function (t) { if (t.key === 'sexual') tier = t; });
+    if (!tier) tier = spec.tiers[0];
+    function label(k) { return (spec.copy[k] && spec.copy[k].label) || k; }
+    var keys = [tier.key].concat(tier.split, tier.also || []);
+    function opt(k, text) {
+      var o = document.createElement('option');
+      o.value = k; o.textContent = text || label(k); return o;
+    }
+
+    var a = document.getElementById('pick-a');
+    var main = document.createElement('optgroup');
+    main.label = tier.label;
+    main.appendChild(opt(tier.key, 'Total'));
+    tier.split.forEach(function (k) { main.appendChild(opt(k)); });
+    a.appendChild(main);
+    ['inside', 'outside'].forEach(function (kind) {
+      var g = null;
+      (tier.also || []).forEach(function (k) {
+        var note = spec.alsoNotes[tier.key + '|' + k];
+        if (!note || note.kind !== kind) return;
+        if (!g) {
+          g = document.createElement('optgroup');
+          g.label = kind === 'inside' ? 'Also inside this total'
+                                      : 'Related, counted elsewhere';
+        }
+        g.appendChild(opt(k));
+      });
+      if (g) a.appendChild(g);
+    });
+
+    var b = document.getElementById('pick-b');
+    b.appendChild(opt(tier.key, 'Total'));
+    keys.slice(1).forEach(function (k) { b.appendChild(opt(k)); });
+
+    var c = document.getElementById('pick-c');
+    keys.slice(0, 3).forEach(function (k, i) {
+      c.appendChild(opt(k, i === 0 ? 'Total' : label(k)));
+    });
+
+    document.getElementById('lab-ua').textContent = navigator.userAgent;
+  })();
 
   // Completion gate, same contract as the preview and the 3D pages, so a
   // headless capture can wait on it.
