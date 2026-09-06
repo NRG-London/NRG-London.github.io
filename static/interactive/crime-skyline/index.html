@@ -90,8 +90,10 @@
   .foot .source { font-style: italic; }
   .foot .tag { font-weight: 700; letter-spacing: 0.08em; white-space: nowrap; }
 
+  /* Top of 62px, not 22: the download and full-screen buttons take the
+     corner above it. See .ngv-tools, whose CSS viz-export.js injects. */
   .hint {
-    position: absolute; right: 24px; top: 22px; z-index: 10;
+    position: absolute; right: 24px; top: 62px; z-index: 10;
     font-size: 11.5px; color: #8A9490; text-align: right; pointer-events: none;
   }
   #reset {
@@ -156,6 +158,1089 @@
   <div id="shield" style="display:none"><span>Click or tap to explore in 3D</span></div>
 
   <script src="/js/deck.min.js"></script>
+  <script>/* ================================================================
+   NeilGarratt.com — PNG export primitives
+   The half of an image export that knows nothing about what is in
+   the picture: wrap some text, rasterise an SVG, write PNG metadata,
+   hand the file to the browser.
+
+   WHY IT IS ITS OWN FILE. chart-export.js grew all of this for the 2D
+   charts. The deck.gl maps need exactly the same metadata — the same
+   iTXt chunks, the same XMP packet, the same local-time stamp — and a
+   second implementation of a CRC-32 and a PNG chunk writer is precisely
+   the drift this project keeps guarding against. So it moved here, and
+   both exporters require it.
+
+   NO DEPENDENCIES, deliberately. The map pages do not load chart-core.js
+   and should not have to: they are self-contained single files with no
+   external requests at all. That is why `esc` is restated here rather
+   than borrowed from NGCore.
+
+   Public API:
+     NGPng.wrap(text, size, weight, family, maxW) -> string[]
+     NGPng.block(lines, x, y, style, fill, family, extra) -> svg
+     NGPng.measure / .text / .rect / .line / .attrs / .esc
+     NGPng.toBlob(svg, scale)          -> Promise<Blob>
+     NGPng.withMetadata(blob, meta)    -> Promise<Blob>
+     NGPng.baseMeta(fields)            -> the standard metadata dict
+     NGPng.isoLocal(date)              -> '2026-09-01T15:24:35+01:00'
+     NGPng.save(blob, filename)
+     NGPng.fontFaceCss()               -> Promise<string>  (fetches FONT_URLS)
+     NGPng.FONT_URLS                   -> overridable, for tests
+   ================================================================ */
+(function (global) {
+  'use strict';
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  /* ---------- fonts ----------
+     Mirrors the @font-face block in main.css, weights included: Libre
+     Baskerville ships one file served at both 400 and 700, DM Sans is variable
+     across 300-700. Declaring the same mapping is what makes the exported text
+     render as the page renders it rather than merely in the right typeface.
+
+     Fetched once, lazily, on the first export — never on page load, because
+     most readers never press the button. Cached as a promise so a double click
+     does not fetch twice.
+
+     A failure here is not fatal. An image in Helvetica is worth far more to
+     someone trying to share a chart than an error message, so the fallback is
+     to carry on with a system stack.
+
+     A page that already HAS the faces base64-inlined — every deck.gl map does,
+     via _font_css("inline") — should skip this entirely and pass its own CSS
+     to the composer. There is nothing to fetch and nothing to fail.
+
+     Overridable so a test can point them at a dead URL and prove the fallback. */
+  var FONT_URLS = {
+    'DM Sans': { url: '/fonts/dm-sans.woff2', weights: ['300 700'] },
+    'Libre Baskerville': { url: '/fonts/libre-baskerville.woff2', weights: ['400', '700'] }
+  };
+
+  var fontsPromise = null;
+
+  function fontFaceCss() {
+    if (fontsPromise) return fontsPromise;
+    fontsPromise = Promise.all(Object.keys(FONT_URLS).map(function (family) {
+      var spec = FONT_URLS[family];
+      return fetch(spec.url)
+        .then(function (r) {
+          if (!r.ok) throw new Error(r.status + ' ' + spec.url);
+          return r.arrayBuffer();
+        })
+        .then(function (buf) {
+          // The charts serve woff2, the deck.gl pages serve ttf. Same fetch,
+          // same base64, different two words — so they are read off the URL
+          // rather than each caller being made to declare them.
+          var ttf = /\.ttf(\?|$)/i.test(spec.url);
+          var src = 'url(data:font/' + (ttf ? 'ttf' : 'woff2') + ';base64,'
+                  + base64(buf) + ") format('" + (ttf ? 'truetype' : 'woff2') + "')";
+          return spec.weights.map(function (w) {
+            return "@font-face{font-family:'" + family + "';font-style:normal;"
+                 + 'font-weight:' + w + ';src:' + src + ';}';
+          }).join('');
+        })
+        .catch(function (err) {
+          if (global.console) {
+            console.warn('ng-png: could not embed ' + family
+                         + ', falling back to a system font', err);
+          }
+          return '';
+        });
+    })).then(function (parts) { return parts.join(''); });
+    return fontsPromise;
+  }
+
+  // btoa() needs a binary string, and String.fromCharCode.apply blows the
+  // argument limit on a 37 KB font, so it goes across in chunks.
+  function base64(buf) {
+    var bytes = new Uint8Array(buf), out = '', CHUNK = 0x8000;
+    for (var i = 0; i < bytes.length; i += CHUNK) {
+      out += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
+    }
+    return global.btoa(out);
+  }
+
+  /* ---------- text measurement ----------
+     SVG has no line wrapping, and foreignObject rasterises unreliably in
+     Safari, so the wrapping is done here and emitted as separate <text> lines.
+
+     Measured with canvas rather than estimated: the page HAS the real fonts
+     loaded, so measureText is exact, and a title is long enough that a
+     character-width approximation would visibly misjudge it. */
+  var ctx = null;
+  function measure(text_, size, weight, family) {
+    if (!ctx) ctx = document.createElement('canvas').getContext('2d');
+    ctx.font = weight + ' ' + size + 'px ' + family;
+    return ctx.measureText(text_).width;
+  }
+
+  function wrap(text_, size, weight, family, maxW) {
+    var words = String(text_ || '').split(/\s+/).filter(Boolean);
+    if (!words.length) return [];
+    var lines = [], line_ = words[0];
+    for (var i = 1; i < words.length; i++) {
+      var test = line_ + ' ' + words[i];
+      if (measure(test, size, weight, family) <= maxW) line_ = test;
+      else { lines.push(line_); line_ = words[i]; }
+    }
+    lines.push(line_);
+    return lines;
+  }
+
+  /* ---------- small svg builders ---------- */
+  function attrs(o) {
+    var s = '';
+    for (var k in o) if (o[k] != null && o[k] !== '') s += ' ' + k + '="' + o[k] + '"';
+    return s;
+  }
+  function text(s, o) { return '<text' + attrs(o) + '>' + esc(s) + '</text>'; }
+  function rect(o) { return '<rect' + attrs(o) + '/>'; }
+  function line(o) { return '<line' + attrs(o) + '/>'; }
+
+  function block(lines, x, y, style, fill, family, extra) {
+    var out = '';
+    for (var i = 0; i < lines.length; i++) {
+      var o = {
+        x: x, y: y + i * (style.line || style.size),
+        'font-family': family, 'font-size': style.size,
+        'font-weight': style.weight, fill: fill
+      };
+      for (var k in (extra || {})) o[k] = extra[k];
+      out += text(lines[i], o);
+    }
+    return out;
+  }
+
+  /* ---------- rasterise ---------- */
+  function toBlob(svg, scale) {
+    var SC = scale || 1;
+    return new Promise(function (resolve, reject) {
+      var img = new Image();
+      // A data: URL rather than a blob: URL — Safari taints the canvas for
+      // blob-sourced SVG images, and a tainted canvas cannot be read back.
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+      img.onload = function () {
+        var canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * SC);
+        canvas.height = Math.round(img.height * SC);
+        var c = canvas.getContext('2d');
+        c.setTransform(SC, 0, 0, SC, 0, 0);
+        c.drawImage(img, 0, 0);
+        canvas.toBlob(function (blob) {
+          blob ? resolve(blob) : reject(new Error('canvas produced no image'));
+        }, 'image/png');
+      };
+      img.onerror = function () { reject(new Error('could not rasterise the image')); };
+    });
+  }
+
+  /* Same as toBlob, but hands back the canvas instead of a blob, for a caller
+     that has more to draw onto it — the map exporter paints the map into the
+     frame rather than inlining a multi-megabyte data URI inside the SVG. */
+  function toCanvas(svg, scale) {
+    var SC = scale || 1;
+    return new Promise(function (resolve, reject) {
+      var img = new Image();
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+      img.onload = function () {
+        var canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * SC);
+        canvas.height = Math.round(img.height * SC);
+        var c = canvas.getContext('2d');
+        c.setTransform(SC, 0, 0, SC, 0, 0);
+        c.drawImage(img, 0, 0);
+        resolve(canvas);
+      };
+      img.onerror = function () { reject(new Error('could not rasterise the frame')); };
+    });
+  }
+
+  function save(blob, filename) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    // Revoked on the next turn, not immediately: some browsers have not started
+    // reading the blob by the time click() returns.
+    setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+  }
+
+  /* ---------- metadata ----------
+     Written into the PNG, not the SVG. The SVG is an intermediate that is
+     rasterised and discarded, so anything put there would never leave the
+     browser; the PNG is the file that travels, and PNG has a real metadata
+     standard for exactly this.
+
+     iTXt rather than tEXt: tEXt is Latin-1 only and this copy carries em
+     dashes, middots and pound signs. iTXt is UTF-8 and just as widely read —
+     ExifTool, ImageMagick, Pillow and most image viewers all handle it.
+
+     The point is that a picture which has travelled far from this website can
+     still say what it is, where the figures came from, when it was made, and
+     which release of the data it was built on. Home Office revises its whole
+     back-series every quarter, so a chart without its vintage cannot be
+     reproduced even by us. */
+  var CRC_TABLE = (function () {
+    var t = [], c, n, k;
+    for (n = 0; n < 256; n++) {
+      c = n;
+      for (k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+      t[n] = c >>> 0;
+    }
+    return t;
+  })();
+
+  function crc32(bytes) {
+    var c = 0xffffffff;
+    for (var i = 0; i < bytes.length; i++) {
+      c = CRC_TABLE[(c ^ bytes[i]) & 0xff] ^ (c >>> 8);
+    }
+    return (c ^ 0xffffffff) >>> 0;
+  }
+
+  function itxtChunk(keyword, body_) {
+    var enc = new TextEncoder();
+    // keyword \0 compressionFlag compressionMethod languageTag \0
+    // translatedKeyword \0 text
+    var head = enc.encode(keyword);
+    var body = enc.encode(body_);
+    var data = new Uint8Array(head.length + 5 + body.length);
+    var o = 0;
+    data.set(head, o); o += head.length;
+    data[o++] = 0;      // null after keyword
+    data[o++] = 0;      // not compressed
+    data[o++] = 0;      // compression method (ignored when uncompressed)
+    data[o++] = 0;      // empty language tag
+    data[o++] = 0;      // empty translated keyword
+    data.set(body, o);
+
+    var type = enc.encode('iTXt');
+    var chunk = new Uint8Array(12 + data.length);
+    var dv = new DataView(chunk.buffer);
+    dv.setUint32(0, data.length);
+    chunk.set(type, 4);
+    chunk.set(data, 8);
+    var forCrc = new Uint8Array(4 + data.length);
+    forCrc.set(type, 0);
+    forCrc.set(data, 4);
+    dv.setUint32(8 + data.length, crc32(forCrc));
+    return chunk;
+  }
+
+  /* ---------- XMP ----------
+     The iTXt chunks above are the PNG-native way to carry this, and a PNG
+     reader will find every one of them. An OPERATING SYSTEM will not: Windows
+     Explorer's Details tab, macOS's Get Info and most "image properties" panels
+     read XMP and nothing else, so a file full of correct iTXt keywords shows up
+     with nothing but its dimensions. Neil found exactly that.
+
+     So the same facts go in twice. This is not duplication to be tidied away
+     later — the two are read by different things, and dropping either loses a
+     reader. The packet is an UNCOMPRESSED iTXt chunk keyed `XML:com.adobe.xmp`,
+     which is where Adobe's PNG spec puts it and where Windows looks.
+
+     Only the human-facing fields go in here. The picture's own figures stay in
+     the iTXt chunks, where length costs nothing and no properties panel is
+     going to render a hundred numbers anyway. */
+  var XMP_KEY = 'XML:com.adobe.xmp';
+
+  function xesc(v) {
+    return String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  // dc:title, dc:description and dc:rights are language alternatives, not plain
+  // strings; a bare value is silently ignored by strict readers.
+  function alt(tag, v) {
+    return v ? '<' + tag + '><rdf:Alt><rdf:li xml:lang="x-default">' + xesc(v)
+             + '</rdf:li></rdf:Alt></' + tag + '>' : '';
+  }
+  function seq(tag, kind, v) {
+    return v ? '<' + tag + '><rdf:' + kind + '><rdf:li>' + xesc(v)
+             + '</rdf:li></rdf:' + kind + '></' + tag + '>' : '';
+  }
+  function plain(tag, v) {
+    return v ? '<' + tag + '>' + xesc(v) + '</' + tag + '>' : '';
+  }
+
+  function xmpPacket(meta) {
+    var when = meta['Creation Time'] || '';
+    var body =
+        alt('dc:title', meta['Title'])
+      + alt('dc:description', meta['Description'])
+      + alt('dc:rights', meta['Copyright'])
+      + seq('dc:creator', 'Seq', meta['Author'])
+      + seq('dc:subject', 'Bag', meta['Category'])
+      + plain('dc:source', meta['Source'])
+      + plain('xmp:CreateDate', when)
+      + plain('xmp:MetadataDate', when)
+      + plain('xmp:CreatorTool', meta['Software'])
+      + plain('photoshop:DateCreated', when)
+      + plain('photoshop:Source', meta['Source'])
+      + plain('photoshop:Credit', meta['Credit'])
+      + plain('photoshop:Headline', meta['Title'])
+      + alt('exif:UserComment', meta['Description']);
+    return '<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>'
+         + '<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="'
+         + xesc(meta['Software'] || 'NeilGarratt.com') + '">'
+         + '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">'
+         + '<rdf:Description rdf:about=""'
+         + ' xmlns:dc="http://purl.org/dc/elements/1.1/"'
+         + ' xmlns:xmp="http://ns.adobe.com/xap/1.0/"'
+         + ' xmlns:photoshop="http://ns.adobe.com/photoshop/1.0/"'
+         + ' xmlns:exif="http://ns.adobe.com/exif/1.0/">'
+         + body
+         + '</rdf:Description></rdf:RDF></x:xmpmeta>'
+         + '<?xpacket end="w"?>';
+  }
+
+  /* Inserted straight after IHDR, which the spec requires to be first and
+     which is always 25 bytes: 8 signature + 4 length + 4 type + 13 data + 4
+     CRC. Everything else is copied through untouched. */
+  function withMetadata(blob, meta) {
+    var keys = Object.keys(meta || {}).filter(function (k) { return meta[k]; });
+    if (!keys.length) return Promise.resolve(blob);
+    return blob.arrayBuffer().then(function (buf) {
+      var png = new Uint8Array(buf);
+      var head = png.subarray(0, 33);          // signature + IHDR
+      var rest = png.subarray(33);
+      var chunks = keys.map(function (k) { return itxtChunk(k, String(meta[k])); });
+      chunks.unshift(itxtChunk(XMP_KEY, xmpPacket(meta)));
+      var extra = chunks.reduce(function (n, c) { return n + c.length; }, 0);
+      var out = new Uint8Array(head.length + extra + rest.length);
+      var o = 0;
+      out.set(head, o); o += head.length;
+      chunks.forEach(function (c) { out.set(c, o); o += c.length; });
+      out.set(rest, o);
+      return new Blob([out], { type: 'image/png' });
+    });
+  }
+
+  /* ISO 8601 in LOCAL time with an explicit offset — 2026-09-01T15:24:35+01:00
+     — rather than the UTC form toISOString() gives.
+
+     Both name the same instant, so both are correct, but they are not read the
+     same way. Windows Explorer takes the wall-clock digits and ignores the zone
+     entirely, so a chart made at 15:54 in British Summer Time was filed under
+     14:54. The offset form survives that: a reader that honours the zone gets
+     the right instant, and a reader that only looks at the digits gets the
+     right local time. The Z form is only correct for the first kind.
+
+     Nothing here is guessed from a locale — getTimezoneOffset is the machine's
+     own answer, in minutes BEHIND UTC, hence the negation. */
+  function isoLocal(d) {
+    function p2(n) { return (n < 10 ? '0' : '') + n; }
+    var off = -d.getTimezoneOffset();
+    var abs = Math.abs(off);
+    return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate())
+         + 'T' + p2(d.getHours()) + ':' + p2(d.getMinutes()) + ':' + p2(d.getSeconds())
+         + (off < 0 ? '-' : '+') + p2(Math.floor(abs / 60)) + ':' + p2(abs % 60);
+  }
+
+  /* The standard field set, from whatever the caller could read off its own
+     page. `software` is the one thing that differs between exporters — a chart
+     tool and a map tool are not the same program. */
+  function baseMeta(f) {
+    var now = new Date();
+    var tag = f.tag || 'NeilGarratt.com';
+    return {
+      'Title': f.title || '',
+      'Author': 'Neil Garratt',
+      'Copyright': '© ' + now.getFullYear() + ' Neil Garratt. ' + tag,
+      // Full ISO rather than a bare date: XMP carries this to Explorer's
+      // "Date taken", and a date-only value shows there as midnight. Local
+      // with an offset rather than UTC — see isoLocal above.
+      'Creation Time': isoLocal(now),
+      'Description': f.description || '',
+      'Source': (f.source || '').replace(/^Source:\s*/, ''),
+      'Credit': tag,
+      'Software': f.software || (tag + ' export')
+    };
+  }
+
+  global.NGPng = {
+    esc: esc, base64: base64,
+    FONT_URLS: FONT_URLS, fontFaceCss: fontFaceCss,
+    measure: measure, wrap: wrap, block: block,
+    attrs: attrs, text: text, rect: rect, line: line,
+    toBlob: toBlob, toCanvas: toCanvas, save: save,
+    crc32: crc32, itxtChunk: itxtChunk, XMP_KEY: XMP_KEY,
+    xmpPacket: xmpPacket, withMetadata: withMetadata,
+    isoLocal: isoLocal, baseMeta: baseMeta,
+    // Tests point FONT_URLS at a dead path to exercise the fallback; without
+    // this the first export's cached promise would answer for the second.
+    _resetFonts: function () { fontsPromise = null; }
+  };
+})(window);
+
+/* ================================================================
+   NeilGarratt.com — deck.gl viz export
+   Turns the 3D map a reader is currently looking at into a PNG in
+   their Downloads folder, entirely in the browser. The map's sibling
+   to chart-export.js, and it shares that file's PNG half via ng-png.js.
+
+   WHAT IT PRODUCES. The current camera, at a fixed size, with the
+   interface removed and the editorial frame put back: eyebrow, title,
+   subtitle, the map, the source line, the basemap attribution and the
+   NeilGarratt.com tag. None of that frame is in the framebuffer — it is
+   all DOM on the page — so a raw screenshot loses every word of it.
+
+   HOW IT AVOIDS EXPORTING A FRAME OF THE ANIMATION. This was the thing
+   to get right: the towers ease into position over 750ms, and a capture
+   taken part-way through states a figure that is true at no point in
+   the data. Measured, a grab 300ms after a metric change differs from
+   the settled picture in about 7% of its pixels.
+
+   It is not solved by timing. It is solved by not capturing the live
+   canvas at all: a SECOND, offscreen deck.Deck is built at the export
+   size and handed the page's own layers. A freshly constructed layer
+   has no transition to be part-way through — deck.gl's `transitions`
+   animate an UPDATE, never a first render — so the offscreen deck draws
+   the settled state by construction. The tween problem disappears
+   rather than being waited out.
+
+   That the offscreen render is faithful is not an assumption: with a
+   rotated, tilted, zoomed camera it agrees with the on-screen canvas in
+   99.1% of sampled pixels, the remainder being antialiasing at twice
+   the resolution.
+
+   REQUIRES ng-png.js, and a page that has called register().
+
+   Public API:
+     NGVizExport.register(adapter)
+     NGVizExport.download()            -> Promise<void>
+     NGVizExport.deckCapture(opts)     -> the default capture function
+     NGVizExport.readChrome(sel)       -> reads .card/.foot into a frame
+     NGVizExport.mountButtons(opts)    -> the download + full-screen pair
+   ================================================================ */
+(function (global) {
+  'use strict';
+
+  var P = global.NGPng;
+  if (!P) throw new Error('viz-export.js requires ng-png.js');
+
+  /* ---------- composition geometry ----------
+     The map area is 1.865:1, the aspect of the embed box on the campaign pages.
+
+     A FIXED export size is only half of a fixed framing, and the missing half
+     cost a release. deck.gl's `zoom` is ground per PIXEL, so handing the live
+     zoom to a 1200px canvas shows 1200 pixels' worth of ground whatever the
+     reader's own canvas was: on a 2K monitor the export cropped the edges, and
+     in a quarter-screen window it pulled back and left the map swimming in
+     space. The zoom has to be adjusted for the change of canvas — see fitZoom. */
+  var MAP_W = 1200, MAP_H = 644;
+  var PAD = 34;
+  var W = MAP_W + PAD * 2;
+  var SCALE = 2;                        // 1268pt -> 2536px PNG
+
+  /* Larger than the chart's table: this canvas is half again as wide, and the
+     chart's 25px title would read as a caption on it. */
+  var T = {
+    eyebrow:  { size: 12,   weight: 700,  spacing: 1.2, gapAfter: 20 },
+    title:    { size: 32,   weight: 700,  line: 42,     gapAfter: 12 },
+    subtitle: { size: 18,   weight: 400,  line: 26,     gapAfter: 22 },
+    legend:   { size: 14,   weight: 500,  gapBefore: 18, swatch: 13 },
+    foot:     { size: 13,   weight: 400,  gapBefore: 15 }
+  };
+
+  var SANS = "'DM Sans', system-ui, sans-serif";
+  var SERIF = "'Libre Baskerville', Georgia, serif";
+
+  /* The maps are dark. These mirror the ink ground the templates set on
+     <body>, and the paper value is read from the page at export time rather
+     than restated, so a page that changes its ground changes its exports. */
+  var INK_FALLBACK = '#1A2332';
+  var PAPER = '#F3F6F4';
+  var SUB = 'rgba(243,246,244,0.62)';
+  var RULE = 'rgba(243,246,244,0.18)';
+  var ACCENT = '#5A9FD4';
+
+  var adapter = null;
+  var fontCss = '';
+
+  /* A rasterised SVG cannot see the document's fonts, and — because it is
+     rasterised from a data: URL — it cannot fetch them either. They have to be
+     base64 inside the exported document or the text comes out in Helvetica.
+
+     Two ways in, and which one is right depends on how the page was built. The
+     self-contained file:// variant already carries the faces base64 in its own
+     <style>, so it hands that string over and nothing is fetched. The variant
+     served from the site links /fonts/ instead, and inlining them a second time
+     would put 350 KB on a page most readers never export from — so it leaves
+     this empty and ng-png fetches on the first click, as the charts do. */
+  function register(a) {
+    adapter = a;
+    fontCss = a.fontCss || '';
+  }
+
+  function faces() {
+    return fontCss ? Promise.resolve(fontCss) : P.fontFaceCss();
+  }
+
+  /* ================================================================
+     CAPTURE — the one part that knows how the picture is made
+     ================================================================ */
+
+  /* A 64x48 thumbnail of the canvas, as a string. Two identical ones a couple
+     of frames apart mean the picture has stopped changing — which covers the
+     easing, basemap tiles still arriving, and the label atlas being built,
+     without this file having to know that any of those exist. */
+  var thumbCv = null;
+  function signature(canvas) {
+    if (!thumbCv) {
+      thumbCv = document.createElement('canvas');
+      thumbCv.width = 64; thumbCv.height = 48;
+    }
+    var c = thumbCv.getContext('2d');
+    c.clearRect(0, 0, 64, 48);
+    try { c.drawImage(canvas, 0, 0, 64, 48); } catch (e) { return null; }
+    return thumbCv.toDataURL('image/png');
+  }
+
+  var STABLE_FRAMES = 2;
+  var CAPTURE_TIMEOUT = 15000;
+
+  /* ---------- the camera the export should use ----------
+
+     TWO things make a live view state the wrong thing to hand an export, and
+     both of them cost a release.
+
+     FIRST, it is not a flat object. deck.gl's viewState carries a nested
+     `default-view` key — the per-view form of the same camera — and deck reads
+     THAT in preference to the top-level properties. Copying the object and
+     changing `zoom` therefore changes nothing at all, silently: the export came
+     out at the live zoom however the number was adjusted, and two tests passed
+     for the wrong reason before this was noticed. So the camera is rebuilt from
+     its five scalars and nothing else travels.
+
+     SECOND, zoom is ground per PIXEL, so a fixed 1200px export shows 1200
+     pixels' worth of ground whatever the reader's canvas was — cropping the
+     edges on a 2K monitor and, in a quarter-screen window, pulling back until
+     the map swam in space.
+
+     The page already has the answer to that: it zooms out on a narrow window so
+     the same ground still fits, by `min(0, log2(innerWidth / baseWidth))`. The
+     adapter hands over the camera with that adjustment TAKEN BACK OFF, plus the
+     width it was designed for, and the export re-applies the same arithmetic
+     for its own width. What survives is the reader's own panning and zooming;
+     what does not is the size of the window they happened to be using. */
+  function exportCamera(vs, refW, w) {
+    if (!vs) return vs;
+    // Only the camera. Dropping `default-view` is the point; dropping minZoom
+    // and maxZoom matters too, because the corrected zoom can legitimately sit
+    // outside the range the page pins for interactive use, and deck would clamp
+    // it back.
+    var cam = {
+      longitude: vs.longitude, latitude: vs.latitude,
+      zoom: vs.zoom, pitch: vs.pitch, bearing: vs.bearing
+    };
+    if (refW && typeof cam.zoom === 'number') {
+      var dz = Math.log2(w / refW);
+      if (isFinite(dz)) cam.zoom = cam.zoom + dz;
+    }
+    return cam;
+  }
+
+  function deckCapture(o) {
+    return function (w, h, scale, bump) {
+      return new Promise(function (resolve, reject) {
+        var deck = global.deck;
+        if (!deck || !deck.Deck) { reject(new Error('deck.gl is not loaded')); return; }
+
+        var cv = document.createElement('canvas');
+        cv.width = Math.round(w * scale);
+        cv.height = Math.round(h * scale);
+        // Off-screen rather than hidden: display:none gives a zero-size
+        // element and deck would size its viewport to nothing.
+        cv.style.cssText = 'position:absolute;left:-99999px;top:0;'
+                         + 'width:' + w + 'px;height:' + h + 'px;pointer-events:none';
+        document.body.appendChild(cv);
+
+        var off = null, painted = false, finished = false;
+        function cleanup() {
+          try { if (off) off.finalize(); } catch (e) {}
+          if (cv.parentNode) cv.parentNode.removeChild(cv);
+        }
+
+        var vs = exportCamera(o.viewState(),
+                              o.referenceWidth ? o.referenceWidth() : 0, w);
+        if (bump && vs && typeof vs.zoom === 'number') vs.zoom += bump;
+
+        try {
+          off = new deck.Deck({
+            canvas: cv, width: w, height: h, useDevicePixels: scale,
+            controller: false,
+            initialViewState: vs,
+            layers: o.layers(),
+            effects: o.effects ? o.effects() : [],
+            onAfterRender: function () { painted = true; }
+          });
+        } catch (err) { cleanup(); reject(err); return; }
+
+        var t0 = (global.performance || Date).now();
+        var last = null, steady = 0;
+
+        function finish(err) {
+          if (finished) return;
+          finished = true;
+          if (err) { cleanup(); reject(err); return; }
+          // The pixels are copied off BEFORE the deck is finalized: finalize
+          // destroys the GL context, and a canvas with no context reads back
+          // blank.
+          var out = document.createElement('canvas');
+          out.width = cv.width; out.height = cv.height;
+          out.getContext('2d').drawImage(cv, 0, 0);
+          cleanup();
+          resolve(out);
+        }
+
+        function tick() {
+          if (finished) return;
+          if ((global.performance || Date).now() - t0 > CAPTURE_TIMEOUT) {
+            finish(painted ? null : new Error('the offscreen map never rendered'));
+            return;
+          }
+          if (painted) {
+            var sig = signature(cv);
+            if (sig && sig === last) steady++; else steady = 0;
+            last = sig;
+            if (steady >= STABLE_FRAMES) { finish(null); return; }
+          }
+          requestAnimationFrame(function () { requestAnimationFrame(tick); });
+        }
+        requestAnimationFrame(tick);
+      });
+    };
+  }
+
+  /* ---------- filling the frame ----------
+
+     The live map deliberately leaves room round the edges, because the title
+     card sits over its top-left and the controls over its bottom-left. Strip
+     that chrome for an export and the space stays behind: the default view put
+     London across 60% of the width and 57% of the height, adrift in a sea of
+     background.
+
+     A fixed zoom bump does not fix it. Measured at +0.40 the default view fills
+     nicely at 78% x 77%, but the moment the reader rotates 35 degrees or tilts
+     towards the horizon the footprint's bounding box grows and the margins fall
+     to 0-1% — the export starts cutting off the city.
+
+     So the frame is fitted to whatever is actually in it. A cheap 400px probe
+     render says where the ink lands, and the real render is zoomed to bring
+     that up to TARGET of the frame. It never clips, because it measures the
+     thing it is about to draw, and it fills equally well at any camera.
+
+     Two limits keep it honest. It only ever zooms IN, and never by more than
+     MAX_BUMP — so this reclaims the chrome's space and stops. A reader who has
+     deliberately pulled back to see London in context still gets something
+     close to what they framed, rather than being silently overridden. */
+  var FIT_TARGET = 0.88;      // of the frame, on the tighter axis
+  var FIT_MAX_BUMP = 0.5;     // in deck zoom levels, so at most ~1.4x
+  var PROBE_W = 400;
+
+  /* The bounding box of anything drawn, as fractions of the canvas. The map
+     canvas is transparent where nothing is drawn — measured, 83% of it at the
+     default view — so ALPHA is the test. Colour matching against the ink
+     background would also have to know the background, and would count the
+     basemap's darkest tiles as empty. */
+  function inkBounds(canvas) {
+    var W2 = 160, H2 = Math.max(1, Math.round(W2 * canvas.height / canvas.width));
+    var c2 = document.createElement('canvas');
+    c2.width = W2; c2.height = H2;
+    var cx = c2.getContext('2d', { willReadFrequently: true });
+    try { cx.drawImage(canvas, 0, 0, W2, H2); } catch (e) { return null; }
+    var data;
+    try { data = cx.getImageData(0, 0, W2, H2).data; } catch (e) { return null; }
+    var x0 = W2, y0 = H2, x1 = -1, y1 = -1;
+    for (var y = 0; y < H2; y++) {
+      for (var x = 0; x < W2; x++) {
+        if (data[(y * W2 + x) * 4 + 3] > 24) {
+          if (x < x0) x0 = x;
+          if (x > x1) x1 = x;
+          if (y < y0) y0 = y;
+          if (y > y1) y1 = y;
+        }
+      }
+    }
+    if (x1 < 0) return null;
+    return { w: (x1 - x0 + 1) / W2, h: (y1 - y0 + 1) / H2 };
+  }
+
+  function fitBump(box) {
+    if (!box || !box.w || !box.h) return 0;
+    // The tighter axis decides, so neither ends up past the target.
+    var bump = Math.min(Math.log2(FIT_TARGET / box.w), Math.log2(FIT_TARGET / box.h));
+    if (!isFinite(bump) || bump <= 0) return 0;      // already full: leave it
+    return Math.min(bump, FIT_MAX_BUMP);
+  }
+
+  /* ================================================================
+     READING THE PAGE
+     ================================================================ */
+
+  /* Everything comes off the live DOM, so the export cannot show a different
+     crime type, year or caveat from the one on screen. */
+  function readChrome() {
+    function txt(sel) {
+      var n = document.querySelector(sel);
+      return n ? n.textContent.trim().replace(/\s+/g, ' ') : '';
+    }
+    return {
+      eyebrow: txt('.card .eyebrow'),
+      title: txt('.card h1'),
+      subtitle: txt('.card .subtitle'),
+      source: txt('.foot #source'),
+      attribution: txt('.foot #attrib'),
+      // The page sets the tag in capitals and the PNG uses camel case. That
+      // is deliberate, and the same call chart-export.js records: on screen the
+      // caps read as a mark, but an exported image can end up on a printout
+      // where it is a URL somebody has to type.
+      tag: (function () {
+        var t = txt('.foot .tag');
+        return !t || t === t.toUpperCase() ? 'NeilGarratt.com' : t;
+      })(),
+      background: (function () {
+        var bg = getComputedStyle(document.body).backgroundColor;
+        return bg && bg !== 'rgba(0, 0, 0, 0)' ? bg : INK_FALLBACK;
+      })()
+    };
+  }
+
+  /* ================================================================
+     COMPOSE
+     Same running order as the page: eyebrow, title, subtitle, map,
+     legend, rule, source and tag. The frame is rasterised WITH its
+     background and the map is drawn into the gap afterwards — putting
+     a 2400px-wide PNG inside the SVG as a data URI is the thing most
+     likely to fail in Safari, and there is no need for it.
+     ================================================================ */
+  function compose(mapCanvas, frame) {
+    var paper = frame.background || INK_FALLBACK;
+    var inner = W - PAD * 2;
+    var body = '', y = PAD;
+
+    if (frame.eyebrow) {
+      y += T.eyebrow.size;
+      body += P.line({ x1: PAD, x2: PAD + 24, y1: y - 4, y2: y - 4,
+                       stroke: ACCENT, 'stroke-width': 2 });
+      body += P.text(frame.eyebrow.toUpperCase(), {
+        x: PAD + 36, y: y, 'font-family': SANS, 'font-size': T.eyebrow.size,
+        'font-weight': T.eyebrow.weight, 'letter-spacing': T.eyebrow.spacing,
+        fill: ACCENT
+      });
+      y += T.eyebrow.gapAfter;
+    }
+
+    var titleLines = P.wrap(frame.title, T.title.size, T.title.weight, SERIF, inner);
+    if (titleLines.length) {
+      y += T.title.size;
+      body += P.block(titleLines, PAD, y, T.title, PAPER, SERIF);
+      y += (titleLines.length - 1) * T.title.line + T.title.gapAfter;
+    }
+
+    var subLines = P.wrap(frame.subtitle, T.subtitle.size, T.subtitle.weight, SANS, inner);
+    if (subLines.length) {
+      y += T.subtitle.size;
+      body += P.block(subLines, PAD, y, T.subtitle, SUB, SANS);
+      y += (subLines.length - 1) * T.subtitle.line + T.subtitle.gapAfter;
+    }
+
+    var mapY = y;
+    y += MAP_H;
+
+    if (frame.legend && frame.legend.length) {
+      y += T.legend.gapBefore + T.legend.size;
+      var lx = PAD;
+      frame.legend.forEach(function (item) {
+        body += P.rect({ x: lx, y: y - T.legend.swatch + 2, width: T.legend.swatch,
+                         height: T.legend.swatch, rx: 1, fill: item.color });
+        body += P.text(item.label, {
+          x: lx + T.legend.swatch + 8, y: y, 'font-family': SANS,
+          'font-size': T.legend.size, 'font-weight': T.legend.weight, fill: SUB
+        });
+        lx += T.legend.swatch + 8
+            + P.measure(item.label, T.legend.size, T.legend.weight, SANS) + 24;
+      });
+    }
+
+    y += T.foot.gapBefore;
+    body += P.line({ x1: PAD, x2: W - PAD, y1: y, y2: y, stroke: RULE, 'stroke-width': 1 });
+    y += T.foot.gapBefore + T.foot.size;
+
+    // Source on the left, then the basemap attribution if there is one, and the
+    // tag hard right. The attribution is a licence condition when the CARTO
+    // basemap is showing, so it travels with the picture or the picture is not
+    // publishable.
+    body += P.text(frame.source, {
+      x: PAD, y: y, 'font-family': SANS, 'font-size': T.foot.size,
+      'font-style': 'italic', fill: SUB
+    });
+    if (frame.attribution) {
+      body += P.text(frame.attribution, {
+        x: PAD, y: y + T.foot.size + 5, 'font-family': SANS,
+        'font-size': T.foot.size - 1, fill: SUB
+      });
+      y += T.foot.size + 5;
+    }
+    // Camel case here, capitals on the page. Deliberate, and the same decision
+    // chart-export.js records: on screen the caps read as a mark, but a PNG can
+    // end up on a printout where it is a URL somebody has to type.
+    body += P.text(frame.tag, {
+      x: W - PAD, y: frame.attribution ? y - T.foot.size - 5 : y,
+      'text-anchor': 'end', 'font-family': SANS, 'font-size': T.foot.size,
+      'font-weight': 600, 'letter-spacing': 0.7, fill: SUB
+    });
+
+    var H = y + PAD;
+
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H
+            + '" viewBox="0 0 ' + W + ' ' + H + '">'
+            + '<style>' + fontCss + '</style>'
+            + P.rect({ x: 0, y: 0, width: W, height: H, fill: paper })
+            + body
+            + '</svg>';
+
+    return P.toCanvas(svg, SCALE).then(function (canvas) {
+      var c = canvas.getContext('2d');
+      // toCanvas leaves its own SCALE transform on the context, so a draw in
+      // device pixels would be scaled a second time — the map came out at twice
+      // the size, offset, and over the source line. Reset rather than work in
+      // the other module's coordinate space, which is not ours to rely on.
+      c.setTransform(1, 0, 0, 1, 0, 0);
+      c.drawImage(mapCanvas, PAD * SCALE, mapY * SCALE, MAP_W * SCALE, MAP_H * SCALE);
+      return canvas;
+    });
+  }
+
+  function canvasToBlob(canvas) {
+    return new Promise(function (resolve, reject) {
+      canvas.toBlob(function (b) {
+        b ? resolve(b) : reject(new Error('canvas produced no image'));
+      }, 'image/png');
+    });
+  }
+
+  /* ================================================================
+     DOWNLOAD
+     ================================================================ */
+
+  var SETTLE_TIMEOUT = 2500;
+
+  /* Belt to the offscreen render's braces. The offscreen deck cannot be part
+     way through a transition, but on the pages that ease the whole field by a
+     uniform (easeSwap), `layers()` reads a module-scope scalar that IS part
+     way through — so the layers it hands back would describe a squashed field.
+     Waiting for the page's own flag costs nothing when it is already false. */
+  function waitSettled() {
+    if (!adapter.settled) return Promise.resolve();
+    var t0 = Date.now();
+    return new Promise(function (resolve) {
+      (function poll() {
+        if (adapter.settled() || Date.now() - t0 > SETTLE_TIMEOUT) { resolve(); return; }
+        setTimeout(poll, 60);
+      })();
+    });
+  }
+
+  function metadata(frame) {
+    var info = P.baseMeta({
+      title: frame.title,
+      description: [frame.subtitle, frame.attribution].filter(Boolean).join(' '),
+      source: frame.source,
+      tag: frame.tag,
+      software: (frame.tag || 'NeilGarratt.com') + ' map tool'
+    });
+    var extra = adapter.meta ? adapter.meta() : null;
+    if (extra) {
+      Object.keys(extra).forEach(function (k) { if (extra[k]) info[k] = extra[k]; });
+    }
+    return info;
+  }
+
+  function download() {
+    if (!adapter) return Promise.reject(new Error('no viz registered'));
+    var frame = adapter.frame ? adapter.frame() : readChrome();
+    return faces()
+      .then(function (css) { fontCss = css; return waitSettled(); })
+      // A small probe first, purely to find where the ink lands. 400px is
+      // enough to bound a shape and costs a fraction of the real render.
+      .then(function () {
+        return adapter.capture(PROBE_W, Math.round(PROBE_W * MAP_H / MAP_W), 1, 0)
+          .then(function (probe) { return fitBump(inkBounds(probe)); })
+          .catch(function () { return 0; });   // no probe, no bump, still a picture
+      })
+      .then(function (bump) { return adapter.capture(MAP_W, MAP_H, SCALE, bump); })
+      .then(function (mapCanvas) { return compose(mapCanvas, frame); })
+      .then(canvasToBlob)
+      .then(function (blob) { return P.withMetadata(blob, metadata(frame)); })
+      .then(function (blob) {
+        P.save(blob, (adapter.filename ? adapter.filename() : 'map') .replace(/\.png$/, '') + '.png');
+      });
+  }
+
+  /* ================================================================
+     THE BUTTONS
+     Built here rather than in each template, because there are six
+     templates and they share no HTML — a button pasted six times is a
+     button that is wrong in four of them within a year. The CSS comes
+     with them for the same reason.
+
+     Placement is the top-right corner, which is the one the pages leave
+     to a line of hint text rather than to a control; the template moves
+     that hint down to make room. All four corners were already spoken
+     for, which is why the campaign page put its controls in a bar
+     underneath in the first place.
+     ================================================================ */
+  var TOOL_CSS =
+      '.ngv-tools{position:absolute;right:24px;top:20px;z-index:31;'
+    + 'display:flex;gap:6px}'
+    + '.ngv-tool{width:34px;height:34px;display:inline-flex;align-items:center;'
+    + 'justify-content:center;padding:0;cursor:pointer;color:#F3F6F4;'
+    + 'background:rgba(36,49,66,.85);border:1px solid #3B4A5E;border-radius:6px}'
+    + '.ngv-tool:hover{background:#34455C;border-color:#5A9FD4}'
+    + '.ngv-tool:focus-visible{outline:2px solid #5A9FD4;outline-offset:2px}'
+    + '.ngv-tool[disabled]{opacity:.5;cursor:default}'
+    + '.ngv-tool[data-busy="1"] svg{opacity:.35}'
+    + '.ngv-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;'
+    + 'overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}'
+    // The light basemap needs the opposite treatment, exactly as the page's
+    // own chrome does under body.light-base.
+    + 'body.light-base .ngv-tool{color:#243142;background:rgba(255,255,255,.9);'
+    + 'border-color:#c9d2cc}'
+    + 'body.light-base .ngv-tool:hover{background:#fff;border-color:#243142}';
+
+  /* Inline SVG, not the ⤢ and ⬇ characters. The same reason charts-live.js
+     records for its own download arrow: those glyphs arrive at a different
+     weight on every platform and are emoji on some. ⤢ is the affordance the
+     OLAT Explorer uses, so it is the one drawn here. */
+  var ICONS = {
+    expand:
+        '<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" '
+      + 'stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'
+      + '<path d="M5 19 19 5"/><path d="M13 5h6v6"/><path d="M11 19H5v-6"/></svg>',
+    contract:
+        '<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" '
+      + 'stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'
+      + '<path d="M4 20 10 14"/><path d="M20 4 14 10"/>'
+      + '<path d="M10 20v-6H4"/><path d="M14 4v6h6"/></svg>',
+    download:
+        '<svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true" fill="none" '
+      + 'stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'
+      + '<path d="M10 3v9m0 0 3.5-3.5M10 12 6.5 8.5"/><path d="M3.5 14v2.5h13V14"/></svg>'
+  };
+
+  function btn(cls, icon, label) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'ngv-tool ' + cls;
+    b.innerHTML = icon + '<span class="ngv-sr">' + P.esc(label) + '</span>';
+    b.title = label;
+    b.setAttribute('aria-label', label);
+    return b;
+  }
+
+  /* Full screen has to cross the iframe boundary. The parent's mechanism — a
+     fixed overlay plus a best-effort native request — is the one that works on
+     tablets where iframe fullscreen is flaky, so the button asks for it rather
+     than reimplementing it. On the standalone /interactive/ URL there is no
+     parent and it falls back to asking for itself. */
+  var big = false;
+
+  function setBig(on, fullBtn) {
+    big = !!on;
+    fullBtn.innerHTML = (big ? ICONS.contract : ICONS.expand)
+      + '<span class="ngv-sr">' + (big ? 'Exit full screen' : 'Full screen') + '</span>';
+    var label = big ? 'Exit full screen' : 'Full screen';
+    fullBtn.title = label;
+    fullBtn.setAttribute('aria-label', label);
+  }
+
+  function toggleFullscreen(fullBtn) {
+    var inFrame = global.parent && global.parent !== global;
+    if (inFrame) {
+      try {
+        global.parent.postMessage(
+          { type: big ? 'ng-viz:exit-fullscreen' : 'ng-viz:fullscreen' },
+          global.location.origin);
+        return;                       // the parent answers, and posts the state back
+      } catch (e) { /* fall through to doing it ourselves */ }
+    }
+    if (big) {
+      if (document.fullscreenElement) document.exitFullscreen().catch(function () {});
+      setBig(false, fullBtn);
+    } else {
+      var el = document.documentElement;
+      if (el.requestFullscreen) el.requestFullscreen().catch(function () {});
+      setBig(true, fullBtn);
+    }
+  }
+
+  function mountButtons(opts) {
+    opts = opts || {};
+    var host = opts.host || document.body;
+
+    var style = document.createElement('style');
+    style.textContent = TOOL_CSS;
+    document.head.appendChild(style);
+
+    var wrap = document.createElement('div');
+    wrap.className = 'ngv-tools';
+
+    var fullBtn = null;
+    if (opts.fullscreen !== false) {
+      fullBtn = btn('ngv-tool--full', ICONS.expand, 'Full screen');
+      fullBtn.addEventListener('click', function () { toggleFullscreen(fullBtn); });
+      wrap.appendChild(fullBtn);
+
+      // The parent owns the state, so it tells us what it did — including when
+      // the reader presses Escape and we never hear the click.
+      global.addEventListener('message', function (e) {
+        if (e.origin !== global.location.origin || !e.data) return;
+        if (e.data.type === 'ng-viz:fullscreen-state') setBig(e.data.big, fullBtn);
+      });
+      document.addEventListener('fullscreenchange', function () {
+        if (!document.fullscreenElement && big
+            && !(global.parent && global.parent !== global)) setBig(false, fullBtn);
+      });
+    }
+
+    var dlBtn = btn('ngv-tool--dl', ICONS.download, 'Download this map as an image');
+    dlBtn.addEventListener('click', function () {
+      if (dlBtn.disabled) return;
+      dlBtn.disabled = true;
+      dlBtn.setAttribute('data-busy', '1');
+      download()
+        .catch(function (err) {
+          if (global.console) console.error('viz download failed', err);
+        })
+        .then(function () {
+          dlBtn.disabled = false;
+          dlBtn.removeAttribute('data-busy');
+        });
+    });
+    wrap.appendChild(dlBtn);
+
+    host.appendChild(wrap);
+    return { full: fullBtn, download: dlBtn, setBig: function (v) { setBig(v, fullBtn); } };
+  }
+
+  global.NGVizExport = {
+    register: register, download: download,
+    deckCapture: deckCapture, readChrome: readChrome,
+    mountButtons: mountButtons,
+    compose: compose, inkBounds: inkBounds, fitBump: fitBump,
+    WIDTH: W, SCALE: SCALE, MAP: { w: MAP_W, h: MAP_H }
+  };
+})(window);
+</script>
   <script>
   "use strict";
   var CFG = {"camera": {"longitude": -0.105, "latitude": 51.445, "zoom": 9.75, "pitch": 55, "bearing": 0, "maxPitch": 70, "minZoom": 8.4, "maxZoom": 14}, "baseWidth": 1600, "colorGamma": 0.35, "ramp": ["#243142", "#004D80", "#1877B8", "#4A92CC", "#80B4DD", "#B4D4EB", "#E2EEF7"], "nodataColor": [58, 68, 84, 255], "basemap": {"url": "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=cb1_2jwn_1_b719f4820b3d9fc06421d20e", "attribution": "\u00a9 OpenStreetMap contributors \u00a9 CARTO", "extent": [-0.932, 51.084, 0.756, 51.894]}, "polyOpacity": {"boroughs": 1.0, "street": 0.55}, "metrics": [{"key": "phone_theft", "prop": "pt", "label": "Phone theft", "tooltipNoun": "phone thefts", "source": "Met Police SNT dashboard (Theft From Person + Robbery) \u00b7 excludes BTP and the City of London \u00b7 author's analysis", "years": ["2021", "2022", "2023", "2024", "2025"], "captions": {"2021": {"title": "Top 5 wards carry as much phone theft as the bottom 542 wards", "subtitle": "West End (3,747), St James's (1,968), Bloomsbury (844), Hoxton East & Shoreditch (636) and Stratford Olympic Park (604) lead London's 34,062 phone thefts (2021)."}, "2022": {"title": "Top 5 wards carry as much phone theft as the bottom 604 wards", "subtitle": "West End (8,158), St James's (4,248), Bloomsbury (1,361), Holborn & Covent Garden (1,045) and Hoxton East & Shoreditch (873) lead London's 47,886 phone thefts (2022)."}, "2023": {"title": "Top 5 wards carry as much phone theft as the bottom 611 wards", "subtitle": "West End (11,673), St James's (6,314), Holborn & Covent Garden (1,434), Bloomsbury (1,402) and Borough & Bankside (958) lead London's 64,315 phone thefts (2023)."}, "2024": {"title": "Top 5 wards carry as much phone theft as the bottom 624 wards", "subtitle": "West End (14,161), St James's (6,989), Bloomsbury (1,855), Holborn & Covent Garden (1,794) and Borough & Bankside (1,216) lead London's 73,254 phone thefts (2024)."}, "2025": {"title": "Top 5 wards carry as much phone theft as the bottom 581 wards", "subtitle": "West End (10,244), St James's (5,406), Bloomsbury (1,417), Waterloo & South Bank (1,317) and Holborn & Covent Garden (1,188) lead London's 64,699 phone thefts (2025)."}, "all": {"title": "Top 5 wards carry as much phone theft as the bottom 594 wards", "subtitle": "West End (47,983), St James's (24,925), Bloomsbury (6,879), Holborn & Covent Garden (5,983) and Waterloo & South Bank (4,541) lead London's 284,216 phone thefts (2021\u20132025)."}}, "scale": {"yearly": 0.8403361344537815, "all": 0.24800450159431464}, "maxN": {"yearly": 14161, "all": 47983}, "cityNodata": true}, {"key": "robbery", "prop": "rb", "label": "Robbery", "tooltipNoun": "robberies", "source": "police.uk street-level data (Met & City of London Police) \u00b7 author's analysis \u00b7 City of London shown as one combined ward", "years": ["2021", "2022", "2023", "2024", "2025"], "captions": {"2021": {"title": "Top 5 wards carry as many robberies as the bottom 234 wards", "subtitle": "West End (799), St James's (576), Waterloo & South Bank (314), Hoxton East & Shoreditch (229) and Stratford (193) lead London's 21,901 robberies (2021)."}, "2022": {"title": "Top 5 wards carry as many robberies as the bottom 261 wards", "subtitle": "West End (1,503), St James's (690), Fairfield, Croydon (307), Bloomsbury (280) and Waterloo & South Bank (249) lead London's 26,421 robberies (2022)."}, "2023": {"title": "Top 5 wards carry as many robberies as the bottom 268 wards", "subtitle": "West End (1,862), St James's (963), Fairfield, Croydon (357), Bloomsbury (317) and Waterloo & South Bank (272) lead London's 32,050 robberies (2023)."}, "2024": {"title": "Top 5 wards carry as many robberies as the bottom 238 wards", "subtitle": "West End (1,611), St James's (903), Bloomsbury (316), Fairfield, Croydon (279) and Waterloo & South Bank (277) lead London's 33,463 robberies (2024)."}, "2025": {"title": "Top 5 wards carry as many robberies as the bottom 227 wards", "subtitle": "West End (1,429), St James's (785), City of London (266), Waterloo & South Bank (247) and Vauxhall (223) lead London's 31,490 robberies (2025)."}, "all": {"title": "Top 5 wards carry as many robberies as the bottom 233 wards", "subtitle": "West End (7,204), St James's (3,917), Waterloo & South Bank (1,359), Fairfield, Croydon (1,310) and Bloomsbury (1,301) lead London's 145,325 robberies (2021\u20132025)."}}, "scale": {"yearly": 6.390977443609023, "all": 1.651860077734592}, "maxN": {"yearly": 1862, "all": 7204}, "cityNodata": false}, {"key": "knife_crime", "prop": "kn", "label": "Knife crime", "tooltipNoun": "knife crime offences", "source": "Met Police crime dashboard (knife crime) \u00b7 excludes the City of London \u00b7 ~9% of offences from 2024 have no ward recorded and are excluded \u00b7 author's analysis", "years": ["2023", "2024", "2025"], "captions": {"2023": {"title": "Top 5 wards carry as much knife crime as the bottom 162 wards", "subtitle": "West End (351), St James's (207), Fairfield, Croydon (174), Hoxton East & Shoreditch (82) and Broad Green (78) lead London's 14,259 knife crime offences (2023)."}, "2024": {"title": "Top 5 wards carry as much knife crime as the bottom 141 wards", "subtitle": "West End (257), St James's (199), Fairfield, Croydon (171), Deptford (94) and Waterloo & South Bank (93) lead London's 15,933 knife crime offences (2024)."}, "2025": {"title": "Top 5 wards carry as much knife crime as the bottom 142 wards", "subtitle": "West End (213), St James's (164), Fairfield, Croydon (101), Edmonton Green (89) and Stratford (83) lead London's 13,553 knife crime offences (2025)."}, "all": {"title": "Top 5 wards carry as much knife crime as the bottom 136 wards", "subtitle": "West End (1,048), St James's (661), Fairfield, Croydon (539), Edmonton Green (270) and Deptford (259) lead London's 52,163 knife crime offences (May 2022\u20132025)."}}, "scale": {"yearly": 33.903133903133906, "all": 11.354961832061068}, "maxN": {"yearly": 351, "all": 1048}, "cityNodata": true}, {"key": "violence_injury", "prop": "vi", "label": "Violence with injury", "tooltipNoun": "violence-with-injury offences", "source": "Met Police crime dashboard (violence with injury) \u00b7 excludes the City of London \u00b7 ~9% of offences from 2024 have no ward recorded and are excluded \u00b7 author's analysis", "years": ["2023", "2024", "2025"], "captions": {"2023": {"title": "Top 5 wards carry as much violence with injury as the bottom 89 wards", "subtitle": "West End (1,059), St James's (1,058), Fairfield, Croydon (511), Camden Town (341) and Hoxton East & Shoreditch (327) lead London's 77,851 violence-with-injury offences (2023)."}, "2024": {"title": "Top 5 wards carry as much violence with injury as the bottom 88 wards", "subtitle": "St James's (829), West End (824), Fairfield, Croydon (463), Hoxton East & Shoreditch (304) and Heathrow Villages (270) lead London's 65,191 violence-with-injury offences (2024)."}, "2025": {"title": "Top 5 wards carry as much violence with injury as the bottom 86 wards", "subtitle": "St James's (802), West End (789), Fairfield, Croydon (449), Seven Kings (299) and Hoxton East & Shoreditch (276) lead London's 63,293 violence-with-injury offences (2025)."}, "all": {"title": "Top 5 wards carry as much violence with injury as the bottom 86 wards", "subtitle": "West End (3,536), St James's (3,510), Fairfield, Croydon (1,841), Hoxton East & Shoreditch (1,192) and Seven Kings (1,119) lead London's 264,010 violence-with-injury offences (Apr 2022\u20132025)."}}, "scale": {"yearly": 11.237016052880076, "all": 3.3653846153846154}, "maxN": {"yearly": 1059, "all": 3536}, "cityNodata": true}, {"key": "sexual_offences", "prop": "sx", "label": "Sexual offences", "tooltipNoun": "sexual offences", "source": "Met Police crime dashboard (rape + other sexual offences) \u00b7 excludes the City of London \u00b7 ~9% of offences from 2024 have no ward recorded and are excluded \u00b7 author's analysis", "years": ["2023", "2024", "2025"], "captions": {"2023": {"title": "Top 5 wards carry as many sexual offences as the bottom 103 wards", "subtitle": "St James's (435), West End (359), Fairfield, Croydon (140), Heathrow Villages (121) and Waterloo & South Bank (114) lead London's 22,534 sexual offences (rape and other sexual offences) (2023)."}, "2024": {"title": "Top 5 wards carry as many sexual offences as the bottom 106 wards", "subtitle": "West End (427), St James's (393), Heathrow Villages (174), Fairfield, Croydon (138) and Waterloo & South Bank (121) lead London's 24,072 sexual offences (rape and other sexual offences) (2024)."}, "2025": {"title": "Top 5 wards carry as many sexual offences as the bottom 100 wards", "subtitle": "St James's (462), West End (393), Fairfield, Croydon (164), Heathrow Villages (158) and Bloomsbury (128) lead London's 26,446 sexual offences (rape and other sexual offences) (2025)."}, "all": {"title": "Top 5 wards carry as many sexual offences as the bottom 96 wards", "subtitle": "St James's (1,661), West End (1,437), Fairfield, Croydon (538), Heathrow Villages (521) and Hoxton East & Shoreditch (430) lead London's 90,312 sexual offences (rape and other sexual offences) (Apr 2022\u20132025)."}}, "scale": {"yearly": 25.757575757575758, "all": 7.164358819987959}, "maxN": {"yearly": 462, "all": 1661}, "cityNodata": true}, {"key": "shoplifting", "prop": "sh", "label": "Shoplifting", "tooltipNoun": "shoplifting offences", "source": "police.uk street-level data (Met & City of London Police) \u00b7 author's analysis \u00b7 City of London shown as one combined ward", "years": ["2021", "2022", "2023", "2024", "2025"], "captions": {"2021": {"title": "Top 5 wards carry as much shoplifting as the bottom 351 wards", "subtitle": "West End (1,411), Stratford (802), City of London (625), Bromley Town (599) and Ilford Town (469) lead London's 33,260 shoplifting offences (2021)."}, "2022": {"title": "Top 5 wards carry as much shoplifting as the bottom 358 wards", "subtitle": "West End (2,107), Bromley Town (726), St James's (639), City of London (634) and Fairfield, Croydon (595) lead London's 37,872 shoplifting offences (2022)."}, "2023": {"title": "Top 5 wards carry as much shoplifting as the bottom 351 wards", "subtitle": "West End (2,648), St James's (973), City of London (947), Stratford Olympic Park (841) and Fairfield, Croydon (796) lead London's 57,386 shoplifting offences (2023)."}, "2024": {"title": "Top 5 wards carry as much shoplifting as the bottom 348 wards", "subtitle": "West End (3,608), City of London (1,575), Stratford Olympic Park (1,218), St James's (1,064) and North Walworth (992) lead London's 84,161 shoplifting offences (2024)."}, "2025": {"title": "Top 5 wards carry as much shoplifting as the bottom 353 wards", "subtitle": "West End (3,920), City of London (1,431), Stratford Olympic Park (1,339), St James's (1,296) and Kingston Town (1,130) lead London's 88,095 shoplifting offences (2025)."}, "all": {"title": "Top 5 wards carry as much shoplifting as the bottom 321 wards", "subtitle": "West End (13,694), City of London (5,212), St James's (4,428), Stratford Olympic Park (4,047) and Kingston Town (3,329) lead London's 300,774 shoplifting offences (2021\u20132025)."}}, "scale": {"yearly": 3.0357142857142856, "all": 0.8689937198773185}, "maxN": {"yearly": 3920, "all": 13694}, "cityNodata": false}, {"key": "burglary", "prop": "bu", "label": "Burglary", "tooltipNoun": "burglaries", "source": "police.uk street-level data (Met & City of London Police) \u00b7 author's analysis \u00b7 City of London shown as one combined ward", "years": ["2021", "2022", "2023", "2024", "2025"], "captions": {"2021": {"title": "Top 5 wards carry as many burglaries as the bottom 52 wards", "subtitle": "West End (422), Rushey Green (247), St James's (230), Fairfield, Croydon (218) and St Peter's (215) lead London's 52,351 burglaries (2021)."}, "2022": {"title": "Top 5 wards carry as many burglaries as the bottom 64 wards", "subtitle": "West End (574), St James's (325), City of London (297), Bloomsbury (278) and Fairfield, Croydon (276) lead London's 51,872 burglaries (2022)."}, "2023": {"title": "Top 5 wards carry as many burglaries as the bottom 67 wards", "subtitle": "West End (601), St James's (372), City of London (344), Marylebone (332) and Bloomsbury (291) lead London's 55,268 burglaries (2023)."}, "2024": {"title": "Top 5 wards carry as many burglaries as the bottom 76 wards", "subtitle": "West End (757), St James's (372), City of London (332), Marylebone (305) and Bloomsbury (275) lead London's 52,801 burglaries (2024)."}, "2025": {"title": "Top 5 wards carry as many burglaries as the bottom 77 wards", "subtitle": "West End (643), City of London (489), St James's (374), Holborn & Covent Garden (276) and Bloomsbury (273) lead London's 48,068 burglaries (2025)."}, "all": {"title": "Top 5 wards carry as many burglaries as the bottom 61 wards", "subtitle": "West End (2,997), St James's (1,673), City of London (1,655), Marylebone (1,332) and Bloomsbury (1,306) lead London's 260,360 burglaries (2021\u20132025)."}}, "scale": {"yearly": 15.71994715984148, "all": 3.9706373039706375}, "maxN": {"yearly": 757, "all": 2997}, "cityNodata": false}, {"key": "vehicle", "prop": "vc", "label": "Vehicle crime", "tooltipNoun": "vehicle crimes", "source": "police.uk street-level data (Met & City of London Police) \u00b7 author's analysis \u00b7 City of London shown as one combined ward", "years": ["2021", "2022", "2023", "2024", "2025"], "captions": {"2021": {"title": "Top 5 wards carry as much vehicle crime as the bottom 59 wards", "subtitle": "West End (804), Noel Park (535), Upper Edmonton (530), North Acton (510) and St James's (421) lead London's 98,195 vehicle offences (2021)."}, "2022": {"title": "Top 5 wards carry as much vehicle crime as the bottom 58 wards", "subtitle": "West End (936), Heathrow Villages (736), Upper Edmonton (569), Hammersmith Broadway (517) and Hanger Hill (472) lead London's 105,805 vehicle offences (2022)."}, "2023": {"title": "Top 5 wards carry as much vehicle crime as the bottom 68 wards", "subtitle": "West End (1,187), Heathrow Villages (835), St James's (637), Brompton & Hans Town (577) and Knightsbridge & Belgravia (518) lead London's 103,133 vehicle offences (2023)."}, "2024": {"title": "Top 5 wards carry as much vehicle crime as the bottom 67 wards", "subtitle": "West End (1,168), Heathrow Villages (635), St James's (573), Knightsbridge & Belgravia (470) and Brompton & Hans Town (468) lead London's 96,444 vehicle offences (2024)."}, "2025": {"title": "Top 5 wards carry as much vehicle crime as the bottom 64 wards", "subtitle": "West End (935), Heathrow Villages (587), St James's (463), Brompton & Hans Town (444) and Marylebone (413) lead London's 83,871 vehicle offences (2025)."}, "all": {"title": "Top 5 wards carry as much vehicle crime as the bottom 57 wards", "subtitle": "West End (5,030), Heathrow Villages (3,115), St James's (2,566), Brompton & Hans Town (2,342) and Upper Edmonton (2,212) lead London's 487,448 vehicle offences (2021\u20132025)."}}, "scale": {"yearly": 10.025273799494524, "all": 2.3658051689860833}, "maxN": {"yearly": 1187, "all": 5030}, "cityNodata": false}, {"key": "bike_theft", "prop": "bk", "label": "Bike theft", "tooltipNoun": "bike thefts", "source": "police.uk street-level data (Met & City of London Police) \u00b7 author's analysis \u00b7 City of London shown as one combined ward", "years": ["2021", "2022", "2023", "2024", "2025"], "captions": {"2021": {"title": "Top 5 wards carry as much bike theft as the bottom 264 wards", "subtitle": "West End (313), Bloomsbury (290), City of London (280), London Bridge & West Bermondsey (256) and Borough & Bankside (251) lead London's 20,741 bike thefts (2021)."}, "2022": {"title": "Top 5 wards carry as much bike theft as the bottom 278 wards", "subtitle": "West End (343), Kingston Town (271), Bloomsbury (261), St James's (228) and Hoxton East & Shoreditch (204) lead London's 17,753 bike thefts (2022)."}, "2023": {"title": "Top 5 wards carry as much bike theft as the bottom 279 wards", "subtitle": "St James's (272), Kingston Town (248), City of London (248), West End (234) and Bloomsbury (207) lead London's 15,999 bike thefts (2023)."}, "2024": {"title": "Top 5 wards carry as much bike theft as the bottom 254 wards", "subtitle": "City of London (239), St James's (230), West End (186), London Fields (181) and Hoxton East & Shoreditch (174) lead London's 15,539 bike thefts (2024)."}, "2025": {"title": "Top 5 wards carry as much bike theft as the bottom 266 wards", "subtitle": "City of London (298), St James's (216), Bloomsbury (215), Hoxton East & Shoreditch (173) and West End (160) lead London's 14,072 bike thefts (2025)."}, "all": {"title": "Top 5 wards carry as much bike theft as the bottom 251 wards", "subtitle": "City of London (1,253), West End (1,236), St James's (1,187), Bloomsbury (1,144) and Kingston Town (1,013) lead London's 84,104 bike thefts (2021\u20132025)."}}, "scale": {"yearly": 34.69387755102041, "all": 9.497206703910615}, "maxN": {"yearly": 343, "all": 1253}, "cityNodata": false}, {"key": "criminal_damage", "prop": "cd", "label": "Criminal damage", "tooltipNoun": "criminal damage & arson offences", "source": "police.uk street-level data (Met & City of London Police) \u00b7 author's analysis \u00b7 City of London shown as one combined ward", "years": ["2021", "2022", "2023", "2024", "2025"], "captions": {"2021": {"title": "Top 5 wards carry as much criminal damage as the bottom 59 wards", "subtitle": "St James's (443), West End (397), City of London (238), Fairfield, Croydon (236) and St Paul's Cray (218) lead London's 51,905 criminal damage & arson offences (2021)."}, "2022": {"title": "Top 5 wards carry as much criminal damage as the bottom 61 wards", "subtitle": "St James's (444), West End (432), City of London (265), Fairfield, Croydon (245) and Heathrow Villages (226) lead London's 52,532 criminal damage & arson offences (2022)."}, "2023": {"title": "Top 5 wards carry as much criminal damage as the bottom 63 wards", "subtitle": "St James's (457), West End (436), Fairfield, Croydon (322), City of London (321) and Uxbridge (272) lead London's 56,383 criminal damage & arson offences (2023)."}, "2024": {"title": "Top 5 wards carry as much criminal damage as the bottom 66 wards", "subtitle": "St James's (493), West End (422), Uxbridge (376), City of London (368) and Fairfield, Croydon (316) lead London's 55,539 criminal damage & arson offences (2024)."}, "2025": {"title": "Top 5 wards carry as much criminal damage as the bottom 68 wards", "subtitle": "St James's (535), West End (424), Crayford (348), City of London (319) and Heathrow Villages (313) lead London's 54,827 criminal damage & arson offences (2025)."}, "all": {"title": "Top 5 wards carry as much criminal damage as the bottom 59 wards", "subtitle": "St James's (2,372), West End (2,111), City of London (1,511), Fairfield, Croydon (1,380) and Heathrow Villages (1,258) lead London's 271,186 criminal damage & arson offences (2021\u20132025)."}}, "scale": {"yearly": 22.242990654205606, "all": 5.016863406408095}, "maxN": {"yearly": 535, "all": 2372}, "cityNodata": false}], "initial": "phone_theft", "initialYear": "all", "yearsAxis": [2021, 2022, 2023, 2024, 2025], "shield": true};
@@ -466,6 +1551,85 @@
       shield.style.display = "none";
       mapEl.style.pointerEvents = "auto";
     });
+  }
+
+  /* ---- image export ----
+     The adapter is the whole of what this page has to say about itself. The
+     mechanism — the offscreen deck, the stability check, the frame, the PNG
+     metadata — is in viz-export.js and is the same for every map.
+
+     `layers()` rather than deckgl.props.layers: a deck.gl layer instance
+     belongs to one LayerManager, so the offscreen deck needs its own, and
+     calling the page's own builder is also what makes the export show the
+     FINAL state of a transition rather than a frame of it. */
+  if (window.NGVizExport) {
+    NGVizExport.register({
+      capture: NGVizExport.deckCapture({
+        // The width this camera was framed for. The export re-applies the same
+        // log2 arithmetic the page uses at load, for its own width.
+        referenceWidth: function () { return CFG.baseWidth; },
+        viewState: function () {
+          /* getViewports()[0], NOT deckgl.viewState.
+
+             This looks like a detail and is not. `deckgl.viewState` is a
+             static echo of whatever initialViewState it was handed; the
+             controller owns the real camera and never writes back to it.
+             Measured after a genuine drag: viewState still read
+             9.541 / 0 / 55 while the rendered viewport was 9.541 / 20 / 57.
+             Reading the first meant the export ignored every rotation, tilt
+             and zoom the reader had made and always drew the opening view.
+             getViewports()[0] is by definition what is on the screen.
+
+             The zoom then has the page's load-time narrow-window adjustment
+             taken back off. Without that subtraction a laptop and a 2K monitor
+             export different pictures, because the page deliberately showed
+             them different amounts of ground. Zooming the reader did
+             themselves is on top of it and survives. */
+          var vp = deckgl.getViewports && deckgl.getViewports()[0];
+          var vs = vp || deckgl.viewState || deckgl.props.initialViewState;
+          return {
+            longitude: vs.longitude, latitude: vs.latitude,
+            zoom: vs.zoom - zoomAdj, pitch: vs.pitch, bearing: vs.bearing
+          };
+        },
+        layers: function () { return layers(); },
+        effects: function () { return [lighting]; }
+      }),
+      // This page eases per-attribute, which the offscreen render is immune to
+      // by construction, so there is nothing to wait for. The hex pages ease a
+      // uniform that layers() reads, and they answer !window.__easing here.
+      settled: function () { return true; },
+      // JSON-encoded by the builder, quotes and all: the inline face block
+      // is multi-line CSS full of apostrophes and cannot go inside a
+      // hand-written string literal.
+      fontCss: "",
+      frame: function () {
+        var f = NGVizExport.readChrome();
+        f.subtitle = subEl.textContent.trim();
+        return f;
+      },
+      meta: function () {
+        var v = deckgl.viewState || deckgl.props.initialViewState;
+        var m = metricByKey(current.metric);
+        return {
+          'Category': m.label + (current.year === 'all' ? '' : ' · ' + current.year),
+          // Enough to put the camera back exactly where it was.
+          'View': 'metric=' + current.metric + '; year=' + current.year
+                + '; map=' + mapMode
+                + '; lon=' + Number(v.longitude).toFixed(5)
+                + '; lat=' + Number(v.latitude).toFixed(5)
+                + '; zoom=' + Number(v.zoom).toFixed(3)
+                + '; pitch=' + Number(v.pitch).toFixed(1)
+                + '; bearing=' + Number(v.bearing).toFixed(1),
+          'URL': 'https://neilgarratt.com/campaigns/crime-concentration/'
+        };
+      },
+      filename: function () {
+        return ('crime-skyline-' + current.metric + '-' + current.year)
+          .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.png';
+      }
+    });
+    NGVizExport.mountButtons();
   }
 
   // ---- completion gate for the headless screenshot driver ----

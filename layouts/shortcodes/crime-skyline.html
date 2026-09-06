@@ -12,7 +12,15 @@
       reader's chosen crime type + camera are preserved. Esc or ✕ exits.
     - Controls live in a toolbar BELOW the frame — the viz already uses all four
       corners (card TL, hint TR, switcher BL, reset BR), so on-frame chrome would
-      collide. Only the unavoidable ✕ Close floats over the frame, in big mode.
+      collide.
+    - EXCEPT full screen and download, which are now inside the frame, top right:
+      the viz moved its hint down to make room. Full screen still runs HERE —
+      the CSS overlay is what works on tablets where iframe fullscreen is flaky —
+      so the in-frame button asks for it by postMessage and this listens. The
+      state is posted back, because Esc exits without the iframe ever hearing.
+    - There is no ✕ Close any more. It sat in the same corner as the frame's own
+      two buttons and covered both of them in big mode — including the one that
+      exits. Esc remains wired here as the belt to that braces.
   Interactive: static/interactive/crime-skyline/index.html  (deck.gl 9.3.7, WebGL2)
   Needs:       static/js/deck.min.js, static/fonts/{DMSans,LibreBaskerville}.ttf
   Fallback:    static/images/charts/crime-concentration/phone-theft-skyline-hero.png
@@ -28,12 +36,9 @@
   .crime-skyline .cs-bar{display:flex;justify-content:space-between;align-items:center;gap:10px 16px;flex-wrap:wrap;max-width:800px;margin:.6rem auto 0;padding:0 2rem;font-size:.85rem;color:#5a6472}
   .crime-skyline .cs-btn{font:600 .8rem var(--sans,sans-serif);color:#243142;background:#fff;border:1px solid #c9d2cc;border-radius:999px;padding:8px 16px;cursor:pointer;white-space:nowrap;line-height:1}
   .crime-skyline .cs-btn:hover{background:#f3f6f4;border-color:#243142}
-  .crime-skyline .cs-close{position:absolute;top:12px;right:12px;z-index:5;display:none;align-items:center;color:#F3F6F4;background:rgba(36,49,66,.9);border-color:#3B4A5E}
-  .crime-skyline .cs-close:hover{background:#34455C;border-color:#5A9FD4}
   .crime-skyline.cs-big{position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;margin:0;z-index:9999;background:#1A2332}
   .crime-skyline.cs-big .cs-box{height:100%}
   .crime-skyline.cs-big .cs-bar{display:none}
-  .crime-skyline.cs-big .cs-close{display:inline-flex}
   @media (max-width:700px){.crime-skyline{width:100vw;margin-left:calc(50% - 50vw)}.crime-skyline .cs-box{height:min(125vw,72vh)}}
 </style>
 <figure class="crime-skyline" id="crime-skyline">
@@ -41,28 +46,23 @@
     <img src="/images/charts/crime-concentration/phone-theft-skyline-hero.png?v=1"
          alt="3D skyline map of London showing phone theft concentrated in a handful of central wards — two tall towers over the West End and St James's above an otherwise flat city."
          loading="lazy">
-    <button type="button" class="cs-btn cs-close">&#10005;&nbsp;Close</button>
   </div>
   <div class="cs-bar">
-    <span>London crime by ward, 2021&ndash;2025 &mdash; drag to rotate and tilt; pick crime type and year with the buttons.</span>
-    <button type="button" class="cs-btn cs-expand" hidden>&#10530;&nbsp;Full screen</button>
+    <span>London crime by ward, 2021&ndash;2025 &mdash; drag to rotate and tilt; pick crime type and year with the buttons. Full screen and download are in the top right of the map.</span>
   </div>
 </figure>
 <script>
 (function(){
   var fig=document.getElementById('crime-skyline'); if(!fig) return;
-  var box=fig.querySelector('.cs-box'),
-      expand=fig.querySelector('.cs-expand'),
-      close=fig.querySelector('.cs-close');
+  var box=fig.querySelector('.cs-box');
   var ok=false; try{ ok=!!(window.WebGL2RenderingContext && document.createElement('canvas').getContext('webgl2')); }catch(e){}
   if(ok){
     var f=document.createElement('iframe');
-    f.src='/interactive/crime-skyline/?v=5';
+    f.src='/interactive/crime-skyline/?v=6';
     f.title='Interactive 3D map of London crime concentration';
     f.setAttribute('scrolling','no'); f.setAttribute('allow','fullscreen'); f.setAttribute('allowfullscreen','');
     box.insertBefore(f, box.firstChild);
     box.querySelector('img').style.display='none';
-    expand.hidden=false; // full-screen control only makes sense with the live viz
   }
   function enter(){
     fig.classList.add('cs-big'); document.body.style.overflow='hidden';
@@ -72,9 +72,23 @@
     fig.classList.remove('cs-big'); document.body.style.overflow='';
     if(document.fullscreenElement){ document.exitFullscreen().catch(function(){}); }
   }
-  expand.addEventListener('click',enter);
-  close.addEventListener('click',exit);
-  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&fig.classList.contains('cs-big')) exit(); });
-  document.addEventListener('fullscreenchange',function(){ if(!document.fullscreenElement&&fig.classList.contains('cs-big')) exit(); });
+  // The frame asks; this answers, and says what it did. Same-origin only, and
+  // only for the two messages we know — a page that listens to anything a frame
+  // says is a page that does what any frame says.
+  function tell(){
+    var f=box.querySelector('iframe');
+    if(f&&f.contentWindow){
+      try{ f.contentWindow.postMessage(
+        {type:'ng-viz:fullscreen-state',big:fig.classList.contains('cs-big')},
+        location.origin); }catch(e){}
+    }
+  }
+  window.addEventListener('message',function(e){
+    if(e.origin!==location.origin||!e.data) return;
+    if(e.data.type==='ng-viz:fullscreen'){ enter(); tell(); }
+    else if(e.data.type==='ng-viz:exit-fullscreen'){ exit(); tell(); }
+  });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&fig.classList.contains('cs-big')){ exit(); tell(); } });
+  document.addEventListener('fullscreenchange',function(){ if(!document.fullscreenElement&&fig.classList.contains('cs-big')){ exit(); tell(); } });
 })();
 </script>

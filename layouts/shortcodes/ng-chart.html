@@ -54,7 +54,8 @@
 
   Built by: platform/branding/interactive.py  (publish())
   Needs:    /js/chart-core.js, /js/charts.js, /js/charts-live.js,
-            /js/chart-export.js, /css/ng-chart.css  (css from partials/head.html)
+            /js/ng-png.js, /js/chart-export.js, /css/ng-chart.css
+            (css from partials/head.html)
 */ -}}
 
 {{- $slug := .Get "slug" | default (.Get 0) -}}
@@ -169,7 +170,11 @@
 <script src="/js/charts.js"></script>
 <script src="/js/charts-live.js"></script>
 {{- /* Optional: charts-live.js only builds the download button if this loaded,
-       so a failed request costs the button and nothing else. */ -}}
+       so a failed request costs the button and nothing else. ng-png.js carries
+       the half of it that is not about charts — the PNG metadata, the text
+       wrapping, the rasteriser — and the deck.gl maps use the same file. It
+       must come first: chart-export.js throws without it. */ -}}
+<script src="/js/ng-png.js"></script>
 <script src="/js/chart-export.js"></script>
 {{- end }}
 
