@@ -30,7 +30,7 @@
   {{ with .Params.report_pdf }}
     {{ $size := "" }}
     {{ $rel := printf "static%s" . }}
-    {{ if fileExists $rel }}
+    {{ if os.FileExists $rel }}
       {{ $b := (os.Stat $rel).Size }}
       {{ $size = cond (ge $b 1048576) (printf "%.1f MB" (div (float $b) 1048576.0)) (printf "%.0f KB" (div (float $b) 1024.0)) }}
     {{ end }}

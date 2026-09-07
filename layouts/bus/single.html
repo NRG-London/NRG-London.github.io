@@ -1,7 +1,7 @@
 {{ define "main" }}
 {{- $route := .Params.route -}}
-{{- $h := index site.Data.bus.routes $route -}}
-{{- $w := site.Data.bus.weekly -}}
+{{- $h := index hugo.Data.bus.routes $route -}}
+{{- $w := hugo.Data.bus.weekly -}}
 {{- $row := index (where $w.routes "route" $route) 0 -}}
 
 {{- /* Curtailments are an additive contract change. Everything about them on

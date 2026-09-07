@@ -4,7 +4,7 @@
        rather than fetching live. Returns a slice of dicts:
        {title, url, summary, date, ts}. */ -}}
 {{- $items := slice -}}
-{{- range site.Data.substack -}}
+{{- range hugo.Data.substack -}}
   {{- $d := time.AsTime .date -}}
   {{- $items = $items | append (dict
       "title"   .title

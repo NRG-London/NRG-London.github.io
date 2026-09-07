@@ -10,7 +10,7 @@
   slug() doing the same thing.
 
   Each page carries only its identity in params. The weekly series is read from
-  site.Data.bus.routes.<route> by layouts/bus/single.html — putting a whole
+  hugo.Data.bus.routes.<route> by layouts/bus/single.html — putting a whole
   history into page params would hold all 616 of them in memory at once for no
   gain.
 
@@ -21,7 +21,7 @@
   layouts/partials/head.html. Drop all three when the pages go public.
 */ -}}
 
-{{- $d := site.Data.bus.weekly -}}
+{{- $d := hugo.Data.bus.weekly -}}
 {{- if not $d -}}
   {{- errorf "content/bus/_content.gotmpl: no data/bus/weekly.json. Run scripts/make_bus_sample.py." -}}
 {{- end -}}

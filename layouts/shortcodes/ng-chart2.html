@@ -45,7 +45,7 @@
   {{- errorf "ng-chart2: no slug given (page %s)" .Page.File.Path -}}
 {{- end -}}
 
-{{- $spec := index (index site.Data "charts") $slug -}}
+{{- $spec := index (index hugo.Data "charts") $slug -}}
 {{- if not $spec -}}
   {{- errorf "ng-chart2: no data/charts/%s.json (page %s). Run charts/publish.py." $slug .Page.File.Path -}}
 {{- end -}}

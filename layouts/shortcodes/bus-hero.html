@@ -11,7 +11,7 @@
   you are on. On the hub it runs blank, because no single route is the subject.
 */ -}}
 
-{{- $d := site.Data.bus.weekly -}}
+{{- $d := hugo.Data.bus.weekly -}}
 {{- $route := .Get "route" | default "" -}}
 {{- $deck := .Get "deck" | default "double" -}}
 {{- $stat := .Get "stat" -}}

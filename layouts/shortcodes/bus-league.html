@@ -5,7 +5,7 @@
     {{< bus-league >}}
     {{< bus-league rows=30 >}}
 
-  Reads data/bus/weekly.json (site.Data.bus.weekly), written either by
+  Reads data/bus/weekly.json (hugo.Data.bus.weekly), written either by
   scripts/make_bus_sample.py or, later, by the weekly sweep in E:\Road Data.
 
   PROGRESSIVE ENHANCEMENT, the same bargain the rail chart strikes
@@ -24,7 +24,7 @@
   Needs: /css/ngbus.css, /js/ngbus-table.js
 */ -}}
 
-{{- $d := site.Data.bus.weekly -}}
+{{- $d := hugo.Data.bus.weekly -}}
 {{- if not $d -}}
   {{- errorf "bus-league: no data/bus/weekly.json (page %s). Run scripts/make_bus_sample.py." .Page.File.Path -}}
 {{- end -}}
