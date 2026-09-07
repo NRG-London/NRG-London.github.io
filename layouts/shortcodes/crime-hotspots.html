@@ -11,10 +11,14 @@
     - The iframe is loading="lazy": the embed is ~10 MB (data inlined) and sits
       below the skyline, so it only fetches once the reader scrolls to it.
   Interactive: static/interactive/crime-hotspots/index.html  (deck.gl 9.3.7, WebGL2)
-  Needs:       static/js/deck.min.js, static/fonts/{DMSans,LibreBaskerville}.ttf (shared with crime-skyline)
+  Needs:       static/js/deck.min.js, static/js/maplibre-gl.js,
+               static/fonts/{DMSans,LibreBaskerville}.ttf (all shared with crime-skyline)
   Fallback:    static/images/charts/crime-concentration/crime-hotspots-hero.png
-  Note:        default Boroughs mode makes zero external calls; the opt-in Street
-               basemap fetches CARTO tiles (basemaps.cartocdn.com), attributed in-page.
+  Note:        the Map button cycles Boroughs -> Street -> Dark. Boroughs still makes
+               ZERO external calls — maplibre-gl.js is same-origin and no basemap is
+               mounted. The two opt-in basemaps are CARTO VECTOR (MapLibre draws them
+               under deck.gl's canvas), so they fetch a style JSON, vector tiles, glyph
+               PBFs and a sprite from basemaps.cartocdn.com. Attributed in-page.
   Usage: {{< crime-hotspots >}}
   NB: ?v=N is a manual cache-buster; bump it whenever the interactive changes.
 */ -}}
@@ -57,7 +61,7 @@
   if(ok){
     var f=document.createElement('iframe');
     f.loading='lazy';                       // ~10 MB embed below the fold — defer until scrolled to
-    f.src='/interactive/crime-hotspots/?v=3';
+    f.src='/interactive/crime-hotspots/?v=4';
     f.title='Interactive 3D hex map of London crime hotspots';
     f.setAttribute('scrolling','no'); f.setAttribute('allow','fullscreen'); f.setAttribute('allowfullscreen','');
     box.insertBefore(f, box.firstChild);

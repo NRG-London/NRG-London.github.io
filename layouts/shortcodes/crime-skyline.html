@@ -22,8 +22,16 @@
       two buttons and covered both of them in big mode — including the one that
       exits. Esc remains wired here as the belt to that braces.
   Interactive: static/interactive/crime-skyline/index.html  (deck.gl 9.3.7, WebGL2)
-  Needs:       static/js/deck.min.js, static/fonts/{DMSans,LibreBaskerville}.ttf
+  Needs:       static/js/deck.min.js, static/js/maplibre-gl.js,
+               static/fonts/{DMSans,LibreBaskerville}.ttf
   Fallback:    static/images/charts/crime-concentration/phone-theft-skyline-hero.png
+  Note:        the Map button cycles Boroughs -> Streets -> Dark. Boroughs still makes
+               ZERO external calls — maplibre-gl.js is same-origin and no basemap is
+               mounted. The two opt-in basemaps are CARTO VECTOR (MapLibre draws them
+               under deck.gl's canvas), so they fetch a style JSON, vector tiles, glyph
+               PBFs and a sprite from basemaps.cartocdn.com. Attributed in-page.
+               The PNG download stays on CARTO RASTER: it renders through a second,
+               offscreen deck.Deck that has no MapLibre div under it.
   Usage: {{< crime-skyline >}}
   NB: ?v=N is a manual cache-buster; bump it whenever the interactive changes.
 */ -}}
@@ -58,7 +66,7 @@
   var ok=false; try{ ok=!!(window.WebGL2RenderingContext && document.createElement('canvas').getContext('webgl2')); }catch(e){}
   if(ok){
     var f=document.createElement('iframe');
-    f.src='/interactive/crime-skyline/?v=6';
+    f.src='/interactive/crime-skyline/?v=7';
     f.title='Interactive 3D map of London crime concentration';
     f.setAttribute('scrolling','no'); f.setAttribute('allow','fullscreen'); f.setAttribute('allowfullscreen','');
     box.insertBefore(f, box.firstChild);
