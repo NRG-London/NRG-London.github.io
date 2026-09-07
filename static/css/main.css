@@ -1601,3 +1601,52 @@ section {
   .olat-chip { min-height: 40px; padding: 0.45rem 0.9rem; }
   .olat-mode-toggle { min-height: 40px; }
 }
+
+/* ---------------------------------------------------------------
+   Report download button — library items with a locally hosted PDF
+   (front matter `report_pdf`). Rendered by layouts/library/single.html.
+   --------------------------------------------------------------- */
+.report-download {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 2.5rem 0 0.5rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--blue);
+  border-radius: 8px;
+  background: var(--blue-light);
+  color: var(--blue-dark);
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s;
+}
+.report-download:hover {
+  background: var(--blue);
+  border-color: var(--blue-dark);
+  color: #fff;
+}
+.report-download .rd-icon {
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.report-download:hover .rd-icon { background: #fff; color: var(--blue); }
+.report-download .rd-text { display: flex; flex-direction: column; line-height: 1.35; }
+.report-download .rd-text strong {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.report-download .rd-meta {
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
