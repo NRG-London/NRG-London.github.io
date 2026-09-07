@@ -1610,7 +1610,11 @@ section {
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin: 2.5rem 0 0.5rem;
+  /* Paragraphs sit 1.5rem apart but line-height 1.85 adds ~14px of leading on
+     top of that, so the gap you actually SEE between them is ~38px. The banner
+     is a flex box with no leading of its own, so it needs the space as explicit
+     margin or it reads as bunched against whatever follows. */
+  margin: 2.5rem 0;
   padding: 1rem 1.25rem;
   border: 1px solid var(--blue);
   border-radius: 8px;
@@ -1649,4 +1653,33 @@ section {
   letter-spacing: 0.04em;
   text-transform: uppercase;
   opacity: 0.75;
+}
+
+/* ---------------------------------------------------------------
+   Campaign back-links on a library item — the reverse of the hub's
+   cross-links, rendered with the same .campaign-card partial.
+   Two columns because .page-content is an 800px reading column, not
+   the 1200px container the campaigns index gets: 2 x ~385px lands
+   each card within a whisker of its native ~365px.
+   --------------------------------------------------------------- */
+.campaign-backlinks {
+  margin-top: 4rem;
+}
+/* .section-header's 3rem is calibrated for a full page section and leaves
+   a hole at the foot of an article — tighten it here only. */
+.campaign-backlinks .section-header {
+  margin-bottom: 1.5rem;
+}
+.campaign-backlinks-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+/* Collapses at 600px, not the 900px the campaigns index uses. That looks
+   inconsistent but isn't: .campaigns-grid sits in the 1200px container and
+   genuinely runs out of room at 900px, whereas this grid lives in a column
+   already capped at 800px — its two cards are still ~306px wide at a 700px
+   viewport. 600px is where they actually get too narrow to read. */
+@media (max-width: 600px) {
+  .campaign-backlinks-grid { grid-template-columns: 1fr; }
 }

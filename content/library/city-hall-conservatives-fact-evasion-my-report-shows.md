@@ -7,6 +7,7 @@ outlet: "City Hall Conservatives"
 campaigns: ["tracking-london-crime"]
 youtube_id: ""
 external_url: "https://www.cityhallconservatives.com/post/factevasion"
+report_pdf: "/reports/fact-evasion-report.pdf"
 thumbnail: "/images/media/city-hall-conservatives-fact-evasion-my-report-shows.jpg"
 summary: "Fact Evasion: how Mayor Khan doubled fare evasion, halved enforcement, and buried the data."
 ---

@@ -1,15 +1,16 @@
 ---
-format: "report"
-campaigns: []
-aliases: ["/media/assembly-capital-projects-foreword/"]
 title: "Foreword: How can we build capital projects in London?"
 date: 2025-11-01
+format: "report"
 type_label: "Assembly"
 outlet: "London Assembly Budget & Performance Committee"
+campaigns: []
 youtube_id: ""
-thumbnail: "/images/media/assembly-capital-projects-foreword.jpg"
 external_url: "https://www.london.gov.uk/who-we-are/what-london-assembly-does/london-assembly-work/london-assembly-publications/euston-we-have-problem-mind-funding-gap"
+report_pdf: "/reports/euston-we-have-a-problem-report.pdf"
+thumbnail: "/images/media/assembly-capital-projects-foreword.jpg"
 summary: "Foreword to the London Assembly report on capital projects, arguing that modular, repeatable designs and local funding can break the cycle of slow, expensive infrastructure."
+aliases: ["/media/assembly-capital-projects-foreword/"]
 ---
 
 Published in London Assembly Budget & Performance Committee, 1 November 2025.

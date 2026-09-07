@@ -1,9 +1,16 @@
 {{- /* Automatic item → campaign back-links, derived from the item's `campaigns`
-       front-matter. Renders nothing for a standalone item. */ -}}
+       front-matter. Renders nothing for a standalone item.
+
+       Uses the same campaign-card.html partial as the /campaigns/ index and the
+       hub-to-hub cross-links, so the card design lives in exactly one place. The
+       only difference here is the grid: an article is an 800px reading column,
+       not the 1200px container, so two columns put each card at ~385px — within
+       a whisker of the ~365px it gets on the campaigns index. */ -}}
 {{- with .GetTerms "campaigns" }}
 <div class="campaign-backlinks">
-  {{- range . }}
-  <a href="{{ .RelPermalink }}" class="campaign-backlink">Part of the <strong>{{ .LinkTitle }}</strong> campaign &rarr;</a>
-  {{- end }}
+  <div class="section-header"><h2>Continue reading on</h2></div>
+  <div class="campaign-backlinks-grid">
+    {{- range .ByWeight }}{{ partial "campaign-card.html" . }}{{ end }}
+  </div>
 </div>
 {{- end }}
