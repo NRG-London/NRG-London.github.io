@@ -82,9 +82,14 @@
 
   /* "fly to" presets, top-right: this region is 154 km across, so a reader
      needs a way to reach Leeds or Sheffield without dragging for a minute.
-     z-index above the embed shield, so they work before the 3D is activated. */
+     z-index above the embed shield, so they work before the 3D is activated.
+
+     Top of 88px, not 48: the download and full-screen buttons take the corner
+     above, and the hint sits between. See .ngv-tools, whose CSS viz-export.js
+     injects. This page stacks three things in one corner where the others
+     stack two, so the presets are what moves furthest. */
   .presets {
-    position: absolute; right: 24px; top: 48px; z-index: 30;
+    position: absolute; right: 24px; top: 88px; z-index: 30;
     display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px;
     max-width: min(475px, calc(100vw - 48px));
   }
@@ -105,7 +110,7 @@
   .foot .tag { font-weight: 700; letter-spacing: 0.08em; white-space: nowrap; }
 
   .hint {
-    position: absolute; right: 24px; top: 22px; z-index: 10;
+    position: absolute; right: 24px; top: 62px; z-index: 10;
     font-size: 11.5px; color: #8A9490; text-align: right; pointer-events: none;
   }
   #reset {
@@ -163,7 +168,7 @@
   </div>
 
   <div class="foot">
-    <span class="source">police.uk street-level snap points, West/South/North Yorkshire &amp; Humberside Police (excludes BTP) · author's analysis · snap points approximate true locations</span>
+    <span class="source" id="source">police.uk street-level snap points, West/South/North Yorkshire &amp; Humberside Police (excludes BTP) · author's analysis · snap points approximate true locations</span>
     <span class="source" id="attrib"></span>
     <span class="tag">NEILGARRATT.COM</span>
   </div>
@@ -171,6 +176,1266 @@
   <div id="shield" style="display:none"><span>Click or tap to explore in 3D</span></div>
 
   <script src="/js/deck.min.js"></script>
+  <script>/* ================================================================
+   NeilGarratt.com — PNG export primitives
+   The half of an image export that knows nothing about what is in
+   the picture: wrap some text, rasterise an SVG, write PNG metadata,
+   hand the file to the browser.
+
+   WHY IT IS ITS OWN FILE. chart-export.js grew all of this for the 2D
+   charts. The deck.gl maps need exactly the same metadata — the same
+   iTXt chunks, the same XMP packet, the same local-time stamp — and a
+   second implementation of a CRC-32 and a PNG chunk writer is precisely
+   the drift this project keeps guarding against. So it moved here, and
+   both exporters require it.
+
+   NO DEPENDENCIES, deliberately. The map pages do not load chart-core.js
+   and should not have to: they are self-contained single files with no
+   external requests at all. That is why `esc` is restated here rather
+   than borrowed from NGCore.
+
+   Public API:
+     NGPng.wrap(text, size, weight, family, maxW) -> string[]
+     NGPng.block(lines, x, y, style, fill, family, extra) -> svg
+     NGPng.measure / .text / .rect / .line / .attrs / .esc
+     NGPng.toBlob(svg, scale)          -> Promise<Blob>
+     NGPng.withMetadata(blob, meta)    -> Promise<Blob>
+     NGPng.baseMeta(fields)            -> the standard metadata dict
+     NGPng.isoLocal(date)              -> '2026-09-01T15:24:35+01:00'
+     NGPng.save(blob, filename)
+     NGPng.fontFaceCss()               -> Promise<string>  (fetches FONT_URLS)
+     NGPng.FONT_URLS                   -> overridable, for tests
+   ================================================================ */
+(function (global) {
+  'use strict';
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  /* ---------- fonts ----------
+     Mirrors the @font-face block in main.css, weights included: Libre
+     Baskerville ships one file served at both 400 and 700, DM Sans is variable
+     across 300-700. Declaring the same mapping is what makes the exported text
+     render as the page renders it rather than merely in the right typeface.
+
+     Fetched once, lazily, on the first export — never on page load, because
+     most readers never press the button. Cached as a promise so a double click
+     does not fetch twice.
+
+     A failure here is not fatal. An image in Helvetica is worth far more to
+     someone trying to share a chart than an error message, so the fallback is
+     to carry on with a system stack.
+
+     A page that already HAS the faces base64-inlined — every deck.gl map does,
+     via _font_css("inline") — should skip this entirely and pass its own CSS
+     to the composer. There is nothing to fetch and nothing to fail.
+
+     Overridable so a test can point them at a dead URL and prove the fallback. */
+  var FONT_URLS = {
+    'DM Sans': { url: '/fonts/dm-sans.woff2', weights: ['300 700'] },
+    'Libre Baskerville': { url: '/fonts/libre-baskerville.woff2', weights: ['400', '700'] }
+  };
+
+  var fontsPromise = null;
+
+  function fontFaceCss() {
+    if (fontsPromise) return fontsPromise;
+    fontsPromise = Promise.all(Object.keys(FONT_URLS).map(function (family) {
+      var spec = FONT_URLS[family];
+      return fetch(spec.url)
+        .then(function (r) {
+          if (!r.ok) throw new Error(r.status + ' ' + spec.url);
+          return r.arrayBuffer();
+        })
+        .then(function (buf) {
+          // The charts serve woff2, the deck.gl pages serve ttf. Same fetch,
+          // same base64, different two words — so they are read off the URL
+          // rather than each caller being made to declare them.
+          var ttf = /\.ttf(\?|$)/i.test(spec.url);
+          var src = 'url(data:font/' + (ttf ? 'ttf' : 'woff2') + ';base64,'
+                  + base64(buf) + ") format('" + (ttf ? 'truetype' : 'woff2') + "')";
+          return spec.weights.map(function (w) {
+            return "@font-face{font-family:'" + family + "';font-style:normal;"
+                 + 'font-weight:' + w + ';src:' + src + ';}';
+          }).join('');
+        })
+        .catch(function (err) {
+          if (global.console) {
+            console.warn('ng-png: could not embed ' + family
+                         + ', falling back to a system font', err);
+          }
+          return '';
+        });
+    })).then(function (parts) { return parts.join(''); });
+    return fontsPromise;
+  }
+
+  // btoa() needs a binary string, and String.fromCharCode.apply blows the
+  // argument limit on a 37 KB font, so it goes across in chunks.
+  function base64(buf) {
+    var bytes = new Uint8Array(buf), out = '', CHUNK = 0x8000;
+    for (var i = 0; i < bytes.length; i += CHUNK) {
+      out += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
+    }
+    return global.btoa(out);
+  }
+
+  /* ---------- text measurement ----------
+     SVG has no line wrapping, and foreignObject rasterises unreliably in
+     Safari, so the wrapping is done here and emitted as separate <text> lines.
+
+     Measured with canvas rather than estimated: the page HAS the real fonts
+     loaded, so measureText is exact, and a title is long enough that a
+     character-width approximation would visibly misjudge it. */
+  var ctx = null;
+  function measure(text_, size, weight, family) {
+    if (!ctx) ctx = document.createElement('canvas').getContext('2d');
+    ctx.font = weight + ' ' + size + 'px ' + family;
+    return ctx.measureText(text_).width;
+  }
+
+  function wrap(text_, size, weight, family, maxW) {
+    var words = String(text_ || '').split(/\s+/).filter(Boolean);
+    if (!words.length) return [];
+    var lines = [], line_ = words[0];
+    for (var i = 1; i < words.length; i++) {
+      var test = line_ + ' ' + words[i];
+      if (measure(test, size, weight, family) <= maxW) line_ = test;
+      else { lines.push(line_); line_ = words[i]; }
+    }
+    lines.push(line_);
+    return lines;
+  }
+
+  /* ---------- small svg builders ---------- */
+  function attrs(o) {
+    var s = '';
+    for (var k in o) if (o[k] != null && o[k] !== '') s += ' ' + k + '="' + o[k] + '"';
+    return s;
+  }
+  function text(s, o) { return '<text' + attrs(o) + '>' + esc(s) + '</text>'; }
+  function rect(o) { return '<rect' + attrs(o) + '/>'; }
+  function line(o) { return '<line' + attrs(o) + '/>'; }
+
+  function block(lines, x, y, style, fill, family, extra) {
+    var out = '';
+    for (var i = 0; i < lines.length; i++) {
+      var o = {
+        x: x, y: y + i * (style.line || style.size),
+        'font-family': family, 'font-size': style.size,
+        'font-weight': style.weight, fill: fill
+      };
+      for (var k in (extra || {})) o[k] = extra[k];
+      out += text(lines[i], o);
+    }
+    return out;
+  }
+
+  /* ---------- rasterise ---------- */
+  function toBlob(svg, scale) {
+    var SC = scale || 1;
+    return new Promise(function (resolve, reject) {
+      var img = new Image();
+      // A data: URL rather than a blob: URL — Safari taints the canvas for
+      // blob-sourced SVG images, and a tainted canvas cannot be read back.
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+      img.onload = function () {
+        var canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * SC);
+        canvas.height = Math.round(img.height * SC);
+        var c = canvas.getContext('2d');
+        c.setTransform(SC, 0, 0, SC, 0, 0);
+        c.drawImage(img, 0, 0);
+        canvas.toBlob(function (blob) {
+          blob ? resolve(blob) : reject(new Error('canvas produced no image'));
+        }, 'image/png');
+      };
+      img.onerror = function () { reject(new Error('could not rasterise the image')); };
+    });
+  }
+
+  /* Same as toBlob, but hands back the canvas instead of a blob, for a caller
+     that has more to draw onto it — the map exporter paints the map into the
+     frame rather than inlining a multi-megabyte data URI inside the SVG. */
+  function toCanvas(svg, scale) {
+    var SC = scale || 1;
+    return new Promise(function (resolve, reject) {
+      var img = new Image();
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+      img.onload = function () {
+        var canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * SC);
+        canvas.height = Math.round(img.height * SC);
+        var c = canvas.getContext('2d');
+        c.setTransform(SC, 0, 0, SC, 0, 0);
+        c.drawImage(img, 0, 0);
+        resolve(canvas);
+      };
+      img.onerror = function () { reject(new Error('could not rasterise the frame')); };
+    });
+  }
+
+  function save(blob, filename) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    // Revoked on the next turn, not immediately: some browsers have not started
+    // reading the blob by the time click() returns.
+    setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+  }
+
+  /* ---------- metadata ----------
+     Written into the PNG, not the SVG. The SVG is an intermediate that is
+     rasterised and discarded, so anything put there would never leave the
+     browser; the PNG is the file that travels, and PNG has a real metadata
+     standard for exactly this.
+
+     iTXt rather than tEXt: tEXt is Latin-1 only and this copy carries em
+     dashes, middots and pound signs. iTXt is UTF-8 and just as widely read —
+     ExifTool, ImageMagick, Pillow and most image viewers all handle it.
+
+     The point is that a picture which has travelled far from this website can
+     still say what it is, where the figures came from, when it was made, and
+     which release of the data it was built on. Home Office revises its whole
+     back-series every quarter, so a chart without its vintage cannot be
+     reproduced even by us. */
+  var CRC_TABLE = (function () {
+    var t = [], c, n, k;
+    for (n = 0; n < 256; n++) {
+      c = n;
+      for (k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+      t[n] = c >>> 0;
+    }
+    return t;
+  })();
+
+  function crc32(bytes) {
+    var c = 0xffffffff;
+    for (var i = 0; i < bytes.length; i++) {
+      c = CRC_TABLE[(c ^ bytes[i]) & 0xff] ^ (c >>> 8);
+    }
+    return (c ^ 0xffffffff) >>> 0;
+  }
+
+  function itxtChunk(keyword, body_) {
+    var enc = new TextEncoder();
+    // keyword \0 compressionFlag compressionMethod languageTag \0
+    // translatedKeyword \0 text
+    var head = enc.encode(keyword);
+    var body = enc.encode(body_);
+    var data = new Uint8Array(head.length + 5 + body.length);
+    var o = 0;
+    data.set(head, o); o += head.length;
+    data[o++] = 0;      // null after keyword
+    data[o++] = 0;      // not compressed
+    data[o++] = 0;      // compression method (ignored when uncompressed)
+    data[o++] = 0;      // empty language tag
+    data[o++] = 0;      // empty translated keyword
+    data.set(body, o);
+
+    var type = enc.encode('iTXt');
+    var chunk = new Uint8Array(12 + data.length);
+    var dv = new DataView(chunk.buffer);
+    dv.setUint32(0, data.length);
+    chunk.set(type, 4);
+    chunk.set(data, 8);
+    var forCrc = new Uint8Array(4 + data.length);
+    forCrc.set(type, 0);
+    forCrc.set(data, 4);
+    dv.setUint32(8 + data.length, crc32(forCrc));
+    return chunk;
+  }
+
+  /* ---------- XMP ----------
+     The iTXt chunks above are the PNG-native way to carry this, and a PNG
+     reader will find every one of them. An OPERATING SYSTEM will not: Windows
+     Explorer's Details tab, macOS's Get Info and most "image properties" panels
+     read XMP and nothing else, so a file full of correct iTXt keywords shows up
+     with nothing but its dimensions. Neil found exactly that.
+
+     So the same facts go in twice. This is not duplication to be tidied away
+     later — the two are read by different things, and dropping either loses a
+     reader. The packet is an UNCOMPRESSED iTXt chunk keyed `XML:com.adobe.xmp`,
+     which is where Adobe's PNG spec puts it and where Windows looks.
+
+     Only the human-facing fields go in here. The picture's own figures stay in
+     the iTXt chunks, where length costs nothing and no properties panel is
+     going to render a hundred numbers anyway. */
+  var XMP_KEY = 'XML:com.adobe.xmp';
+
+  function xesc(v) {
+    return String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  // dc:title, dc:description and dc:rights are language alternatives, not plain
+  // strings; a bare value is silently ignored by strict readers.
+  function alt(tag, v) {
+    return v ? '<' + tag + '><rdf:Alt><rdf:li xml:lang="x-default">' + xesc(v)
+             + '</rdf:li></rdf:Alt></' + tag + '>' : '';
+  }
+  function seq(tag, kind, v) {
+    return v ? '<' + tag + '><rdf:' + kind + '><rdf:li>' + xesc(v)
+             + '</rdf:li></rdf:' + kind + '></' + tag + '>' : '';
+  }
+  function plain(tag, v) {
+    return v ? '<' + tag + '>' + xesc(v) + '</' + tag + '>' : '';
+  }
+
+  function xmpPacket(meta) {
+    var when = meta['Creation Time'] || '';
+    var body =
+        alt('dc:title', meta['Title'])
+      + alt('dc:description', meta['Description'])
+      + alt('dc:rights', meta['Copyright'])
+      + seq('dc:creator', 'Seq', meta['Author'])
+      + seq('dc:subject', 'Bag', meta['Category'])
+      + plain('dc:source', meta['Source'])
+      + plain('xmp:CreateDate', when)
+      + plain('xmp:MetadataDate', when)
+      + plain('xmp:CreatorTool', meta['Software'])
+      + plain('photoshop:DateCreated', when)
+      + plain('photoshop:Source', meta['Source'])
+      + plain('photoshop:Credit', meta['Credit'])
+      + plain('photoshop:Headline', meta['Title'])
+      + alt('exif:UserComment', meta['Description']);
+    return '<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>'
+         + '<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="'
+         + xesc(meta['Software'] || 'NeilGarratt.com') + '">'
+         + '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">'
+         + '<rdf:Description rdf:about=""'
+         + ' xmlns:dc="http://purl.org/dc/elements/1.1/"'
+         + ' xmlns:xmp="http://ns.adobe.com/xap/1.0/"'
+         + ' xmlns:photoshop="http://ns.adobe.com/photoshop/1.0/"'
+         + ' xmlns:exif="http://ns.adobe.com/exif/1.0/">'
+         + body
+         + '</rdf:Description></rdf:RDF></x:xmpmeta>'
+         + '<?xpacket end="w"?>';
+  }
+
+  /* Inserted straight after IHDR, which the spec requires to be first and
+     which is always 25 bytes: 8 signature + 4 length + 4 type + 13 data + 4
+     CRC. Everything else is copied through untouched. */
+  function withMetadata(blob, meta) {
+    var keys = Object.keys(meta || {}).filter(function (k) { return meta[k]; });
+    if (!keys.length) return Promise.resolve(blob);
+    return blob.arrayBuffer().then(function (buf) {
+      var png = new Uint8Array(buf);
+      var head = png.subarray(0, 33);          // signature + IHDR
+      var rest = png.subarray(33);
+      var chunks = keys.map(function (k) { return itxtChunk(k, String(meta[k])); });
+      chunks.unshift(itxtChunk(XMP_KEY, xmpPacket(meta)));
+      var extra = chunks.reduce(function (n, c) { return n + c.length; }, 0);
+      var out = new Uint8Array(head.length + extra + rest.length);
+      var o = 0;
+      out.set(head, o); o += head.length;
+      chunks.forEach(function (c) { out.set(c, o); o += c.length; });
+      out.set(rest, o);
+      return new Blob([out], { type: 'image/png' });
+    });
+  }
+
+  /* ISO 8601 in LOCAL time with an explicit offset — 2026-09-01T15:24:35+01:00
+     — rather than the UTC form toISOString() gives.
+
+     Both name the same instant, so both are correct, but they are not read the
+     same way. Windows Explorer takes the wall-clock digits and ignores the zone
+     entirely, so a chart made at 15:54 in British Summer Time was filed under
+     14:54. The offset form survives that: a reader that honours the zone gets
+     the right instant, and a reader that only looks at the digits gets the
+     right local time. The Z form is only correct for the first kind.
+
+     Nothing here is guessed from a locale — getTimezoneOffset is the machine's
+     own answer, in minutes BEHIND UTC, hence the negation. */
+  function isoLocal(d) {
+    function p2(n) { return (n < 10 ? '0' : '') + n; }
+    var off = -d.getTimezoneOffset();
+    var abs = Math.abs(off);
+    return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate())
+         + 'T' + p2(d.getHours()) + ':' + p2(d.getMinutes()) + ':' + p2(d.getSeconds())
+         + (off < 0 ? '-' : '+') + p2(Math.floor(abs / 60)) + ':' + p2(abs % 60);
+  }
+
+  /* The standard field set, from whatever the caller could read off its own
+     page. `software` is the one thing that differs between exporters — a chart
+     tool and a map tool are not the same program. */
+  function baseMeta(f) {
+    var now = new Date();
+    var tag = f.tag || 'NeilGarratt.com';
+    return {
+      'Title': f.title || '',
+      'Author': 'Neil Garratt',
+      'Copyright': '© ' + now.getFullYear() + ' Neil Garratt. ' + tag,
+      // Full ISO rather than a bare date: XMP carries this to Explorer's
+      // "Date taken", and a date-only value shows there as midnight. Local
+      // with an offset rather than UTC — see isoLocal above.
+      'Creation Time': isoLocal(now),
+      'Description': f.description || '',
+      'Source': (f.source || '').replace(/^Source:\s*/, ''),
+      'Credit': tag,
+      'Software': f.software || (tag + ' export')
+    };
+  }
+
+  global.NGPng = {
+    esc: esc, base64: base64,
+    FONT_URLS: FONT_URLS, fontFaceCss: fontFaceCss,
+    measure: measure, wrap: wrap, block: block,
+    attrs: attrs, text: text, rect: rect, line: line,
+    toBlob: toBlob, toCanvas: toCanvas, save: save,
+    crc32: crc32, itxtChunk: itxtChunk, XMP_KEY: XMP_KEY,
+    xmpPacket: xmpPacket, withMetadata: withMetadata,
+    isoLocal: isoLocal, baseMeta: baseMeta,
+    // Tests point FONT_URLS at a dead path to exercise the fallback; without
+    // this the first export's cached promise would answer for the second.
+    _resetFonts: function () { fontsPromise = null; }
+  };
+})(window);
+
+/* ================================================================
+   NeilGarratt.com — deck.gl viz export
+   Turns the 3D map a reader is currently looking at into a PNG in
+   their Downloads folder, entirely in the browser. The map's sibling
+   to chart-export.js, and it shares that file's PNG half via ng-png.js.
+
+   WHAT IT PRODUCES. The current camera, at a fixed size, with the
+   interface removed and the editorial frame put back: eyebrow, title,
+   subtitle, the map, the source line, the basemap attribution and the
+   NeilGarratt.com tag. None of that frame is in the framebuffer — it is
+   all DOM on the page — so a raw screenshot loses every word of it.
+
+   HOW IT AVOIDS EXPORTING A FRAME OF THE ANIMATION. This was the thing
+   to get right: the towers ease into position over 750ms, and a capture
+   taken part-way through states a figure that is true at no point in
+   the data. Measured, a grab 300ms after a metric change differs from
+   the settled picture in about 7% of its pixels.
+
+   It is not solved by timing. It is solved by not capturing the live
+   canvas at all: a SECOND, offscreen deck.Deck is built at the export
+   size and handed the page's own layers. A freshly constructed layer
+   has no transition to be part-way through — deck.gl's `transitions`
+   animate an UPDATE, never a first render — so the offscreen deck draws
+   the settled state by construction. The tween problem disappears
+   rather than being waited out.
+
+   That the offscreen render is faithful is not an assumption: with a
+   rotated, tilted, zoomed camera it agrees with the on-screen canvas in
+   99.1% of sampled pixels, the remainder being antialiasing at twice
+   the resolution.
+
+   REQUIRES ng-png.js, and a page that has called register().
+
+   Public API:
+     NGVizExport.register(adapter)
+     NGVizExport.download()            -> Promise<void>
+     NGVizExport.deckCapture(opts)     -> the default capture function
+     NGVizExport.readChrome(sel)       -> reads .card/.foot into a frame
+     NGVizExport.mountButtons(opts)    -> the download + full-screen pair
+   ================================================================ */
+(function (global) {
+  'use strict';
+
+  var P = global.NGPng;
+  if (!P) throw new Error('viz-export.js requires ng-png.js');
+
+  /* ---------- composition geometry ----------
+     The map area is 1.865:1, the aspect of the embed box on the campaign pages.
+
+     A FIXED export size is only half of a fixed framing, and the missing half
+     cost a release. deck.gl's `zoom` is ground per PIXEL, so handing the live
+     zoom to a 1200px canvas shows 1200 pixels' worth of ground whatever the
+     reader's own canvas was: on a 2K monitor the export cropped the edges, and
+     in a quarter-screen window it pulled back and left the map swimming in
+     space. The zoom has to be adjusted for the change of canvas — see fitZoom. */
+  var MAP_W = 1200, MAP_H = 644;
+  var PAD = 34;
+  var W = MAP_W + PAD * 2;
+  var SCALE = 2;                        // 1268pt -> 2536px PNG
+
+  /* Larger than the chart's table: this canvas is half again as wide, and the
+     chart's 25px title would read as a caption on it. */
+  var T = {
+    eyebrow:  { size: 12,   weight: 700,  spacing: 1.2, gapAfter: 20 },
+    title:    { size: 32,   weight: 700,  line: 42,     gapAfter: 12 },
+    subtitle: { size: 18,   weight: 400,  line: 26,     gapAfter: 22 },
+    legend:   { size: 14,   weight: 500,  gapBefore: 18, swatch: 13 },
+    // The continuous scale: a gradient with values under it, for a map whose
+    // colour is a measurement rather than a set of categories.
+    scale:    { title: 15,  tick: 13,     bar: 12,       gapBefore: 20, w: 560 },
+    foot:     { size: 13,   weight: 400,  gapBefore: 15 }
+  };
+
+  var SANS = "'DM Sans', system-ui, sans-serif";
+  var SERIF = "'Libre Baskerville', Georgia, serif";
+
+  /* The maps are dark. These mirror the ink ground the templates set on
+     <body>, and the paper value is read from the page at export time rather
+     than restated, so a page that changes its ground changes its exports. */
+  var INK_FALLBACK = '#1A2332';
+  var PAPER = '#F3F6F4';
+  var SUB = 'rgba(243,246,244,0.62)';
+  var RULE = 'rgba(243,246,244,0.18)';
+  var ACCENT = '#5A9FD4';
+
+  var adapter = null;
+  var fontCss = '';
+
+  /* A rasterised SVG cannot see the document's fonts, and — because it is
+     rasterised from a data: URL — it cannot fetch them either. They have to be
+     base64 inside the exported document or the text comes out in Helvetica.
+
+     Two ways in, and which one is right depends on how the page was built. The
+     self-contained file:// variant already carries the faces base64 in its own
+     <style>, so it hands that string over and nothing is fetched. The variant
+     served from the site links /fonts/ instead, and inlining them a second time
+     would put 350 KB on a page most readers never export from — so it leaves
+     this empty and ng-png fetches on the first click, as the charts do. */
+  function register(a) {
+    adapter = a;
+    fontCss = a.fontCss || '';
+  }
+
+  function faces() {
+    return fontCss ? Promise.resolve(fontCss) : P.fontFaceCss();
+  }
+
+  /* ================================================================
+     CAPTURE — the one part that knows how the picture is made
+     ================================================================ */
+
+  /* A 64x48 thumbnail of the canvas, as a string. Two identical ones a couple
+     of frames apart mean the picture has stopped changing — which covers the
+     easing, basemap tiles still arriving, and the label atlas being built,
+     without this file having to know that any of those exist. */
+  var thumbCv = null;
+  function signature(canvas) {
+    if (!thumbCv) {
+      thumbCv = document.createElement('canvas');
+      thumbCv.width = 64; thumbCv.height = 48;
+    }
+    var c = thumbCv.getContext('2d');
+    c.clearRect(0, 0, 64, 48);
+    try { c.drawImage(canvas, 0, 0, 64, 48); } catch (e) { return null; }
+    return thumbCv.toDataURL('image/png');
+  }
+
+  var STABLE_FRAMES = 2;
+  var CAPTURE_TIMEOUT = 15000;
+
+  /* "Has everything it is going to draw actually arrived?"
+
+     The pixel signature cannot answer that. A basemap whose tiles are still in
+     flight looks perfectly steady — nothing is changing because nothing has
+     arrived — so two matching frames happily meant an export with no map under
+     it. It stayed hidden while the screen and the export shared one tile cache
+     and the tiles were therefore already warm; the moment the screen went
+     vector, and the export started asking for @2x, every tile request was a
+     cold one and the picture went out empty.
+
+     deck.gl's own answer is Layer#isLoaded, which a TileLayer reports false for
+     until every visible tile has landed — measured on the Yorkshire map at
+     false for the first ~800 ms and true after. layerManager is internal, so
+     an unreadable one is read as "yes": a missing basemap is a bad export, but
+     a capture that never returns is a broken button. */
+  function layersSettled(inst) {
+    try {
+      var lm = inst && inst.layerManager;
+      var ls = lm && lm.getLayers ? lm.getLayers() : null;
+      if (!ls || !ls.length) return true;
+      for (var i = 0; i < ls.length; i++) {
+        if (ls[i] && ls[i].isLoaded === false) return false;
+      }
+      return true;
+    } catch (e) { return true; }
+  }
+
+  /* The probe measures where the DATA lands, so it is taken without the
+     basemap. A basemap fills the frame by definition: include one and the probe
+     always reports "already full", the fit never reclaims the space the chrome
+     was holding, and the same camera would export at two different scales
+     depending on which map mode the reader happened to be in.
+
+     This relies on one convention: the raster basemap layer is called
+     "basemap". Every page here names it that. */
+  function withoutBasemap(ls) {
+    var out = [];
+    for (var i = 0; i < (ls || []).length; i++) {
+      if (ls[i] && ls[i].id === 'basemap') continue;
+      out.push(ls[i]);
+    }
+    return out;
+  }
+
+  /* ---------- the camera the export should use ----------
+
+     TWO things make a live view state the wrong thing to hand an export, and
+     both of them cost a release.
+
+     FIRST, it is not a flat object. deck.gl's viewState carries a nested
+     `default-view` key — the per-view form of the same camera — and deck reads
+     THAT in preference to the top-level properties. Copying the object and
+     changing `zoom` therefore changes nothing at all, silently: the export came
+     out at the live zoom however the number was adjusted, and two tests passed
+     for the wrong reason before this was noticed. So the camera is rebuilt from
+     its five scalars and nothing else travels.
+
+     SECOND, zoom is ground per PIXEL, so a fixed 1200px export shows 1200
+     pixels' worth of ground whatever the reader's canvas was — cropping the
+     edges on a 2K monitor and, in a quarter-screen window, pulling back until
+     the map swam in space.
+
+     The page already has the answer to that: it zooms out on a narrow window so
+     the same ground still fits, by `min(0, log2(innerWidth / baseWidth))`. The
+     adapter hands over the camera with that adjustment TAKEN BACK OFF, plus the
+     width it was designed for, and the export re-applies the same arithmetic
+     for its own width. What survives is the reader's own panning and zooming;
+     what does not is the size of the window they happened to be using. */
+  function exportCamera(vs, refW, w) {
+    if (!vs) return vs;
+    // Only the camera. Dropping `default-view` is the point; dropping minZoom
+    // and maxZoom matters too, because the corrected zoom can legitimately sit
+    // outside the range the page pins for interactive use, and deck would clamp
+    // it back.
+    var cam = {
+      longitude: vs.longitude, latitude: vs.latitude,
+      zoom: vs.zoom, pitch: vs.pitch, bearing: vs.bearing
+    };
+    if (refW && typeof cam.zoom === 'number') {
+      var dz = Math.log2(w / refW);
+      if (isFinite(dz)) cam.zoom = cam.zoom + dz;
+    }
+    return cam;
+  }
+
+  function deckCapture(o) {
+    return function (w, h, scale, bump, probe) {
+      return new Promise(function (resolve, reject) {
+        var deck = global.deck;
+        if (!deck || !deck.Deck) { reject(new Error('deck.gl is not loaded')); return; }
+
+        var cv = document.createElement('canvas');
+        cv.width = Math.round(w * scale);
+        cv.height = Math.round(h * scale);
+        // Off-screen rather than hidden: display:none gives a zero-size
+        // element and deck would size its viewport to nothing.
+        cv.style.cssText = 'position:absolute;left:-99999px;top:0;'
+                         + 'width:' + w + 'px;height:' + h + 'px;pointer-events:none';
+        document.body.appendChild(cv);
+
+        var off = null, painted = false, finished = false;
+        function cleanup() {
+          try { if (off) off.finalize(); } catch (e) {}
+          if (cv.parentNode) cv.parentNode.removeChild(cv);
+        }
+
+        var vs = exportCamera(o.viewState(),
+                              o.referenceWidth ? o.referenceWidth() : 0, w);
+        if (bump && vs && typeof vs.zoom === 'number') vs.zoom += bump;
+
+        try {
+          off = new deck.Deck({
+            canvas: cv, width: w, height: h, useDevicePixels: scale,
+            controller: false,
+            initialViewState: vs,
+            layers: probe ? withoutBasemap(o.layers()) : o.layers(),
+            effects: o.effects ? o.effects() : [],
+            onAfterRender: function () { painted = true; }
+          });
+        } catch (err) { cleanup(); reject(err); return; }
+
+        var t0 = (global.performance || Date).now();
+        var last = null, steady = 0;
+
+        function finish(err) {
+          if (finished) return;
+          finished = true;
+          if (err) { cleanup(); reject(err); return; }
+          // The pixels are copied off BEFORE the deck is finalized: finalize
+          // destroys the GL context, and a canvas with no context reads back
+          // blank.
+          var out = document.createElement('canvas');
+          out.width = cv.width; out.height = cv.height;
+          out.getContext('2d').drawImage(cv, 0, 0);
+          cleanup();
+          resolve(out);
+        }
+
+        function tick() {
+          if (finished) return;
+          if ((global.performance || Date).now() - t0 > CAPTURE_TIMEOUT) {
+            finish(painted ? null : new Error('the offscreen map never rendered'));
+            return;
+          }
+          if (painted && layersSettled(off)) {
+            var sig = signature(cv);
+            if (sig && sig === last) steady++; else steady = 0;
+            last = sig;
+            if (steady >= STABLE_FRAMES) { finish(null); return; }
+          }
+          requestAnimationFrame(function () { requestAnimationFrame(tick); });
+        }
+        requestAnimationFrame(tick);
+      });
+    };
+  }
+
+  /* ---------- filling the frame ----------
+
+     The live map deliberately leaves room round the edges, because the title
+     card sits over its top-left and the controls over its bottom-left. Strip
+     that chrome for an export and the space stays behind: the default view put
+     London across 60% of the width and 57% of the height, adrift in a sea of
+     background.
+
+     A fixed zoom bump does not fix it. Measured at +0.40 the default view fills
+     nicely at 78% x 77%, but the moment the reader rotates 35 degrees or tilts
+     towards the horizon the footprint's bounding box grows and the margins fall
+     to 0-1% — the export starts cutting off the city.
+
+     So the frame is fitted to whatever is actually in it. A cheap 400px probe
+     render says where the ink lands, and the real render is zoomed to bring
+     that up to TARGET of the frame. It never clips, because it measures the
+     thing it is about to draw, and it fills equally well at any camera.
+
+     Two limits keep it honest. It only ever zooms IN, and never by more than
+     MAX_BUMP — so this reclaims the chrome's space and stops. A reader who has
+     deliberately pulled back to see London in context still gets something
+     close to what they framed, rather than being silently overridden. */
+  var FIT_TARGET = 0.88;      // of the frame, on the tighter axis
+  var FIT_MAX_BUMP = 0.5;     // in deck zoom levels, so at most ~1.4x
+  var PROBE_W = 400;
+
+  /* The bounding box of anything drawn, as fractions of the canvas. The map
+     canvas is transparent where nothing is drawn — measured, 83% of it at the
+     default view — so ALPHA is the test. Colour matching against the ink
+     background would also have to know the background, and would count the
+     basemap's darkest tiles as empty. */
+  function inkBounds(canvas) {
+    var W2 = 160, H2 = Math.max(1, Math.round(W2 * canvas.height / canvas.width));
+    var c2 = document.createElement('canvas');
+    c2.width = W2; c2.height = H2;
+    var cx = c2.getContext('2d', { willReadFrequently: true });
+    try { cx.drawImage(canvas, 0, 0, W2, H2); } catch (e) { return null; }
+    var data;
+    try { data = cx.getImageData(0, 0, W2, H2).data; } catch (e) { return null; }
+    var x0 = W2, y0 = H2, x1 = -1, y1 = -1;
+    for (var y = 0; y < H2; y++) {
+      for (var x = 0; x < W2; x++) {
+        if (data[(y * W2 + x) * 4 + 3] > 24) {
+          if (x < x0) x0 = x;
+          if (x > x1) x1 = x;
+          if (y < y0) y0 = y;
+          if (y > y1) y1 = y;
+        }
+      }
+    }
+    if (x1 < 0) return null;
+    return { w: (x1 - x0 + 1) / W2, h: (y1 - y0 + 1) / H2 };
+  }
+
+  function fitBump(box) {
+    if (!box || !box.w || !box.h) return 0;
+    // The tighter axis decides, so neither ends up past the target.
+    var bump = Math.min(Math.log2(FIT_TARGET / box.w), Math.log2(FIT_TARGET / box.h));
+    if (!isFinite(bump) || bump <= 0) return 0;      // already full: leave it
+    return Math.min(bump, FIT_MAX_BUMP);
+  }
+
+  /* ================================================================
+     READING THE PAGE
+     ================================================================ */
+
+  /* Everything comes off the live DOM, so the export cannot show a different
+     crime type, year or caveat from the one on screen. */
+  function readChrome() {
+    function txt(sel) {
+      var n = document.querySelector(sel);
+      return n ? n.textContent.trim().replace(/\s+/g, ' ') : '';
+    }
+    return {
+      eyebrow: txt('.card .eyebrow'),
+      title: txt('.card h1'),
+      subtitle: txt('.card .subtitle'),
+      source: txt('.foot #source'),
+      attribution: txt('.foot #attrib'),
+      // The page sets the tag in capitals and the PNG uses camel case. That
+      // is deliberate, and the same call chart-export.js records: on screen the
+      // caps read as a mark, but an exported image can end up on a printout
+      // where it is a URL somebody has to type.
+      tag: (function () {
+        var t = txt('.foot .tag');
+        return !t || t === t.toUpperCase() ? 'NeilGarratt.com' : t;
+      })(),
+      background: (function () {
+        var bg = getComputedStyle(document.body).backgroundColor;
+        return bg && bg !== 'rgba(0, 0, 0, 0)' ? bg : INK_FALLBACK;
+      })()
+    };
+  }
+
+  /* A CONTINUOUS legend.
+
+     The census map's colour is a scale, not a set of categories, and the
+     legend it draws on screen says four things that a row of swatches cannot:
+     where the values run, where zero is on a diverging scale, which stretch of
+     the scale the area type the reader is looking at actually occupies — a
+     borough is an average of hundreds of neighbourhoods and cannot be as
+     extreme as the most extreme of them — and what the grey areas mean.
+
+     Every one of those is load-bearing, so the export carries all of them. It
+     is read off the live legend rather than rebuilt from the data, for the
+     same reason the title is: the picture then cannot say anything the page
+     does not.
+
+     Returns the SVG and the y it finished at. */
+  function scaleLegend(lg, yTop) {
+    var S = T.scale, out = '', y = yTop;
+    var barW = Math.min(S.w, W - PAD * 2 - 300);
+
+    if (lg.title) {
+      y += S.title;
+      out += P.text(lg.title, {
+        x: PAD, y: y, 'font-family': SANS, 'font-size': S.title,
+        'font-weight': 700, fill: PAPER
+      });
+      y += 9;
+    }
+
+    var stops = lg.stops || [];
+    var barTop = y;
+    if (stops.length > 1) {
+      var gid = 'ngv-ramp';
+      var defs = '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="1" y2="0">';
+      for (var i = 0; i < stops.length; i++) {
+        defs += '<stop offset="' + (i / (stops.length - 1) * 100).toFixed(2)
+              + '%" stop-color="' + P.esc(stops[i]) + '"/>';
+      }
+      out += defs + '</linearGradient></defs>';
+      out += P.rect({ x: PAD, y: barTop, width: barW, height: S.bar, rx: 2,
+                      fill: 'url(#' + gid + ')' });
+    }
+
+    // The bracket over the bar: end stops and a top rule, no bottom edge, so it
+    // reads as a measurement OF the gradient rather than another band on it.
+    if (lg.mark) {
+      var mx = PAD + lg.mark.from * barW, mw = Math.max(lg.mark.to - lg.mark.from, 0.004) * barW;
+      var mt = barTop - 6;
+      out += P.line({ x1: mx, x2: mx + mw, y1: mt, y2: mt, stroke: PAPER, 'stroke-width': 1.4 });
+      out += P.line({ x1: mx, x2: mx, y1: mt, y2: mt + 5, stroke: PAPER, 'stroke-width': 1.4 });
+      out += P.line({ x1: mx + mw, x2: mx + mw, y1: mt, y2: mt + 5, stroke: PAPER, 'stroke-width': 1.4 });
+    }
+    if (lg.zero) {
+      out += P.line({ x1: PAD + barW / 2, x2: PAD + barW / 2,
+                      y1: barTop - 2, y2: barTop + S.bar + 2,
+                      stroke: PAPER, 'stroke-width': 1.2, opacity: 0.85 });
+    }
+
+    // The no-data swatch sits beside the bar rather than under it: the frame is
+    // wide where it is short, and this is the one part with no left edge to
+    // line up with.
+    if (lg.nodata) {
+      out += P.rect({ x: PAD + barW + 30, y: barTop, width: S.bar, height: S.bar,
+                      rx: 2, fill: lg.nodata.color });
+      out += P.text(lg.nodata.label, {
+        x: PAD + barW + 30 + S.bar + 8, y: barTop + S.bar - 1,
+        'font-family': SANS, 'font-size': S.tick, fill: SUB
+      });
+    }
+
+    y = barTop + S.bar + 4 + S.tick;
+    var ticks = lg.ticks || [];
+    for (var t = 0; t < ticks.length; t++) {
+      // Evenly spaced, as the page spaces them: the ends are anchored to the
+      // ends of the bar so neither hangs off it.
+      var frac = ticks.length === 1 ? 0 : t / (ticks.length - 1);
+      out += P.text(ticks[t], {
+        x: PAD + frac * barW, y: y, 'font-family': SANS, 'font-size': S.tick,
+        'text-anchor': t === 0 ? 'start' : (t === ticks.length - 1 ? 'end' : 'middle'),
+        fill: SUB
+      });
+    }
+
+    if (lg.dirs && lg.dirs.length === 2) {
+      y += S.tick + 5;
+      out += P.text(lg.dirs[0], { x: PAD, y: y, 'font-family': SANS,
+                                  'font-size': S.tick, fill: SUB });
+      out += P.text(lg.dirs[1], { x: PAD + barW, y: y, 'text-anchor': 'end',
+                                  'font-family': SANS, 'font-size': S.tick, fill: SUB });
+    }
+    if (lg.span) {
+      y += S.tick + 5;
+      out += P.text(lg.span, { x: PAD, y: y, 'font-family': SANS,
+                               'font-size': S.tick, fill: SUB });
+    }
+    return { svg: out, y: y };
+  }
+
+  /* ================================================================
+     COMPOSE
+     Same running order as the page: eyebrow, title, subtitle, map,
+     legend, rule, source and tag. The frame is rasterised WITH its
+     background and the map is drawn into the gap afterwards — putting
+     a 2400px-wide PNG inside the SVG as a data URI is the thing most
+     likely to fail in Safari, and there is no need for it.
+     ================================================================ */
+  function compose(mapCanvas, frame) {
+    var paper = frame.background || INK_FALLBACK;
+    var inner = W - PAD * 2;
+    var body = '', y = PAD;
+
+    if (frame.eyebrow) {
+      y += T.eyebrow.size;
+      body += P.line({ x1: PAD, x2: PAD + 24, y1: y - 4, y2: y - 4,
+                       stroke: ACCENT, 'stroke-width': 2 });
+      body += P.text(frame.eyebrow.toUpperCase(), {
+        x: PAD + 36, y: y, 'font-family': SANS, 'font-size': T.eyebrow.size,
+        'font-weight': T.eyebrow.weight, 'letter-spacing': T.eyebrow.spacing,
+        fill: ACCENT
+      });
+      y += T.eyebrow.gapAfter;
+    }
+
+    var titleLines = P.wrap(frame.title, T.title.size, T.title.weight, SERIF, inner);
+    if (titleLines.length) {
+      y += T.title.size;
+      body += P.block(titleLines, PAD, y, T.title, PAPER, SERIF);
+      y += (titleLines.length - 1) * T.title.line + T.title.gapAfter;
+    }
+
+    var subLines = P.wrap(frame.subtitle, T.subtitle.size, T.subtitle.weight, SANS, inner);
+    if (subLines.length) {
+      y += T.subtitle.size;
+      body += P.block(subLines, PAD, y, T.subtitle, SUB, SANS);
+      y += (subLines.length - 1) * T.subtitle.line + T.subtitle.gapAfter;
+    }
+
+    var mapY = y;
+    y += MAP_H;
+
+    if (frame.scale) {
+      var sl = scaleLegend(frame.scale, y + T.scale.gapBefore);
+      body += sl.svg;
+      y = sl.y;
+    }
+
+    if (frame.legend && frame.legend.length) {
+      y += T.legend.gapBefore + T.legend.size;
+      var lx = PAD;
+      frame.legend.forEach(function (item) {
+        body += P.rect({ x: lx, y: y - T.legend.swatch + 2, width: T.legend.swatch,
+                         height: T.legend.swatch, rx: 1, fill: item.color });
+        body += P.text(item.label, {
+          x: lx + T.legend.swatch + 8, y: y, 'font-family': SANS,
+          'font-size': T.legend.size, 'font-weight': T.legend.weight, fill: SUB
+        });
+        lx += T.legend.swatch + 8
+            + P.measure(item.label, T.legend.size, T.legend.weight, SANS) + 24;
+      });
+    }
+
+    y += T.foot.gapBefore;
+    body += P.line({ x1: PAD, x2: W - PAD, y1: y, y2: y, stroke: RULE, 'stroke-width': 1 });
+    y += T.foot.gapBefore + T.foot.size;
+    var tagY = y;
+
+    /* Source on the left, then the basemap attribution if there is one, and the
+       tag hard right. The attribution is a licence condition when the CARTO
+       basemap is showing, so it travels with the picture or the picture is not
+       publishable.
+
+       The source WRAPS, into the width the tag leaves it. The crime maps' lines
+       are phrases and fit; the census map's is a sentence — two censuses, a
+       licence, a boundary credit and a Crown copyright — and at full width it
+       ran straight under NeilGarratt.com. */
+    var tagW = P.measure(frame.tag, T.foot.size, 600, SANS) + 30;
+    var srcLines = P.wrap(frame.source, T.foot.size, T.foot.weight, SANS,
+                          W - PAD * 2 - tagW);
+    for (var si = 0; si < srcLines.length; si++) {
+      if (si) y += T.foot.size + 5;
+      body += P.text(srcLines[si], {
+        x: PAD, y: y, 'font-family': SANS, 'font-size': T.foot.size,
+        'font-style': 'italic', fill: SUB
+      });
+    }
+    if (frame.attribution) {
+      y += T.foot.size + 5;
+      body += P.text(frame.attribution, {
+        x: PAD, y: y, 'font-family': SANS,
+        'font-size': T.foot.size - 1, fill: SUB
+      });
+    }
+    // Camel case here, capitals on the page. Deliberate, and the same decision
+    // chart-export.js records: on screen the caps read as a mark, but a PNG can
+    // end up on a printout where it is a URL somebody has to type.
+    body += P.text(frame.tag, {
+      x: W - PAD, y: tagY,
+      'text-anchor': 'end', 'font-family': SANS, 'font-size': T.foot.size,
+      'font-weight': 600, 'letter-spacing': 0.7, fill: SUB
+    });
+
+    var H = y + PAD;
+
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H
+            + '" viewBox="0 0 ' + W + ' ' + H + '">'
+            + '<style>' + fontCss + '</style>'
+            + P.rect({ x: 0, y: 0, width: W, height: H, fill: paper })
+            + body
+            + '</svg>';
+
+    return P.toCanvas(svg, SCALE).then(function (canvas) {
+      var c = canvas.getContext('2d');
+      // toCanvas leaves its own SCALE transform on the context, so a draw in
+      // device pixels would be scaled a second time — the map came out at twice
+      // the size, offset, and over the source line. Reset rather than work in
+      // the other module's coordinate space, which is not ours to rely on.
+      c.setTransform(1, 0, 0, 1, 0, 0);
+      c.drawImage(mapCanvas, PAD * SCALE, mapY * SCALE, MAP_W * SCALE, MAP_H * SCALE);
+      return canvas;
+    });
+  }
+
+  function canvasToBlob(canvas) {
+    return new Promise(function (resolve, reject) {
+      canvas.toBlob(function (b) {
+        b ? resolve(b) : reject(new Error('canvas produced no image'));
+      }, 'image/png');
+    });
+  }
+
+  /* ================================================================
+     DOWNLOAD
+     ================================================================ */
+
+  /* How long "wait for the page to settle" is allowed to take. Two and a half
+     seconds covers an ease; a page that fetches its data on demand needs more,
+     and says so with `settleTimeout`. It is a cap, not a delay: the wait ends
+     the moment the page says it is ready. */
+  var SETTLE_TIMEOUT = 2500;
+
+  /* Belt to the offscreen render's braces. The offscreen deck cannot be part
+     way through a transition, but on the pages that ease the whole field by a
+     uniform (easeSwap), `layers()` reads a module-scope scalar that IS part
+     way through — so the layers it hands back would describe a squashed field.
+     Waiting for the page's own flag costs nothing when it is already false. */
+  function waitSettled() {
+    if (!adapter.settled) return Promise.resolve();
+    var t0 = Date.now();
+    var cap = adapter.settleTimeout || SETTLE_TIMEOUT;
+    return new Promise(function (resolve) {
+      (function poll() {
+        if (adapter.settled() || Date.now() - t0 > cap) { resolve(); return; }
+        setTimeout(poll, 60);
+      })();
+    });
+  }
+
+  function metadata(frame) {
+    var info = P.baseMeta({
+      title: frame.title,
+      description: [frame.subtitle, frame.attribution].filter(Boolean).join(' '),
+      source: frame.source,
+      tag: frame.tag,
+      software: (frame.tag || 'NeilGarratt.com') + ' map tool'
+    });
+    var extra = adapter.meta ? adapter.meta() : null;
+    if (extra) {
+      Object.keys(extra).forEach(function (k) { if (extra[k]) info[k] = extra[k]; });
+    }
+    return info;
+  }
+
+  function download() {
+    if (!adapter) return Promise.reject(new Error('no viz registered'));
+    var frame = null;
+    return faces()
+      .then(function (css) { fontCss = css; return waitSettled(); })
+      /* The words are read AFTER the wait, never before it. The hex pages swap
+         their title at the TROUGH of the ease, so a download clicked during one
+         read the outgoing title and laid it over the incoming data — a picture
+         captioned with one crime type and drawn with another, which is the
+         exact class of lie this feature was built to avoid. It measured 1.08%
+         of pixels against the settled export, and only when the click landed
+         inside a 700 ms window, so it is the kind of thing that ships. */
+      .then(function () {
+        frame = adapter.frame ? adapter.frame() : readChrome();
+      })
+      // A small probe first, purely to find where the ink lands. 400px is
+      // enough to bound a shape and costs a fraction of the real render.
+      .then(function () {
+        return adapter.capture(PROBE_W, Math.round(PROBE_W * MAP_H / MAP_W), 1, 0, true)
+          .then(function (probe) { return fitBump(inkBounds(probe)); })
+          .catch(function () { return 0; });   // no probe, no bump, still a picture
+      })
+      .then(function (bump) { return adapter.capture(MAP_W, MAP_H, SCALE, bump); })
+      .then(function (mapCanvas) { return compose(mapCanvas, frame); })
+      .then(canvasToBlob)
+      .then(function (blob) { return P.withMetadata(blob, metadata(frame)); })
+      .then(function (blob) {
+        P.save(blob, (adapter.filename ? adapter.filename() : 'map') .replace(/\.png$/, '') + '.png');
+      });
+  }
+
+  /* ================================================================
+     THE BUTTONS
+     Built here rather than in each template, because there are six
+     templates and they share no HTML — a button pasted six times is a
+     button that is wrong in four of them within a year. The CSS comes
+     with them for the same reason.
+
+     Placement is the top-right corner, which is the one the pages leave
+     to a line of hint text rather than to a control; the template moves
+     that hint down to make room. All four corners were already spoken
+     for, which is why the campaign page put its controls in a bar
+     underneath in the first place.
+     ================================================================ */
+  var TOOL_CSS =
+      '.ngv-tools{position:absolute;right:24px;top:20px;z-index:31;'
+    + 'display:flex;gap:6px}'
+    + '.ngv-tool{width:34px;height:34px;display:inline-flex;align-items:center;'
+    + 'justify-content:center;padding:0;cursor:pointer;color:#F3F6F4;'
+    + 'background:rgba(36,49,66,.85);border:1px solid #3B4A5E;border-radius:6px}'
+    + '.ngv-tool:hover{background:#34455C;border-color:#5A9FD4}'
+    + '.ngv-tool:focus-visible{outline:2px solid #5A9FD4;outline-offset:2px}'
+    + '.ngv-tool[disabled]{opacity:.5;cursor:default}'
+    + '.ngv-tool[data-busy="1"] svg{opacity:.35}'
+    + '.ngv-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;'
+    + 'overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}'
+    // The light basemap needs the opposite treatment, exactly as the page's
+    // own chrome does under body.light-base.
+    + 'body.light-base .ngv-tool{color:#243142;background:rgba(255,255,255,.9);'
+    + 'border-color:#c9d2cc}'
+    + 'body.light-base .ngv-tool:hover{background:#fff;border-color:#243142}';
+
+  /* Inline SVG, not the ⤢ and ⬇ characters. The same reason charts-live.js
+     records for its own download arrow: those glyphs arrive at a different
+     weight on every platform and are emoji on some. ⤢ is the affordance the
+     OLAT Explorer uses, so it is the one drawn here. */
+  var ICONS = {
+    expand:
+        '<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" '
+      + 'stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'
+      + '<path d="M5 19 19 5"/><path d="M13 5h6v6"/><path d="M11 19H5v-6"/></svg>',
+    contract:
+        '<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" '
+      + 'stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'
+      + '<path d="M4 20 10 14"/><path d="M20 4 14 10"/>'
+      + '<path d="M10 20v-6H4"/><path d="M14 4v6h6"/></svg>',
+    download:
+        '<svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true" fill="none" '
+      + 'stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'
+      + '<path d="M10 3v9m0 0 3.5-3.5M10 12 6.5 8.5"/><path d="M3.5 14v2.5h13V14"/></svg>'
+  };
+
+  function btn(cls, icon, label) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'ngv-tool ' + cls;
+    b.innerHTML = icon + '<span class="ngv-sr">' + P.esc(label) + '</span>';
+    b.title = label;
+    b.setAttribute('aria-label', label);
+    return b;
+  }
+
+  /* Full screen has to cross the iframe boundary. The parent's mechanism — a
+     fixed overlay plus a best-effort native request — is the one that works on
+     tablets where iframe fullscreen is flaky, so the button asks for it rather
+     than reimplementing it. On the standalone /interactive/ URL there is no
+     parent and it falls back to asking for itself. */
+  var big = false;
+
+  function setBig(on, fullBtn) {
+    big = !!on;
+    fullBtn.innerHTML = (big ? ICONS.contract : ICONS.expand)
+      + '<span class="ngv-sr">' + (big ? 'Exit full screen' : 'Full screen') + '</span>';
+    var label = big ? 'Exit full screen' : 'Full screen';
+    fullBtn.title = label;
+    fullBtn.setAttribute('aria-label', label);
+  }
+
+  function toggleFullscreen(fullBtn) {
+    var inFrame = global.parent && global.parent !== global;
+    if (inFrame) {
+      try {
+        global.parent.postMessage(
+          { type: big ? 'ng-viz:exit-fullscreen' : 'ng-viz:fullscreen' },
+          global.location.origin);
+        return;                       // the parent answers, and posts the state back
+      } catch (e) { /* fall through to doing it ourselves */ }
+    }
+    if (big) {
+      if (document.fullscreenElement) document.exitFullscreen().catch(function () {});
+      setBig(false, fullBtn);
+    } else {
+      var el = document.documentElement;
+      if (el.requestFullscreen) el.requestFullscreen().catch(function () {});
+      setBig(true, fullBtn);
+    }
+  }
+
+  function mountButtons(opts) {
+    opts = opts || {};
+    var host = opts.host || document.body;
+
+    var style = document.createElement('style');
+    style.textContent = TOOL_CSS;
+    document.head.appendChild(style);
+
+    var wrap = document.createElement('div');
+    wrap.className = 'ngv-tools';
+
+    var fullBtn = null;
+    if (opts.fullscreen !== false) {
+      fullBtn = btn('ngv-tool--full', ICONS.expand, 'Full screen');
+      fullBtn.addEventListener('click', function () { toggleFullscreen(fullBtn); });
+      wrap.appendChild(fullBtn);
+
+      // The parent owns the state, so it tells us what it did — including when
+      // the reader presses Escape and we never hear the click.
+      global.addEventListener('message', function (e) {
+        if (e.origin !== global.location.origin || !e.data) return;
+        if (e.data.type === 'ng-viz:fullscreen-state') setBig(e.data.big, fullBtn);
+      });
+      document.addEventListener('fullscreenchange', function () {
+        if (!document.fullscreenElement && big
+            && !(global.parent && global.parent !== global)) setBig(false, fullBtn);
+      });
+    }
+
+    var dlBtn = btn('ngv-tool--dl', ICONS.download, 'Download this map as an image');
+    dlBtn.addEventListener('click', function () {
+      if (dlBtn.disabled) return;
+      dlBtn.disabled = true;
+      dlBtn.setAttribute('data-busy', '1');
+      download()
+        .catch(function (err) {
+          if (global.console) console.error('viz download failed', err);
+        })
+        .then(function () {
+          dlBtn.disabled = false;
+          dlBtn.removeAttribute('data-busy');
+        });
+    });
+    wrap.appendChild(dlBtn);
+
+    host.appendChild(wrap);
+    return { full: fullBtn, download: dlBtn, setBig: function (v) { setBig(v, fullBtn); } };
+  }
+
+  global.NGVizExport = {
+    register: register, download: download,
+    deckCapture: deckCapture, readChrome: readChrome,
+    mountButtons: mountButtons,
+    compose: compose, inkBounds: inkBounds, fitBump: fitBump,
+    WIDTH: W, SCALE: SCALE, MAP: { w: MAP_W, h: MAP_H }
+  };
+})(window);
+</script>
   <script>
   "use strict";
   var CFG = {"camera": {"longitude": -1.209, "latitude": 53.88, "zoom": 8.25, "pitch": 50, "bearing": 0, "maxPitch": 70, "minZoom": 7.5, "maxZoom": 15.5}, "presets": [{"name": "Whole region", "view": {"longitude": -1.209, "latitude": 53.88, "zoom": 8.25, "pitch": 50, "bearing": 0}}, {"name": "Leeds", "view": {"longitude": -1.548, "latitude": 53.796, "zoom": 11.8, "pitch": 52}}, {"name": "Bradford", "view": {"longitude": -1.753, "latitude": 53.793, "zoom": 11.8, "pitch": 52}}, {"name": "Sheffield", "view": {"longitude": -1.47, "latitude": 53.381, "zoom": 11.8, "pitch": 52}}, {"name": "York", "view": {"longitude": -1.081, "latitude": 53.959, "zoom": 11.8, "pitch": 52}}, {"name": "Hull", "view": {"longitude": -0.335, "latitude": 53.75, "zoom": 11.8, "pitch": 52}}], "baseWidth": 1600, "zoomThresholds": [9.1, 10.3, 11.5], "radiusBands": [500, 250, 120, 70], "hysteresis": 0.15, "coverage": 0.88, "elevationRanges": [9000, 6000, 4200, 2800], "hexOpacity": {"districts": 0.78, "street": 0.3}, "ramp": ["#004D80", "#1877B8", "#4A92CC", "#80B4DD", "#B4D4EB", "#E2EEF7"], "initial": "shoplifting", "attribution": "boundaries ONS/OS \u00a9 Crown copyright OGL v3 \u00b7 map detail \u00a9 OpenStreetMap contributors ODbL", "basemap": {"url": "https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=cb1_2jwn_1_b719f4820b3d9fc06421d20e", "attribution": "\u00a9 CARTO", "extent": [-3.9205, 52.6723, 1.5027, 55.1895]}, "titles": {"tfp": "Theft from the person, street by street", "robbery": "Robbery, street by street", "shoplifting": "Shoplifting, street by street", "burglary": "Burglary, street by street", "vehicle": "Vehicle crime, street by street", "bike": "Bike theft, street by street", "damage": "Criminal damage & arson, street by street", "publicorder": "Public order offences, street by street"}, "subtitles": {"tfp": "Yorkshire and the Humber, 2021\u20132025, aggregated to __RADIUS__ m hexes \u2014 __TOTAL__ recorded offences across 15 districts and 15,408 km\u00b2. Even spread this thin, crime piles onto a handful of streets.", "robbery": "Yorkshire and the Humber, 2021\u20132025, aggregated to __RADIUS__ m hexes \u2014 __TOTAL__ recorded offences across 15 districts and 15,408 km\u00b2. Even spread this thin, crime piles onto a handful of streets.", "shoplifting": "Yorkshire and the Humber, 2021\u20132025, aggregated to __RADIUS__ m hexes \u2014 __TOTAL__ recorded offences across 15 districts and 15,408 km\u00b2. Even spread this thin, crime piles onto a handful of streets.", "burglary": "Yorkshire and the Humber, 2021\u20132025, aggregated to __RADIUS__ m hexes \u2014 __TOTAL__ recorded offences across 15 districts and 15,408 km\u00b2. Even spread this thin, crime piles onto a handful of streets.", "vehicle": "Yorkshire and the Humber, 2021\u20132025, aggregated to __RADIUS__ m hexes \u2014 __TOTAL__ recorded offences across 15 districts and 15,408 km\u00b2. Even spread this thin, crime piles onto a handful of streets.", "bike": "Yorkshire and the Humber, 2021\u20132025, aggregated to __RADIUS__ m hexes \u2014 __TOTAL__ recorded offences across 15 districts and 15,408 km\u00b2. Even spread this thin, crime piles onto a handful of streets.", "damage": "Yorkshire and the Humber, 2021\u20132025, aggregated to __RADIUS__ m hexes \u2014 __TOTAL__ recorded offences across 15 districts and 15,408 km\u00b2. Even spread this thin, crime piles onto a handful of streets.", "publicorder": "Yorkshire and the Humber, 2021\u20132025, aggregated to __RADIUS__ m hexes \u2014 __TOTAL__ recorded offences across 15 districts and 15,408 km\u00b2. Even spread this thin, crime piles onto a handful of streets."}, "shield": true};
@@ -357,10 +1622,14 @@
     });
   }
 
-  function basemapLayer() {
+  // forExport asks CARTO for @2x tiles, because the export renders at 2x and a
+  // 256px tile blown up to 512 is the softest thing in the picture. The screen
+  // keeps the 1x tiles it has always had.
+  function basemapLayer(forExport) {
     return new deck.TileLayer({
       id: "basemap",
-      data: CFG.basemap.url,
+      data: forExport ? CFG.basemap.url.replace("{y}.png", "{y}@2x.png")
+                      : CFG.basemap.url,
       extent: CFG.basemap.extent,   // don't fetch horizon tiles far from Yorkshire
       minZoom: 0, maxZoom: 19, tileSize: 256,
       renderSubLayers: function (props) {
@@ -374,9 +1643,9 @@
     });
   }
 
-  function layers() {
+  function layers(forExport) {
     var stack = mode === "street"
-      ? [basemapLayer()]
+      ? [basemapLayer(forExport)]
       : [waterLayer(), riversLayer(), districtOutlineLayer(), forceOutlineLayer()];
     if (hexShow) stack.push(hexLayer());
     if (mode === "districts") stack.push(placeLabels(), forceLabels());
@@ -412,6 +1681,18 @@
   var zoomAdj = Math.min(0, Math.log2(window.innerWidth / CFG.baseWidth));
   var CAMERA = Object.assign({}, CFG.camera, { zoom: CFG.camera.zoom + zoomAdj });
   band = targetBand(CAMERA.zoom);
+
+  /* What is on the screen right now. deck.getViewports() ASSERTS if it is
+     asked before the first render, and before that frame the camera is CAMERA
+     by definition, so fall back to it rather than letting an early caller kill
+     the page. */
+  function exportCam() {
+    try {
+      var vp = deckgl.getViewports && deckgl.getViewports()[0];
+      if (vp) return vp;
+    } catch (e) { /* not initialised yet */ }
+    return CAMERA;
+  }
 
   var framed = false;
   var deckgl = new deck.DeckGL({
@@ -452,14 +1733,25 @@
       .replace("__TOTAL__", m.total.toLocaleString("en-GB"));
   }
 
+  /* True from the moment the layers change until the caption catches up with
+     them. The two are deliberately out of step — the hexes swap at once and the
+     words cross-fade behind them — which means there is a fifth of a second in
+     which the page shows one crime type and says another. Harmless on screen,
+     where nobody can read a caption at 0 opacity; not harmless in a downloaded
+     PNG, which would caption the new map with the old title. The export waits
+     on this. */
+  var captionPending = false;
+
   function setMetric(key) {
     if (key === metric) return;
     metric = key;
     deckgl.setProps({ layers: layers() });
     titleEl.style.opacity = subEl.style.opacity = 0;
+    captionPending = true;
     setTimeout(function () {
       setText();
       titleEl.style.opacity = subEl.style.opacity = 1;
+      captionPending = false;
     }, 220);
     var btns = switcher.querySelectorAll("button");
     for (var i = 0; i < btns.length; i++)
@@ -567,6 +1859,68 @@
     });
     applyZoom(CAMERA.zoom);
   });
+
+  /* ---- image export ----
+     The adapter is the whole of what this page has to say about itself. The
+     mechanism — the offscreen deck, the stability check, the frame, the PNG
+     metadata — is in viz-export.js and is the same for every map.
+
+     `layers()` rather than deckgl.props.layers: a deck.gl layer instance
+     belongs to one LayerManager, so the offscreen deck needs its own. */
+  if (window.NGVizExport) {
+    NGVizExport.register({
+      capture: NGVizExport.deckCapture({
+        // The width this camera was framed for. The export re-applies the same
+        // log2 arithmetic the page uses at load, for its own width.
+        referenceWidth: function () { return CFG.baseWidth; },
+        // getViewports()[0], NOT deckgl.viewState — that one is a static echo
+        // of initialViewState and never hears about a drag or a fly-to, so
+        // reading it would export the opening view whatever the reader had
+        // done. The page's load-time narrow-window adjustment comes back off,
+        // so a laptop and a 2K monitor export the same picture.
+        viewState: function () {
+          var vs = exportCam();
+          return {
+            longitude: vs.longitude, latitude: vs.latitude,
+            zoom: vs.zoom - zoomAdj, pitch: vs.pitch, bearing: vs.bearing
+          };
+        },
+        layers: function () { return layers(true); },
+        effects: function () { return [lighting]; }
+      }),
+      /* The hexes are safe by construction: unlike the London hex map this
+         page has no elevationScale ease for layers() to be caught part-way
+         through, and a freshly built layer cannot be mid-transition anyway.
+         The WORDS are not — they cross-fade 220ms behind the data. */
+      settled: function () { return !captionPending; },
+      // JSON-encoded by the builder, quotes and all: the inline face block
+      // is multi-line CSS full of apostrophes and cannot go inside a
+      // hand-written string literal.
+      fontCss: "",
+      meta: function () {
+        var v = exportCam();
+        var m = metricByKey(metric);
+        return {
+          'Category': m.label,
+          // Enough to put the camera back exactly where it was.
+          'View': 'metric=' + metric + '; map=' + mode
+                + '; hexes=' + (hexShow ? 'show' : 'hide')
+                + '; radius=' + radius() + 'm'
+                + '; lon=' + Number(v.longitude).toFixed(5)
+                + '; lat=' + Number(v.latitude).toFixed(5)
+                + '; zoom=' + Number(v.zoom).toFixed(3)
+                + '; pitch=' + Number(v.pitch).toFixed(1)
+                + '; bearing=' + Number(v.bearing).toFixed(1),
+          'URL': 'https://neilgarratt.com/interactive/yorkshire-hotspots/'
+        };
+      },
+      filename: function () {
+        return ('yorkshire-hotspots-' + metric)
+          .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.png';
+      }
+    });
+    NGVizExport.mountButtons();
+  }
 
   var fontsReady = false;
   function checkDone() {

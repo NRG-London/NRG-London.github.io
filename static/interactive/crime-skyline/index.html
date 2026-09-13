@@ -662,6 +662,9 @@
     title:    { size: 32,   weight: 700,  line: 42,     gapAfter: 12 },
     subtitle: { size: 18,   weight: 400,  line: 26,     gapAfter: 22 },
     legend:   { size: 14,   weight: 500,  gapBefore: 18, swatch: 13 },
+    // The continuous scale: a gradient with values under it, for a map whose
+    // colour is a measurement rather than a set of categories.
+    scale:    { title: 15,  tick: 13,     bar: 12,       gapBefore: 20, w: 560 },
     foot:     { size: 13,   weight: 400,  gapBefore: 15 }
   };
 
@@ -722,6 +725,50 @@
   var STABLE_FRAMES = 2;
   var CAPTURE_TIMEOUT = 15000;
 
+  /* "Has everything it is going to draw actually arrived?"
+
+     The pixel signature cannot answer that. A basemap whose tiles are still in
+     flight looks perfectly steady — nothing is changing because nothing has
+     arrived — so two matching frames happily meant an export with no map under
+     it. It stayed hidden while the screen and the export shared one tile cache
+     and the tiles were therefore already warm; the moment the screen went
+     vector, and the export started asking for @2x, every tile request was a
+     cold one and the picture went out empty.
+
+     deck.gl's own answer is Layer#isLoaded, which a TileLayer reports false for
+     until every visible tile has landed — measured on the Yorkshire map at
+     false for the first ~800 ms and true after. layerManager is internal, so
+     an unreadable one is read as "yes": a missing basemap is a bad export, but
+     a capture that never returns is a broken button. */
+  function layersSettled(inst) {
+    try {
+      var lm = inst && inst.layerManager;
+      var ls = lm && lm.getLayers ? lm.getLayers() : null;
+      if (!ls || !ls.length) return true;
+      for (var i = 0; i < ls.length; i++) {
+        if (ls[i] && ls[i].isLoaded === false) return false;
+      }
+      return true;
+    } catch (e) { return true; }
+  }
+
+  /* The probe measures where the DATA lands, so it is taken without the
+     basemap. A basemap fills the frame by definition: include one and the probe
+     always reports "already full", the fit never reclaims the space the chrome
+     was holding, and the same camera would export at two different scales
+     depending on which map mode the reader happened to be in.
+
+     This relies on one convention: the raster basemap layer is called
+     "basemap". Every page here names it that. */
+  function withoutBasemap(ls) {
+    var out = [];
+    for (var i = 0; i < (ls || []).length; i++) {
+      if (ls[i] && ls[i].id === 'basemap') continue;
+      out.push(ls[i]);
+    }
+    return out;
+  }
+
   /* ---------- the camera the export should use ----------
 
      TWO things make a live view state the wrong thing to hand an export, and
@@ -764,7 +811,7 @@
   }
 
   function deckCapture(o) {
-    return function (w, h, scale, bump) {
+    return function (w, h, scale, bump, probe) {
       return new Promise(function (resolve, reject) {
         var deck = global.deck;
         if (!deck || !deck.Deck) { reject(new Error('deck.gl is not loaded')); return; }
@@ -793,7 +840,7 @@
             canvas: cv, width: w, height: h, useDevicePixels: scale,
             controller: false,
             initialViewState: vs,
-            layers: o.layers(),
+            layers: probe ? withoutBasemap(o.layers()) : o.layers(),
             effects: o.effects ? o.effects() : [],
             onAfterRender: function () { painted = true; }
           });
@@ -822,7 +869,7 @@
             finish(painted ? null : new Error('the offscreen map never rendered'));
             return;
           }
-          if (painted) {
+          if (painted && layersSettled(off)) {
             var sig = signature(cv);
             if (sig && sig === last) steady++; else steady = 0;
             last = sig;
@@ -929,6 +976,103 @@
     };
   }
 
+  /* A CONTINUOUS legend.
+
+     The census map's colour is a scale, not a set of categories, and the
+     legend it draws on screen says four things that a row of swatches cannot:
+     where the values run, where zero is on a diverging scale, which stretch of
+     the scale the area type the reader is looking at actually occupies — a
+     borough is an average of hundreds of neighbourhoods and cannot be as
+     extreme as the most extreme of them — and what the grey areas mean.
+
+     Every one of those is load-bearing, so the export carries all of them. It
+     is read off the live legend rather than rebuilt from the data, for the
+     same reason the title is: the picture then cannot say anything the page
+     does not.
+
+     Returns the SVG and the y it finished at. */
+  function scaleLegend(lg, yTop) {
+    var S = T.scale, out = '', y = yTop;
+    var barW = Math.min(S.w, W - PAD * 2 - 300);
+
+    if (lg.title) {
+      y += S.title;
+      out += P.text(lg.title, {
+        x: PAD, y: y, 'font-family': SANS, 'font-size': S.title,
+        'font-weight': 700, fill: PAPER
+      });
+      y += 9;
+    }
+
+    var stops = lg.stops || [];
+    var barTop = y;
+    if (stops.length > 1) {
+      var gid = 'ngv-ramp';
+      var defs = '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="1" y2="0">';
+      for (var i = 0; i < stops.length; i++) {
+        defs += '<stop offset="' + (i / (stops.length - 1) * 100).toFixed(2)
+              + '%" stop-color="' + P.esc(stops[i]) + '"/>';
+      }
+      out += defs + '</linearGradient></defs>';
+      out += P.rect({ x: PAD, y: barTop, width: barW, height: S.bar, rx: 2,
+                      fill: 'url(#' + gid + ')' });
+    }
+
+    // The bracket over the bar: end stops and a top rule, no bottom edge, so it
+    // reads as a measurement OF the gradient rather than another band on it.
+    if (lg.mark) {
+      var mx = PAD + lg.mark.from * barW, mw = Math.max(lg.mark.to - lg.mark.from, 0.004) * barW;
+      var mt = barTop - 6;
+      out += P.line({ x1: mx, x2: mx + mw, y1: mt, y2: mt, stroke: PAPER, 'stroke-width': 1.4 });
+      out += P.line({ x1: mx, x2: mx, y1: mt, y2: mt + 5, stroke: PAPER, 'stroke-width': 1.4 });
+      out += P.line({ x1: mx + mw, x2: mx + mw, y1: mt, y2: mt + 5, stroke: PAPER, 'stroke-width': 1.4 });
+    }
+    if (lg.zero) {
+      out += P.line({ x1: PAD + barW / 2, x2: PAD + barW / 2,
+                      y1: barTop - 2, y2: barTop + S.bar + 2,
+                      stroke: PAPER, 'stroke-width': 1.2, opacity: 0.85 });
+    }
+
+    // The no-data swatch sits beside the bar rather than under it: the frame is
+    // wide where it is short, and this is the one part with no left edge to
+    // line up with.
+    if (lg.nodata) {
+      out += P.rect({ x: PAD + barW + 30, y: barTop, width: S.bar, height: S.bar,
+                      rx: 2, fill: lg.nodata.color });
+      out += P.text(lg.nodata.label, {
+        x: PAD + barW + 30 + S.bar + 8, y: barTop + S.bar - 1,
+        'font-family': SANS, 'font-size': S.tick, fill: SUB
+      });
+    }
+
+    y = barTop + S.bar + 4 + S.tick;
+    var ticks = lg.ticks || [];
+    for (var t = 0; t < ticks.length; t++) {
+      // Evenly spaced, as the page spaces them: the ends are anchored to the
+      // ends of the bar so neither hangs off it.
+      var frac = ticks.length === 1 ? 0 : t / (ticks.length - 1);
+      out += P.text(ticks[t], {
+        x: PAD + frac * barW, y: y, 'font-family': SANS, 'font-size': S.tick,
+        'text-anchor': t === 0 ? 'start' : (t === ticks.length - 1 ? 'end' : 'middle'),
+        fill: SUB
+      });
+    }
+
+    if (lg.dirs && lg.dirs.length === 2) {
+      y += S.tick + 5;
+      out += P.text(lg.dirs[0], { x: PAD, y: y, 'font-family': SANS,
+                                  'font-size': S.tick, fill: SUB });
+      out += P.text(lg.dirs[1], { x: PAD + barW, y: y, 'text-anchor': 'end',
+                                  'font-family': SANS, 'font-size': S.tick, fill: SUB });
+    }
+    if (lg.span) {
+      y += S.tick + 5;
+      out += P.text(lg.span, { x: PAD, y: y, 'font-family': SANS,
+                               'font-size': S.tick, fill: SUB });
+    }
+    return { svg: out, y: y };
+  }
+
   /* ================================================================
      COMPOSE
      Same running order as the page: eyebrow, title, subtitle, map,
@@ -971,6 +1115,12 @@
     var mapY = y;
     y += MAP_H;
 
+    if (frame.scale) {
+      var sl = scaleLegend(frame.scale, y + T.scale.gapBefore);
+      body += sl.svg;
+      y = sl.y;
+    }
+
     if (frame.legend && frame.legend.length) {
       y += T.legend.gapBefore + T.legend.size;
       var lx = PAD;
@@ -989,27 +1139,39 @@
     y += T.foot.gapBefore;
     body += P.line({ x1: PAD, x2: W - PAD, y1: y, y2: y, stroke: RULE, 'stroke-width': 1 });
     y += T.foot.gapBefore + T.foot.size;
+    var tagY = y;
 
-    // Source on the left, then the basemap attribution if there is one, and the
-    // tag hard right. The attribution is a licence condition when the CARTO
-    // basemap is showing, so it travels with the picture or the picture is not
-    // publishable.
-    body += P.text(frame.source, {
-      x: PAD, y: y, 'font-family': SANS, 'font-size': T.foot.size,
-      'font-style': 'italic', fill: SUB
-    });
+    /* Source on the left, then the basemap attribution if there is one, and the
+       tag hard right. The attribution is a licence condition when the CARTO
+       basemap is showing, so it travels with the picture or the picture is not
+       publishable.
+
+       The source WRAPS, into the width the tag leaves it. The crime maps' lines
+       are phrases and fit; the census map's is a sentence — two censuses, a
+       licence, a boundary credit and a Crown copyright — and at full width it
+       ran straight under NeilGarratt.com. */
+    var tagW = P.measure(frame.tag, T.foot.size, 600, SANS) + 30;
+    var srcLines = P.wrap(frame.source, T.foot.size, T.foot.weight, SANS,
+                          W - PAD * 2 - tagW);
+    for (var si = 0; si < srcLines.length; si++) {
+      if (si) y += T.foot.size + 5;
+      body += P.text(srcLines[si], {
+        x: PAD, y: y, 'font-family': SANS, 'font-size': T.foot.size,
+        'font-style': 'italic', fill: SUB
+      });
+    }
     if (frame.attribution) {
+      y += T.foot.size + 5;
       body += P.text(frame.attribution, {
-        x: PAD, y: y + T.foot.size + 5, 'font-family': SANS,
+        x: PAD, y: y, 'font-family': SANS,
         'font-size': T.foot.size - 1, fill: SUB
       });
-      y += T.foot.size + 5;
     }
     // Camel case here, capitals on the page. Deliberate, and the same decision
     // chart-export.js records: on screen the caps read as a mark, but a PNG can
     // end up on a printout where it is a URL somebody has to type.
     body += P.text(frame.tag, {
-      x: W - PAD, y: frame.attribution ? y - T.foot.size - 5 : y,
+      x: W - PAD, y: tagY,
       'text-anchor': 'end', 'font-family': SANS, 'font-size': T.foot.size,
       'font-weight': 600, 'letter-spacing': 0.7, fill: SUB
     });
@@ -1047,6 +1209,10 @@
      DOWNLOAD
      ================================================================ */
 
+  /* How long "wait for the page to settle" is allowed to take. Two and a half
+     seconds covers an ease; a page that fetches its data on demand needs more,
+     and says so with `settleTimeout`. It is a cap, not a delay: the wait ends
+     the moment the page says it is ready. */
   var SETTLE_TIMEOUT = 2500;
 
   /* Belt to the offscreen render's braces. The offscreen deck cannot be part
@@ -1057,9 +1223,10 @@
   function waitSettled() {
     if (!adapter.settled) return Promise.resolve();
     var t0 = Date.now();
+    var cap = adapter.settleTimeout || SETTLE_TIMEOUT;
     return new Promise(function (resolve) {
       (function poll() {
-        if (adapter.settled() || Date.now() - t0 > SETTLE_TIMEOUT) { resolve(); return; }
+        if (adapter.settled() || Date.now() - t0 > cap) { resolve(); return; }
         setTimeout(poll, 60);
       })();
     });
@@ -1082,13 +1249,23 @@
 
   function download() {
     if (!adapter) return Promise.reject(new Error('no viz registered'));
-    var frame = adapter.frame ? adapter.frame() : readChrome();
+    var frame = null;
     return faces()
       .then(function (css) { fontCss = css; return waitSettled(); })
+      /* The words are read AFTER the wait, never before it. The hex pages swap
+         their title at the TROUGH of the ease, so a download clicked during one
+         read the outgoing title and laid it over the incoming data — a picture
+         captioned with one crime type and drawn with another, which is the
+         exact class of lie this feature was built to avoid. It measured 1.08%
+         of pixels against the settled export, and only when the click landed
+         inside a 700 ms window, so it is the kind of thing that ships. */
+      .then(function () {
+        frame = adapter.frame ? adapter.frame() : readChrome();
+      })
       // A small probe first, purely to find where the ink lands. 400px is
       // enough to bound a shape and costs a fraction of the real render.
       .then(function () {
-        return adapter.capture(PROBE_W, Math.round(PROBE_W * MAP_H / MAP_W), 1, 0)
+        return adapter.capture(PROBE_W, Math.round(PROBE_W * MAP_H / MAP_W), 1, 0, true)
           .then(function (probe) { return fitBump(inkBounds(probe)); })
           .catch(function () { return 0; });   // no probe, no bump, still a picture
       })
@@ -1593,13 +1770,24 @@
     srcEl.textContent = m.source;
   }
 
+  /* True from the moment the layers change until the caption catches up with
+     them. The two are deliberately out of step — the bars swap at once and the
+     words cross-fade behind them — which means there is a fifth of a second in
+     which the page shows one crime type and says another. Harmless on screen,
+     where nobody can read a caption at 0 opacity; not harmless in a downloaded
+     PNG, which would caption the new map with the old title. The export waits
+     on this. */
+  var captionPending = false;
+
   function refresh() {
     var m = metricByKey(current.metric);
     deckgl.setProps({ layers: layers() });
     titleEl.style.opacity = subEl.style.opacity = 0;
+    captionPending = true;
     setTimeout(function () {
       setText(m);
       titleEl.style.opacity = subEl.style.opacity = 1;
+      captionPending = false;
     }, reducedMotion ? 0 : 220);
     var btns = switcher.querySelectorAll("button");
     for (var i = 0; i < btns.length; i++)
@@ -1764,10 +1952,11 @@
         layers: function () { return layers(true); },
         effects: function () { return [lighting]; }
       }),
-      // This page eases per-attribute, which the offscreen render is immune to
-      // by construction, so there is nothing to wait for. The hex pages ease a
-      // uniform that layers() reads, and they answer !window.__easing here.
-      settled: function () { return true; },
+      // The bars are safe by construction — this page eases per-attribute, and
+      // a freshly built layer has no transition to be part-way through. The
+      // WORDS are not: they cross-fade 220ms behind the data. (The hex pages
+      // ease a uniform that layers() reads, and answer !window.__easing here.)
+      settled: function () { return !captionPending; },
       // JSON-encoded by the builder, quotes and all: the inline face block
       // is multi-line CSS full of apostrophes and cannot go inside a
       // hand-written string literal.
@@ -1778,7 +1967,9 @@
         return f;
       },
       meta: function () {
-        var v = deckgl.viewState || deckgl.props.initialViewState;
+        // currentCam(), not deckgl.viewState: the echo never hears about a
+        // drag, so the recorded camera was the opening one in every file.
+        var v = currentCam();
         var m = metricByKey(current.metric);
         return {
           'Category': m.label + (current.year === 'all' ? '' : ' · ' + current.year),

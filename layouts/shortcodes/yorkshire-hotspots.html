@@ -13,6 +13,15 @@
     - "Full screen" big mode: CSS fixed-overlay + best-effort native Fullscreen;
       toggling does NOT reload the iframe (preserves crime type, mode, camera).
     - Controls live in a toolbar BELOW the frame — the viz uses all four corners.
+    - EXCEPT full screen and download, which are inside the frame, top right:
+      the viz moved its hint and its "fly to" presets down to make room. Full
+      screen still runs HERE — the CSS overlay is what works on tablets where
+      iframe fullscreen is flaky — so the in-frame button asks for it by
+      postMessage and this listens. The state is posted back, because Esc exits
+      without the iframe ever hearing.
+    - There is no ✕ Close any more. It sat in the same corner as the frame's own
+      two buttons and covered both of them in big mode — including the one that
+      exits. Esc remains wired here as the belt to that braces.
     - The iframe is loading="lazy": the embed is ~7.4 MB (data inlined).
   Interactive: static/interactive/yorkshire-hotspots/index.html  (deck.gl 9.3.7, WebGL2)
   Needs:       static/js/deck.min.js, static/fonts/{DMSans,LibreBaskerville}.ttf
@@ -33,12 +42,9 @@
   .yorkshire-hotspots .cs-bar{display:flex;justify-content:space-between;align-items:center;gap:10px 16px;flex-wrap:wrap;max-width:800px;margin:.6rem auto 0;padding:0 2rem;font-size:.85rem;color:#5a6472}
   .yorkshire-hotspots .cs-btn{font:600 .8rem var(--sans,sans-serif);color:#243142;background:#fff;border:1px solid #c9d2cc;border-radius:999px;padding:8px 16px;cursor:pointer;white-space:nowrap;line-height:1}
   .yorkshire-hotspots .cs-btn:hover{background:#f3f6f4;border-color:#243142}
-  .yorkshire-hotspots .cs-close{position:absolute;top:12px;right:12px;z-index:5;display:none;align-items:center;color:#F3F6F4;background:rgba(36,49,66,.9);border-color:#3B4A5E}
-  .yorkshire-hotspots .cs-close:hover{background:#34455C;border-color:#5A9FD4}
   .yorkshire-hotspots.cs-big{position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;margin:0;z-index:9999;background:#1A2332}
   .yorkshire-hotspots.cs-big .cs-box{height:100%}
   .yorkshire-hotspots.cs-big .cs-bar{display:none}
-  .yorkshire-hotspots.cs-big .cs-close{display:inline-flex}
   @media (max-width:700px){.yorkshire-hotspots{width:100vw;margin-left:calc(50% - 50vw)}.yorkshire-hotspots .cs-box{height:min(125vw,72vh)}}
 </style>
 <figure class="yorkshire-hotspots" id="yorkshire-hotspots">
@@ -46,29 +52,24 @@
     <img src="/images/charts/yorkshire-hotspots/yorkshire-hotspots-hero.png?v=2"
          alt="3D hex map of shoplifting across Yorkshire and the Humber — the offences pile onto city centres and retail parks, with a tower over Leeds."
          loading="lazy">
-    <button type="button" class="cs-btn cs-close">&#10005;&nbsp;Close</button>
   </div>
   <div class="cs-bar">
-    <span>Yorkshire and the Humber crime hotspots &mdash; 2021&ndash;2025, hexes refining from 500&nbsp;m to 70&nbsp;m as you zoom &mdash; drag to rotate and tilt; switch crime type, toggle the Districts/Street basemap, or jump straight to Leeds, Bradford, Sheffield, York or Hull.</span>
-    <button type="button" class="cs-btn cs-expand" hidden>&#10530;&nbsp;Full screen</button>
+    <span>Yorkshire and the Humber crime hotspots &mdash; 2021&ndash;2025, hexes refining from 500&nbsp;m to 70&nbsp;m as you zoom &mdash; drag to rotate and tilt; switch crime type, toggle the Districts/Street basemap, or jump straight to Leeds, Bradford, Sheffield, York or Hull. Full screen and download are in the top right of the map.</span>
   </div>
 </figure>
 <script>
 (function(){
   var fig=document.getElementById('yorkshire-hotspots'); if(!fig) return;
-  var box=fig.querySelector('.cs-box'),
-      expand=fig.querySelector('.cs-expand'),
-      close=fig.querySelector('.cs-close');
+  var box=fig.querySelector('.cs-box');
   var ok=false; try{ ok=!!(window.WebGL2RenderingContext && document.createElement('canvas').getContext('webgl2')); }catch(e){}
   if(ok){
     var f=document.createElement('iframe');
     f.loading='lazy';                       // ~8.8 MB embed — defer until scrolled to
-    f.src='/interactive/yorkshire-hotspots/?v=3';
+    f.src='/interactive/yorkshire-hotspots/?v=4';
     f.title='Interactive 3D hex map of Yorkshire crime hotspots';
     f.setAttribute('scrolling','no'); f.setAttribute('allow','fullscreen'); f.setAttribute('allowfullscreen','');
     box.insertBefore(f, box.firstChild);
     box.querySelector('img').style.display='none';
-    expand.hidden=false; // full-screen control only makes sense with the live viz
   }
   function enter(){
     fig.classList.add('cs-big'); document.body.style.overflow='hidden';
@@ -78,9 +79,27 @@
     fig.classList.remove('cs-big'); document.body.style.overflow='';
     if(document.fullscreenElement){ document.exitFullscreen().catch(function(){}); }
   }
-  expand.addEventListener('click',enter);
-  close.addEventListener('click',exit);
-  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&fig.classList.contains('cs-big')) exit(); });
-  document.addEventListener('fullscreenchange',function(){ if(!document.fullscreenElement&&fig.classList.contains('cs-big')) exit(); });
+  // The frame asks; this answers, and says what it did. Same-origin only, only
+  // for the two messages we know, and only from THIS figure's own iframe. The
+  // last test is not belt and braces: the crime-concentration page carries two
+  // maps, and without it both shortcodes answered either map's button, so both
+  // figures went big and the skyline, requesting native fullscreen first, won —
+  // the hex map's button showed the wards.
+  function tell(){
+    var f=box.querySelector('iframe');
+    if(f&&f.contentWindow){
+      try{ f.contentWindow.postMessage(
+        {type:'ng-viz:fullscreen-state',big:fig.classList.contains('cs-big')},
+        location.origin); }catch(e){}
+    }
+  }
+  window.addEventListener('message',function(e){
+    var own=box.querySelector('iframe');
+    if(e.origin!==location.origin||!e.data||!own||e.source!==own.contentWindow) return;
+    if(e.data.type==='ng-viz:fullscreen'){ enter(); tell(); }
+    else if(e.data.type==='ng-viz:exit-fullscreen'){ exit(); tell(); }
+  });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&fig.classList.contains('cs-big')){ exit(); tell(); } });
+  document.addEventListener('fullscreenchange',function(){ if(!document.fullscreenElement&&fig.classList.contains('cs-big')){ exit(); tell(); } });
 })();
 </script>

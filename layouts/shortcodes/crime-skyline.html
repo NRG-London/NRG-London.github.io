@@ -66,7 +66,7 @@
   var ok=false; try{ ok=!!(window.WebGL2RenderingContext && document.createElement('canvas').getContext('webgl2')); }catch(e){}
   if(ok){
     var f=document.createElement('iframe');
-    f.src='/interactive/crime-skyline/?v=7';
+    f.src='/interactive/crime-skyline/?v=8';
     f.title='Interactive 3D map of London crime concentration';
     f.setAttribute('scrolling','no'); f.setAttribute('allow','fullscreen'); f.setAttribute('allowfullscreen','');
     box.insertBefore(f, box.firstChild);
@@ -80,9 +80,12 @@
     fig.classList.remove('cs-big'); document.body.style.overflow='';
     if(document.fullscreenElement){ document.exitFullscreen().catch(function(){}); }
   }
-  // The frame asks; this answers, and says what it did. Same-origin only, and
-  // only for the two messages we know — a page that listens to anything a frame
-  // says is a page that does what any frame says.
+  // The frame asks; this answers, and says what it did. Same-origin only, only
+  // for the two messages we know, and only from THIS figure's own iframe. The
+  // last test is not belt and braces: the crime-concentration page carries two
+  // maps, and without it both shortcodes answered either map's button, so both
+  // figures went big and the skyline, requesting native fullscreen first, won —
+  // the hex map's button showed the wards.
   function tell(){
     var f=box.querySelector('iframe');
     if(f&&f.contentWindow){
@@ -92,7 +95,8 @@
     }
   }
   window.addEventListener('message',function(e){
-    if(e.origin!==location.origin||!e.data) return;
+    var own=box.querySelector('iframe');
+    if(e.origin!==location.origin||!e.data||!own||e.source!==own.contentWindow) return;
     if(e.data.type==='ng-viz:fullscreen'){ enter(); tell(); }
     else if(e.data.type==='ng-viz:exit-fullscreen'){ exit(); tell(); }
   });
