@@ -1,10 +1,23 @@
-# Bus performance data contract — v0.9
+# Bus performance data contract — v1.1
 
 **What the website expects, so the pipeline in `E:\Road Data` can write it.**
-Written 27 Aug 2026 by the front-end build, against the draft contract in that
-repo's `HANDOVER-bus-website.md`. The front end is complete and running on
-sample data generated to this spec by `scripts/make_bus_sample.py` — the fastest
-way to see what a field is for is to read that script and the page it feeds.
+First written 27 Aug 2026 against the draft in that repo's
+`HANDOVER-bus-website.md`; revised to v1.0 on 14 Sep 2026, when the pages moved
+from a first set of metrics to a designed one, and to v1.1 the same day once the
+back end had answered the asks. The pages run on live sweep output.
+
+**v1.0 in one paragraph.** Frequent routes and timetabled routes are now
+different pages with different headline measures, night routes are parked, and
+facts about our data (coverage, departures seen) are kept apart from facts about
+the buses. All of that ships on today's fields. What comes next is a list of
+asks, lettered A–M under "The v1.0 asks" below, each of which the front end will
+build dormant-until-present, exactly as it did curtailments — so the two ends
+never have to deploy in step.
+
+**v1.1: agreed, with one foundational change.** Waits move from a gate at each
+terminus to TfL's timing points, per direction; route pages move from termini to
+directions; weeks move to Sunday–Saturday. See "The v1.0 asks" for the agreed
+shapes and the order they arrive in.
 
 **Nothing outside this repo writes code into the site.** The bus engine
 (`static/js/ngbus-*.js`, `static/css/ngbus.css`, the layouts and shortcodes) is
@@ -17,8 +30,12 @@ hash guard to stop its publish clobbering the crime charts.
 ```
 <hugo>/data/bus/weekly.json          the league table: one row per route, latest week
 <hugo>/data/bus/routes/<route>.json  per-terminus weekly history, one file per route
-<hugo>/data/bus/reference.json       route identity — STOPGAP, see below
+<hugo>/data/bus/reference.json       route identity — unused, see below
 ```
+
+**The weekly run commits to a branch, `bus-data/<week_ending>`, not to `main`.**
+The files above reach the site only when that branch is merged. An old week on the
+pages usually means an unmerged branch.
 
 Hugo `data/` files are read at build time and never copied into `public/`, so
 there is no public URL, no cache-buster to bump, and no runtime fetch. A data
@@ -35,44 +52,20 @@ The route filename is the route as printed — `157.json`, `N155.json`, `X26.jso
 Case is preserved in the data; the **page URL is lowercased by Hugo**
 (`/bus/n155/`), which the templates and `ngbus-table.js` both already handle.
 
-## reference.json — the stopgap, and why it exists
+## reference.json — retired in practice
 
-The first prototype invented route identity as well as the numbers: route lists,
-terminus pairs, decks and models were all sampled at random. That produced a page
-that looked right and was wrong in detail — SL7 shown as a single-decker between
-two places it does not serve — and it was spotted within a minute of looking.
+The first prototype invented route identity as well as the numbers, and SL7 was
+shown as a single-decker between two places it does not serve. The lesson stands:
+**a reader will forgive invented numbers when they are labelled, and will not
+forgive invented identity.**
 
-The lesson: **a reader will forgive invented numbers when they are labelled, and
-will not forgive invented identity.** A route number and its termini read as
-fact whatever the caveat above them says.
+The sweep now emits `deck`, `vehicle_model`, `vehicle_share`, `service_class`
+and `termini` itself, and **no template reads `data/bus/reference.json` any
+more.** The file and `scripts/export_bus_reference.py` can go whenever convenient.
+`service_class` must still come from `route.service_class` and never from the
+TfL Line API's `service_type`, which labels night buses "Regular".
 
-So `scripts/export_bus_reference.py` now pulls identity straight out of
-`buses.duckdb` (read-only) into `data/bus/reference.json`, and
-`make_bus_sample.py` fabricates only the metrics. The queries it uses are the
-ones the weekly sweep should absorb:
-
-```sql
--- termini and service class: one row per route
-select route_id, service_class, origin, destination from route
-where origin is not null and destination is not null;      -- 642 of 811
-
--- deck and model: dominant model in the latest observation window
-with latest as (select route_id, max(window_end) w from route_fleet group by 1)
-select rf.route_id, m.deck, m.manufacturer, m.model_name, rf.share
-from route_fleet rf
-join latest l on l.route_id = rf.route_id and l.window_end = rf.w
-join model m using (model_id);                             -- 612 of 642 have a fleet
-```
-
-**169 routes have no origin/destination in the feed** — mostly school services.
-They are excluded: a terminus-gate method has nothing to measure at a route with
-no terminus. If they should appear anyway, say so and they can be listed as
-permanently unmeasured.
-
-**Once the weekly sweep emits `deck`, `vehicle_model`, `service_class` and
-`termini` itself, this file and its exporter retire.**
-
-## Gaps are permanent, and the page now has three treatments for them
+## Gaps are permanent, and the page has three treatments for them
 
 The source has been down for a month, for a single day (TfL sent BODS nothing),
 and for part of a day. That is not a run of bad luck to be waited out — it is
@@ -83,7 +76,7 @@ rather than two:
 |---|---|---|
 | **Nothing** | `null` metrics, `coverage` under `coverage_threshold` | "no data" in tables; the line breaks; never a zero |
 | **Thin** | metrics present, `coverage` under 0.9 | a pale column behind the plot, "thin" beside the figure in the weekly table, and the exact coverage in the chart tooltip |
-| **Declared outage** | the date range appears in `holes` | a stronger band, labelled "no data", plus a named note under the page |
+| **Declared outage** | the date range appears in `holes` | named in the chart tooltip for every week it touches, and listed in "About this data" |
 
 **39% of published week-cells in the live data sit between 0.6 and 0.98
 coverage**, so "thin" is the common case, not an edge one. A week resting on
@@ -110,11 +103,19 @@ absorb, both worth knowing before touching this code:
 service on Christmas Day" reads as a fact about the network, where "gap in the
 volunteer BODS archive" reads as a fact about us. Keep that distinction.
 
+**`coverage` is one network-wide number per week.** It is identical on every
+route and every terminus (checked across all 631 files and 59 weeks) — the share
+of the week we hold any bus data for. So in v1.0 it no longer sits in the terminus
+cards, where it read as a fact about the route, and the "thin" tooltip no longer
+talks about "expected observations". It lives in a collapsed **About this data**
+panel with the departures seen and the list of gaps, and the chart tooltip reads
+"Data collected for 99% of the week".
+
 **The thin threshold stays at 0.9.** With coverage measured properly it now
 marks 6.8% of cells rather than 39%, and 52% sit at exactly 1.0. It is doing what
 it was meant to do — the earlier figure was measuring the old heuristic.
 
-## Curtailments — the front end is built and waiting
+## Curtailments — built, and live since 28 Aug
 
 Built 28 Aug against the additions relayed from the sweep, and dormant until the
 data carries them. Every part of it is conditional on the fields being present,
@@ -193,40 +194,34 @@ other 22 turned round somewhere else along the route."
 snapshot. The route page reads the time series for that, and the terminus cards
 stay about waiting.
 
-## Headway routes and timetabled routes are two different measurements
+## Route classes — frequent, timetabled, night
 
-**Excess wait time only means anything on a high-frequency route.** Where buses
-run every 20 minutes or less, a rider turns up and waits, and EWT is the right
-number. Where they run to a published timetable — the S4 and its like — a rider
-consults the timetable and turns up for a departure, and the question is not
-"how long did I wait" but "did it go when it said it would". The right metric
-there is on-time percentage against the timetable.
+**Landed and live.** `frequency_type` splits at a 12.5-minute scheduled headway,
+and timetabled routes carry `on_time_pct` with `ewt_min: null`. Negative excess
+wait, which was on 30 routes when this was first raised, is down to three frequent
+routes (247, 427 and 143; the lowest is −0.15). The pages use the split
+everywhere:
 
-This is not a refinement to file for later. It is currently visible on the live
-page: 30 routes report a **negative** excess wait, down to −3.75 minutes on the
-166, all at 98% coverage. A negative EWT is EWT being computed on a population it
-does not describe, and because the league table sorts on it, "shortest waits"
-currently ranks the routes where the metric applies least.
+| Class | How the page decides | Headline | Terminus cards | League table |
+|---|---|---|---|---|
+| **Frequent** | `frequency_type: "headway"` | excess wait | excess wait, wait > 10 min, longest gap | *Frequent routes* tab |
+| **Timetabled** | `frequency_type: "timetabled"` | % on time, against the timetabled-route median | on time | *Timetabled routes* tab |
+| **Night** | `service_class: "night"` | "Night route" — measured separately, later; links the day route where one exists | none | left out; a search names them |
 
-What the front end needs, once the backend separates them:
+`service_class` and `frequency_type` are read from the **league row**. The route
+files do not carry them, and reading `service_class` from there is why the
+"Night route." caption never once appeared.
 
-```jsonc
-{
-  "route": "S4",
-  "frequency_type": "timetabled",   // "headway" | "timetabled"
-  "ewt_min": null,                  // null on a timetabled route, NOT computed
-  "p_wait_gt10": null,
-  "on_time_pct": 0.86,              // the timetabled equivalent
-  "on_time_window": "-1 to +5 min"  // what "on time" counted as
-}
-```
+School services go by their `frequency_type` like any other route. 29 of the 31
+have never produced a figure, and their pages say "No figures yet" rather than
+"No data this week".
 
-Given `frequency_type`, the page can rank the two populations separately rather
-than pretending one number covers both, and a timetabled route's page can lead
-with punctuality instead of a wait it cannot honestly quote. Until the field
-exists the front end has no way to tell the two apart, so it shows what it is
-given — which is the right behaviour, and the reason the problem is visible at
-all.
+**What the front end computes for itself, for now** (ask L would retire it): the
+timetabled tab needs a trend and a change, and `spark` and `delta` are null on
+every timetabled row. The league shortcode rebuilds both from the route files —
+the departures-weighted mean of each terminus's `on_time_pct`, which reproduces
+the sweep's route-level figure on all 181 routes — compared against the same week
+the frequent routes use (`delta_from`).
 
 ## Seven changes from the draft in HANDOVER-bus-website.md
 
@@ -296,8 +291,8 @@ deliberately does **not** fake it.
   "holes": [{"start": "2026-07-28", "end": "2026-08-26", "reason": "…"}],
   "attribution": "Contains public sector information licensed under …",
   "window": "weekdays, 07:00-22:00",
-  "sample": true,                       // OMIT on real data — it drives the "sample
-                                        // figures, not measurements" warning
+  // "sample": true                     // only on generated data — it puts a
+                                        // "sample figures" warning on every page
   "summary": {
     "routes": 642, "reporting": 620,
     "median_ewt_min": 1.16,
@@ -312,12 +307,17 @@ deliberately does **not** fake it.
       "vehicle_model": "BYD ADL Enviro 400EV City",
       "vehicle_share": 1.0,              // share of the route's observed fleet
       "service_class": "regular",        // regular | night | school
+      "frequency_type": "headway",       // headway | timetabled — picks the page's class
+      "scheduled_headway_min": 10.8,
 
       // Route-level figures: the departures-weighted mean across the termini
       // that reported. null when none did — never 0, never omitted.
-      "ewt_min": 1.25,
+      "ewt_min": 1.25,                   // null on a timetabled route
       "p_wait_gt10": 0.195,
+      "on_time_pct": null,               // the timetabled route's headline instead
+      "on_time_window": null,            // "-2.5 to +5 min"; the page words it from this
       "coverage": 0.96,
+      "curtailment_rate": 0.0107, "curtailments": 13,
 
       "delta": -0.02, "delta_from": "2026-07-26", "delta_weeks": 6,
       "spark": [1.25, 1.02, …, null, null, 1.25],   // len == spark_weeks
@@ -359,7 +359,7 @@ diffing.
                                          // SAME ORDER, SAME LENGTH — the page indexes
                                          // them positionally against that list
         {"week_ending": "2026-05-17", "ewt_min": 1.42, "p_wait_gt10": 0.21,
-         "curtailment_rate": 0.004, "worst_gap_min": 38,
+         "on_time_pct": null, "curtailment_rate": 0.004, "worst_gap_min": 38,
          "departures": 306, "scheduled": 330, "coverage": 0.96},
         {"week_ending": "2026-08-02", "ewt_min": null, "p_wait_gt10": null,
          "curtailment_rate": null, "worst_gap_min": null,
@@ -369,6 +369,280 @@ diffing.
   ]
 }
 ```
+
+## Quirks in today's data the front end absorbs
+
+Recorded so nobody "fixes" the page and brings them back. Each is also an ask
+below, so the workaround can go.
+
+1. **`spark` runs past `week_ending`.** `spark_weeks` ends 30 August against a
+   week ending 26 July, so the last two points are the partial weeks after it.
+   The table drops spark weeks after `week_ending`, so each trend line ends on
+   the week the table describes.
+2. **`spark` carries values for weeks under the publish threshold.** The 157's
+   spark has 2.58 for the week ending 5 July at 43% coverage, and 2.12 for
+   2 August at 14%. The rule on these pages is that such a week is "no data"
+   everywhere, so the table blanks them against coverage.
+3. **Termini beyond the real two.** The sweep takes the first stop of every
+   `Run` in TfL's `bus-sequences.csv`, so 96 routes list 3–5 termini: short
+   workings (87: Vauxhall, Millbank Tower), school journeys, duplicate stop codes
+   (184). They never carry a figure, and their `departures` count both real ends
+   together. Pages and the league table show only termini that have produced a
+   figure in some week, and name the rest in "About this data". **43 routes have
+   one end that is never measured** (24, 55 and 77 among them), and **route 38
+   has three measured termini**, two with `p_wait_gt10` but no `ewt_min`.
+4. **`scheduled` can be below `departures`.** Banstead on the 166: 271 seen,
+   147 scheduled. It is the aimed departures buses broadcast, not the timetable,
+   so the page no longer prints it as a denominator. "Departures observed" shows
+   the count seen, and nothing else.
+5. **`worst_gap_min` is capped below 45**, because longer gaps are dropped as
+   probable day edges. It still shows, with a tooltip saying so.
+6. **`weeks` is not contiguous.** A week the sweep has nothing for is left out of
+   the list altogether — 22 Feb 2026, and 9, 16 and 23 Aug 2026 — so 2 Aug and
+   30 Aug sit next to each other. The chart now places points by date and shades
+   any absent week as "no data"; before that, the August outage simply vanished.
+
+## The v1.0 asks — agreed 14 Sep, and what changed in agreeing them
+
+The back end answered all thirteen (`E:\Road Data\docs\relay-frontend-2026-09-14.md`)
+and Neil approved its plan. Every field stays additive and dormant-until-present.
+The shapes below are the agreed ones: where the reply changed a name or a rule,
+this section now says what was agreed, not what was first asked.
+
+**The big change: waits are measured by direction, at TfL's timing points.** The
+38 showed that measuring at a 250 m gate round the first stop of each `Run` is
+wrong, not just untidy, and it is not only the 38. Clapton Pond is passed twice
+by every bus because the route loops beyond it. Graham Road counts every
+through bus both ways. About 40% of "from Victoria" trips never reach Victoria.
+112 terminus figures this week rest on fewer than 75% of the departures buses
+advertised, and ranks disagree with TfL's by a wide margin: the 58 is our worst
+and TfL's 148th, and the 245 is TfL's worst and our 283rd. So ask E ("real
+termini only") is superseded, and ask H becomes the foundation:
+
+> Waits are measured at TfL's timing points along the route, per direction, from
+> the per-stop journey store, against the GTFS timetable, and checked against
+> TfL's quarterly figures before publishing.
+
+Short workings then count wherever they run, a bus turned short is missing where
+it should have been, and nothing is counted twice.
+
+### Order of arrival
+
+| # | What | Front end |
+|---|---|---|
+| 1 | Week ending 13 Sep (merged 14 Sep); ask L's first three items, re-staged shortly | Pages already read both. The league shortcode's on-time spark and delta step aside when the sweep's arrive |
+| 2 | Timing-point measure built and checked against TfL — no new fields | Nothing to do |
+| 3 | **One publish:** A, C, D, F, M, `directions[]`, Saturday weeks, contiguous weeks, `tfl_quarterly`, `version: 1` | The big front-end rebuild: direction cards, wait bands, worst gap, punctuality split, daily spans, TfL comparison |
+| 4 | Later: G, I, H's worst stretch | One block each |
+
+### Directions replace termini on the route page
+
+- **`directions[]` arrives beside `termini[]`.** Cards read "Towards Victoria" and
+  "Towards Clapton Pond", labelled from the end stops of Runs 1 and 2. A direction
+  with no figure carries `"measured": false`.
+- **`termini[]` keeps arriving, frozen on its current basis, until the front end
+  confirms it has switched.** Tell the back end when the direction pages ship.
+- On switching, the page's "only termini that have produced a figure" filter, the
+  "Not measured" note and the league's `where` line built from measured termini
+  all retire. The league line under a route number should stay the two ends
+  ("Clapton Pond ↔ Victoria"), which the direction labels supply.
+
+### Weeks run Sunday to Saturday
+
+- The Sunday 06:00 run publishes the seven days ending on the Saturday just gone,
+  so the data is 1–8 days old.
+- **`week_ending` becomes a Saturday**, and every week in `weeks` is re-keyed to
+  Saturdays, in the same publish as the new window (A), when every historical
+  number changes anyway.
+- `weeks` becomes contiguous at the same time: every Saturday listed, empty weeks
+  with null cells and `coverage: 0.0`.
+- Front end: every date is read from the data, so Saturday keys need no code
+  change. The chart's handling of absent weeks becomes a no-op, and the tooltip
+  holes window (`week_ending` minus six days) is right for either.
+
+### The weekly run lands on a branch
+
+The run commits each week to `bus-data/<week_ending>` in a separate worktree and
+stops. **Nothing reaches the site until that branch is merged into `main`.** If
+the pages show an old week, look for an unmerged branch before suspecting the
+templates.
+
+---
+
+### A. Measurement window: 05:00–23:59, every day
+
+**Agreed, with the timing-point measure and not before.** On the old method the
+45-minute gap cap would quietly drop real early, late and Sunday gaps and flatter
+those routes. `window` will read `"every day, 05:00-23:59"`, and `coverage` is
+computed on the same basis.
+
+### B. Join the GTFS timetable in the sweep
+
+**Agreed.** Internal, no field. Needs a scheduled-times-per-stop build first.
+
+### C. Waits over 10, 20 and 30 minutes, against the timetable
+
+**Agreed as specified, at timing points, per direction.** The same length-biased
+calculation as `p_wait_gt10`, over the observed gaps and over the timetabled gaps
+in the same window: `P(wait > X) = Σ max(0, gap − X) / Σ gap`. Also the 95th
+percentile of the wait, worded "1 in 20 people wait longer than".
+
+On TfL's Q1 2026/27 figures, waits over 10 minutes track the timetabled frequency
+(r = 0.93 with scheduled wait) and barely reflect reliability (0.18 with EWT);
+over 30 minutes is mostly reliability (0.71). Hence all three bands, each with
+its timetable figure.
+
+**Rule for the front end: never rank on over-30.** At direction level in a single
+week it rests on a handful of events. Show it; don't sort a league by it.
+
+```jsonc
+// weekly cell, per direction; route-level on the league row
+"wait_bands": {
+  "10": {"actual": 0.273, "timetable": 0.061},
+  "20": {"actual": 0.031, "timetable": 0.002},
+  "30": {"actual": 0.006, "timetable": 0.0}
+},
+"wait_p95_min": 21.5,
+// route file only, pooled over the last 4 publishable weeks
+"wait_by_band": [
+  {"band": "am_peak", "label": "Weekdays 07:00–10:00",
+   "p_wait_gt20": 0.042, "p_wait_gt20_timetable": 0.0, "ewt_min": 1.9}
+]
+```
+
+Bands: early (05–07), AM peak (07–10), inter-peak (10–16), PM peak (16–19),
+evening (19–24), Saturday, Sunday.
+
+### D. The worst gap, with when and where
+
+**Agreed, with one added rule:** the gap must also appear at the next timing
+point, so one missed ping can't invent it. Gaps overlapping declared holes are
+excluded, and day edges come from the timetable. **`terminus` becomes `place`
+(a timing point) plus `direction`.**
+
+```jsonc
+"worst_gap": {"min": 58, "start": "2026-07-21T17:12:00+01:00",
+              "place": "Brixton Station", "direction": "Towards Morden"}
+```
+
+### E. Real termini only
+
+**Superseded** by directions (above).
+
+### F. Timetabled routes: the four-way split
+
+**Agreed, measured at timing points** as TfL does — at the stand, layover hides
+lateness. **The fourth bucket is `not_run_or_unseen`, worded "didn't run or
+wasn't seen"**: a bus with its tracker off looks exactly like one that didn't
+run, and TfL's own label is "non arrival or not linked". It ships only once the
+back end has measured how often the feed misses buses that did run.
+
+TfL's bands: **on time** 2½ minutes early to 5 late, **early** 2½–8 minutes early,
+**late** 5–15 minutes late, **didn't run or wasn't seen** over 15 minutes late or
+never seen. Early earns its own figure: a timetabled bus that leaves early strands
+the person who arrived on time. (TfL's prose says "two minutes early"; its table
+bands and the sweep both use 2½, and the pages follow the bands.)
+
+```jsonc
+"punctuality": {"on_time": 0.61, "early": 0.09, "late": 0.22,
+                "not_run_or_unseen": 0.08, "timetabled": 412}
+```
+
+### G. Journey time against the timetable (later)
+
+**Agreed, later phase.** Measured over the **longest section every full-length
+trip shares**, not end to end, because short workings muddle end to end. **Adds
+`p90_min` beside the median** — "allow 68 minutes" — because the median
+understates what a traveller has to plan for.
+
+```jsonc
+"runtime": [{"direction": "Towards Morden", "band": "pm_peak", "from": "…", "to": "…",
+             "timetable_min": 48, "actual_min": 61, "p90_min": 68, "ran_share": 0.93}],
+"timetable_changes": [{"effective": "2026-03-14", "direction": "Towards Morden", "change_min": 4}]
+```
+
+### H. Timing-point EWT, and the worst stretch
+
+**Timing-point EWT is now the core measure: it is simply what `ewt_min` becomes**
+(no separate `ewt_timing_points_min`). Expect every figure to move, and the league
+to reorder, in the publish that brings it.
+
+**Worst stretch comes later, and only where it survives a split-half check.** The
+worst of hundreds of noisy cells is always extreme, so a stretch is named only if
+it is also worst or near-worst in the other half of the weeks; otherwise `null`.
+The page must treat `null` as "no stretch stands out", not as missing data.
+
+```jsonc
+"worst_stretch": {"from": "Brixton Station", "to": "Clapham Common", "band": "evening",
+                  "direction": "Towards Morden", "p_wait_gt20": 0.083, "weeks": 4}
+```
+
+### I. The last bus (later)
+
+**Agreed, later, without `night_route`.** Night routes are parked, and naming the
+one that takes over is identity data: added only where it can be derived, not
+guessed.
+
+```jsonc
+"last_bus": {"nights": 28, "ran": 26, "left_early": 1,
+             "early": [{"date": "2026-07-18", "timetabled": "00:42", "left": "00:38"}]}
+```
+
+### J. TfL's own figures, each quarter
+
+**Agreed, owned by the back end, and used first as the check on the new measure.**
+Both quarter reports are archived there (TfL's URL is overwritten every quarter),
+and the front end's audit scripts are copied into
+`platform/prototypes/qsi_audit_frontend/`. `our_ewt_min` is the new measure on TfL's
+quarter dates and hours. The pass mark for the new measure: clearly better rank
+agreement than today's 0.68–0.73, and the outliers (58, SL5, E8, 245) moving
+towards TfL.
+
+```jsonc
+"tfl_quarterly": [{"quarter": "2026/27 Q1", "tfl_ewt_min": 1.10, "our_ewt_min": 1.19,
+                   "tfl_on_time": null, "our_on_time": null}]
+```
+
+### K. Night routes, 00:00–04:59
+
+**Parked.** 24-hour routes keep their daytime figures.
+
+### L. Tidy-ups to today's fields
+
+Being re-staged now:
+- `spark` ends at `week_ending` and is `null` under `coverage_threshold`;
+- `delta` compares only against a week that cleared the threshold;
+- timetabled rows carry `spark` and `delta` of `on_time_pct`. **`flags: "improving"`
+  stays an excess-wait judgement only**, so it will not appear on timetabled rows;
+- `termini[]` in `weekly.json` carries `on_time_pct`.
+
+With the Saturday re-key: contiguous `weeks`.
+
+### M. Daily figures for the last 35 days
+
+**Agreed, with the new measure.** The route chart will add "Last month" and "Last
+week" spans on these.
+
+- `daily.days`: 35 contiguous dates **ending on `week_ending`**, empty days included.
+- One series per **direction**, with the same measures as the weekly cells.
+- The noise floor is stated in the file: `daily.min_gaps` (frequent) and
+  `daily.min_departures` (timetabled). Below it a day is `null`.
+- **Daily timetable figures ride alongside.** Weekend timetables are thinner, so
+  waits over 10 minutes jump every Saturday and Sunday; without the timetable line
+  beside it, every Sunday looks like a bad day. The daily chart must draw both.
+
+```jsonc
+"daily": {
+  "days": ["2026-08-09", …, "2026-09-12"],
+  "min_gaps": 20, "min_departures": 10,
+  "coverage": [1.0, 0.92, …],
+  "series": [{"direction": "Towards Victoria",
+              "p_wait_gt10": […], "p_wait_gt10_timetable": […],
+              "ewt_min": […], "on_time_pct": […]}]
+}
+```
+
+(Illustrative: the exact keys follow whatever the weekly direction cells use.)
 
 ## The rules the front end will not break
 

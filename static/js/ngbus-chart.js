@@ -11,10 +11,18 @@
    THE ONE RULE THIS FILE EXISTS TO KEEP
    -------------------------------------
    A missing week is never joined across. Drawing a straight line from the last
-   week before an outage to the first week after it would invent five weeks of
-   steady service out of a month when nothing was recorded at all — the exact
+   week before an outage to the first week after it would invent weeks of
+   steady service out of a period when nothing was recorded at all — the exact
    claim the whole page is built to avoid making. Runs of missing weeks break
    the line and are shaded and labelled instead.
+
+   THE X AXIS IS TIME, NOT POSITION IN THE LIST
+   --------------------------------------------
+   `weeks` is not a contiguous run of Sundays: the sweep leaves out a week it
+   has nothing at all for (22 Feb 2026; 9, 16 and 23 Aug 2026). Spacing points
+   by their index drew 2 Aug and 30 Aug as neighbours and made a four-week gap
+   vanish. Points are placed by date, and any week absent from the list is
+   shaded as "no data" like any other.
 
    OWNED BY THIS REPO — nothing outside the Hugo site writes this file.
    ========================================================================== */
@@ -39,21 +47,33 @@
   var series = spec.series || [];
   if (!weeks.length || !series.length) return;
 
+  var DAY = 864e5;
+  var WEEK = 7 * DAY;
+  var times = weeks.map(function (w) { return Date.parse(w); });
+
   /* The SVG scales to the column, so its viewBox sets how large the axis text
-     is RELATIVE to the plot. One fixed 760x300 box means that on a phone the
-     labels shrink with everything else until they are unreadable. A narrower,
-     taller box on a narrow screen keeps the type at a sensible size and gives
-     the lines room to separate. */
-  var WIDE = { W: 760, H: 300, t: 14, r: 16, b: 38, l: 48, ticks: 5, dot: 3 };
-  var NARROW = { W: 420, H: 300, t: 12, r: 10, b: 34, l: 40, ticks: 4, dot: 2.6 };
-  /* A week can be published on much less than a full week's watching. Below this
-     share of expected observations it still counts — the publish gate is 0.6 and
-     lives in the data — but it rests on visibly thinner evidence than its
-     neighbours, and the chart says so. 39% of published week-cells in the live
-     data sit between 0.6 and 0.98, so this is the common case, not an edge one.
-     Gaps large and small are a permanent feature of the source: the national
-     archive has been down for a month, for a day, and for part of a day. */
+     is RELATIVE to the plot. One fixed box means that on a phone the labels
+     shrink with everything else until they are unreadable. A narrower box on a
+     narrow screen keeps the type at a sensible size. `b` leaves room for two
+     rows of labels: months, and the year under the first month of each year. */
+  var WIDE = { W: 760, H: 316, t: 14, r: 16, b: 54, l: 48, ticks: 5, dot: 3 };
+  var NARROW = { W: 420, H: 316, t: 12, r: 10, b: 50, l: 40, ticks: 4, dot: 2.6 };
+  /* A week can be published on much less than a full week's collection. Below
+     this share it still counts — the publish gate is 0.6 and lives in the data —
+     but it rests on visibly thinner evidence than its neighbours, and the chart
+     says so. */
   var FULL = 0.9;
+  /* How long the pointer has to rest before the readout appears. Without it,
+     sweeping across the chart fired a tooltip for every week passed over. */
+  var HOVER_DELAY = 300;
+
+  /* Rolling spans, counted back from the week the page reports on
+     (`week_ending`), not from the last week in the record: the sweep carries
+     partial weeks after it that are under the publish threshold, and counting
+     from those filled a third of "Last 3 months" with "no data". "All data"
+     still runs to the very end. In weeks rather than calendar months so every
+     span holds a whole number of the points it plots. */
+  var RANGES = { all: null, '12m': 52, '3m': 13 };
 
   var G, IW, IH;
   var NS = 'http://www.w3.org/2000/svg';
@@ -67,7 +87,15 @@
     return changed;
   }
 
-  var metric = 'ewt';
+  /* The page decides which measure and span open, because the measure depends
+     on the route: a frequent route leads with long waits, a timetabled one with
+     punctuality. */
+  function pressedValue(attr, fallback) {
+    var b = host.querySelector('[data-' + attr + '][aria-pressed="true"]');
+    return b ? b.getAttribute('data-' + attr) : fallback;
+  }
+  var metric = pressedValue('metric', 'ewt');
+  var range = pressedValue('range', 'all');
   var legend = document.getElementById('ngbus-chart-legend');
   var sub = document.getElementById('ngbus-chart-sub');
 
@@ -104,34 +132,43 @@
 
   var TITLES = {
     ewt: 'Excess wait time at each terminus, in minutes.',
+    ot: 'Share of departures leaving on time at each terminus.',
     p: 'Share of waiting time spent inside a gap longer than ten minutes.',
     cur: 'Share of journeys turned back before the end of the line.'
   };
   var ARIA = {
     ewt: 'excess wait time',
+    ot: 'share of departures on time',
     p: 'share of waits over ten minutes',
     cur: 'share of journeys cut short'
   };
 
+  /* ---- which weeks are on show -------------------------------------------- */
+
+  function visibleIndices() {
+    var n = RANGES[range];
+    var last = Date.parse(spec.current || '');
+    if (isNaN(last)) last = times[times.length - 1];
+    var out = [];
+    for (var i = 0; i < weeks.length; i++) {
+      if (n == null || (times[i] > last - n * WEEK && times[i] <= last)) out.push(i);
+    }
+    return out;
+  }
+
   /* ---- which weeks have nothing to show ----------------------------------
-     Derived from coverage, NOT from the `holes` list, and that changed once the
-     sweep started generating holes properly. Nineteen of the twenty-four are
-     partial days — two or three hours missing from an otherwise ordinary
-     Tuesday — and the week they fall in publishes perfectly good data. Banding
-     any week that touched a hole blacked out 16 of 44 weeks on the 157, several
-     of them at 98% coverage.
+     Derived from coverage, NOT from the `holes` list. Most holes are partial
+     days — two or three hours missing from an otherwise ordinary Tuesday — and
+     the week they fall in publishes perfectly good data. So the band means one
+     thing only: no terminus on this route cleared the publish threshold that
+     week (or the week is missing from the record altogether). Why that happened
+     is a separate question, and `holes` answers it in the tooltip. */
 
-     So the band means one thing only: no terminus on this route cleared the
-     publish threshold that week. Why that happened is a separate question, and
-     `holes` answers it in the tooltip. */
-
-  function missingWeeks() {
+  function isMissing(i) {
     var thr = spec.threshold != null ? spec.threshold : 0.6;
-    return weeks.map(function (w, i) {
-      return !series.some(function (s) {
-        var c = (s.coverage || [])[i];
-        return c != null && c >= thr;
-      });
+    return !series.some(function (s) {
+      var c = (s.coverage || [])[i];
+      return c != null && c >= thr;
     });
   }
 
@@ -139,8 +176,8 @@
      partial day is worth naming on a week that published: it is the difference
      between "this week looks odd" and "the archive was down that morning". */
   function holesFor(i) {
-    var end = Date.parse(weeks[i]);
-    var start = end - 6 * 864e5;
+    var end = times[i];
+    var start = end - 6 * DAY;
     return (spec.holes || []).filter(function (h) {
       var hs = Date.parse(h.start), he = Date.parse(h.end);
       return !isNaN(hs) && !isNaN(he) && hs <= end && he >= start;
@@ -157,51 +194,55 @@
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
-  /* The weakest evidence behind each week: the lower of the two termini, because
-     a route is only as well observed as its worse-watched end. */
-  function weekCoverage() {
-    return weeks.map(function (w, i) {
-      var lo = null;
-      series.forEach(function (s) {
-        var c = (s.coverage || [])[i];
-        if (c == null) return;
-        if (lo == null || c < lo) lo = c;
-      });
-      return lo;
+  /* The weakest evidence behind a week: the lowest coverage across termini. */
+  function coverageAt(i) {
+    var lo = null;
+    series.forEach(function (s) {
+      var c = (s.coverage || [])[i];
+      if (c == null) return;
+      if (lo == null || c < lo) lo = c;
     });
+    return lo;
   }
 
-  /* Contiguous runs of true, as [from, to] index pairs. */
-  function runs(flags) {
-    var out = [], start = -1;
-    for (var i = 0; i <= flags.length; i++) {
-      if (i < flags.length && flags[i]) {
-        if (start < 0) start = i;
-      } else if (start >= 0) {
-        out.push([start, i - 1]);
-        start = -1;
-      }
-    }
+  /* Merge [x1, x2] intervals that touch, so a run of empty weeks is one band
+     with one label rather than a stack of slivers. */
+  function merge(spans) {
+    spans.sort(function (a, b) { return a[0] - b[0]; });
+    var out = [];
+    spans.forEach(function (s) {
+      var last = out[out.length - 1];
+      if (last && s[0] <= last[1] + 0.5) last[1] = Math.max(last[1], s[1]);
+      else out.push([s[0], s[1]]);
+    });
     return out;
   }
 
   /* ---- scales ------------------------------------------------------------ */
 
-  function x(i) { return G.l + (weeks.length > 1 ? (i / (weeks.length - 1)) * IW : IW / 2); }
+  var T0, T1;   // the time domain on show
 
-  function domain() {
+  function x(i) { return xt(times[i]); }
+  function xt(t) { return T1 > T0 ? G.l + ((t - T0) / (T1 - T0)) * IW : G.l + IW / 2; }
+  function halfWeek() { return T1 > T0 ? (WEEK / 2 / (T1 - T0)) * IW : IW / 2; }
+  function clampX(v) { return Math.max(G.l, Math.min(G.l + IW, v)); }
+
+  function domain(vis) {
     var hi = 0, any = false;
     series.forEach(function (s) {
-      (s[metric] || []).forEach(function (v) {
+      vis.forEach(function (i) {
+        var v = (s[metric] || [])[i];
         if (v != null) { any = true; if (v > hi) hi = v; }
       });
     });
     if (!any) return null;
+    /* Punctuality is a share with a ceiling, and a route at 95% should look
+       near the top of its range, not at the top of a rescaled one. */
+    if (metric === 'ot') return { lo: 0, hi: 1, step: 1 / G.ticks };
     /* Zero-based. Excess wait has a real, meaningful zero — a route running
        exactly to its headway — so cropping the axis would exaggerate ordinary
-       week-to-week wobble into a crisis. The rail page starts its axis above
-       zero for the opposite and equally good reason: percentage punctuality
-       never goes near it. */
+       week-to-week wobble into a crisis. */
+    if (hi <= 0) hi = 1;
     var step = niceStep(hi / G.ticks);
     return { lo: 0, hi: step * G.ticks, step: step };
   }
@@ -215,21 +256,32 @@
 
   /* ---- draw --------------------------------------------------------------- */
 
+  var cursor = null;
+
   function draw() {
     pickGeom();
-    var dom = domain();
+    hide();
+    var vis = visibleIndices();
     plot.textContent = '';
     if (legend) legend.textContent = '';
+    if (!vis.length) return;
 
+    T0 = times[vis[0]];
+    T1 = times[vis[vis.length - 1]];
+
+    var dom = domain(vis);
     if (!dom) {
       var p = document.createElement('p');
       p.className = 'ngbus-empty';
-      p.textContent = 'No week in the record has enough data for this route to plot.';
+      p.textContent = range === 'all'
+        ? 'No week in the record has enough data for this route to plot.'
+        : 'No week in this period has enough data for this route to plot.';
       plot.appendChild(p);
       return;
     }
 
     var y = function (v) { return G.t + IH - ((v - dom.lo) / (dom.hi - dom.lo)) * IH; };
+    var hw = halfWeek();
 
     var svg = el('svg', {
       viewBox: '0 0 ' + G.W + ' ' + G.H,
@@ -239,44 +291,51 @@
                     ' for route ' + spec.route + '. The same figures are listed in the table below.'
     });
 
-    /* weeks with nothing publishable, behind everything */
-    var holes = missingWeeks();
-    runs(holes).forEach(function (r) {
-      var x1 = x(r[0]) - (r[0] === 0 ? 0 : (x(1) - x(0)) / 2);
-      var x2 = x(r[1]) + (r[1] === weeks.length - 1 ? 0 : (x(1) - x(0)) / 2);
+    /* Weeks with nothing publishable, behind everything: those in the record
+       that no terminus cleared, and those missing from the record entirely. */
+    var empty = [];
+    vis.forEach(function (i, k) {
+      if (isMissing(i)) empty.push([clampX(x(i) - hw), clampX(x(i) + hw)]);
+      if (k > 0) {
+        var prev = vis[k - 1];
+        if (times[i] - times[prev] > WEEK + DAY) {
+          empty.push([clampX(x(prev) + hw), clampX(x(i) - hw)]);
+        }
+      }
+    });
+    var anyHole = empty.length > 0;
+    merge(empty).forEach(function (r) {
       svg.appendChild(el('rect', {
-        'class': 'ngbus-hole', x: x1, y: G.t, width: Math.max(x2 - x1, 2), height: IH
+        'class': 'ngbus-hole', x: r[0], y: G.t, width: Math.max(r[1] - r[0], 2), height: IH
       }));
-      var mid = (x1 + x2) / 2;
-      if (x2 - x1 > 46) {
+      if (r[1] - r[0] > 46) {
         var t = el('text', {
-          'class': 'ngbus-hole__label', x: mid, y: G.t + 14, 'text-anchor': 'middle'
+          'class': 'ngbus-hole__label', x: (r[0] + r[1]) / 2, y: G.t + 14, 'text-anchor': 'middle'
         });
         t.textContent = 'no data';
         svg.appendChild(t);
       }
     });
 
-    /* Weeks that published on thin evidence, marked behind the grid and lighter
-       than an outage band — a fainter version of the same idea, because it is a
-       weaker version of the same problem. Hole weeks are skipped: they already
-       carry the stronger band and would otherwise be shaded twice. */
-    var cov = weekCoverage();
-    var halfStep = weeks.length > 1 ? (x(1) - x(0)) / 2 : IW / 2;
-    cov.forEach(function (c, i) {
-      if (holes[i] || c == null || c >= FULL) return;
-      var x1 = Math.max(G.l, x(i) - halfStep);
-      var x2 = Math.min(G.l + IW, x(i) + halfStep);
+    /* Weeks that published on thin evidence, lighter than an outage band — a
+       fainter version of the same mark, because it is a weaker version of the
+       same problem. */
+    var anyThin = false;
+    vis.forEach(function (i) {
+      var c = coverageAt(i);
+      if (isMissing(i) || c == null || c >= FULL) return;
+      anyThin = true;
+      var x1 = clampX(x(i) - hw), x2 = clampX(x(i) + hw);
       svg.appendChild(el('rect', {
         'class': 'ngbus-thin', x: x1, y: G.t, width: Math.max(x2 - x1, 1), height: IH
       }));
     });
 
     /* y grid and ticks */
-    for (var i = 0; i <= G.ticks; i++) {
-      var v = dom.lo + dom.step * i;
-      svg.appendChild(el(i === 0 ? 'line' : 'line', {
-        'class': i === 0 ? 'ngbus-base' : 'ngbus-grid',
+    for (var g = 0; g <= G.ticks; g++) {
+      var v = dom.lo + dom.step * g;
+      svg.appendChild(el('line', {
+        'class': g === 0 ? 'ngbus-base' : 'ngbus-grid',
         x1: G.l, x2: G.l + IW, y1: y(v), y2: y(v)
       }));
       var lab = el('text', { 'class': 'ngbus-ax', x: G.l - 8, y: y(v) + 4, 'text-anchor': 'end' });
@@ -284,25 +343,50 @@
       svg.appendChild(lab);
     }
 
-    /* x labels: one per month, at the first week ending in it. Dropped if the
-       previous label would run into it — a month name overlapping its neighbour
-       is worse than no month name. */
-    var seenMonth = '', lastX = -1e9;
-    var minGap = G === NARROW ? 30 : 24;
-    weeks.forEach(function (w, i) {
-      var m = w.slice(0, 7);
+    /* x labels: one per month, at the first week ending in it, and the year
+       beneath the first month shown in each year — the leftmost label, then
+       every January. A month label is dropped if it would run into the one
+       before, except when it starts a new year: the year has to sit under the
+       month it belongs to, so there the earlier label gives way instead. */
+    var labels = [];
+    var seenMonth = '';
+    vis.forEach(function (i) {
+      var m = weeks[i].slice(0, 7);
       if (m === seenMonth) return;
       seenMonth = m;
-      if (x(i) - lastX < minGap) return;
-      lastX = x(i);
-      var t = el('text', { 'class': 'ngbus-ax', x: x(i), y: G.H - 16, 'text-anchor': 'middle' });
-      t.textContent = MONTHS[Number(w.slice(5, 7)) - 1];
-      svg.appendChild(t);
+      labels.push({ i: i, year: weeks[i].slice(0, 4), month: Number(weeks[i].slice(5, 7)) });
     });
+    var minGap = G === NARROW ? 30 : 26;
+    var kept = [];
+    labels.forEach(function (lb, k) {
+      var prev = kept[kept.length - 1];
+      lb.newYear = k === 0 || lb.year !== labels[k - 1].year;
+      if (prev && x(lb.i) - x(prev.i) < minGap) {
+        if (lb.newYear && !prev.newYear) kept.pop();
+        else return;
+      }
+      kept.push(lb);
+    });
+    var baseY = G.t + IH;
+    kept.forEach(function (lb) {
+      var t = el('text', { 'class': 'ngbus-ax', x: x(lb.i), y: baseY + 20, 'text-anchor': 'middle' });
+      t.textContent = MONTHS[lb.month - 1];
+      svg.appendChild(t);
+      if (lb.newYear) {
+        var yr = el('text', { 'class': 'ngbus-ax ngbus-ax--year', x: x(lb.i), y: baseY + 36, 'text-anchor': 'middle' });
+        yr.textContent = lb.year;
+        svg.appendChild(yr);
+      }
+    });
+
+    /* The week being read, marked so the readout — which sits to one side
+       rather than over the pointer — is visibly tied to a place on the axis. */
+    cursor = el('line', { 'class': 'ngbus-cursor', x1: 0, x2: 0, y1: G.t, y2: G.t + IH, visibility: 'hidden' });
+    svg.appendChild(cursor);
 
     /* one polyline per unbroken run of weeks, per terminus */
     series.forEach(function (s, si) {
-      var cls = si === 0 ? 'a' : 'b';
+      var cls = ['a', 'b', 'c'][Math.min(si, 2)];
       var vals = s[metric] || [];
       var run = [];
       var flush = function () {
@@ -314,15 +398,19 @@
         }
         run = [];
       };
-      vals.forEach(function (v, i) {
-        if (v == null) { flush(); return; }
-        run.push([x(i), y(v)]);
+      vis.forEach(function (i, k) {
+        var v = vals[i];
+        /* Break on a missing value, and on a week missing from the record. */
+        if (v == null || (k > 0 && times[i] - times[vis[k - 1]] > WEEK + DAY)) flush();
+        if (v != null) run.push([x(i), y(v)]);
       });
       flush();
-      vals.forEach(function (v, i) {
-        if (v == null) return;
+      /* Fewer points, room for bigger dots. */
+      var dot = vis.length > 30 ? G.dot : G.dot + 0.8;
+      vis.forEach(function (i) {
+        if (vals[i] == null) return;
         svg.appendChild(el('circle', {
-          'class': 'ngbus-dot--' + cls, cx: x(i), cy: y(v), r: G.dot
+          'class': 'ngbus-dot--' + cls, cx: x(i), cy: y(vals[i]), r: dot
         }));
       });
 
@@ -331,8 +419,8 @@
         item.className = 'ngbus-legend__item';
         var sw = document.createElement('span');
         sw.className = 'ngbus-legend__swatch';
-        sw.style.background = si === 0
-          ? 'var(--bus-line-a, #b48544)' : 'var(--bus-line-b, #4A5A6B)';
+        sw.style.background = ['var(--bus-line-a, #b48544)', 'var(--bus-line-b, #4A5A6B)',
+                               'var(--bus-line-c, #3F8E7E)'][Math.min(si, 2)];
         item.appendChild(sw);
         item.appendChild(document.createTextNode(s.name));
         legend.appendChild(item);
@@ -340,10 +428,8 @@
     });
 
     if (legend) {
-      var anyThin = cov.some(function (c, i) { return !holes[i] && c != null && c < FULL; });
-      var anyHole = holes.some(Boolean);
       [[anyHole, 'ngbus-hole', 'no data this week'],
-       [anyThin, 'ngbus-thin', 'thinner week (under ' + Math.round(FULL * 100) + '% coverage)']
+       [anyThin, 'ngbus-thin', 'thinner week (data for under ' + Math.round(FULL * 100) + '% of it)']
       ].forEach(function (k) {
         if (!k[0]) return;
         var item = document.createElement('span');
@@ -357,91 +443,113 @@
     }
 
     plot.appendChild(svg);
-    wireHover(svg, y);
+    wireHover(svg, vis, hw);
   }
 
-  /* ---- hover readout ------------------------------------------------------ */
+  /* ---- hover readout ------------------------------------------------------
+     Two rules, both from using it. It waits HOVER_DELAY before appearing, so
+     passing the pointer across the chart does not fire a readout per week; once
+     it is up, moving along the weeks updates it straight away. And it pins to
+     the top of the card on the side AWAY from the pointer, so it never covers
+     the weeks being looked at — centred over the pointer, it could hide most of
+     the plot. */
 
-  var tip;
+  var tip, timer = null;
 
-  function wireHover(svg, y) {
-    var step = weeks.length > 1 ? (x(1) - x(0)) : IW;
-    weeks.forEach(function (w, i) {
+  function wireHover(svg, vis, hw) {
+    vis.forEach(function (i) {
+      var x1 = clampX(x(i) - hw), x2 = clampX(x(i) + hw);
       var hit = el('rect', {
-        x: x(i) - step / 2, y: G.t, width: step, height: IH,
+        x: x1, y: G.t, width: Math.max(x2 - x1, 1), height: IH,
         fill: 'transparent', 'class': 'ngbus-hit'
       });
-      hit.addEventListener('mouseenter', function () { show(i, x(i)); });
-      hit.addEventListener('mouseleave', hide);
+      hit.addEventListener('mouseenter', function () {
+        window.clearTimeout(timer);
+        if (tip && !tip.hidden) { show(i); return; }
+        timer = window.setTimeout(function () { show(i); }, HOVER_DELAY);
+      });
       svg.appendChild(hit);
     });
     svg.addEventListener('mouseleave', hide);
   }
 
-  function show(i, cx) {
+  function show(i) {
     if (!tip) {
       tip = document.createElement('div');
       tip.className = 'ngbus-tip';
       host.appendChild(tip);
     }
-    var lines = ['<strong>Week ending ' + shortDate(weeks[i]) + '</strong>'];
+    var lines = ['<strong>Week ending ' + shortDate(weeks[i]) + ' ' + weeks[i].slice(0, 4) + '</strong>'];
     series.forEach(function (s) {
-      lines.push(s.name + ': ' + fmt((s[metric] || [])[i]));
+      lines.push(esc(s.name) + ': ' + fmt((s[metric] || [])[i]));
     });
     /* Always shown, not only when low: a reader comparing two weeks needs to
-       know how much watching each rests on, and a figure that appears only
-       sometimes is a figure nobody learns to look for. */
-    var cs = series.map(function (s) { return (s.coverage || [])[i]; })
-                   .filter(function (c) { return c != null; });
-    if (cs.length) {
-      var lo = Math.min.apply(null, cs), hi = Math.max.apply(null, cs);
-      var pct = function (v) { return Math.round(v * 100) + '%'; };
-      lines.push('<span class="ngl2-cov">Coverage ' +
-        (Math.abs(hi - lo) < 0.005 ? pct(lo) : pct(lo) + '–' + pct(hi)) + '</span>');
+       know how much evidence each rests on, and a figure that appears only
+       sometimes is a figure nobody learns to look for. Coverage is one
+       network-wide number per week, so it is labelled as that. */
+    var c = coverageAt(i);
+    if (c != null) {
+      lines.push('<span class="ngl2-cov">Data collected for ' + Math.round(c * 100) +
+                 '% of the week</span>');
     }
-
-    /* The specific gap behind this week, rather than a page-long list at the
-       bottom that nobody reads and nobody can match to a dip in the line. */
     holesFor(i).forEach(function (h) {
       lines.push('<span class="ngl2-gap"><strong>' + esc(holeLabel(h)) + '</strong> ' +
                  esc(h.reason) + '</span>');
     });
     tip.innerHTML = lines.join('<br>');
-    /* Positioned against the plot's real width rather than as a percentage, and
-       then clamped. The tooltip is centred on the week it describes, so near
-       either end half of it used to hang outside the card and get clipped —
-       which is where the interesting weeks tend to be, the record starting and
-       ending in a gap. */
-    tip.hidden = false;                      // measurable only once displayed
-    /* Measured against the card, not the plot: the tooltip is absolutely
-       positioned inside `.ngbus-chart`, whose padding box starts a rem and a
-       quarter to the left of where the SVG does. */
+    tip.hidden = false;
+
+    /* Which half of the card the week is in decides which side the readout
+       takes, aligned with the plot's own edge. Measured against the card: the
+       tooltip is positioned inside `.ngbus-chart`, whose padding box starts to
+       the left of the SVG. */
     var hostBox = host.getBoundingClientRect();
     var plotBox = plot.getBoundingClientRect();
-    var half = tip.offsetWidth / 2;
-    var px = (plotBox.left - hostBox.left) + (cx / G.W) * plotBox.width;
-    tip.style.left = Math.max(half + 4, Math.min(px, hostBox.width - half - 4)) + 'px';
+    var px = (plotBox.left - hostBox.left) + (x(i) / G.W) * plotBox.width;
+    var inset = plotBox.left - hostBox.left;
+    tip.style.top = (plotBox.top - hostBox.top) + 'px';
+    if (px < hostBox.width / 2) {
+      tip.style.left = '';
+      tip.style.right = inset + 'px';
+    } else {
+      tip.style.right = '';
+      tip.style.left = inset + 'px';
+    }
+    if (cursor) {
+      cursor.setAttribute('x1', x(i));
+      cursor.setAttribute('x2', x(i));
+      cursor.setAttribute('visibility', 'visible');
+    }
   }
 
-  function hide() { if (tip) tip.hidden = true; }
+  function hide() {
+    window.clearTimeout(timer);
+    if (tip) tip.hidden = true;
+    if (cursor) cursor.setAttribute('visibility', 'hidden');
+  }
 
   /* ---- wiring -------------------------------------------------------------- */
 
-  host.querySelectorAll('[data-metric]').forEach(function (b) {
-    b.addEventListener('click', function () {
-      metric = b.dataset.metric;
-      host.querySelectorAll('[data-metric]').forEach(function (o) {
-        o.setAttribute('aria-pressed', String(o === b));
+  function wireChips(attr, apply) {
+    host.querySelectorAll('[data-' + attr + ']').forEach(function (b) {
+      b.addEventListener('click', function () {
+        apply(b.getAttribute('data-' + attr));
+        host.querySelectorAll('[data-' + attr + ']').forEach(function (o) {
+          o.setAttribute('aria-pressed', String(o === b));
+        });
+        draw();
       });
-      if (sub && TITLES[metric]) sub.textContent = TITLES[metric];
-      hide();
-      draw();
     });
+  }
+
+  wireChips('metric', function (v) {
+    metric = v;
+    if (sub && TITLES[metric]) sub.textContent = TITLES[metric];
   });
+  wireChips('range', function (v) { range = v; });
 
   /* Redraw only when the geometry actually changes bucket, not on every pixel
-     of a resize: rebuilding ~90 SVG nodes on each of a drag's frames is work
-     nobody sees. */
+     of a resize. */
   var resizeTimer = null;
   window.addEventListener('resize', function () {
     window.clearTimeout(resizeTimer);

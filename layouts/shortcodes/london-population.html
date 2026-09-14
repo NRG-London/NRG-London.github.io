@@ -44,6 +44,10 @@
                fetches CARTO tiles (basemaps.cartocdn.com), attributed in-page,
                same as the crime maps.
   Usage: {{< london-population >}}
+         {{< london-population ff="E14001290" >}}  opens on that borough's or
+         constituency's Fact File (ONS code; E09 boroughs, E14 constituencies)
+  Fact File (Sep 2026): click a borough or constituency for what sets it apart
+  from its peers — see the london_population project's DEPLOY_NOTES §6c.
   NB: ?v=N is a manual cache-buster; bump it whenever the interactive changes.
       The data files carry their own ?b=<build> stamp from the manifest.
 */ -}}
@@ -68,7 +72,7 @@
          loading="lazy">
   </div>
   <div class="cs-bar">
-    <span>Mapping London's population &mdash; the 2011 and 2021 censuses, shown by constituency, borough, Assembly seat, ward, or census areas that refine to 26,369 output areas as you zoom in &mdash; drag to rotate and tilt; pick a year, an area type, then a theme and a measure, and hover anywhere for both censuses' figures and where the area ranks. Choose Change to map the movement between them. The highest areas ping when you pick a measure; click the same measure again to replay it. Switch the base to a street map, or hide the data, to get your bearings. Full screen and download are in the top right of the map.</span>
+    <span>Mapping London's population &mdash; the 2011 and 2021 censuses, shown by constituency, borough, Assembly seat, ward, or census areas that refine to 26,369 output areas as you zoom in &mdash; drag to rotate and tilt; pick a year, an area type, then a theme and a measure, and hover anywhere for both censuses' figures and where the area ranks. Click a borough or constituency for its Fact File: what sets it apart from the rest of London. Choose Change to map the movement between them. The highest areas ping when you pick a measure; click the same measure again to replay it. Switch the base to a street map, or hide the data, to get your bearings. Full screen and download are in the top right of the map.</span>
   </div>
 </figure>
 <script>
@@ -81,7 +85,7 @@
     // No loading="lazy": the page itself is ~150 KB and fetches its data on
     // demand, so there is no heavy embed to defer — and loading it eagerly
     // means the geometry is resident before the reader arrives.
-    f.src='/interactive/london-population/?v=13';
+    f.src='/interactive/london-population/?v=14'{{ with .Get "ff" }}+'&ff='+encodeURIComponent({{ . }}){{ end }};
     f.title="Interactive 3D map of London's population from the 2011 and 2021 censuses";
     f.setAttribute('scrolling','no'); f.setAttribute('allow','fullscreen'); f.setAttribute('allowfullscreen','');
     box.insertBefore(f, box.firstChild);

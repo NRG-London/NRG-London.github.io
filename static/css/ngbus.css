@@ -29,6 +29,9 @@
      surface, below the 3:1 floor, so the line weight uses a darkened amber. */
   --bus-line-a: #b48544;
   --bus-line-b: #4A5A6B;
+  /* A third terminus is rare (two routes today) but real: a route that forks
+     has three measured ends. Teal is already the site's second accent. */
+  --bus-line-c: #3F8E7E;
   --bus-band: #DDE3DF;
   font-family: var(--sans, 'DM Sans', system-ui, sans-serif);
   color: var(--ink, #1a2332);
@@ -332,6 +335,37 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Frequent / timetabled. A heavier control than the view chips beneath it,
+   because it changes what is being measured, not just which rows are shown. */
+.ngbus-tabs {
+  display: flex;
+  gap: 0;
+  margin: 0 0 0.5rem;
+  border-bottom: 1px solid var(--warm-grey, #dde3df);
+}
+.ngbus-tab {
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  padding: 0.55rem 0.9rem 0.5rem;
+  margin-bottom: -1px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: none;
+  color: var(--mid-grey, #8a9490);
+  cursor: pointer;
+}
+.ngbus-tab:hover { color: var(--blue-dark, #004d80); }
+.ngbus-tab[aria-pressed="true"] { color: var(--blue-dark, #004d80); border-bottom-color: var(--blue, #0070BA); }
+.ngbus-tab:focus-visible { outline: 2px solid var(--blue, #0070BA); outline-offset: 2px; }
+.ngbus-tab__n {
+  font-size: 0.72rem; font-weight: 600; font-variant-numeric: tabular-nums;
+  margin-left: 0.3rem; padding: 0.1rem 0.4rem; border-radius: 999px;
+  background: var(--warm-grey, #dde3df); color: var(--ink, #1a2332);
+}
+.ngbus-tab[aria-pressed="true"] .ngbus-tab__n { background: var(--blue-light, #E2EEF7); color: var(--blue-dark, #004d80); }
+.ngbus-tabnote { font-size: 0.85rem; line-height: 1.55; color: var(--deep, #243142); margin: 0 0 0.8rem; }
+
 @media (max-width: 560px) {
   .ngbus-search { margin-left: 0; width: 100%; }
   .ngbus-search input { width: 100%; }
@@ -467,6 +501,10 @@
 .ngbus-delta--up { color: var(--blue-dark, #004d80); }      /* waits got longer */
 .ngbus-delta--down { color: var(--teal, #3F8E7E); }         /* waits got shorter */
 .ngbus-delta--flat { color: var(--mid-grey, #8a9490); }
+/* Timetabled routes: a rise in on-time share is good news, so these are named
+   for what the change means rather than which way the number went. */
+.ngbus-delta--worse { color: var(--blue-dark, #004d80); }
+.ngbus-delta--better { color: var(--teal, #3F8E7E); }
 
 .ngbus-spark { display: block; width: 78px; height: 22px; margin-left: auto; }
 .ngbus-spark__line { fill: none; stroke: var(--bus-line-a, #b48544); stroke-width: 1.6;
@@ -531,6 +569,8 @@
 .ngbus-line--b { stroke: var(--bus-line-b, #4A5A6B); }
 .ngbus-dot--a { fill: var(--bus-line-a, #b48544); }
 .ngbus-dot--b { fill: var(--bus-line-b, #4A5A6B); }
+.ngbus-line--c { stroke: var(--bus-line-c, #3F8E7E); }
+.ngbus-dot--c { fill: var(--bus-line-c, #3F8E7E); }
 
 .ngbus-legend {
   display: flex;
@@ -678,6 +718,7 @@
 }
 .ngbus-weeks summary:focus-visible { outline: 2px solid var(--blue, #0070BA); outline-offset: 2px; }
 .ngbus-weeks .ngbus-tablewrap { margin-top: 0.5rem; max-height: 26rem; }
+.ngbus-weeks__hint { font-size: 0.8rem; line-height: 1.55; color: var(--mid-grey, #8a9490); margin: 0.3rem 0 0; }
 .ngbus-weeks .ngbus-table th:first-child,
 .ngbus-weeks .ngbus-table td:first-child { text-align: left; }
 .ngbus-weeks .ngbus-table th:nth-child(2),
@@ -687,10 +728,11 @@
    offset by a percentage of the plot width rather than by pixels — the SVG is
    fluid and a pixel offset would drift as the column narrows. */
 .ngbus-chart { position: relative; }
+/* Top-pinned, and set left or right by the script to the side of the card away
+   from the pointer, so it never covers the weeks being read. */
 .ngbus-tip {
   position: absolute;
   top: 4.5rem;
-  transform: translateX(-50%);
   z-index: 2;
   pointer-events: none;
   padding: 0.45rem 0.6rem;
@@ -717,6 +759,11 @@
 .ngl2-gap strong { color: var(--ink, #1a2332); }
 
 .ngbus-hit { cursor: crosshair; }
+.ngbus-cursor { stroke: var(--mid-grey, #8a9490); stroke-width: 1; stroke-dasharray: 3 3; pointer-events: none; }
+.ngbus-ax--year { fill: var(--ink, #1a2332); font-weight: 600; }
+/* The span chips sit apart from the measure chips: one says what, the other when. */
+.ngbus-chips--range { margin-left: auto; }
+@media (max-width: 560px) { .ngbus-chips--range { margin-left: 0; } }
 
 @media (max-width: 640px) {
   /* Fingers do not hover. The weekly figures table below the chart is the
@@ -782,3 +829,36 @@
 }
 .ngbus-turnstops li:last-child { border-bottom: 0; }
 .ngbus-turnstops__count { font-variant-numeric: tabular-nums; font-weight: 600; }
+
+
+/* ── ROUTE PAGE: about this data ─────────────────────────────────────────
+   Facts about the observation rather than the service — how much of the week
+   we collected, how many departures we saw, which listed termini produce no
+   figure. Kept apart from the terminus cards so nobody reads "coverage 100%"
+   as a verdict on the buses.
+   ------------------------------------------------------------------------ */
+
+.ngbus-about { margin: 1.75rem 0 0; }
+.ngbus-about > summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--blue-dark, #004d80);
+  padding: 0.4rem 0;
+}
+.ngbus-about > summary:focus-visible { outline: 2px solid var(--blue, #0070BA); outline-offset: 2px; }
+.ngbus-about__facts { margin: 0.4rem 0 0; font-size: 0.85rem; line-height: 1.6; }
+.ngbus-about__facts dt {
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--mid-grey, #8a9490); margin: 0.9rem 0 0.15rem;
+}
+.ngbus-about__facts dt:first-child { margin-top: 0.3rem; }
+.ngbus-about__facts dd { margin: 0; color: var(--ink, #1a2332); }
+.ngbus-about__facts strong { font-variant-numeric: tabular-nums; }
+.page-content .ngbus-about__list { list-style: none; margin: 0 0 0.35rem; padding: 0; font-size: inherit; line-height: inherit; color: inherit; font-variant-numeric: tabular-nums; }
+.page-content .ngbus-about__list li { font-size: inherit; line-height: inherit; margin: 0; padding: 0; }
+.ngbus-about .ngbus-holes { margin-top: 1rem; }
+
+/* A label with an explanation behind it. The same dotted underline as "no data",
+   so the page has one convention for "hover me for why". */
+.ngbus-help { border-bottom: 1px dotted var(--mid-grey, #8a9490); cursor: help; }

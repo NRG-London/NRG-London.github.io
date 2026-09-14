@@ -22,7 +22,12 @@
   {{- $stat = printf "%.1f min" $d.summary.median_ewt_min -}}
   {{- /* %.0f, not %d: these arrive from JSON as float64 and %d prints
          "%!d(float64=597)" rather than failing, so it ships looking fine. */ -}}
-  {{- $label = printf "is the middling London bus route's excess wait — the time a rider loses to gaps in the service, beyond what the timetable already asks of them. %.0f of %.0f routes reported in the week ending %s." $d.summary.reporting $d.summary.routes (dateFormat "2 January 2006" $d.week_ending) -}}
+  {{- /* Counted here rather than taken from summary.reporting, which includes
+         the timetabled routes — and excess wait is not their measure. The
+         median itself is over frequent routes only, since they are the only
+         ones that carry an excess wait. */ -}}
+  {{- $freq := where (where $d.routes "frequency_type" "!=" "timetabled") "service_class" "!=" "night" -}}
+  {{- $label = printf "is the middling frequent London bus route's excess wait — the time a rider loses to gaps in the service, beyond what the timetable already asks of them. %d of %d frequent routes reported in the week ending %s." (len (where $freq "ewt_min" "!=" nil)) (len $freq) (dateFormat "2 January 2006" $d.week_ending) -}}
 {{- end -}}
 
 <div class="ngbus ngbus-hero">

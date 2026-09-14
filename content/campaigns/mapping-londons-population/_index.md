@@ -19,7 +19,7 @@ The census publishes results down to 26,369 **output areas**, small blocks of ab
 
 ## Or your own patch
 
-Nobody lives in an "output area", so the map will also build the census areas into some more familiar geography: the 33 **boroughs**, the 75 **parliamentary constituencies**, the 14 **London Assembly seats**, and 689 council **wards**. And you can add a street map overlay to get your bearings. Though see note below on wards and constituencies.
+Nobody lives in an "output area", so the map will also build the census areas into some more familiar geography: the 33 **boroughs**, the 75 **parliamentary constituencies**, the 14 **London Assembly seats**, and 689 council **wards**. Click a borough or constituency for its Fact File, showing where its figures are unusually high or low. And you can add a street map overlay to get your bearings. Though see note below on wards and constituencies.
 
 ## Time travel
 

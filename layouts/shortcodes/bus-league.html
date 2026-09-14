@@ -5,37 +5,141 @@
     {{< bus-league >}}
     {{< bus-league rows=30 >}}
 
-  Reads data/bus/weekly.json (hugo.Data.bus.weekly), written either by
-  scripts/make_bus_sample.py or, later, by the weekly sweep in E:\Road Data.
+  Reads data/bus/weekly.json (hugo.Data.bus.weekly), written by the weekly sweep
+  in E:\Road Data, and the per-route files beside it.
 
   PROGRESSIVE ENHANCEMENT, the same bargain the rail chart strikes
   ---------------------------------------------------------------
-  The worst `rows` routes are rendered here as real HTML, sparklines and all. A
-  reader with JavaScript off, a crawler, or a feed reader gets a correct,
+  The worst `rows` frequent routes are rendered here as real HTML, sparklines and
+  all. A reader with JavaScript off, a crawler, or a feed reader gets a correct,
   house-styled, complete table rather than an empty box. `ngbus-table.js` then
-  takes over with the full ~600 rows, sorting and search — and replaces the body
-  at identical geometry, so nothing jumps.
+  takes over with every route, the two tabs, sorting and search — and replaces
+  the body at identical geometry, so nothing jumps.
 
-  Why a table at all, on a site that has never had one: 600 routes are a list.
-  Every other data page here is a chart with a tooltip carrying the numbers,
-  which works beautifully for 24 rail operators and would hide 599 bus routes
-  behind a hover.
+  TWO TABLES, NOT ONE
+  -------------------
+  Frequent routes and timetabled routes are different services and are judged
+  differently, as TfL judges them. On a frequent route people turn up and wait,
+  so the measure is excess wait. On a timetabled route people go by the
+  timetable, so the measure is whether the bus left on time. Ranked together on
+  excess wait, the timetabled routes came out as the best in London — the metric
+  goes negative on exactly the routes it describes least. Night routes run
+  outside the hours measured and are left out until they have hours of their own.
 
   Needs: /css/ngbus.css, /js/ngbus-table.js
 */ -}}
 
 {{- $d := hugo.Data.bus.weekly -}}
 {{- if not $d -}}
-  {{- errorf "bus-league: no data/bus/weekly.json (page %s). Run scripts/make_bus_sample.py." .Page.File.Path -}}
+  {{- errorf "bus-league: no data/bus/weekly.json (page %s)." .Page.File.Path -}}
 {{- end -}}
 
 {{- $rows := int (.Get "rows" | default 20) -}}
 {{- $all := $d.routes -}}
-{{- $reporting := where $all "ewt_min" "!=" nil -}}
+{{- $thr := $d.coverage_threshold -}}
+{{- $files := hugo.Data.bus.routes -}}
+
+{{- /* A route's kind: n(ight), t(imetabled) or f(requent). School services go
+       by their frequency like any other route. */ -}}
+{{- $kindOf := dict -}}
+{{- range $all -}}
+  {{- $k := "f" -}}
+  {{- if eq .service_class "night" }}{{ $k = "n" }}{{ else if eq .frequency_type "timetabled" }}{{ $k = "t" }}{{ end -}}
+  {{- $kindOf = merge $kindOf (dict .route $k) -}}
+{{- end -}}
+
+{{- /* Positions in the weekly series: the spark weeks, this week, and the week
+       the sweep compares against. The route files are indexed positionally
+       against `weeks`, so everything read from them goes through these. */ -}}
+{{- /* Spark weeks after `week_ending` are dropped. The sweep's spark runs on
+       past it into later, partial weeks (to 30 August against a week ending
+       26 July), which are under the publish threshold — so every trend line
+       ended in two blank weeks and none ended on the week the table is about.
+       `pos` is the place in the sweep's spark array; `at` the place in `weeks`. */ -}}
+{{- $sparkIdx := slice }}{{ $sparkPos := slice -}}
+{{- range $j, $sw := $d.spark_weeks }}{{ if le $sw $d.week_ending }}{{ range $i, $wk := $d.weeks }}{{ if eq $wk $sw }}{{ $sparkIdx = $sparkIdx | append $i }}{{ $sparkPos = $sparkPos | append $j }}{{ end }}{{ end }}{{ end }}{{ end -}}
+{{- $cmpWeek := "" -}}
+{{- with where $all "delta_from" "!=" nil }}{{ $cmpWeek = (index . 0).delta_from }}{{ end -}}
+{{- $cmpIdx := -1 -}}
+{{- range $i, $wk := $d.weeks }}{{ if eq $wk $cmpWeek }}{{ $cmpIdx = $i }}{{ end }}{{ end -}}
+
+{{- /* Per route, computed once and used by both the server-rendered rows and the
+       payload:
+
+       - the sparkline with sub-threshold weeks blanked. The sweep's `spark`
+         carries values for weeks under the publish threshold (a week at 14%
+         collected, say), and the rule on these pages is that such a week is
+         "no data" everywhere, the trend line included.
+       - for timetabled routes, the on-time sparkline and change, until the sweep
+         emits them (ask L, promised 14 Sep): the departures-weighted mean across
+         termini, the same basis as the route-level `on_time_pct`, which it
+         reproduces exactly. The moment a timetabled row arrives with a spark or a
+         delta of its own, that is used instead and this goes quiet.
+
+       Both the blanking and the trimming to `week_ending` are no-ops on a spark
+       that already obeys those rules, so they can stay after the sweep's fix. */ -}}
+{{- $calc := newScratch -}}
+{{- $calc.Set "delta" (dict) -}}
+{{- range $all -}}
+  {{- $r := . }}{{ $rf := index $files .route }}{{ $k := index $kindOf .route -}}
+  {{- /* No change figure is stored rather than a nil one: a template cannot
+         assign a bare nil, and a missing key indexes as nil anyway. */ -}}
+  {{- $spark := slice -}}
+  {{- $sweepSpark := false }}{{ range $r.spark }}{{ if ne . nil }}{{ $sweepSpark = true }}{{ end }}{{ end -}}
+  {{- if and $rf $rf.termini (ne $k "n") -}}
+    {{- $cov := (index $rf.termini 0).series -}}
+    {{- if and (eq $k "t") (not $sweepSpark) (eq $r.delta nil) -}}
+      {{- $idx := $sparkIdx | append $cmpIdx -}}
+      {{- $vals := slice -}}
+      {{- range $idx -}}
+        {{- $at := . }}{{ $num := 0.0 }}{{ $den := 0.0 -}}
+        {{- if ge $at 0 -}}
+          {{- range $rf.termini -}}
+            {{- $c := index .series $at -}}
+            {{- if and (ne $c.on_time_pct nil) (ne $c.departures nil) (ge $c.coverage $thr) -}}
+              {{- $num = add $num (mul $c.on_time_pct $c.departures) }}{{ $den = add $den $c.departures -}}
+            {{- end -}}
+          {{- end -}}
+        {{- end -}}
+        {{- if gt $den 0.0 }}{{ $vals = $vals | append (div (math.Round (mul (div $num $den) 1000)) 1000) }}
+        {{- else }}{{ $vals = $vals | append nil }}{{ end -}}
+      {{- end -}}
+      {{- $spark = first (len $sparkIdx) $vals -}}
+      {{- $then := index $vals (len $sparkIdx) -}}
+      {{- if and (ne $then nil) (ne $r.on_time_pct nil) }}{{ $calc.SetInMap "delta" $r.route (div (math.Round (mul (sub $r.on_time_pct $then) 1000)) 1000) }}{{ end -}}
+    {{- else -}}
+      {{- range $n, $at := $sparkIdx -}}
+        {{- $v := index $r.spark (index $sparkPos $n) -}}
+        {{- $spark = $spark | append (cond (ge (index $cov $at).coverage $thr) $v nil) -}}
+      {{- end -}}
+      {{- if ne $r.delta nil }}{{ $calc.SetInMap "delta" $r.route $r.delta }}{{ end -}}
+    {{- end -}}
+  {{- end -}}
+  {{- $calc.SetInMap "spark" .route $spark -}}
+  {{- /* The route's ends, for the line under its number: the termini that have
+         produced a figure in some week. The sweep's list also holds the start of
+         every short working and variant — the 166 read "Banstead ↔ West Croydon
+         ↔ Epsom Hospital ↔ Purley Cross". A route with no figures anywhere keeps
+         its first two, which are the real ends in TfL's sequence order. */ -}}
+  {{- $ends := slice -}}
+  {{- with $rf }}{{ range .termini -}}
+    {{- $t := . }}{{ $has := false -}}
+    {{- range $t.series }}{{ if or (ne .ewt_min nil) (ne .on_time_pct nil) }}{{ $has = true }}{{ end }}{{ end -}}
+    {{- if $has }}{{ $ends = $ends | append (partial "bus-place.html" $t.name) }}{{ end -}}
+  {{- end }}{{ end -}}
+  {{- if not $ends }}{{ range first 2 .termini }}{{ $ends = $ends | append (partial "bus-place.html" .name) }}{{ end }}{{ end -}}
+  {{- $calc.SetInMap "where" .route (delimit $ends " ↔ ") -}}
+{{- end -}}
+
+{{- $frequent := where $all "frequency_type" "!=" "timetabled" -}}
+{{- $frequent = where $frequent "service_class" "!=" "night" -}}
+{{- $timetabled := where (where $all "frequency_type" "timetabled") "service_class" "!=" "night" -}}
+{{- $night := where $all "service_class" "night" -}}
+{{- $reporting := where $frequent "ewt_min" "!=" nil -}}
+{{- $ttReporting := where $timetabled "on_time_pct" "!=" nil -}}
 {{- $worst := first $rows (sort $reporting "ewt_min" "desc") -}}
 
-{{- /* Bar scale: the 99th-percentile-ish worst, so one freak route does not
-       squash every other bar into invisibility. */ -}}
+{{- /* Bar scale: the worst frequent route. */ -}}
 {{- $max := 1.0 -}}
 {{- range $reporting }}{{ if gt .ewt_min $max }}{{ $max = .ewt_min }}{{ end }}{{ end -}}
 
@@ -46,13 +150,31 @@
 
 {{- /* Curtailments arrive as an additive contract change, so every part of this
        table that shows them is conditional on the data actually carrying them.
-       Until the sweep emits the fields the page renders exactly as it did.
        `where ... "!=" nil` also covers the key being absent altogether. */ -}}
 {{- $curted := where $all "curtailment_rate" "!=" nil -}}
 {{- $hasCurt := gt (len $curted) 0 -}}
-{{- $cols := cond $hasCurt 8 7 -}}
+
+{{- $window := replaceRE `(\d)-(\d)` "$1–$2" ($d.window | default "") -}}
+
+{{- /* What "on time" counted as, in words, for the timetabled column's tooltip.
+       Taken from the data so a change of window cannot leave it quoting the old
+       one. */ -}}
+{{- $otWords := "" -}}
+{{- with where $all "on_time_window" "!=" nil -}}
+  {{- $nums := findRE `[0-9]+(\.[0-9]+)?` (index . 0).on_time_window -}}
+  {{- if eq (len $nums) 2 }}{{ $otWords = printf "no more than %s minutes early or %s minutes late" (index $nums 0) (index $nums 1) }}{{ end -}}
+{{- end -}}
 
 <div class="ngbus ngbus-league" id="ngbus-league">
+
+  <div class="ngbus-tabs" role="group" aria-label="Which kind of route">
+    <button type="button" class="ngbus-tab" data-kind="f" aria-pressed="true">Frequent routes
+      <span class="ngbus-tab__n">{{ len $reporting }}</span></button>
+    <button type="button" class="ngbus-tab" data-kind="t" aria-pressed="false">Timetabled routes
+      <span class="ngbus-tab__n">{{ len $ttReporting }}</span></button>
+  </div>
+  <p class="ngbus-tabnote" id="ngbus-tabnote">Buses at least every twelve minutes or so. People
+    turn up and wait, so these routes are judged by how long the wait is.</p>
 
   <div class="ngbus-controls">
     <div class="ngbus-chips" role="group" aria-label="Which routes to show">
@@ -74,7 +196,7 @@
   <div class="ngbus-tablewrap">
     <table class="ngbus-table">
       <caption class="ngbus-sr">
-        Bus route performance for the week ending {{ dateFormat "2 January 2006" $d.week_ending }}
+        Frequent bus route performance for the week ending {{ dateFormat "2 January 2006" $d.week_ending }}
       </caption>
       <thead>
         <tr>
@@ -99,8 +221,8 @@
           <td class="ngbus-rank">{{ add $i 1 }}</td>
           <td class="ngbus-route">
             <a href="/bus/{{ lower $r.route }}/">{{ $r.route }}</a>
-            {{- with $r.termini }}
-            <span class="ngbus-route__where">{{ delimit (apply (apply . "index" "." "name") "partial" "bus-place.html" ".") " ↔ " }}</span>
+            {{- with index ($calc.Get "where") $r.route }}
+            <span class="ngbus-route__where">{{ . }}</span>
             {{- end }}
           </td>
           <td class="ngbus-metric ngbus-metric--lead">
@@ -119,7 +241,7 @@
             <span class="ngbus-delta ngbus-delta--flat" title="Compared with the week ending {{ dateFormat "2 Jan 2006" $r.delta_from }}">no change</span>
             {{- end }}
           </td>
-          <td>{{ partial "bus-spark.html" (dict "values" $r.spark "lo" $slo "hi" $shi "label" (printf "Weekly excess wait for route %s" $r.route)) }}</td>
+          <td>{{ partial "bus-spark.html" (dict "values" (index ($calc.Get "spark") $r.route) "lo" $slo "hi" $shi "label" (printf "Weekly excess wait for route %s" $r.route)) }}</td>
           {{- if $hasCurt }}
           <td class="ngbus-curt{{ if in $r.flags "curtailments" }} ngbus-curt--flagged{{ end }}">
             {{- /* Tested against nil, not for truth: nought curtailments is a
@@ -141,13 +263,17 @@
 
   <div class="ngbus-foot">
     <span class="ngbus-count" id="ngbus-count">
-      Showing the {{ len $worst }} longest waits of {{ len $reporting }} routes reporting.
-      {{ sub (len $all) (len $reporting) }} routes had too little data to publish.
+      Showing the {{ len $worst }} longest waits of {{ len $reporting }} frequent routes reporting.
+      {{ sub (len $frequent) (len $reporting) }} had too little data to publish.
     </span>
+    {{- with $night }}
+    <span class="ngbus-count">{{ len . }} night routes run outside the hours measured, and will be
+      measured separately.</span>
+    {{- end }}
     {{- with $d.summary.curtailments_week }}
     <span class="ngbus-count">{{ lang.FormatNumber 0 . }} journeys cut short across the network.</span>
     {{- end }}
-    <span>Week ending {{ dateFormat "2 January 2006" $d.week_ending }} · {{ $d.window }}</span>
+    <span>Week ending {{ dateFormat "2 January 2006" $d.week_ending }} · {{ $window }}</span>
   </div>
 
   {{- /* jsonify escapes < > &, so the payload cannot close this tag. safeJS
@@ -157,33 +283,37 @@
 
          One dict per route with one-letter keys. The obvious compaction —
          positional arrays — is not available: Hugo's `append` spreads a slice
-         argument into its elements, so appending a row flattens all 616 of them
-         into one long list of scalars, and wrapping the row to stop that makes
-         the outer value a [][]interface{} which cannot be appended to a
-         []interface{} at all. Short keys cost about 12 KB across the whole
-         table and cannot be got wrong. */ -}}
+         argument into its elements, so appending a row flattens all of them
+         into one long list of scalars. Short keys cost about 12 KB across the
+         whole table and cannot be got wrong. */ -}}
   {{- $payload := slice -}}
+  {{- $sparks := $calc.Get "spark" }}{{ $deltas := $calc.Get "delta" -}}
   {{- range $all -}}
-    {{- $where := "" -}}
-    {{- /* Cleaned here, so the JSON handed to ngbus-table.js never carries TfL's
-           interchange markup and no JavaScript has to know about it. */ -}}
-    {{- with .termini }}{{ $where = delimit (apply (apply . "index" "." "name") "partial" "bus-place.html" ".") " ↔ " }}{{ end -}}
-    {{- $row := dict
-        "r" .route "e" .ewt_min "p" .p_wait_gt10 "d" .delta
-        "f" .delta_from "c" .coverage "s" .spark "w" $where -}}
-    {{- if $hasCurt }}
+    {{- $k := index $kindOf .route -}}
+    {{- /* Cleaned by bus-place.html above, so the JSON handed to ngbus-table.js
+           never carries TfL's interchange markup. */ -}}
+    {{- $where := index ($calc.Get "where") .route -}}
+    {{- $row := dict "r" .route "k" $k "w" $where -}}
+    {{- if ne $k "n" -}}
       {{- $row = merge $row (dict
-          "cu" .curtailment_rate "cn" .curtailments
-          "cx" (in .flags "curtailments")) -}}
+          "d" (index $deltas .route) "f" (cond (ne (index $deltas .route) nil) (.delta_from | default $cmpWeek) nil)
+          "c" .coverage "s" (index $sparks .route)) -}}
+      {{- if eq $k "t" }}{{ $row = merge $row (dict "o" .on_time_pct) }}
+      {{- else }}{{ $row = merge $row (dict "e" .ewt_min "p" .p_wait_gt10) }}{{ end -}}
+      {{- if $hasCurt }}
+        {{- $row = merge $row (dict
+            "cu" .curtailment_rate "cn" .curtailments
+            "cx" (in .flags "curtailments")) -}}
+      {{- end -}}
     {{- end -}}
     {{- $payload = $payload | append $row -}}
   {{- end -}}
   <script type="application/json" id="ngbus-league-data">{{ dict
-      "week" $d.week_ending "window" $d.window "max" $max
-      "sparkWeeks" $d.spark_weeks "threshold" $d.coverage_threshold
-      "hasCurt" $hasCurt "cols" $cols
+      "week" $d.week_ending "window" $window "max" $max
+      "sparkWeeks" (first (len $sparkPos) $d.spark_weeks) "threshold" $thr
+      "hasCurt" $hasCurt "night" (len $night) "otWords" $otWords
       "rows" $payload | jsonify | safeJS }}</script>
 </div>
 
 {{- partial "bus-assets.html" . }}
-<script src="/js/ngbus-table.js?v=3" defer></script>
+<script src="/js/ngbus-table.js?v=4" defer></script>

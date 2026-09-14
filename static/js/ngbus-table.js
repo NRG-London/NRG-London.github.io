@@ -3,14 +3,22 @@
 
    Progressive enhancement, not a fallback. `bus-league.html` has already
    rendered the twenty longest waits as real HTML, sparklines included. This
-   script takes over with all ~600 routes, plus sorting, searching and the view
-   chips — and draws every row with the same geometry the server used, so the
-   handover is invisible.
+   script takes over with every route, the frequent / timetabled tabs, sorting,
+   searching and the view chips — and draws every row with the same geometry the
+   server used, so the handover is invisible.
 
    If this file never arrives, the reader still has a correct, complete,
-   house-styled table of the twenty worst routes. That is the whole point of
-   rendering them server-side, and it is why nothing here creates structure the
-   markup does not already have.
+   house-styled table of the twenty worst frequent routes. That is the whole
+   point of rendering them server-side.
+
+   TWO KINDS OF ROUTE
+   ------------------
+   Frequent routes are judged by excess wait, timetabled routes by the share of
+   departures on time — the split TfL itself makes. They are never ranked in one
+   list: excess wait goes negative on timetabled routes and would crown them the
+   best in London. Each tab has its own columns, its own "worst" direction (long
+   waits are bad; low punctuality is bad) and its own chip labels. Night routes
+   are carried in the payload only so a search can say where they went.
 
    OWNED BY THIS REPO. Unlike ngc2-*.js, nothing outside the Hugo site writes
    this file; E:\Road Data writes data/bus/*.json and nothing else.
@@ -19,13 +27,18 @@
    agree:
 
        r  route     "157"
-       e  ewt       excess wait, minutes, or null
-       p  p         P(wait > 10 min), 0-1, or null
-       d  delta     change in EWT against the comparison week, or null
+       k  kind      "f" frequent | "t" timetabled | "n" night
+       w  where     "Terminus A ↔ Terminus B"
+       d  delta     change against the comparison week, or null
+                    (minutes of excess wait on f; share on time on t)
        f  from      week_ending of that comparison week, or null
        c  coverage  0-1
-       s  spark     array of weekly EWT, nulls allowed
-       w  where     "Terminus A ↔ Terminus B"
+       s  spark     weekly lead measure, nulls allowed
+     frequent only:
+       e  ewt       excess wait, minutes, or null
+       p  p         P(wait > 10 min), 0-1, or null
+     timetabled only:
+       o  ontime    share of departures on time, 0-1, or null
 
    Present only once the sweep emits curtailments (spec.hasCurt says so):
        cu curtailment_rate  0-1, or null
@@ -48,27 +61,94 @@
     return;   // leave the server-rendered rows exactly as they are
   }
 
-  var R = { ROUTE: 'r', EWT: 'e', P: 'p', DELTA: 'd', FROM: 'f', COV: 'c', SPARK: 's', WHERE: 'w',
-            CURT: 'cu', CURTN: 'cn', CFLAG: 'cx' };
+  var R = { ROUTE: 'r', KIND: 'k', EWT: 'e', P: 'p', OT: 'o', DELTA: 'd', FROM: 'f',
+            COV: 'c', SPARK: 's', WHERE: 'w', CURT: 'cu', CURTN: 'cn', CFLAG: 'cx' };
 
   /* Curtailments are additive: the column, the chip and the sort key all exist
-     only when the data carries them. Until the sweep emits the fields this file
-     behaves exactly as it did. */
+     only when the data carries them. */
   var hasCurt = !!spec.hasCurt;
-  var COLS = spec.cols || 7;
   var rows = spec.rows || [];
   var body = document.getElementById('ngbus-body');
   var countEl = document.getElementById('ngbus-count');
+  var noteEl = document.getElementById('ngbus-tabnote');
   var query = document.getElementById('ngbus-q');
   var table = root.querySelector('.ngbus-table');
+  var caption = table.querySelector('caption');
 
   /* Must match bus-spark.html, or a sorted table would visibly re-draw. */
   var SPARK = { W: 78, H: 22, PAD: 2 };
   var BAR_MAX = 46;                       // px, matches the server-rendered bar
   var TOP_N = 20;                         // rows the chip views show
-  var DEAD = 0.05;                        // minutes: below this, "no change"
+  var DEAD = { f: 0.05, t: 0.005 };       // below this, "no change": 3 seconds; half a point
 
-  var state = { view: 'worst', sort: 'ewt', dir: 'desc', q: '' };
+  /* ---- the two kinds ------------------------------------------------------
+     Everything that differs between the tabs lives here, so the rest of the
+     file reads the same for both. `lead` is the headline measure; `worse` is
+     the sort direction that puts the worst route first. */
+  var KINDS = {
+    f: {
+      lead: 'ewt', worse: 'desc',
+      name: 'frequent',
+      note: 'Buses at least every twelve minutes or so. People turn up and wait, so ' +
+            'these routes are judged by how long the wait is.',
+      caption: 'Frequent bus route performance',
+      views: { worst: 'Longest waits', best: 'Shortest waits', improved: 'Most improved',
+               curtailed: 'Most cut short', all: 'Every route' },
+      worstNote: function (n, of) { return 'The ' + n + ' longest waits of ' + of + ' frequent routes reporting.'; },
+      bestNote: function (n, of) { return 'The ' + n + ' shortest waits of ' + of + ' frequent routes reporting.'; },
+      improvedNote: 'biggest falls in excess wait',
+      cols: [
+        { label: '#', cls: 'ngbus-rank' },
+        { label: 'Route', sort: 'route' },
+        { label: 'Excess wait', sort: 'ewt' },
+        { label: 'Wait > 10 min', sort: 'p' },
+        { label: 'Change', sort: 'delta' },
+        { label: 'Trend' },
+        { label: 'Cut short', sort: 'curt', curt: true,
+          title: 'Share of journeys turned back before the end of the route' },
+        { label: 'Coverage', sort: 'coverage' }
+      ]
+    },
+    t: {
+      lead: 'ot', worse: 'asc',
+      name: 'timetabled',
+      note: 'Less frequent routes, where people go by the timetable — so these are judged ' +
+            'by whether the bus left on time.',
+      caption: 'Timetabled bus route punctuality',
+      views: { worst: 'Least punctual', best: 'Most punctual', improved: 'Most improved',
+               curtailed: 'Most cut short', all: 'Every route' },
+      worstNote: function (n, of) { return 'The ' + n + ' least punctual of ' + of + ' timetabled routes reporting.'; },
+      bestNote: function (n, of) { return 'The ' + n + ' most punctual of ' + of + ' timetabled routes reporting.'; },
+      improvedNote: 'biggest rises in departures on time',
+      cols: [
+        { label: '#', cls: 'ngbus-rank' },
+        { label: 'Route', sort: 'route' },
+        { label: 'On time', sort: 'ot',
+          title: 'Share of departures leaving ' + (spec.otWords || 'on time') },
+        { label: 'Change', sort: 'delta' },
+        { label: 'Trend' },
+        { label: 'Cut short', sort: 'curt', curt: true,
+          title: 'Share of journeys turned back before the end of the route' },
+        { label: 'Coverage', sort: 'coverage' }
+      ]
+    }
+  };
+
+  var SORT_KEY = { ewt: R.EWT, p: R.P, ot: R.OT, delta: R.DELTA, coverage: R.COV, curt: R.CURT };
+
+  var state = { kind: 'f', view: 'worst', sort: 'ewt', dir: 'desc', q: '' };
+
+  function K() { return KINDS[state.kind]; }
+  function cols() { return K().cols.filter(function (c) { return !c.curt || hasCurt; }); }
+
+  /* The direction that reads "worst first" for a column on the current tab. On
+     frequent routes a bigger number is worse everywhere; on timetabled routes a
+     smaller on-time share, and a bigger fall in it, are worse. */
+  function worstDir(key) {
+    if (key === 'route') return 'asc';
+    if (state.kind === 't' && (key === 'ot' || key === 'delta')) return 'asc';
+    return 'desc';
+  }
 
   /* ---- helpers ---------------------------------------------------------- */
 
@@ -94,9 +174,7 @@
   }
 
   /* Natural order: 9 before 18, letter-prefixed routes after the numbers.
-     `route_sort_key` in scripts/make_bus_sample.py sorts identically. Change
-     one and you must change the other, or the server rows and the JS rows
-     disagree about what "first" means. */
+     The sweep writes weekly.json in the same order. */
   function naturalKey(route) {
     var head = route.replace(/[^A-Za-z]/g, '');
     var tail = route.replace(/[^0-9]/g, '');
@@ -165,8 +243,45 @@
     return '<span class="ngbus-nd" title="' + esc(title) + '">no data</span>';
   };
 
+  function leadCell(r) {
+    if (state.kind === 't') {
+      var o = r[R.OT];
+      if (o == null) return '<td class="ngbus-metric">' + nd('Too little data this week to publish a figure') + '</td>';
+      return '<td class="ngbus-metric ngbus-metric--lead">' +
+             '<span class="ngbus-metric__bar" style="width:' + Math.round(o * BAR_MAX) + 'px"></span>' +
+             '<span class="ngbus-metric__val">' + Math.round(o * 100) + '%</span></td>';
+    }
+    var ewt = r[R.EWT];
+    if (ewt == null) return '<td class="ngbus-metric">' + nd('Too little data this week to publish a figure') + '</td>';
+    var w = Math.round((ewt / spec.max) * BAR_MAX);
+    return '<td class="ngbus-metric ngbus-metric--lead">' +
+           '<span class="ngbus-metric__bar" style="width:' + w + 'px"></span>' +
+           '<span class="ngbus-metric__val">' + ewt.toFixed(1) + ' min</span></td>';
+  }
+
+  function deltaCell(r) {
+    var d = r[R.DELTA];
+    if (d == null) return '<td>' + nd('No comparable earlier week') + '</td>';
+    /* The comparison week is named, not assumed. Four weeks back can land
+       inside a collection outage, and "vs 4 weeks ago" would then be a lie. */
+    var t = 'Compared with the week ending ' + shortDate(r[R.FROM]);
+    var dead = DEAD[state.kind];
+    var cls, txt;
+    if (state.kind === 't') {
+      /* In points of on-time share, and coloured by what it means rather than
+         which way the number moved: on these routes up is good. */
+      var pts = Math.round(Math.abs(d) * 100);
+      cls = d > dead ? 'better' : d < -dead ? 'worse' : 'flat';
+      txt = d > dead ? '+' + pts + ' pts' : d < -dead ? '−' + pts + ' pts' : 'no change';
+    } else {
+      cls = d > dead ? 'up' : d < -dead ? 'down' : 'flat';
+      txt = d > dead ? '+' + d.toFixed(2) : d < -dead ? d.toFixed(2) : 'no change';
+    }
+    return '<td><span class="ngbus-delta ngbus-delta--' + cls + '" title="' + esc(t) +
+           '">' + txt + '</span></td>';
+  }
+
   function rowHtml(r, rank) {
-    var ewt = r[R.EWT], p = r[R.P], d = r[R.DELTA];
     var out = ['<tr data-href="/bus/' + slug(r[R.ROUTE]) + '/">'];
 
     out.push('<td class="ngbus-rank">' + (rank == null ? '' : rank) + '</td>');
@@ -176,33 +291,19 @@
              (r[R.WHERE] ? '<span class="ngbus-route__where">' + esc(r[R.WHERE]) + '</span>' : '') +
              '</td>');
 
-    if (ewt == null) {
-      out.push('<td class="ngbus-metric">' +
-               nd('Too little data this week to publish a figure') + '</td>');
-    } else {
-      var w = Math.round((ewt / spec.max) * BAR_MAX);
-      out.push('<td class="ngbus-metric ngbus-metric--lead">' +
-               '<span class="ngbus-metric__bar" style="width:' + w + 'px"></span>' +
-               '<span class="ngbus-metric__val">' + ewt.toFixed(1) + ' min</span></td>');
+    out.push(leadCell(r));
+
+    if (state.kind === 'f') {
+      var p = r[R.P];
+      out.push('<td>' + (p == null ? nd('Too little data this week') :
+                         Math.round(p * 100) + '%') + '</td>');
     }
 
-    out.push('<td>' + (p == null ? nd('Too little data this week') :
-                       Math.round(p * 100) + '%') + '</td>');
+    out.push(deltaCell(r));
 
-    if (d == null) {
-      out.push('<td>' + nd('No comparable earlier week') + '</td>');
-    } else {
-      /* The comparison week is named, not assumed. Four weeks back can land
-         inside a collection outage, and "vs 4 weeks ago" would then be a lie. */
-      var t = 'Compared with the week ending ' + shortDate(r[R.FROM]);
-      var cls = d > DEAD ? 'up' : d < -DEAD ? 'down' : 'flat';
-      var txt = d > DEAD ? '+' + d.toFixed(2) : d < -DEAD ? d.toFixed(2) : 'no change';
-      out.push('<td><span class="ngbus-delta ngbus-delta--' + cls + '" title="' + esc(t) +
-               '">' + txt + '</span></td>');
-    }
-
-    out.push('<td>' + spark(r[R.SPARK] || [], 0, spec.max,
-                            'Weekly excess wait for route ' + r[R.ROUTE]) + '</td>');
+    out.push('<td>' + (state.kind === 't'
+      ? spark(r[R.SPARK] || [], 0, 1, 'Weekly share of departures on time for route ' + r[R.ROUTE])
+      : spark(r[R.SPARK] || [], 0, spec.max, 'Weekly excess wait for route ' + r[R.ROUTE])) + '</td>');
 
     if (hasCurt) {
       var cu = r[R.CURT];
@@ -223,37 +324,58 @@
 
   /* ---- selection --------------------------------------------------------- */
 
+  function ofKind(list, kind) {
+    return list.filter(function (r) { return r[R.KIND] === kind; });
+  }
+
   function reporting(list) {
-    return list.filter(function (r) { return r[R.EWT] != null; });
+    var key = SORT_KEY[K().lead];
+    return list.filter(function (r) { return r[key] != null; });
+  }
+
+  function matches(r, q) {
+    return r[R.ROUTE].toLowerCase().indexOf(q) === 0 ||
+           (r[R.WHERE] || '').toLowerCase().indexOf(q) !== -1;
   }
 
   function select() {
-    var list = rows;
+    var k = K();
+    var mine = ofKind(rows, state.kind);
+    var lead = SORT_KEY[k.lead];
+    var list = mine;
 
     if (state.q) {
       var q = state.q.toLowerCase();
-      list = list.filter(function (r) {
-        return r[R.ROUTE].toLowerCase().indexOf(q) === 0 ||
-               (r[R.WHERE] || '').toLowerCase().indexOf(q) !== -1;
-      });
+      list = mine.filter(function (r) { return matches(r, q); });
       /* A search is a search: show every match, ranked by the current column,
-         rather than the top twenty of it. */
-      return { list: list.slice().sort(comparator()), ranked: false,
-               note: list.length + (list.length === 1 ? ' route matches ' : ' routes match ') +
-                     '“' + state.q + '”.' };
+         rather than the top twenty of it. Matches the other tab holds, and night
+         routes this table does not list, are named rather than silently lost. */
+      var note = list.length + (list.length === 1 ? ' ' + k.name + ' route matches ' :
+                 ' ' + k.name + ' routes match ') + '“' + state.q + '”.';
+      var other = state.kind === 'f' ? 't' : 'f';
+      var elsewhere = ofKind(rows, other).filter(function (r) { return matches(r, q); }).length;
+      if (elsewhere) {
+        note += ' ' + elsewhere + ' more under ' + KINDS[other].name + ' routes.';
+      }
+      var night = ofKind(rows, 'n').filter(function (r) { return matches(r, q); });
+      if (night.length) {
+        note += ' ' + night.slice(0, 3).map(function (r) { return r[R.ROUTE]; }).join(', ') +
+                (night.length > 3 ? ' and others' : '') +
+                (night.length === 1 ? ' is a night route' : ' are night routes') +
+                ', measured separately.';
+      }
+      return { list: list.slice().sort(comparator()), ranked: false, note: note };
     }
 
+    var of = reporting(mine).length;
+
     if (state.view === 'worst') {
-      list = reporting(list).sort(byNumber(R.EWT, 'desc')).slice(0, TOP_N);
-      return { list: list, ranked: true,
-               note: 'The ' + list.length + ' longest waits of ' +
-                     reporting(rows).length + ' routes reporting.' };
+      list = reporting(list).sort(byNumber(lead, k.worse)).slice(0, TOP_N);
+      return { list: list, ranked: true, note: k.worstNote(list.length, of) };
     }
     if (state.view === 'best') {
-      list = reporting(list).sort(byNumber(R.EWT, 'asc')).slice(0, TOP_N);
-      return { list: list, ranked: true,
-               note: 'The ' + list.length + ' shortest waits of ' +
-                     reporting(rows).length + ' routes reporting.' };
+      list = reporting(list).sort(byNumber(lead, k.worse === 'desc' ? 'asc' : 'desc')).slice(0, TOP_N);
+      return { list: list, ranked: true, note: k.bestNote(list.length, of) };
     }
     if (state.view === 'curtailed') {
       /* Ranked by rate rather than by count, so a busy trunk route does not top
@@ -263,45 +385,98 @@
                  .sort(byNumber(R.CURT, 'desc')).slice(0, TOP_N);
       return { list: list, ranked: true,
                note: list.length
-                 ? 'The ' + list.length + ' routes turning back the largest share of ' +
-                   'their journeys before the end of the line.'
-                 : 'No route has a curtailment figure this week.' };
+                 ? 'The ' + list.length + ' ' + k.name + ' routes turning back the largest ' +
+                   'share of their journeys before the end of the line.'
+                 : 'No ' + k.name + ' route has a curtailment figure this week.' };
     }
     if (state.view === 'improved') {
-      /* Improvement means a shorter wait than the comparison week. Routes with
-         no comparison are excluded outright rather than treated as unchanged —
-         a five-week hole in the record is not evidence of steadiness. */
-      list = list.filter(function (r) { return r[R.DELTA] != null && r[R.DELTA] < -DEAD; })
-                 .sort(byNumber(R.DELTA, 'asc')).slice(0, TOP_N);
+      /* Improvement means a shorter wait, or more buses on time, than the
+         comparison week. Routes with no comparison are excluded outright rather
+         than treated as unchanged — a hole in the record is not evidence of
+         steadiness. */
+      var dead = DEAD[state.kind];
+      var better = state.kind === 't'
+        ? function (r) { return r[R.DELTA] != null && r[R.DELTA] > dead; }
+        : function (r) { return r[R.DELTA] != null && r[R.DELTA] < -dead; };
+      list = list.filter(better)
+                 .sort(byNumber(R.DELTA, state.kind === 't' ? 'desc' : 'asc')).slice(0, TOP_N);
       return { list: list, ranked: true,
                note: list.length
-                 ? 'The ' + list.length + ' biggest falls in excess wait against each ' +
+                 ? 'The ' + list.length + ' ' + k.improvedNote + ' against each ' +
                    'route’s last comparable week.'
-                 : 'No route has a clean earlier week to compare with yet.' };
+                 : 'No ' + k.name + ' route has improved against a clean earlier week.' };
     }
 
     list = list.slice().sort(comparator());
     return { list: list, ranked: false,
-             note: 'All ' + list.length + ' routes. ' +
-                   (rows.length - reporting(rows).length) +
-                   ' had too little data this week to publish.' };
+             note: 'All ' + list.length + ' ' + k.name + ' routes. ' +
+                   (mine.length - of) + ' had too little data this week to publish.' };
   }
 
   function comparator() {
     if (state.sort === 'route') {
       return state.dir === 'asc' ? byNatural : function (a, b) { return byNatural(b, a); };
     }
-    var key = { ewt: R.EWT, p: R.P, delta: R.DELTA, coverage: R.COV, curt: R.CURT }[state.sort];
+    var key = SORT_KEY[state.sort];
     return key == null ? byNatural : byNumber(key, state.dir);
   }
 
   /* ---- render ------------------------------------------------------------ */
 
+  /* The head is rebuilt when the tab changes, because the columns do. Sort
+     buttons are created here rather than in the markup: with no JavaScript they
+     would be controls that do nothing. */
+  var headKind = null;
+
+  function renderHead() {
+    if (headKind === state.kind) return;
+    headKind = state.kind;
+    var tr = table.querySelector('thead tr');
+    tr.textContent = '';
+    cols().forEach(function (c) {
+      var th = document.createElement('th');
+      th.scope = 'col';
+      if (c.cls) th.className = c.cls;
+      if (c.title) th.title = c.title;
+      if (!c.sort) {
+        th.textContent = c.label;
+      } else {
+        th.dataset.sort = c.sort;
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = c.label;
+        btn.setAttribute('aria-label', 'Sort by ' + c.label.toLowerCase());
+        btn.addEventListener('click', function () {
+          if (state.sort === c.sort) {
+            state.dir = state.dir === 'asc' ? 'desc' : 'asc';
+          } else {
+            state.sort = c.sort;
+            /* Route reads best A-Z; every measure reads worst first. */
+            state.dir = worstDir(c.sort);
+          }
+          if (!state.q) state.view = 'all';
+          render();
+        });
+        th.appendChild(btn);
+      }
+      tr.appendChild(th);
+    });
+    if (caption) {
+      caption.textContent = K().caption + ' for the week ending ' + shortDate(spec.week);
+    }
+    if (noteEl) noteEl.textContent = K().note;
+    root.querySelectorAll('[data-view]').forEach(function (b) {
+      var label = K().views[b.dataset.view];
+      if (label) b.textContent = label;
+    });
+  }
+
   function render() {
+    renderHead();
     var sel = select();
     if (!sel.list.length) {
-      body.innerHTML = '<tr><td colspan="' + COLS + '" class="ngbus-empty">' +
-                       'No routes match. Try a route number, or a terminus name.</td></tr>';
+      body.innerHTML = '<tr><td colspan="' + cols().length + '" class="ngbus-empty">' +
+                       'No ' + K().name + ' routes match. Try a route number, or a terminus name.</td></tr>';
     } else {
       var html = [];
       for (var i = 0; i < sel.list.length; i++) {
@@ -312,6 +487,9 @@
     if (countEl) {
       countEl.textContent = sel.note;
     }
+    root.querySelectorAll('[data-kind]').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.dataset.kind === state.kind));
+    });
     root.querySelectorAll('[data-view]').forEach(function (b) {
       b.setAttribute('aria-pressed', String(!state.q && b.dataset.view === state.view));
     });
@@ -324,44 +502,42 @@
     });
   }
 
+  /* Each view carries the sort it means, so the header arrows never contradict
+     the chip that is lit. */
+  function applyView(view) {
+    state.view = view;
+    var k = K();
+    if (view === 'improved') {
+      state.sort = 'delta';
+      state.dir = state.kind === 't' ? 'desc' : 'asc';
+    } else if (view === 'curtailed') {
+      state.sort = 'curt'; state.dir = 'desc';
+    } else {
+      state.sort = k.lead;
+      state.dir = view === 'best' ? (k.worse === 'desc' ? 'asc' : 'desc') : k.worse;
+    }
+  }
+
   /* ---- wiring ------------------------------------------------------------ */
 
-  root.querySelectorAll('[data-view]').forEach(function (b) {
+  root.querySelectorAll('[data-kind]').forEach(function (b) {
     b.addEventListener('click', function () {
-      state.view = b.dataset.view;
-      state.q = '';
-      if (query) query.value = '';
-      /* Each view carries the sort it means, so the header arrows never
-         contradict the chip that is lit. */
-      state.sort = state.view === 'improved' ? 'delta'
-                 : state.view === 'curtailed' ? 'curt' : 'ewt';
-      state.dir = (state.view === 'best' || state.view === 'improved') ? 'asc' : 'desc';
+      if (state.kind === b.dataset.kind) return;
+      state.kind = b.dataset.kind;
+      /* The search survives a change of tab — someone looking for "Croydon"
+         wants it looked for on both. The view resets to that tab's worst. */
+      applyView(state.q ? 'all' : 'worst');
       render();
     });
   });
 
-  /* Sort buttons are created here rather than in the markup: with no
-     JavaScript they would be controls that do nothing. */
-  table.querySelectorAll('thead th[data-sort]').forEach(function (th) {
-    var label = th.textContent.trim();
-    var btn = document.createElement('button');
-    btn.type = 'button';
-    btn.textContent = label;
-    btn.setAttribute('aria-label', 'Sort by ' + label.toLowerCase());
-    btn.addEventListener('click', function () {
-      var key = th.dataset.sort;
-      if (state.sort === key) {
-        state.dir = state.dir === 'asc' ? 'desc' : 'asc';
-      } else {
-        state.sort = key;
-        /* Route reads best A-Z; every measure reads best worst-first. */
-        state.dir = key === 'route' ? 'asc' : 'desc';
-      }
-      if (!state.q) state.view = 'all';
+  root.querySelectorAll('[data-view]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      state.q = '';
+      if (query) query.value = '';
+      applyView(b.dataset.view);
       render();
     });
-    th.textContent = '';
-    th.appendChild(btn);
   });
 
   /* ---- the whole row navigates -------------------------------------------
@@ -370,8 +546,7 @@
      what has to respond.
 
      Delegated rather than per-row, because the body is rewritten on every sort,
-     search and view change — a listener per row would have to be re-attached
-     616 times a keystroke.
+     search and view change.
 
      Deliberately NOT done by stretching the anchor across the row with an
      absolutely-positioned ::after, which is the usual trick. That overlay sits
@@ -396,8 +571,7 @@
     window.location.href = tr.dataset.href;
   });
 
-  /* Middle-click opens a new tab, the way a link does. Without this the row is
-     a link that behaves like one only for left-handed clicks. */
+  /* Middle-click opens a new tab, the way a link does. */
   body.addEventListener('auxclick', function (e) {
     if (e.button !== 1) return;
     var tr = e.target.closest ? e.target.closest('tr[data-href]') : null;
@@ -412,12 +586,24 @@
       window.clearTimeout(timer);
       timer = window.setTimeout(function () {
         state.q = query.value.trim();
+        /* If the route is only on the other tab, go there: someone typing "S4"
+           wants the S4, not a message that it lives somewhere else. */
+        if (state.q) {
+          var q = state.q.toLowerCase();
+          var other = state.kind === 'f' ? 't' : 'f';
+          var here = ofKind(rows, state.kind).some(function (r) { return matches(r, q); });
+          var there = ofKind(rows, other).some(function (r) { return matches(r, q); });
+          if (!here && there) {
+            state.kind = other;
+            applyView('all');
+          }
+        }
         render();
       }, 120);
     });
     /* Enter on an unambiguous search goes straight to the route page — the
        fastest path to "how is my bus doing", which is the question the page
-       exists to answer. */
+       exists to answer. Night routes included: their pages exist. */
     query.addEventListener('keydown', function (e) {
       if (e.key !== 'Enter') return;
       var q = query.value.trim().toLowerCase();

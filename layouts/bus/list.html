@@ -14,8 +14,15 @@
          lexicographic and would put 100 before 2. */ -}}
   <div class="ngbus-az">
     {{- range $w.routes }}
-    <a href="/bus/{{ lower .route }}/"
-       {{ if not .ewt_min }}data-nodata="1" title="No data published this week"{{ else }}title="{{ lang.FormatNumber 1 .ewt_min }} min excess wait"{{ end }}>{{ .route }}</a>
+    {{- /* Titled by each route's own measure, and tested against nil: a route
+           running exactly to its timetable has an excess wait of 0.0, which
+           `if not` would have greyed out as "no data". */ -}}
+    {{- $title := "No data published this week" }}{{ $nodata := true -}}
+    {{- if eq .service_class "night" }}{{ $title = "Night route: measured separately, later" }}
+    {{- else if eq .frequency_type "timetabled" }}
+      {{- if ne .on_time_pct nil }}{{ $title = printf "%s of departures on time" (lang.FormatPercent 0 (mul .on_time_pct 100)) }}{{ $nodata = false }}{{ end }}
+    {{- else if ne .ewt_min nil }}{{ $title = printf "%s min excess wait" (lang.FormatNumber 1 .ewt_min) }}{{ $nodata = false }}{{ end }}
+    <a href="/bus/{{ lower .route }}/"{{ if $nodata }} data-nodata="1"{{ end }} title="{{ $title }}">{{ .route }}</a>
     {{- end }}
   </div>
 
