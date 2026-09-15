@@ -1,8 +1,9 @@
 {{- /*
-  London Population — embeds the deck.gl 3D census map: 62 measures across 9
-  thematic groups, over six selectable area types — Assembly seats, boroughs,
-  constituencies, wards, and census neighbourhoods refining to 26,369 output
-  areas as you zoom in — at BOTH the 2021 and 2011 censuses (57 of the 62),
+  London Population — embeds the deck.gl 3D census map: 83 measures across 10
+  categories (chosen from two dropdowns since Sep 2026), over six selectable
+  area types — Assembly seats, boroughs, constituencies, wards, and census
+  neighbourhoods refining to 26,369 output areas as you zoom in — at BOTH the
+  2021 and 2011 censuses (70 of the 83),
   with a change view between them. 2011 is counted on 2021 boundaries, so a
   year switch changes the numbers and never the shapes. Since Aug 2026 the
   area-type switch is animated by the crack morph (see the london_population
@@ -72,7 +73,7 @@
          loading="lazy">
   </div>
   <div class="cs-bar">
-    <span>Mapping London's population &mdash; the 2011 and 2021 censuses, shown by constituency, borough, Assembly seat, ward, or census areas that refine to 26,369 output areas as you zoom in &mdash; drag to rotate and tilt; pick a year, an area type, then a theme and a measure, and hover anywhere for both censuses' figures and where the area ranks. Click a borough or constituency for its Fact File: what sets it apart from the rest of London. Choose Change to map the movement between them. The highest areas ping when you pick a measure; click the same measure again to replay it. Switch the base to a street map, or hide the data, to get your bearings. Full screen and download are in the top right of the map.</span>
+    <span>Mapping London's population &mdash; the 2011 and 2021 censuses, shown by constituency, borough, Assembly seat, ward, or census areas that refine to 26,369 output areas as you zoom in &mdash; drag to rotate and tilt; pick a year, an area type, then a category and a measure from the two menus (or roll the dice for one at random), and hover anywhere for both censuses' figures and where the area ranks. Click a borough or constituency for its Fact File: what sets it apart from the rest of London. Choose Change to map the movement between them. The highest areas ping when you pick a measure; click Peaks to switch to the lowest, or off, and to replay it. Switch the base to a street map, or hide the data, to get your bearings. Full screen and download are in the top right of the map.</span>
   </div>
 </figure>
 <script>
@@ -85,7 +86,7 @@
     // No loading="lazy": the page itself is ~150 KB and fetches its data on
     // demand, so there is no heavy embed to defer — and loading it eagerly
     // means the geometry is resident before the reader arrives.
-    f.src='/interactive/london-population/?v=14'{{ with .Get "ff" }}+'&ff='+encodeURIComponent({{ . }}){{ end }};
+    f.src='/interactive/london-population/?v=16'{{ with .Get "ff" }}+'&ff='+encodeURIComponent({{ . }}){{ end }};
     f.title="Interactive 3D map of London's population from the 2011 and 2021 censuses";
     f.setAttribute('scrolling','no'); f.setAttribute('allow','fullscreen'); f.setAttribute('allowfullscreen','');
     box.insertBefore(f, box.firstChild);
