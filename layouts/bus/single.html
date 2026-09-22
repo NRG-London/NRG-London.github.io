@@ -7,8 +7,8 @@
 
 {{- /* Which week is "this week", as a position in the series. Every series is
        indexed positionally against weekly.json's `weeks`, and `week_ending` is
-       not necessarily the last of them: the sweep carries later, partial weeks
-       on the end. -1 if it is missing, and everything that uses it checks. */ -}}
+       not necessarily the last of them. -1 if it is missing, and everything
+       that uses it checks. */ -}}
 {{- $ci := -1 -}}
 {{- range $i, $wk := $w.weeks }}{{ if eq $wk $w.week_ending }}{{ $ci = $i }}{{ end }}{{ end -}}
 
@@ -16,40 +16,59 @@
        the two kinds of route differently. On a frequent route you turn up and
        wait, so the measure is the wait. On a timetabled route you read the
        timetable and turn up for a bus, so the measure is whether it went when
-       it said — and excess wait, computed there, goes negative and ranks the
-       routes it describes least as the best in London. Night routes run outside
-       the hours measured, and are parked until they have hours of their own.
+       it said. Night routes run outside the hours measured, and are parked
+       until they have hours of their own.
 
-       Read from the league row: the route files do not carry service_class, and
-       reading it from there was why "Night route." never appeared. */ -}}
+       Read from the league row: the route files do not carry service_class. */ -}}
 {{- $class := "frequent" -}}
 {{- if eq $row.service_class "night" }}{{ $class = "night" }}
 {{- else if eq $row.frequency_type "timetabled" }}{{ $class = "timetabled" }}{{ end -}}
 
-{{- /* Real termini only. The sweep takes the first stop of every "run" in TfL's
-       route sequences as a terminus, and runs beyond the first two are short
-       workings, school journeys and variants — they never carry a figure, and
-       their departure counts are both real ends added together. A terminus
-       earns a card if it has produced a figure in any week; the rest are named
-       in "About this data" rather than shown as a permanent "no data". */ -}}
-{{- $measured := slice }}{{ $unmeasured := slice -}}
-{{- range $h.termini -}}
-  {{- $has := false -}}
-  {{- range .series }}{{ if or (ne .ewt_min nil) (ne .on_time_pct nil) }}{{ $has = true }}{{ end }}{{ end -}}
-  {{- if $has }}{{ $measured = $measured | append (slice .) }}
+{{- /* DIRECTIONS, NOT TERMINI.
+       Waits are now measured along the route at TfL's timing points, per
+       direction, so the page is built around "towards Victoria" rather than
+       around a stand. The old per-terminus figures still arrive, frozen, and
+       are still used for timetabled routes until punctuality is measured the
+       same way — a direction cell carries `punctuality`, and the moment it is
+       not null this page switches those over too.
+
+       Why it matters: at a terminus gate the 38 counted every bus passing
+       Clapton Pond twice, counted both directions at Graham Road, and missed
+       that 40% of "from Victoria" journeys never reach Victoria. */ -}}
+{{- $dirs := slice }}{{ $unmeasured := slice -}}
+{{- range $h.directions -}}
+  {{- if .measured }}{{ $dirs = $dirs | append (slice .) }}
   {{- else }}{{ $unmeasured = $unmeasured | append (partial "bus-place.html" .name) }}{{ end -}}
 {{- end -}}
+{{- $ttByDirection := false -}}
+{{- range $dirs }}{{ range .series }}{{ if ne .punctuality nil }}{{ $ttByDirection = true }}{{ end }}{{ end }}{{ end -}}
+{{- $useDirs := and (gt (len $dirs) 0) (or (ne $class "timetabled") $ttByDirection) -}}
 
-{{- /* Curtailments are an additive contract change. Everything about them on
-       this page is conditional on the data carrying them, so until the sweep
-       emits the fields the route page renders exactly as it did. Tested against
-       nil rather than for truth — nought is a real and common value. */ -}}
+{{- /* The units the page is built from: measured directions, or — for a
+       timetabled route, until its punctuality is measured by direction — the
+       termini that have produced a figure in some week. */ -}}
+{{- $units := slice -}}
+{{- if $useDirs -}}
+  {{- range $dirs }}{{ $units = $units | append (slice (dict "name" (partial "bus-place.html" .name) "series" .series)) }}{{ end -}}
+{{- else -}}
+  {{- range $h.termini -}}
+    {{- $has := false -}}
+    {{- range .series }}{{ if or (ne .ewt_min nil) (ne .on_time_pct nil) }}{{ $has = true }}{{ end }}{{ end -}}
+    {{- if $has }}{{ $units = $units | append (slice (dict "name" (partial "bus-place.html" .name) "series" .series)) }}
+    {{- else if not $h.directions }}{{ $unmeasured = $unmeasured | append (partial "bus-place.html" .name) }}{{ end -}}
+  {{- end -}}
+{{- end -}}
+
+{{- /* Curtailments are an additive contract change, and so is everything that
+       came with the timing-point measure. Each block is conditional on its
+       fields being present, so a route file without them renders without them
+       rather than with a hole. Tested against nil, never for truth — nought is
+       a real and common value. */ -}}
 {{- $anyCur := false -}}
-{{- range $measured }}{{ range .series }}{{ if ne .curtailment_rate nil }}{{ $anyCur = true }}{{ end }}{{ end }}{{ end -}}
+{{- range $units }}{{ range .series }}{{ if or (ne .curtailment_rate nil) (and (ne .journeys_turned_short nil) (ne .journeys nil)) }}{{ $anyCur = true }}{{ end }}{{ end }}{{ end -}}
 
-{{- /* "weekdays, 07:00-22:00" as the sweep writes it, with a proper dash. Read
-       from the data because the window is due to change, and a page that
-       hardcodes it would go on quoting the old hours. */ -}}
+{{- /* "every day, 05:00-23:59" as the sweep writes it, with a proper dash. Read
+       from the data because the window has changed once already. */ -}}
 {{- $window := replaceRE `(\d)-(\d)` "$1–$2" ($w.window | default "") -}}
 
 {{- /* What "on time" counted as. One window for the whole network, so it is taken
@@ -90,7 +109,7 @@
     {{- if eq $class "night" }}
     <p class="ngbus-hero__stat">Night route<small>night buses run outside the hours these
       pages measure ({{ $window }}). They will be measured separately, on their own hours.</small></p>
-    {{- else if eq (len $measured) 0 }}
+    {{- else if eq (len $units) 0 }}
     <p class="ngbus-hero__stat">No figures yet<small>route {{ $route }} has not produced a
       publishable figure in any week we have watched. This is a gap in what we can observe,
       not a verdict on the route.</small></p>
@@ -112,30 +131,39 @@
       in the week ending {{ dateFormat "2 January 2006" $w.week_ending }}, against a London
       middle of {{ lang.FormatNumber 1 $w.summary.median_ewt_min }} min.</small></p>
     {{- else }}
-    <p class="ngbus-hero__stat">No data<small>too little of this week was captured at
-      route {{ $route }}'s termini to publish a figure. This is a gap in the observation,
-      not a verdict on the route.</small></p>
+    <p class="ngbus-hero__stat">No data<small>too little of this week was captured on
+      route {{ $route }} to publish a figure. This is a gap in the observation, not a verdict
+      on the route.</small></p>
     {{- end }}
   </div>
 
-  {{- /* The strapline is the same fact in the language a passenger uses. Built
-         from the worse of the termini: a rider stands at one end, not at an
-         average of both. */ -}}
+  {{- /* The strapline is the same fact in the language a passenger uses, from
+         the worse of the two directions: a rider waits for a bus going one way,
+         not for an average of both. */ -}}
   {{- if and (eq $class "frequent") (ge $ci 0) }}
-    {{- $worst := 0.0 }}{{ $worstName := "" -}}
-    {{- range $measured }}
+    {{- $worst := 0.0 }}{{ $worstName := "" }}{{ $worstTt := 0.0 -}}
+    {{- range $units }}
       {{- $c := index .series $ci }}
-      {{- if and (ne $c.p_wait_gt10 nil) (ge $c.coverage $thr) (gt $c.p_wait_gt10 $worst) }}{{ $worst = $c.p_wait_gt10 }}{{ $worstName = partial "bus-place.html" .name }}{{ end }}
+      {{- if and (ge $c.coverage $thr) (ne $c.wait_bands nil) }}
+        {{- $b := index $c.wait_bands "10" }}
+        {{- if and (ne $b.actual nil) (gt $b.actual $worst) }}{{ $worst = $b.actual }}{{ $worstName = .name }}{{ $worstTt = ($b.timetable | default 0.0) }}{{ end }}
+      {{- end }}
     {{- end }}
     {{- if gt $worst 0.0 }}
       {{- /* "one trip in four", not "one trip in 4": this is the one sentence on
              the page written the way a person would say it out loud, and a
-             numeral in the middle of it breaks that. Above ten, the numeral is
-             the clearer form again. */ -}}
-      {{- $inN := partial "bus-words.html" (math.Round (div 1.0 $worst)) -}}
-  <p class="ngbus-strap">A passenger turning up at {{ $worstName }} without checking the
-    times waits more than ten minutes on about
-    {{ if lt $worst 0.5 }}one trip in {{ $inN }}{{ else }}{{ lang.FormatPercent 0 (mul $worst 100) }} of trips{{ end }}.</p>
+             numeral in the middle of it breaks that. Past one in fifty nobody
+             counts, and "one in 143" — which is what the 38's timetable gives —
+             reads as arithmetic rather than as English, so it becomes "almost
+             never". */ -}}
+  <p class="ngbus-strap">Waiting for a bus {{ $worstName }}, more than ten minutes goes by on
+    {{ if lt $worst 0.02 }}fewer than one trip in fifty
+    {{- else if lt $worst 0.5 }}about one trip in {{ partial "bus-words.html" (math.Round (div 1.0 $worst)) }}
+    {{- else }}about {{ lang.FormatPercent 0 (mul $worst 100) }} of trips{{ end }}.
+    {{- if gt $worstTt 0.0 }} Running exactly to the timetable
+      {{- if lt $worstTt 0.02 }} it would almost never happen.
+      {{- else if lt $worstTt 0.5 }} it would be one trip in {{ partial "bus-words.html" (math.Round (div 1.0 $worstTt)) }}.
+      {{- else }} it would be {{ lang.FormatPercent 0 (mul $worstTt 100) }} of trips.{{ end }}{{ end }}</p>
     {{- end }}
   {{- else if and (eq $class "timetabled") (ge $ci 0) $otEarly }}
     {{- /* A timetabled rider reads the timetable and arrives for a bus, so the
@@ -143,9 +171,9 @@
            went when it said. Said in tenths, because "about four in ten" is a
            proportion a person can hold in their head and 41% is not. */ -}}
     {{- $worst := 2.0 }}{{ $worstName := "" -}}
-    {{- range $measured }}
+    {{- range $units }}
       {{- $c := index .series $ci }}
-      {{- if and (ne $c.on_time_pct nil) (ge $c.coverage $thr) (lt $c.on_time_pct $worst) }}{{ $worst = $c.on_time_pct }}{{ $worstName = partial "bus-place.html" .name }}{{ end }}
+      {{- if and (ne $c.on_time_pct nil) (ge $c.coverage $thr) (lt $c.on_time_pct $worst) }}{{ $worst = $c.on_time_pct }}{{ $worstName = .name }}{{ end }}
     {{- end }}
     {{- if le $worst 1.0 }}
       {{- $tenths := int (math.Round (mul (sub 1.0 $worst) 10)) }}
@@ -164,27 +192,42 @@
     {{- end }}
   {{- end }}
 
-  {{- if and (gt (len $measured) 0) (ge $ci 0) }}
+  {{- if and (gt (len $units) 0) (ge $ci 0) }}
   <div class="ngbus-termini">
-    {{- range $measured }}
+    {{- range $units }}
     {{- $c := index .series $ci }}
     {{- $ok := ge $c.coverage $thr }}
     <div class="ngbus-terminus">
-      <div class="ngbus-terminus__name">{{ partial "bus-place.html" .name }}</div>
+      <div class="ngbus-terminus__name">{{ .name }}</div>
       <dl>
         {{- if eq $class "timetabled" }}
         <dt>On time</dt>
         <dd>{{ if and $ok (ne $c.on_time_pct nil) }}{{ lang.FormatPercent 0 (mul $c.on_time_pct 100) }}{{ else }}<span class="ngbus-nd" title="Too little data this week">no data</span>{{ end }}</dd>
         {{- else }}
-        <dt>Excess wait</dt>
-        <dd>{{ if and $ok (ne $c.ewt_min nil) }}{{ lang.FormatNumber 1 $c.ewt_min }} min{{ else }}<span class="ngbus-nd" title="Too little data this week">no data</span>{{ end }}</dd>
+        <dt><span class="ngbus-help" title="How much longer people waited, on average, than they would have if every bus had run exactly to the timetable. Nought means the buses came as evenly as planned. This is the measure TfL itself uses for frequent routes.">Excess wait</span></dt>
+        <dd>{{ if and $ok (ne $c.ewt_min nil) }}{{ lang.FormatNumber 1 $c.ewt_min }} min
+          {{- if ne $c.ewt_turned_short_min nil }}<span class="ngbus-terminus__sub" title="Part of the excess wait above, caused by buses turned back before the end of the line">{{ lang.FormatNumber 1 $c.ewt_turned_short_min }} min of it from buses turned short</span>{{ end }}
+          {{- else }}<span class="ngbus-nd" title="Too little data this week">no data</span>{{ end }}</dd>
+        {{- /* Each band beside what the timetable alone would give. Over ten
+               minutes mostly reflects how often the route is timetabled; over
+               thirty, on a frequent route, is almost always something going
+               wrong. The comparison is what tells them apart. */ -}}
+        {{- if and $ok (ne $c.wait_bands nil) }}
+          {{- range $band := slice "10" "20" "30" }}
+          {{- $b := index $c.wait_bands $band }}
+        <dt>Wait &gt; {{ $band }} min</dt>
+        <dd>{{ if ne $b.actual nil }}{{ lang.FormatPercent 0 (mul $b.actual 100) }}
+          {{- if ne $b.timetable nil }}<span class="ngbus-terminus__sub">timetable alone: {{ lang.FormatPercent 0 (mul $b.timetable 100) }}</span>{{ end }}
+          {{- else }}<span class="ngbus-nd" title="Too little data this week">no data</span>{{ end }}</dd>
+          {{- end }}
+        {{- else }}
         <dt>Wait &gt; 10 min</dt>
-        <dd>{{ if and $ok (ne $c.p_wait_gt10 nil) }}{{ lang.FormatPercent 0 (mul $c.p_wait_gt10 100) }}{{ else }}<span class="ngbus-nd" title="Too little data this week">no data</span>{{ end }}</dd>
-        {{- /* Capped by the sweep, which drops gaps of 45 minutes or more as
-               probable starts and ends of the day — so on a genuinely bad day
-               this understates, and the reader is told. */ -}}
-        <dt><span class="ngbus-help" title="The longest gap between two departures this week. Gaps of 45 minutes or more are left out for now, because they cannot yet be told apart from the start and end of the day.">Longest gap</span></dt>
-        <dd>{{ if and $ok (ne $c.worst_gap_min nil) }}{{ $c.worst_gap_min }} min{{ else }}<span class="ngbus-nd" title="Too little data this week">no data</span>{{ end }}</dd>
+        <dd><span class="ngbus-nd" title="Too little data this week">no data</span></dd>
+        {{- end }}
+        {{- if and $ok (ne $c.wait_p95_min nil) }}
+        <dt><span class="ngbus-help" title="Nineteen people in twenty get a bus sooner than this. A fairer picture of a bad-but-ordinary wait than the single longest gap, which can be a one-off.">1 in 20 wait over</span></dt>
+        <dd>{{ lang.FormatNumber 0 $c.wait_p95_min }} min</dd>
+        {{- end }}
         {{- end }}
       </dl>
     </div>
@@ -192,7 +235,55 @@
   </div>
   {{- end }}
 
-  {{- if gt (len $measured) 0 }}
+  {{- /* The worst single gap of the week, with the place and the moment. Not a
+         terminus any more: it is wherever along the route it happened, and the
+         sweep only counts it if the next timing point saw it too, so one missed
+         ping cannot invent it. */ -}}
+  {{- with $row.worst_gap }}
+  {{- if ne .min nil }}
+  <p class="ngbus-worstgap"><strong>{{ lang.FormatNumber 0 .min }} minutes</strong> was the
+    longest gap between buses this week{{ with .place }}, at {{ partial "bus-place.html" . }}{{ end }}
+    {{- with .direction }} {{ partial "bus-place.html" . }}{{ end }}
+    {{- with .start }}{{ $d := substr . 0 10 }}{{ $t := substr . 11 5 }}, on
+      {{ dateFormat "Monday 2 January" $d }} at {{ $t }}{{ end }}.
+    Gaps caused by holes in our own data are left out.</p>
+  {{- end }}
+  {{- end }}
+
+  {{- /* WHEN IT GOES WRONG. The same route is a different service at 8am and on
+         a Sunday evening, and the timetable figure beside each band is what
+         stops a thin Sunday timetable reading as a bad Sunday service. */ -}}
+  {{- if and (eq $class "frequent") $h.wait_by_band }}
+  {{- $bands := where $h.wait_by_band "p_wait_gt20" "!=" nil }}
+  {{- if $bands }}
+  {{- $bmax := 0.0 }}{{ range $bands }}{{ if gt .p_wait_gt20 $bmax }}{{ $bmax = .p_wait_gt20 }}{{ end }}{{ end }}
+  {{- if le $bmax 0.0 }}{{ $bmax = 0.01 }}{{ end }}
+  <section class="ngbus-bands">
+    <h2 class="ngbus-bands__title">When it goes wrong</h2>
+    <p class="ngbus-bands__lead">The share of waiting time spent inside a gap longer than twenty
+      minutes, by time of day, averaged over the most recent weeks of data. The mark on each bar is what
+      the timetable alone would give.</p>
+    <ul class="ngbus-bandlist">
+      {{- range $bands }}
+      <li>
+        <span class="ngbus-bandlist__label">{{ .label }}</span>
+        <span class="ngbus-bandlist__bar">
+          <span class="ngbus-bandlist__fill" style="width:{{ math.Round (mul (div .p_wait_gt20 $bmax) 100) }}%"></span>
+          {{- if ne .p_wait_gt20_timetable nil }}
+          <span class="ngbus-bandlist__tt" style="left:{{ math.Round (mul (div .p_wait_gt20_timetable $bmax) 100) }}%"
+                title="The timetable alone would give {{ lang.FormatPercent 1 (mul .p_wait_gt20_timetable 100) }}"></span>
+          {{- end }}
+        </span>
+        <span class="ngbus-bandlist__val">{{ lang.FormatPercent 1 (mul .p_wait_gt20 100) }}</span>
+        <span class="ngbus-bandlist__ewt">{{ if ne .ewt_min nil }}{{ lang.FormatNumber 1 .ewt_min }} min excess wait{{ end }}</span>
+      </li>
+      {{- end }}
+    </ul>
+  </section>
+  {{- end }}
+  {{- end }}
+
+  {{- if gt (len $units) 0 }}
   {{- /* The chart is drawn by ngbus-chart.js into this box. The weekly figures
          below it are NOT a fallback bolted on afterwards — they are the page's
          primary disclosure, present in the HTML whether or not any JavaScript
@@ -200,16 +291,13 @@
   <div class="ngbus-chart" id="ngbus-chart">
     <div class="ngbus-chart__title">Week by week</div>
     <div class="ngbus-chart__subtitle" id="ngbus-chart-sub">
-      {{- if eq $class "timetabled" }}Share of departures leaving on time at each terminus.
+      {{- if eq $class "timetabled" }}Share of departures leaving on time.
       {{- else }}Share of waiting time spent inside a gap longer than ten minutes.{{ end }}</div>
     <div class="ngbus-controls">
       <div class="ngbus-chips" role="group" aria-label="Which measure to plot">
         {{- if eq $class "timetabled" }}
         <button type="button" class="ngbus-chip" data-metric="ot" aria-pressed="true">On time</button>
         {{- else }}
-        {{- /* Long waits first: "how often do I wait more than ten minutes" is the
-               question a rider asks, and excess wait is the answer an analyst
-               gives to it. */}}
         <button type="button" class="ngbus-chip" data-metric="p" aria-pressed="true">Wait &gt; 10 min</button>
         <button type="button" class="ngbus-chip" data-metric="ewt" aria-pressed="false">Excess wait</button>
         {{- end }}
@@ -217,13 +305,17 @@
         <button type="button" class="ngbus-chip" data-metric="cur" aria-pressed="false">Cut short</button>
         {{- end }}
       </div>
-      {{- /* Rolling spans back from the latest week in the record. "Last month" and
-             "Last week" wait for daily figures: on weekly data they would be four
-             points and one. */}}
+      {{- /* Rolling spans back from the week on show. The last month and week
+             are drawn from the daily figures, which only exist for the most
+             recent 35 days, so those two chips appear only when they do. */ -}}
       <div class="ngbus-chips ngbus-chips--range" role="group" aria-label="Time span">
         <button type="button" class="ngbus-chip" data-range="all" aria-pressed="true">All data</button>
         <button type="button" class="ngbus-chip" data-range="12m" aria-pressed="false">Last 12 months</button>
         <button type="button" class="ngbus-chip" data-range="3m" aria-pressed="false">Last 3 months</button>
+        {{- if and $h.daily $h.daily.days }}
+        <button type="button" class="ngbus-chip" data-range="month" aria-pressed="false">Last month</button>
+        <button type="button" class="ngbus-chip" data-range="week" aria-pressed="false">Last week</button>
+        {{- end }}
       </div>
     </div>
     <div class="ngbus-chart__plot" id="ngbus-chart-plot"></div>
@@ -240,8 +332,8 @@
         <thead>
           <tr>
             <th scope="col">Week ending</th>
-            {{- range $measured }}
-            <th scope="col">{{ partial "bus-place.html" .name }}</th>
+            {{- range $units }}
+            <th scope="col">{{ .name }}</th>
             {{- end }}
           </tr>
         </thead>
@@ -249,14 +341,16 @@
           {{- range $i, $week := $w.weeks }}
           <tr>
             <td>{{ dateFormat "2 Jan 2006" $week }}</td>
-            {{- range $measured }}
+            {{- range $units }}
               {{- $c := index .series $i }}
               {{- $v := cond (eq $class "timetabled") $c.on_time_pct $c.ewt_min }}
               {{- if and (ne $v nil) (ge $c.coverage $thr) }}
             {{- /* A week can publish on less than a full week's collection. The
                    chart shades those; this is the same fact for a reader with no
                    JavaScript, who has only this table. */ -}}
-            <td>{{ if eq $class "timetabled" }}{{ lang.FormatPercent 0 (mul $v 100) }}{{ else }}{{ lang.FormatNumber 1 $v }} min · {{ lang.FormatPercent 0 (mul $c.p_wait_gt10 100) }}{{ end }}
+            <td>{{ if eq $class "timetabled" }}{{ lang.FormatPercent 0 (mul $v 100) }}
+              {{- else }}{{ lang.FormatNumber 1 $v }} min
+                {{- with $c.wait_bands }}{{ $b := index . "10" }}{{ if ne $b.actual nil }} · {{ lang.FormatPercent 0 (mul $b.actual 100) }}{{ end }}{{ end }}{{ end }}
               {{- if lt $c.coverage 0.9 }} <span class="ngbus-thinmark" title="Bus data was collected for only {{ lang.FormatPercent 0 (mul $c.coverage 100) }} of this week, across the whole of London">thin</span>{{ end }}</td>
               {{- else }}
             <td><span class="ngbus-nd" title="Too little data this week">no data</span></td>
@@ -273,12 +367,21 @@
   {{- with $h.curtailment_detail }}
   <section class="ngbus-curtblock">
     <h2 class="ngbus-curtblock__title">Journeys cut short</h2>
+    {{- /* The two route-level figures that came with the timing-point measure:
+           how many journeys were turned back, and how much of the excess wait
+           that accounts for. A bus turned short is now missing from the stops it
+           never reached, rather than counted at a stand it never left. */ -}}
+    {{- if ne $row.journeys_turned_short_pct nil }}
+    <p class="ngbus-curtblock__lead"><strong>{{ lang.FormatPercent 1 (mul $row.journeys_turned_short_pct 100) }}</strong>
+      of journeys were turned back before the end of the line in the week ending
+      {{ dateFormat "2 January 2006" $w.week_ending }}{{ if ne $row.ewt_turned_short_min nil }}, and that
+      accounts for <strong>{{ lang.FormatNumber 1 $row.ewt_turned_short_min }} minutes</strong> of
+      the excess wait above{{ end }}.</p>
+    {{- end }}
     {{- /* `weeks` is the LIST of week-endings the count covers, not a number of
            them — printing it directly put a raw JSON array in the middle of the
-           sentence. They are not necessarily consecutive either: the 157's four
-           are 28 Jun, 12, 19 and 26 Jul, with 5 Jul missing, so "the last four
-           weeks" would claim a run that was never observed. Say how many weeks
-           were watched and name the span instead. */ -}}
+           sentence. They are not necessarily consecutive either, so the page
+           says how many weeks were watched and names the span. */ -}}
     {{- $wk := .weeks }}{{ $n := 0 }}{{ $span := "" -}}
     {{- if reflect.IsSlice $wk -}}
       {{- $n = len $wk -}}
@@ -292,8 +395,7 @@
     {{- /* The rate, not just the total. A four-week count is a number nobody can
            picture; "about twelve a day" is one anybody can. It is also what makes
            the chart below legible, because the bars there are per day and add up
-           to this figure — the two numbers on this page were previously in
-           different units with nothing saying so. */ -}}
+           to this figure. */ -}}
     {{- $days := mul $n 7 -}}
     {{- $perDay := cond (gt $days 0) (div (float .curtailments) (float $days)) 0.0 -}}
     <p class="ngbus-curtblock__lead">
@@ -314,9 +416,8 @@
       above. Hours the route was not watched enough to say are shaded rather than drawn as nought.</p>
     {{- end }}
     {{- /* `turn_stops` is a top-five, not the whole list: across the live data it
-           accounts for anywhere between 52% and 100% of a route's total. Five
-           counts that visibly fail to add up to the headline is the same species
-           of puzzle as the hour profile was, so the remainder is stated. */ -}}
+           accounts for anywhere between 52% and 100% of a route's total, so the
+           remainder is stated rather than left as a puzzle. */ -}}
     {{- $total := .curtailments -}}
     {{- with .turn_stops }}
     {{- $listed := 0 }}{{ range . }}{{ $listed = add $listed .count }}{{ end -}}
@@ -339,22 +440,62 @@
   </section>
   {{- end }}
 
-  {{- /* ABOUT THIS DATA — facts about our observation, kept apart from facts about
-         the buses. Coverage is one network-wide number per week, identical on
-         every route, and "departures seen" mixes how much we captured with how
-         much ran; shown in the terminus cards beside the wait figures, both read
-         as if they described the service. They describe the evidence. */ -}}
+  {{- /* COMPARED WITH TfL. TfL publishes its own figure for each route every
+         quarter. Ours is the same calculation on independent data, so the two
+         should broadly agree and move together — shown side by side so a reader
+         can check rather than take it on trust. */ -}}
+  {{- with $h.tfl_quarterly }}
+  {{- $shown := where . "tfl_ewt_min" "!=" nil }}
+  {{- if not $shown }}{{ $shown = where . "tfl_on_time" "!=" nil }}{{ end }}
+  {{- if $shown }}
+  <section class="ngbus-tfl-compare">
+    <h2 class="ngbus-bands__title">Compared with TfL's own figures</h2>
+    <div class="ngbus-tablewrap">
+      <table class="ngbus-table">
+        <thead>
+          <tr>
+            <th scope="col">Quarter</th>
+            <th scope="col">TfL</th>
+            <th scope="col">Ours</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{- range $q := $shown }}
+          <tr>
+            <td>{{ $q.quarter }}{{ with $q.period_start }}<span class="ngbus-tfl-compare__when">{{ dateFormat "2 Jan" . }} &ndash; {{ dateFormat "2 Jan 2006" $q.period_end }}</span>{{ end }}</td>
+            {{- if ne .tfl_ewt_min nil }}
+            <td>{{ lang.FormatNumber 2 .tfl_ewt_min }} min</td>
+            <td>{{ if ne .our_ewt_min nil }}{{ lang.FormatNumber 2 .our_ewt_min }} min{{ else }}<span class="ngbus-nd" title="Not enough of that quarter was collected">no figure</span>{{ end }}</td>
+            {{- else }}
+            <td>{{ lang.FormatPercent 0 (mul .tfl_on_time 100) }} on time</td>
+            <td>{{ if ne .our_on_time nil }}{{ lang.FormatPercent 0 (mul .our_on_time 100) }} on time{{ else }}<span class="ngbus-nd" title="Not enough of that quarter was collected">no figure</span>{{ end }}</td>
+            {{- end }}
+          </tr>
+          {{- end }}
+        </tbody>
+      </table>
+    </div>
+    <p class="ngbus-curtblock__note">TfL's figures come from its own tracking equipment and its
+      own timetable; ours are computed from the buses' public position feed. They are the same
+      calculation on independent data, so they should broadly agree and move together rather than
+      match exactly.</p>
+  </section>
+  {{- end }}
+  {{- end }}
+
+  {{- /* ABOUT THIS DATA — facts about our observation, kept apart from facts
+         about the buses. Coverage is one network-wide number per week, and
+         "journeys seen" says how much evidence sits behind a figure; in the
+         cards beside the wait figures, both read as if they described the
+         service. */ -}}
   {{- $first := index $w.weeks 0 }}{{ $last := index $w.weeks (sub (len $w.weeks) 1) -}}
-  {{- /* Only the outages that fall inside the window on show. Naming a hole
-         from before the chart starts tells the reader about a gap they cannot
-         see and makes them hunt for it. */ -}}
-  {{- $shown := where (where $w.holes "end" ">=" $first) "start" "<=" $last -}}
+  {{- $shownHoles := where (where $w.holes "end" ">=" $first) "start" "<=" $last -}}
   <details class="ngbus-about">
     <summary>About this data</summary>
 
     <dl class="ngbus-about__facts">
       {{- if ge $ci 0 }}
-      {{- with $h.termini }}{{ with index (index . 0).series $ci }}
+      {{- with $units }}{{ with index (index . 0).series $ci }}
       <dt>Data collected, week ending {{ dateFormat "2 January 2006" $w.week_ending }}</dt>
       <dd><strong>{{ lang.FormatPercent 0 (mul .coverage 100) }}</strong> of the week. This is
         the share of the week for which we hold bus location data at all, across the whole of
@@ -362,20 +503,18 @@
         is not published; under 90% it is marked as thin.</dd>
       {{- end }}{{ end }}
       {{- end }}
-      {{- if and (gt (len $measured) 0) (ge $ci 0) }}
-      <dt>Departures observed</dt>
+      {{- if and (gt (len $units) 0) (ge $ci 0) }}
+      <dt>{{ if $useDirs }}Journeys observed{{ else }}Departures observed{{ end }}</dt>
       <dd>
         <ul class="ngbus-about__list">
-          {{- range $measured }}
+          {{- range $units }}
           {{- $c := index .series $ci }}
-          <li>{{ partial "bus-place.html" .name }}:
-            {{- /* Seen only. The sweep's `scheduled` is the aimed departures buses
-                   broadcast, not the timetable, and it runs below the count seen
-                   on some routes (271 seen "of" 147 at Banstead on the 166) —
-                   quoting it as the denominator invites a question it cannot
-                   answer. Journeys that ran against the timetable is the figure
-                   that belongs here, once the timetable join exists. */}}
-            {{ if ne $c.departures nil }}{{ lang.FormatNumber 0 $c.departures }} departures seen{{ else }}none recorded{{ end }}</li>
+          <li>{{ .name }}:
+            {{- if ne $c.journeys nil }} {{ lang.FormatNumber 0 $c.journeys }} journeys tracked
+              {{- if ne $c.measured_days nil }} across {{ partial "bus-words.html" $c.measured_days }}
+              {{ cond (eq (int $c.measured_days) 1) "day" "days" }}{{ end }}
+            {{- else if ne $c.departures nil }} {{ lang.FormatNumber 0 $c.departures }} departures seen
+            {{- else }} none recorded{{ end }}</li>
           {{- end }}
         </ul>
         A guide to how much evidence sits behind this week's figures, not a measure of the
@@ -384,31 +523,28 @@
       {{- end }}
       {{- if and $unmeasured (ne $class "night") }}
       <dt>Not measured</dt>
-      <dd>No figure has been produced for departures from {{ delimit $unmeasured ", " " or " }}.
-        TfL's route data lists {{ cond (eq (len $unmeasured) 1) "it as a place" "them as places" }}
-        some journeys start from; most such places are short workings or variants of the route
-        rather than its ends.</dd>
+      <dd>No figure has been produced for {{ delimit $unmeasured ", " " or " }}.</dd>
       {{- end }}
-      <dt>Hours measured</dt>
+      <dt>How it is measured</dt>
       <dd>{{ strings.FirstUpper $window }}.
+        {{- if $useDirs }} Waits are measured along the route at TfL's timing points, in each
+        direction, against the timetable — not at the ends of the route, where a bus turned
+        back early counts as if it had run.{{ end }}
         {{- if eq $class "timetabled" }} On time means leaving no more than {{ $otEarly | default "2.5" }} minutes early or
-        {{ $otLate | default "5" }} minutes late, against the times the buses themselves announce.{{ end }}
+        {{ $otLate | default "5" }} minutes late.{{ end }}
+        {{- with $h.daily }}{{ with .min_hours }} A day with less than {{ partial "bus-words.html" . }}
+        hours of data collected shows no daily figure.{{ end }}{{ end }}
         <a href="/bus/how-this-is-measured/">How this is measured</a>.</dd>
     </dl>
 
-    {{- /* Collapsed, and one gap per line. The sweep generates these from the
-           coverage masks, so there are dozens and there will be more as the
-           backfill deepens. The answer belongs on the chart, where hovering a
-           week names the gap behind it; this is the full record for whoever
-           wants it. */ -}}
-    {{- with $shown }}
+    {{- /* Newest first: a reader is looking at recent performance, so the gap
+           they are wondering about is almost always a recent one. */ -}}
+    {{- with $shownHoles }}
     <details class="ngbus-holes">
       <summary>Gaps in the record for this period ({{ len . }})</summary>
       <p class="ngbus-holes__hint">Most recent first. Hover a week on the chart and it will
         name the gap behind it. Most are a few missing hours on an otherwise ordinary day.</p>
       <ul class="ngbus-holelist">
-        {{- /* Newest first: a reader is looking at recent performance, so the gap
-               they are wondering about is almost always a recent one. */ -}}
         {{- range sort . "start" "desc" }}
         <li>
           <span class="ngbus-holelist__when">
@@ -424,9 +560,7 @@
   </details>
 
   {{- /* Onward to the operator's own page. TfL's timetable URLs are simply the
-         route in lower case — the same slug our own pages use — and the pattern
-         holds across every shape of route name on this site: numbered, night,
-         school and the letter-prefixed locals were all checked. The aria-label
+         route in lower case — the same slug our own pages use. The aria-label
          names the route because "TfL's official page" on its own is no use to
          anyone reading a list of links out of context. */ -}}
   <p class="ngbus-tfl">
@@ -443,39 +577,76 @@
     Not affiliated with Transport for London; not for planning a journey.
   </p>
 
-  {{- /* Everything the chart needs, and nothing more: the series for each real
-         terminus in the measures its class uses, the week labels, and the known
-         outages so a gap can be labelled rather than inferred. */ -}}
-  {{- if gt (len $measured) 0 }}
+  {{- /* Everything the chart needs and nothing more: one series per direction in
+         the measures its class uses, the week labels, the daily figures for the
+         short spans, and the known outages so a gap can be labelled rather than
+         inferred. */ -}}
+  {{- if gt (len $units) 0 }}
   {{- $series := slice -}}
-  {{- range $measured -}}
-    {{- $ewt := slice }}{{ $p := slice }}{{ $ot := slice }}{{ $cov := slice }}{{ $cur := slice -}}
+  {{- range $units -}}
+    {{- $ewt := slice }}{{ $p := slice }}{{ $tt := slice }}{{ $ot := slice }}{{ $cov := slice }}{{ $cur := slice -}}
     {{- range .series -}}
       {{- $in := ge .coverage $thr -}}
       {{- if eq $class "timetabled" -}}
         {{- $ot = $ot | append (cond (and $in (ne .on_time_pct nil)) .on_time_pct nil) -}}
       {{- else -}}
-        {{- $ok := and $in (ne .ewt_min nil) -}}
-        {{- $ewt = $ewt | append (cond $ok .ewt_min nil) -}}
-        {{- $p = $p | append (cond $ok .p_wait_gt10 nil) -}}
+        {{- $ewt = $ewt | append (cond (and $in (ne .ewt_min nil)) .ewt_min nil) -}}
+        {{- $pv := false }}{{ $ptt := false -}}
+        {{- with .wait_bands }}{{ $b := index . "10" -}}
+          {{- if and $in (ne $b.actual nil) }}{{ $p = $p | append $b.actual }}{{ $pv = true }}{{ end -}}
+          {{- if and $in (ne $b.timetable nil) }}{{ $tt = $tt | append $b.timetable }}{{ $ptt = true }}{{ end -}}
+        {{- end -}}
+        {{- if not $pv }}{{ $p = $p | append (cond (and $in (ne .p_wait_gt10 nil)) .p_wait_gt10 nil) }}{{ end -}}
+        {{- if not $ptt }}{{ $tt = $tt | append nil }}{{ end -}}
       {{- end -}}
-      {{- $cur = $cur | append (cond (and $in (ne .curtailment_rate nil)) .curtailment_rate nil) -}}
+      {{- /* A turned-short rate per direction: the sweep gives the count and the
+             journeys it came out of, not the ratio. A template cannot assign a
+             bare nil, so the nil case appends rather than assigns. */ -}}
+      {{- if and $in (ne .curtailment_rate nil) }}{{ $cur = $cur | append .curtailment_rate }}
+      {{- else if and $in (ne .journeys_turned_short nil) (ne .journeys nil) (gt (.journeys | default 0.0) 0.0) }}{{ $cur = $cur | append (div (float .journeys_turned_short) (float .journeys)) }}
+      {{- else }}{{ $cur = $cur | append nil }}{{ end -}}
       {{- $cov = $cov | append .coverage -}}
     {{- end -}}
-    {{- $s := dict "name" (partial "bus-place.html" .name) "cur" $cur "coverage" $cov -}}
+    {{- $s := dict "name" .name "cur" $cur "coverage" $cov -}}
     {{- if eq $class "timetabled" }}{{ $s = merge $s (dict "ot" $ot) }}
-    {{- else }}{{ $s = merge $s (dict "ewt" $ewt "p" $p) }}{{ end -}}
+    {{- else }}{{ $s = merge $s (dict "ewt" $ewt "p" $p "tt" $tt) }}{{ end -}}
     {{- $series = $series | append (slice $s) -}}
   {{- end -}}
+
+  {{- /* The daily figures, for the last-month and last-week spans. One series
+         per direction, matched to the weekly ones by name where possible; the
+         sweep's "both directions" roll-up is dropped when the directions
+         themselves are there. */ -}}
+  {{- $daily := dict -}}
+  {{- with $h.daily }}{{ with .days -}}
+    {{- $dsrc := $h.daily.series -}}
+    {{- $named := where $dsrc "direction" "!=" nil -}}
+    {{- if $named }}{{ $dsrc = $named }}{{ end -}}
+    {{- $dseries := slice -}}
+    {{- range $dsrc -}}
+      {{- $dp := slice }}{{ $dtt := slice -}}
+      {{- range $i, $x := (.p_wait_gt10 | default slice) -}}
+        {{- $dp = $dp | append $x -}}
+      {{- end -}}
+      {{- range (.wait_bands | default slice) -}}
+        {{- if ne . nil }}{{ $b := index . "10" }}{{ $dtt = $dtt | append $b.timetable -}}
+        {{- else }}{{ $dtt = $dtt | append nil }}{{ end -}}
+      {{- end -}}
+      {{- $ds := dict "name" (partial "bus-place.html" .name) "p" $dp "tt" $dtt
+                      "ewt" (.ewt_min | default slice) "ot" (.on_time_pct | default slice) -}}
+      {{- $dseries = $dseries | append (slice $ds) -}}
+    {{- end -}}
+    {{- $daily = dict "days" $h.daily.days "coverage" $h.daily.coverage "series" $dseries -}}
+  {{- end }}{{ end -}}
   <script type="application/json" id="ngbus-chart-data">{{ dict
-      "route" $route "weeks" $w.weeks "current" $w.week_ending "holes" $w.holes "series" $series
-      "threshold" $thr
+      "route" $route "weeks" $w.weeks "current" $w.week_ending "holes" $w.holes
+      "series" $series "daily" $daily "threshold" $thr
       | jsonify | safeJS }}</script>
   {{- end }}
 </div>
 
 {{ partial "bus-assets.html" . }}
-{{- if gt (len $measured) 0 }}
-<script src="/js/ngbus-chart.js?v=6" defer></script>
+{{- if gt (len $units) 0 }}
+<script src="/js/ngbus-chart.js?v=7" defer></script>
 {{- end }}
 {{ end }}

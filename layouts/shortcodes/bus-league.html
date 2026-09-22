@@ -116,16 +116,15 @@
     {{- end -}}
   {{- end -}}
   {{- $calc.SetInMap "spark" .route $spark -}}
-  {{- /* The route's ends, for the line under its number: the termini that have
-         produced a figure in some week. The sweep's list also holds the start of
-         every short working and variant — the 166 read "Banstead ↔ West Croydon
-         ↔ Epsom Hospital ↔ Purley Cross". A route with no figures anywhere keeps
-         its first two, which are the real ends in TfL's sequence order. */ -}}
+  {{- /* The route's ends, for the line under its number. Taken from the
+         directions the sweep now measures — "towards Victoria" gives "Victoria"
+         — because the old terminus list also held the start of every short
+         working and variant, and the 166 read "Banstead ↔ West Croydon ↔ Epsom
+         Hospital ↔ Purley Cross". A route with no directions falls back to its
+         first two termini, which are the real ends in TfL's sequence order. */ -}}
   {{- $ends := slice -}}
-  {{- with $rf }}{{ range .termini -}}
-    {{- $t := . }}{{ $has := false -}}
-    {{- range $t.series }}{{ if or (ne .ewt_min nil) (ne .on_time_pct nil) }}{{ $has = true }}{{ end }}{{ end -}}
-    {{- if $has }}{{ $ends = $ends | append (partial "bus-place.html" $t.name) }}{{ end -}}
+  {{- with $rf }}{{ range .directions -}}
+    {{- $ends = $ends | append (strings.TrimPrefix "towards " (partial "bus-place.html" .name)) -}}
   {{- end }}{{ end -}}
   {{- if not $ends }}{{ range first 2 .termini }}{{ $ends = $ends | append (partial "bus-place.html" .name) }}{{ end }}{{ end -}}
   {{- $calc.SetInMap "where" .route (delimit $ends " ↔ ") -}}
@@ -229,7 +228,13 @@
             <span class="ngbus-metric__bar" style="width:{{ math.Round (mul (div $r.ewt_min $max) 46) }}px"></span>
             <span class="ngbus-metric__val">{{ lang.FormatNumber 1 $r.ewt_min }} min</span>
           </td>
-          <td>{{ lang.FormatPercent 0 (mul $r.p_wait_gt10 100) }}</td>
+          {{- /* Beside it, what the timetable alone would give: over ten minutes
+                 mostly tracks how often a route is timetabled, so the figure on
+                 its own says more about frequency than about reliability. */ -}}
+          <td>{{ lang.FormatPercent 0 (mul $r.p_wait_gt10 100) }}
+            {{- with $r.wait_bands }}{{ $b := index . "10" }}{{ if ne $b.timetable nil }}
+            <span class="ngbus-tt" title="The timetable alone would give {{ lang.FormatPercent 0 (mul $b.timetable 100) }}">{{ lang.FormatPercent 0 (mul $b.timetable 100) }}</span>
+            {{- end }}{{ end }}</td>
           <td>
             {{- if eq $r.delta nil }}
             <span class="ngbus-nd" title="No comparable earlier week">no data</span>
@@ -298,6 +303,9 @@
       {{- $row = merge $row (dict
           "d" (index $deltas .route) "f" (cond (ne (index $deltas .route) nil) (.delta_from | default $cmpWeek) nil)
           "c" .coverage "s" (index $sparks .route)) -}}
+      {{- with .wait_bands }}{{ $b := index . "10" }}{{ if ne $b.timetable nil }}
+        {{- $row = merge $row (dict "tt" $b.timetable) -}}
+      {{- end }}{{ end -}}
       {{- if eq $k "t" }}{{ $row = merge $row (dict "o" .on_time_pct) }}
       {{- else }}{{ $row = merge $row (dict "e" .ewt_min "p" .p_wait_gt10) }}{{ end -}}
       {{- if $hasCurt }}
@@ -316,4 +324,4 @@
 </div>
 
 {{- partial "bus-assets.html" . }}
-<script src="/js/ngbus-table.js?v=4" defer></script>
+<script src="/js/ngbus-table.js?v=5" defer></script>

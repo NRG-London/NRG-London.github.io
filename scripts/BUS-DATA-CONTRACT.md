@@ -1,10 +1,11 @@
-# Bus performance data contract — v1.1
+# Bus performance data contract — v1.2
 
 **What the website expects, so the pipeline in `E:\Road Data` can write it.**
 First written 27 Aug 2026 against the draft in that repo's
 `HANDOVER-bus-website.md`; revised to v1.0 on 14 Sep 2026, when the pages moved
-from a first set of metrics to a designed one, and to v1.1 the same day once the
-back end had answered the asks. The pages run on live sweep output.
+from a first set of metrics to a designed one, to v1.1 the same day once the back
+end had answered the asks, and to v1.2 on 22 Sep when that work landed and the
+pages were rebuilt on it. The pages run on live sweep output.
 
 **v1.0 in one paragraph.** Frequent routes and timetabled routes are now
 different pages with different headline measures, night routes are parked, and
@@ -18,6 +19,56 @@ never have to deploy in step.
 terminus to TfL's timing points, per direction; route pages move from termini to
 directions; weeks move to Sunday–Saturday. See "The v1.0 asks" for the agreed
 shapes and the order they arrive in.
+
+## v1.2 — what landed, and what the pages now read
+
+The publish of 15 Sep (week ending Sat 12 Sep, `version: 1`) brought A, C, D, M,
+`directions[]`, `tfl_quarterly`, `wait_by_band`, Saturday weeks and contiguous
+weeks in one go. The week ending 19 Sep followed on 20 Sep. **The front end was
+rebuilt on 22 Sep and now reads all of it.**
+
+**The switch to directions is done — `termini[]` can stop, with one exception.**
+Frequent route pages, the chart and the league table's route lines are all built
+from `directions[]`. The exception: **timetabled routes still read
+`termini[].series[].on_time_pct`**, because `punctuality` is null in every
+direction cell (ask F ships later). The page switches those over on its own the
+moment a direction cell carries `punctuality` — so keep `termini[]` until F
+lands, then drop it and tell the front end.
+
+| Field | Where it shows now |
+|---|---|
+| `directions[].name` | the card heading — "towards Victoria" — the chart's line names, and the league's route line (with "towards " trimmed) |
+| `directions[].measured` | `false` lists the direction under "About this data → Not measured" rather than drawing an empty card |
+| `ewt_min`, `ewt_turned_short_min` | the headline, and a line under it: "0.2 min of it from buses turned short" |
+| `wait_bands` {10, 20, 30} | three rows per direction, each with the timetable figure under it; the 10-minute band also drives the chart, its dashed timetable line, and a "vs 27%" note in the league table |
+| `wait_p95_min` | "1 in 20 wait over 24 min" |
+| `worst_gap` {min, start, place, direction} | its own line under the cards, with the place, the direction and the moment |
+| `wait_by_band` | the "When it goes wrong" block: one bar per time band, with the timetable's share marked on the bar |
+| `daily` {days, coverage, min_hours, series} | the "Last month" and "Last week" chips on the chart; daily `wait_bands` supply the timetable line, so a thin weekend timetable no longer reads as a bad weekend |
+| `tfl_quarterly` | the "Compared with TfL's own figures" table |
+| `journeys`, `measured_days` | "597 journeys tracked across seven days", under "About this data" |
+| `journeys_turned_short_pct`, `ewt_turned_short_min` (route level) | the first line of "Journeys cut short" |
+| `journeys_turned_short` / `journeys` (per direction) | the chart's "Cut short" measure, since direction cells carry no rate |
+| `measured` (route level) | not used yet — the page decides from whether any direction or terminus has ever reported |
+
+**Three things the pages cannot show yet**, all expected:
+
+1. `punctuality` is null everywhere, so timetabled routes keep the old on-time
+   figure and their cards still read as termini.
+2. `tfl_quarterly.our_ewt_min` is null on 174 of 538 routes — those rows print
+   "no figure" against TfL's, which is honest but thin. Worth filling if the
+   quarters can be recomputed on the new measure.
+3. The daily series carry no turned-short figure, so the "Cut short" chip is
+   disabled on the last-month and last-week spans.
+
+**Two notes from the rebuild:**
+
+- **`worst_gap.start` is `2026-09-15T23:05+01:00`** — no seconds, so it is not
+  RFC 3339 and Hugo's `time.AsTime` will not parse it. The page slices the date
+  and the time out of the string instead. Seconds would let it be parsed properly.
+- **Direction names carry TfL's interchange markup** ("towards Morden Station
+  <>"). No action needed — `bus-place.html` strips it, as it does every other
+  stop name.
 
 **Nothing outside this repo writes code into the site.** The bus engine
 (`static/js/ngbus-*.js`, `static/css/ngbus.css`, the layouts and shortcodes) is

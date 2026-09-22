@@ -39,6 +39,8 @@
        p  p         P(wait > 10 min), 0-1, or null
      timetabled only:
        o  ontime    share of departures on time, 0-1, or null
+     frequent, once the sweep carries wait bands:
+       tt timetable  what P(wait > 10 min) would be on the timetable alone
 
    Present only once the sweep emits curtailments (spec.hasCurt says so):
        cu curtailment_rate  0-1, or null
@@ -61,7 +63,7 @@
     return;   // leave the server-rendered rows exactly as they are
   }
 
-  var R = { ROUTE: 'r', KIND: 'k', EWT: 'e', P: 'p', OT: 'o', DELTA: 'd', FROM: 'f',
+  var R = { ROUTE: 'r', KIND: 'k', EWT: 'e', P: 'p', TT: 'tt', OT: 'o', DELTA: 'd', FROM: 'f',
             COV: 'c', SPARK: 's', WHERE: 'w', CURT: 'cu', CURTN: 'cn', CFLAG: 'cx' };
 
   /* Curtailments are additive: the column, the chip and the sort key all exist
@@ -294,9 +296,15 @@
     out.push(leadCell(r));
 
     if (state.kind === 'f') {
-      var p = r[R.P];
+      var p = r[R.P], tt = r[R.TT];
+      /* The timetable's own figure beside it: over ten minutes mostly tracks how
+         often a route is timetabled, so alone it says more about frequency than
+         about reliability. */
       out.push('<td>' + (p == null ? nd('Too little data this week') :
-                         Math.round(p * 100) + '%') + '</td>');
+                         Math.round(p * 100) + '%' +
+                         (tt == null ? '' : ' <span class="ngbus-tt" title="The timetable alone ' +
+                          'would give ' + Math.round(tt * 100) + '%">' + Math.round(tt * 100) + '%</span>')) +
+               '</td>');
     }
 
     out.push(deltaCell(r));

@@ -497,6 +497,14 @@
   cursor: help;
 }
 
+/* The timetable's own figure, beside the measured one in the same cell: a
+   reference, so it reads as quieter than the number it explains. */
+.ngbus-tt {
+  font-size: 0.74rem; color: var(--mid-grey, #8a9490); cursor: help;
+  font-variant-numeric: tabular-nums;
+}
+.ngbus-tt::before { content: "vs "; }
+
 .ngbus-delta { font-size: 0.82rem; }
 .ngbus-delta--up { color: var(--blue-dark, #004d80); }      /* waits got longer */
 .ngbus-delta--down { color: var(--teal, #3F8E7E); }         /* waits got shorter */
@@ -760,6 +768,15 @@
 
 .ngbus-hit { cursor: crosshair; }
 .ngbus-cursor { stroke: var(--mid-grey, #8a9490); stroke-width: 1; stroke-dasharray: 3 3; pointer-events: none; }
+/* The same measure as the solid line, but as the timetable alone would give it:
+   the gap between the two is what the buses are doing. */
+.ngbus-line--tt { stroke-dasharray: 5 4; opacity: 0.55; stroke-width: 1.8; }
+.ngbus-legend__swatch--tt {
+  background: none !important;
+  border-top: 2px dashed var(--mid-grey, #8a9490);
+  height: 0; align-self: center;
+}
+.ngl2-tt { color: var(--mid-grey, #8a9490); }
 .ngbus-ax--year { fill: var(--ink, #1a2332); font-weight: 600; }
 /* The span chips sit apart from the measure chips: one says what, the other when. */
 .ngbus-chips--range { margin-left: auto; }
@@ -862,3 +879,87 @@
 /* A label with an explanation behind it. The same dotted underline as "no data",
    so the page has one convention for "hover me for why". */
 .ngbus-help { border-bottom: 1px dotted var(--mid-grey, #8a9490); cursor: help; }
+
+
+/* ── ROUTE PAGE: the worst gap, and the time-of-day bands ─────────────────
+   Both came with the timing-point measure: a gap is now a place and a moment
+   on the route, and the day splits into bands a rider recognises.
+   ------------------------------------------------------------------------ */
+
+.ngbus-worstgap {
+  margin: 0 0 1.5rem;
+  padding: 0.85rem 1rem;
+  border-left: 3px solid var(--warm-grey, #dde3df);
+  background: var(--white, #ffffff);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.ngbus-worstgap strong { font-variant-numeric: tabular-nums; }
+
+/* Part of the figure above it, not a figure of its own — so it sits under the
+   number in small type rather than beside it in the same weight. */
+.ngbus-terminus__sub {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--mid-grey, #8a9490);
+  font-variant-numeric: normal;
+}
+
+.ngbus-bands { margin: 2rem 0 0; }
+.ngbus-bands__title { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.35rem; }
+.ngbus-bands__lead {
+  font-size: 0.85rem; line-height: 1.6; color: var(--mid-grey, #8a9490); margin: 0 0 0.9rem;
+}
+.page-content .ngbus-bandlist {
+  list-style: none; margin: 0; padding: 0;
+  font-size: inherit; line-height: inherit; color: inherit;
+}
+.page-content .ngbus-bandlist li {
+  display: grid;
+  grid-template-columns: 11rem 1fr 3.2rem;
+  align-items: center;
+  gap: 0 0.75rem;
+  margin: 0;
+  padding: 0.35rem 0;
+  font-size: 0.85rem;
+}
+.ngbus-bandlist__label { color: var(--ink, #1a2332); }
+.ngbus-bandlist__bar {
+  position: relative;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--warm-grey, #dde3df);
+  overflow: visible;
+}
+.ngbus-bandlist__fill {
+  display: block; height: 100%;
+  border-radius: 2px;
+  background: var(--blue, #0070BA);
+  opacity: 0.55;
+}
+/* The timetable's own share, as a mark on the bar rather than a second bar:
+   it is a reference line, not a competing quantity. */
+.ngbus-bandlist__tt {
+  position: absolute; top: -3px; bottom: -3px; width: 2px;
+  background: var(--ink, #1a2332);
+  opacity: 0.55;
+  cursor: help;
+}
+.ngbus-bandlist__val { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.ngbus-bandlist__ewt {
+  grid-column: 2 / -1;
+  font-size: 0.74rem; color: var(--mid-grey, #8a9490); font-variant-numeric: tabular-nums;
+}
+@media (max-width: 560px) {
+  .page-content .ngbus-bandlist li { grid-template-columns: 1fr 3.2rem; }
+  .ngbus-bandlist__label { grid-column: 1 / -1; }
+  /* Full width, or the excess-wait note wraps to three lines in the value column. */
+  .ngbus-bandlist__ewt { grid-column: 1 / -1; }
+}
+
+.ngbus-tfl-compare { margin: 2rem 0 0; }
+.ngbus-tfl-compare__when {
+  display: block; font-size: 0.74rem; color: var(--mid-grey, #8a9490); font-variant-numeric: tabular-nums;
+}
