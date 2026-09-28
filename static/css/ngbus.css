@@ -977,3 +977,17 @@
 .ngbus-turnstops__far {
   display: block; font-size: 0.74rem; color: var(--mid-grey, #8a9490); font-variant-numeric: tabular-nums;
 }
+
+
+/* Where along the route the wait from buses cut short lands (29 Sep): one bar
+   per stop, pale for the wait without the cut-short buses, strong for what they
+   added, a tick for the timetable's wait. */
+.ngbus-stopcost { display: block; width: 100%; height: auto; margin: 0.25rem 0 0.25rem; }
+.ngbus-stopcost__base { fill: var(--blue, #0070BA); opacity: 0.25; }
+.ngbus-stopcost__add { fill: var(--blue-dark, #004d80); opacity: 0.85; }
+.ngbus-stopcost__tt { stroke: var(--ink, #1a2332); stroke-width: 1.2; opacity: 0.6; }
+.ngbus-stopcost__worst {
+  fill: var(--blue-dark, #004d80); font-size: 10.5px; font-weight: 600;
+  font-family: var(--sans, 'DM Sans', system-ui, sans-serif);
+}
+.ngbus-stopcost__col:hover .ngbus-stopcost__base { opacity: 0.45; }

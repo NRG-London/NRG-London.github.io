@@ -1,0 +1,105 @@
+{{- /*
+  bus-stopcost — where along a route the wait from buses cut short lands.
+
+  Renders one direction's `turned_short_by_stop`: every timing point where people
+  board, in route order, each with the average wait people had (`awt_min`), the
+  wait they would have had if the buses cut short had carried on
+  (`awt_if_not_turned_min`), and the timetable's own wait (`swt_min`).
+
+  One bar per stop, in two parts: the pale part is the wait without the cut-short
+  buses, the strong part on top is what cutting them short added. A tick across
+  each bar marks the timetable's wait. So a reader sees three things at once —
+  what the timetable promised, what ordinary lateness added to it, and what the
+  curtailments added on top — and, above all, WHERE: on the 38 the cost lands
+  almost entirely at Victoria and the first few stops back north, and averaged
+  over the whole route it all but disappears (0.6 min), which is why it is
+  measured stop by stop.
+
+  Server-rendered like bus-hours.html: the numbers are the point, and every bar
+  carries a native tooltip naming the stop and all three waits, because 50 stops
+  cannot all be labelled. The first and last stops are named under the axis and
+  the hardest-hit one above its bar.
+
+  Params: stops (the list), label (aria)
+*/ -}}
+
+{{- $stops := .stops -}}
+{{- $n := len $stops -}}
+
+{{- $hi := 0.0 }}{{ $worst := 0 }}{{ $worstAdd := -1.0 -}}
+{{- range $i, $s := $stops -}}
+  {{- $a := $s.awt_min | default 0.0 -}}
+  {{- if gt $a $hi }}{{ $hi = $a }}{{ end -}}
+  {{- $add := $s.added_wait_min | default 0.0 -}}
+  {{- if gt $add $worstAdd }}{{ $worstAdd = $add }}{{ $worst = $i }}{{ end -}}
+{{- end -}}
+
+{{- /* A round step that clears the longest wait in at most four ticks, with a
+       little headroom so the hardest-hit stop's label clears its bar and the
+       top gridline. */ -}}
+{{- $hi = mul $hi 1.15 -}}
+{{- $step := 0.0 }}{{ $nt := 1 -}}
+{{- range slice 1.0 2.0 5.0 10.0 20.0 50.0 -}}
+  {{- $k := int (math.Ceil (div $hi .)) -}}
+  {{- if and (eq $step 0.0) (le $k 4) }}{{ $step = . }}{{ $nt = math.Max 1 $k }}{{ end -}}
+{{- end -}}
+{{- if eq $step 0.0 }}{{ $step = 50.0 }}{{ $nt = 4 }}{{ end -}}
+{{- $nt = int $nt -}}
+{{- $top := mul $step (float $nt) -}}
+
+{{- $W := 480.0 }}{{ $ptop := 22.0 }}{{ $plot := 112.0 -}}
+{{- $L := 30.0 }}{{ $pad := 4.0 -}}
+{{- $bstep := div (sub (sub $W $L) $pad) (float (math.Max 1 $n)) -}}
+{{- $bw := math.Min 14.0 (mul $bstep 0.7) -}}
+
+<svg class="ngbus-stopcost" viewBox="0 0 480 132" role="img"
+     aria-label="{{ .label | default "Wait added by buses cut short, stop by stop" }}" focusable="false">
+  {{- range $k := seq 0 $nt }}
+    {{- $tv := mul $step (float $k) -}}
+    {{- $ty := sub $plot (mul (div $tv $top) (sub $plot $ptop)) }}
+  <line class="{{ if eq $k 0 }}ngbus-hours__base{{ else }}ngbus-hours__grid{{ end }}" x1="{{ $L }}" y1="{{ printf "%.2f" $ty }}" x2="{{ sub $W $pad }}" y2="{{ printf "%.2f" $ty }}"/>
+  <text class="ngbus-hours__ax" x="{{ sub $L 5.0 }}" y="{{ printf "%.2f" (add $ty 3.5) }}" text-anchor="end">{{ lang.FormatNumber 0 $tv }}</text>
+  {{- end }}
+  <text class="ngbus-hours__ax ngbus-hours__unit" x="{{ $L }}" y="10" text-anchor="start">average wait at each stop, minutes</text>
+
+  {{- range $i, $s := $stops }}
+    {{- $cx := add $L (mul $bstep (add (float $i) 0.5)) -}}
+    {{- $awt := $s.awt_min | default 0.0 -}}
+    {{- $base := $s.awt_if_not_turned_min | default $awt -}}
+    {{- if gt $base $awt }}{{ $base = $awt }}{{ end -}}
+    {{- $scale := div (sub $plot $ptop) $top -}}
+    {{- $hBase := mul $base $scale -}}
+    {{- $hAdd := mul (sub $awt $base) $scale -}}
+  <g class="ngbus-stopcost__col">
+    <title>{{ partial "bus-place.html" $s.place }}: {{ lang.FormatNumber 1 $awt }} min average wait
+      {{- if gt ($s.added_wait_min | default 0.0) 0.0 }} — {{ lang.FormatNumber 1 $base }} without the buses cut short (+{{ lang.FormatNumber 1 $s.added_wait_min }}){{ end }}
+      {{- with $s.swt_min }}; the timetable alone would give {{ lang.FormatNumber 1 . }}{{ end }}</title>
+    <rect class="ngbus-stopcost__base" x="{{ printf "%.2f" (sub $cx (div $bw 2)) }}" y="{{ printf "%.2f" (sub $plot $hBase) }}"
+          width="{{ printf "%.2f" $bw }}" height="{{ printf "%.2f" $hBase }}"/>
+    {{- if gt $hAdd 0.3 }}
+    <rect class="ngbus-stopcost__add" x="{{ printf "%.2f" (sub $cx (div $bw 2)) }}" y="{{ printf "%.2f" (sub (sub $plot $hBase) $hAdd) }}"
+          width="{{ printf "%.2f" $bw }}" height="{{ printf "%.2f" $hAdd }}"/>
+    {{- end }}
+    {{- with $s.swt_min }}
+    {{- $ty := sub $plot (mul . $scale) }}
+    <line class="ngbus-stopcost__tt" x1="{{ printf "%.2f" (sub $cx (div $bw 2) 1.5) }}" x2="{{ printf "%.2f" (add $cx (div $bw 2) 1.5) }}"
+          y1="{{ printf "%.2f" $ty }}" y2="{{ printf "%.2f" $ty }}"/>
+    {{- end }}
+    <rect class="ngbus-hours__hit" x="{{ printf "%.2f" (sub $cx (div $bstep 2)) }}" y="{{ $ptop }}"
+          width="{{ printf "%.2f" $bstep }}" height="{{ sub $plot $ptop }}"/>
+  </g>
+    {{- /* The hardest-hit stop, named above its bar — anchored away from the
+           edges so a first or last stop's label is not clipped. */ -}}
+    {{- if and (eq $i $worst) (ge $worstAdd 0.5) }}
+      {{- $anchor := "middle" }}{{ if lt $cx 130.0 }}{{ $anchor = "start" }}{{ else if gt $cx 350.0 }}{{ $anchor = "end" }}{{ end }}
+      {{- $lx := $cx }}{{ if eq $anchor "start" }}{{ $lx = sub $cx (div $bw 2) }}{{ else if eq $anchor "end" }}{{ $lx = add $cx (div $bw 2) }}{{ end }}
+  <text class="ngbus-stopcost__worst" x="{{ printf "%.2f" $lx }}" y="{{ printf "%.2f" (sub (sub (sub $plot $hBase) $hAdd) 4.0) }}"
+        text-anchor="{{ $anchor }}">+{{ lang.FormatNumber 1 $worstAdd }} min at {{ partial "bus-place.html" $s.place }}</text>
+    {{- end }}
+  {{- end }}
+
+  {{- if gt $n 0 }}
+  <text class="ngbus-hours__ax" x="{{ $L }}" y="{{ add $plot 15 }}" text-anchor="start">{{ partial "bus-place.html" (index $stops 0).place }}</text>
+  <text class="ngbus-hours__ax" x="{{ sub $W $pad }}" y="{{ add $plot 15 }}" text-anchor="end">{{ partial "bus-place.html" (index $stops (sub $n 1)).place }} →</text>
+  {{- end }}
+</svg>

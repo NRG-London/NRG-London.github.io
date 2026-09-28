@@ -152,6 +152,10 @@
        `where ... "!=" nil` also covers the key being absent altogether. */ -}}
 {{- $curted := where $all "curtailment_rate" "!=" nil -}}
 {{- $hasCurt := gt (len $curted) 0 -}}
+{{- /* The wait buses cut short add at a route's hardest-hit stop (29 Sep). Frequent
+       routes only — on a timetabled route people go by the timetable, so the
+       sweep leaves it null there. Same additive bargain as curtailments. */ -}}
+{{- $hasHit := gt (len (where $all "turned_short_worst_stop" "!=" nil)) 0 -}}
 
 {{- $window := replaceRE `(\d)-(\d)` "$1–$2" ($d.window | default "") -}}
 
@@ -183,6 +187,9 @@
       {{- if $hasCurt }}
       <button type="button" class="ngbus-chip" data-view="curtailed" aria-pressed="false">Most cut short</button>
       {{- end }}
+      {{- if $hasHit }}
+      <button type="button" class="ngbus-chip" data-view="hit" aria-pressed="false">Worst hit by cut-short buses</button>
+      {{- end }}
       <button type="button" class="ngbus-chip" data-view="all" aria-pressed="false">Every route</button>
     </div>
     <label class="ngbus-search">
@@ -207,6 +214,9 @@
           <th scope="col">Trend</th>
           {{- if $hasCurt }}
           <th scope="col" data-sort="curt" title="Share of journeys turned back before the end of the route">Cut short</th>
+          {{- end }}
+          {{- if $hasHit }}
+          <th scope="col" data-sort="hit" title="The wait that buses cut short added at the route's hardest-hit stop">Cut-short wait</th>
           {{- end }}
           <th scope="col" data-sort="coverage">Coverage</th>
         </tr>
@@ -256,6 +266,15 @@
             <span class="ngbus-nd" title="Too little data this week">no data</span>
             {{- else }}
             <span title="{{ $r.curtailments }} journeys cut short in the week">{{ lang.FormatPercent 1 (mul $r.curtailment_rate 100) }}</span>
+            {{- end }}
+          </td>
+          {{- end }}
+          {{- if $hasHit }}
+          <td class="ngbus-curt">
+            {{- with $r.turned_short_worst_stop }}
+            <span title="At {{ partial "bus-place.html" .place }}, {{ partial "bus-place.html" .direction }}: {{ lang.FormatNumber 1 .awt_min }} min average wait instead of {{ lang.FormatNumber 1 .awt_if_not_turned_min }}">+{{ lang.FormatNumber 1 .added_wait_min }} min</span>
+            {{- else }}
+            <span class="ngbus-nd" title="Not measured this week">no data</span>
             {{- end }}
           </td>
           {{- end }}
@@ -313,15 +332,20 @@
             "cu" .curtailment_rate "cn" .curtailments
             "cx" (in .flags "curtailments")) -}}
       {{- end -}}
+      {{- with .turned_short_worst_stop }}
+        {{- $row = merge $row (dict
+            "hw" .added_wait_min "ha" .awt_min "hn" .awt_if_not_turned_min
+            "hp" (partial "bus-place.html" .place) "hd" (partial "bus-place.html" .direction)) -}}
+      {{- end -}}
     {{- end -}}
     {{- $payload = $payload | append $row -}}
   {{- end -}}
   <script type="application/json" id="ngbus-league-data">{{ dict
       "week" $d.week_ending "window" $window "max" $max
       "sparkWeeks" (first (len $sparkPos) $d.spark_weeks) "threshold" $thr
-      "hasCurt" $hasCurt "night" (len $night) "otWords" $otWords
+      "hasCurt" $hasCurt "hasHit" $hasHit "night" (len $night) "otWords" $otWords
       "rows" $payload | jsonify | safeJS }}</script>
 </div>
 
 {{- partial "bus-assets.html" . }}
-<script src="/js/ngbus-table.js?v=5" defer></script>
+<script src="/js/ngbus-table.js?v=6" defer></script>

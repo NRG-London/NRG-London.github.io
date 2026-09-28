@@ -141,7 +141,7 @@
      than good. */
   function fmt(v) {
     if (v == null) return 'no data';
-    if (metric === 'ewt') return v.toFixed(1) + ' min';
+    if (metric === 'ewt' || metric === 'tsw') return v.toFixed(1) + ' min';
     /* Two decimals only while the figure is under 1%: a weekly route-wide rate
        of 0.34% needs them, a day on the 38 at 45.50% does not. */
     if (metric === 'cur') return (v * 100).toFixed(v < 0.01 ? 2 : 1) + '%';
@@ -149,7 +149,7 @@
   }
 
   function axisLabel(v) {
-    if (metric === 'ewt') return v.toFixed(1);
+    if (metric === 'ewt' || metric === 'tsw') return v.toFixed(1);
     if (metric === 'cur') return (v * 100).toFixed(axisStep < 0.01 ? 1 : 0) + '%';
     return Math.round(v * 100) + '%';
   }
@@ -158,13 +158,15 @@
     ewt: 'Excess wait time in each direction, in minutes.',
     ot: 'Share of departures leaving on time.',
     p: 'Share of waiting time spent inside a gap longer than ten minutes.',
-    cur: 'Share of journeys turned back before the end of the line.'
+    cur: 'Share of journeys turned back before the end of the line.',
+    tsw: 'Wait added by buses cut short, at each day\u2019s hardest-hit stop, in minutes.'
   };
   var ARIA = {
     ewt: 'excess wait time',
     ot: 'share of departures on time',
     p: 'share of waits over ten minutes',
-    cur: 'share of journeys cut short'
+    cur: 'share of journeys cut short',
+    tsw: 'wait added by buses cut short at the hardest-hit stop'
   };
 
   /* ---- the view: weeks or days ------------------------------------------- */
@@ -329,7 +331,7 @@
        it cannot draw are disabled, so the fallback reads as the span's limit
        rather than as a button that ignored the click. */
     if (!hasMetric(V, metric)) {
-      var alt = ['p', 'ot', 'ewt', 'cur'].filter(function (m) { return m !== metric && hasMetric(V, m); })[0];
+      var alt = ['p', 'ot', 'ewt', 'cur', 'tsw'].filter(function (m) { return m !== metric && hasMetric(V, m); })[0];
       if (alt) {
         metric = alt;
         if (sub && TITLES[metric]) sub.textContent = TITLES[metric];
@@ -620,6 +622,11 @@
       if (metric === 'p') {
         var t = (s.tt || [])[i];
         if (t != null) row += ' <span class="ngl2-tt">(timetable ' + Math.round(t * 100) + '%)</span>';
+      }
+      /* Which stop it was — the figure is the day's worst stop, not the route. */
+      if (metric === 'tsw') {
+        var pl = (s.tswp || [])[i];
+        if (pl && (s.tsw || [])[i] != null) row += ' <span class="ngl2-tt">at ' + esc(pl) + '</span>';
       }
       lines.push(row);
     });

@@ -176,6 +176,13 @@
         {{- if $anyCur }}
         <button type="button" class="ngbus-chip" data-metric="cur" aria-pressed="false">Cut short</button>
         {{- end }}
+        {{- /* Day by day only: there is no weekly series of it, so the chart greys
+               the chip on the longer spans. */ -}}
+        {{- $anyTsw := false -}}
+        {{- with $h.daily }}{{ range .series }}{{ range .turned_short_worst_added_min }}{{ if ne . nil }}{{ $anyTsw = true }}{{ end }}{{ end }}{{ end }}{{ end -}}
+        {{- if and $anyTsw (ne $class "timetabled") }}
+        <button type="button" class="ngbus-chip" data-metric="tsw" aria-pressed="false">Cut-short wait</button>
+        {{- end }}
       </div>
       {{- /* Rolling spans back from the week on show, in the order a reader zooms
              out: this week first, the whole record last. The last week and month
@@ -447,6 +454,28 @@
       Anyone still on board is put off, and anyone waiting further along the route is left
       for the next bus: a cancellation that only the far end of the route ever sees.</p>
     {{- end }}
+    {{- /* WHERE IT HURTS (29 Sep). Averaged over the whole route the wait from
+           cut-short buses all but vanishes — 0.6 min on the 38 — so it is
+           measured at each stop and the page leads with the worst of them, in
+           the back end's own suggested form. When that stop is the first of its
+           direction, say why: a bus turned back before reaching it never starts
+           back from there. Under half a minute it is not worth a sentence of
+           its own. Frequent routes only; null elsewhere. */ -}}
+    {{- with $row.turned_short_worst_stop }}
+      {{- if ge .added_wait_min 0.5 }}
+      {{- $wsPlace := .place }}{{ $isFirst := false -}}
+      {{- range $h.directions }}{{ range .turned_short_by_stop }}{{ if and .first (eq .place $wsPlace) }}{{ $isFirst = true }}{{ end }}{{ end }}{{ end }}
+    <p class="ngbus-curtblock__lead"><strong>Hardest-hit stop:</strong> at
+      {{ partial "bus-place.html" .place }}, {{ partial "bus-place.html" .direction }}, buses cut short
+      added <strong>{{ lang.FormatNumber 1 .added_wait_min }} minutes</strong> to the average wait last
+      week: {{ lang.FormatNumber 1 .awt_min }} minutes instead of {{ lang.FormatNumber 1 .awt_if_not_turned_min }}.
+      {{- if $isFirst }} It is where the route starts back, so a bus turned round before reaching
+      it never sets off from there at all.{{ end }}</p>
+      {{- else }}
+    <p class="ngbus-curtblock__lead"><strong>Hardest-hit stop:</strong> buses cut short added no more
+      than {{ lang.FormatNumber 1 .added_wait_min }} minutes to the average wait at any stop last week.</p>
+      {{- end }}
+    {{- end }}
     {{- with $cd }}
     {{- /* `weeks` is the LIST of week-endings the count covers, not a number of
            them. They are not necessarily consecutive either, so the page says
@@ -517,6 +546,19 @@
         {{ lang.FormatNumber 0 $c.journeys }} journeys
         ({{ lang.FormatPercent 0 (mul (div (float $c.journeys_turned_short) (float $c.journeys)) 100) }})
         were turned short.{{ end }}</p>
+        {{- end }}
+        {{- with .turned_short_by_stop }}
+          {{- $mx := 0.0 }}{{ range . }}{{ if gt (.added_wait_min | default 0.0) $mx }}{{ $mx = .added_wait_min }}{{ end }}{{ end }}
+          {{- if ge $mx 0.5 }}
+    {{ partial "bus-stopcost.html" (dict "stops" .
+        "label" "Average wait at each stop in route order, with the part added by buses cut short") }}
+    <p class="ngbus-curtblock__note">Each bar is the average wait at one stop, in route order. The
+      darker top is what buses cut short added; the pale part is the wait without them; the tick is
+      what the timetable alone would give. Hover a bar for the stop.</p>
+          {{- else }}
+    <p class="ngbus-curtblock__note">Buses cut short added no more than {{ lang.FormatNumber 1 $mx }}
+      minutes to the wait at any stop in this direction.</p>
+          {{- end }}
         {{- end }}
         {{- with .turned_short_at }}
     <ul class="ngbus-turnstops">
@@ -761,9 +803,15 @@
           {{- else }}{{ $dcur = $dcur | append nil }}{{ end -}}
         {{- end -}}
       {{- end -}}
+      {{- /* The wait cut-short buses added at that day's hardest-hit stop, and
+             the stop's name for the tooltip (29 Sep). Frequent routes only. */ -}}
+      {{- $dtswp := slice -}}
+      {{- range (.turned_short_worst_place | default slice) -}}
+        {{- if ne . nil }}{{ $dtswp = $dtswp | append (partial "bus-place.html" .) }}{{ else }}{{ $dtswp = $dtswp | append nil }}{{ end -}}
+      {{- end -}}
       {{- $ds := dict "name" (partial "bus-place.html" .name) "p" $dp "tt" $dtt
                       "ewt" (.ewt_min | default slice) "ot" (.on_time_pct | default slice)
-                      "cur" $dcur -}}
+                      "cur" $dcur "tsw" (.turned_short_worst_added_min | default slice) "tswp" $dtswp -}}
       {{- $dseries = $dseries | append (slice $ds) -}}
     {{- end -}}
     {{- $daily = dict "days" $h.daily.days "coverage" $h.daily.coverage "series" $dseries -}}
@@ -777,6 +825,6 @@
 
 {{ partial "bus-assets.html" . }}
 {{- if gt (len $units) 0 }}
-<script src="/js/ngbus-chart.js?v=9" defer></script>
+<script src="/js/ngbus-chart.js?v=10" defer></script>
 {{- end }}
 {{ end }}

@@ -63,12 +63,17 @@
     return;   // leave the server-rendered rows exactly as they are
   }
 
+  /* hw/ha/hn/hp/hd: the route's hardest-hit stop for the wait buses cut short
+     add — added minutes, the wait people had, the wait without cut-short buses,
+     the place and the direction. Frequent routes only; absent on the rest. */
   var R = { ROUTE: 'r', KIND: 'k', EWT: 'e', P: 'p', TT: 'tt', OT: 'o', DELTA: 'd', FROM: 'f',
-            COV: 'c', SPARK: 's', WHERE: 'w', CURT: 'cu', CURTN: 'cn', CFLAG: 'cx' };
+            COV: 'c', SPARK: 's', WHERE: 'w', CURT: 'cu', CURTN: 'cn', CFLAG: 'cx',
+            HIT: 'hw', HITA: 'ha', HITN: 'hn', HITP: 'hp', HITD: 'hd' };
 
   /* Curtailments are additive: the column, the chip and the sort key all exist
      only when the data carries them. */
   var hasCurt = !!spec.hasCurt;
+  var hasHit = !!spec.hasHit;
   var rows = spec.rows || [];
   var body = document.getElementById('ngbus-body');
   var countEl = document.getElementById('ngbus-count');
@@ -95,7 +100,7 @@
             'these routes are judged by how long the wait is.',
       caption: 'Frequent bus route performance',
       views: { worst: 'Longest waits', best: 'Shortest waits', improved: 'Most improved',
-               curtailed: 'Most cut short', all: 'Every route' },
+               curtailed: 'Most cut short', hit: 'Worst hit by cut-short buses', all: 'Every route' },
       worstNote: function (n, of) { return 'The ' + n + ' longest waits of ' + of + ' frequent routes reporting.'; },
       bestNote: function (n, of) { return 'The ' + n + ' shortest waits of ' + of + ' frequent routes reporting.'; },
       improvedNote: 'biggest falls in excess wait',
@@ -108,6 +113,8 @@
         { label: 'Trend' },
         { label: 'Cut short', sort: 'curt', curt: true,
           title: 'Share of journeys turned back before the end of the route' },
+        { label: 'Cut-short wait', sort: 'hit', hit: true,
+          title: 'The wait that buses cut short added at the route\u2019s hardest-hit stop' },
         { label: 'Coverage', sort: 'coverage' }
       ]
     },
@@ -136,12 +143,14 @@
     }
   };
 
-  var SORT_KEY = { ewt: R.EWT, p: R.P, ot: R.OT, delta: R.DELTA, coverage: R.COV, curt: R.CURT };
+  var SORT_KEY = { ewt: R.EWT, p: R.P, ot: R.OT, delta: R.DELTA, coverage: R.COV, curt: R.CURT, hit: R.HIT };
 
   var state = { kind: 'f', view: 'worst', sort: 'ewt', dir: 'desc', q: '' };
 
   function K() { return KINDS[state.kind]; }
-  function cols() { return K().cols.filter(function (c) { return !c.curt || hasCurt; }); }
+  function cols() {
+    return K().cols.filter(function (c) { return (!c.curt || hasCurt) && (!c.hit || hasHit); });
+  }
 
   /* The direction that reads "worst first" for a column on the current tab. On
      frequent routes a bigger number is worse everywhere; on timetabled routes a
@@ -325,6 +334,17 @@
         '</td>');
     }
 
+    if (hasHit && state.kind === 'f') {
+      var hw = r[R.HIT];
+      out.push('<td class="ngbus-curt">' +
+        (hw == null
+          ? nd('Not measured this week')
+          : '<span title="' + esc('At ' + r[R.HITP] + ', ' + r[R.HITD] + ': ' +
+              r[R.HITA].toFixed(1) + ' min average wait instead of ' + r[R.HITN].toFixed(1)) +
+            '">+' + hw.toFixed(1) + ' min</span>') +
+        '</td>');
+    }
+
     out.push('<td>' + Math.round((r[R.COV] || 0) * 100) + '%</td>');
     out.push('</tr>');
     return out.join('');
@@ -396,6 +416,15 @@
                  ? 'The ' + list.length + ' ' + k.name + ' routes turning back the largest ' +
                    'share of their journeys before the end of the line.'
                  : 'No ' + k.name + ' route has a curtailment figure this week.' };
+    }
+    if (state.view === 'hit') {
+      /* The passenger's side of a curtailment: not how many buses were turned
+         back, but how much longer people waited at the stop that bore it. */
+      list = list.filter(function (r) { return r[R.HIT] != null; })
+                 .sort(byNumber(R.HIT, 'desc')).slice(0, TOP_N);
+      return { list: list, ranked: true,
+               note: 'The ' + list.length + ' routes where buses cut short added most to the ' +
+                     'wait at a single stop last week. Hover a figure for the stop.' };
     }
     if (state.view === 'improved') {
       /* Improvement means a shorter wait, or more buses on time, than the
@@ -473,8 +502,11 @@
       caption.textContent = K().caption + ' for the week ending ' + shortDate(spec.week);
     }
     if (noteEl) noteEl.textContent = K().note;
+    /* A view a tab has no label for does not apply there — the cut-short wait is
+       not measured on timetabled routes — so its chip is hidden on that tab. */
     root.querySelectorAll('[data-view]').forEach(function (b) {
       var label = K().views[b.dataset.view];
+      b.hidden = !label;
       if (label) b.textContent = label;
     });
   }
@@ -520,6 +552,8 @@
       state.dir = state.kind === 't' ? 'desc' : 'asc';
     } else if (view === 'curtailed') {
       state.sort = 'curt'; state.dir = 'desc';
+    } else if (view === 'hit') {
+      state.sort = 'hit'; state.dir = 'desc';
     } else {
       state.sort = k.lead;
       state.dir = view === 'best' ? (k.worse === 'desc' ? 'asc' : 'desc') : k.worse;

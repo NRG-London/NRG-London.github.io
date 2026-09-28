@@ -115,7 +115,19 @@ waiting, 1.08 TfL). The note quotes the network figures only. Worth adding, if i
 cheap: `our_ewt_ex_turned_short_min` beside `our_ewt_min` in each `tfl_quarterly` row,
 so a route's own page can show its three numbers side by side.
 
-**Next from the back end (agreed 28 Sep):** the waiting that turning short causes,
+**Delivered 29 Sep, and in use: the wait from buses cut short, measured where it
+falls.** The route page leads the "Journeys cut short" block with the league row's
+`turned_short_worst_stop` in the back end's suggested wording ("At Victoria Bus Station,
+buses cut short added 4.6 minutes to the average wait: 9.0 minutes instead of 4.4"),
+adding why when it is a direction's first stop. Each direction draws
+`turned_short_by_stop` as one bar per boarding stop in route order — wait without the
+cut-short buses, what they added, and a tick for the timetable's wait — or a one-line
+"no more than X minutes" when nothing reaches half a minute. The chart gains a
+day-by-day "Cut-short wait" measure from `turned_short_worst_added_min`, with the stop
+named in the tooltip. The league table gains a "Cut-short wait" column and a "Worst hit
+by cut-short buses" view on the frequent tab.
+
+**Next from the back end (agreed 28 Sep, now delivered above):** the waiting that turning short causes,
 measured at the stops beyond each turning point ("at Victoria, buses turned short
 added 6 minutes to the average wait on Tuesday"). The front end will build it
 dormant once the field shape is known.
