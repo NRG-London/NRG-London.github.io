@@ -377,7 +377,7 @@
    "wait_p95_min": 24.38,
    "worst_gap": {
     "min": 122,
-    "start": "2026-09-26T17:38+01:00",
+    "start": "2026-09-26T17:38:00+01:00",
     "place": "Bank Station <> / Princes Street",
     "direction": "towards Tottenhall Road"
    },
@@ -462,7 +462,7 @@
    "wait_p95_min": 31.15,
    "worst_gap": {
     "min": 102,
-    "start": "2026-09-24T16:14+01:00",
+    "start": "2026-09-24T16:14:00+01:00",
     "place": "Ayles Road",
     "direction": "towards Haven Grn / Ealing Broadway Stn <> # "
    },
@@ -547,7 +547,7 @@
    "wait_p95_min": 26.58,
    "worst_gap": {
     "min": 94,
-    "start": "2026-09-25T18:56+01:00",
+    "start": "2026-09-25T18:56:00+01:00",
     "place": "The Royal Courts of Justice",
     "direction": "towards Lower Marsh"
    },
@@ -632,7 +632,7 @@
    "wait_p95_min": 29.5,
    "worst_gap": {
     "min": 92,
-    "start": "2026-09-20T06:01+01:00",
+    "start": "2026-09-20T06:01:00+01:00",
     "place": "Shooters Hill Road / Kidbrooke Park Road",
     "direction": "towards Lewisham Station # [dlr]"
    },
@@ -716,7 +716,7 @@
    "wait_p95_min": 22.26,
    "worst_gap": {
     "min": 110,
-    "start": "2026-09-24T13:32+01:00",
+    "start": "2026-09-24T13:32:00+01:00",
     "place": "Kingsway / Holborn Station <>",
     "direction": "towards Whitehall / Trafalgar Square"
    },
@@ -800,7 +800,7 @@
    "wait_p95_min": 25.37,
    "worst_gap": {
     "min": 122,
-    "start": "2026-09-25T15:57+01:00",
+    "start": "2026-09-25T15:57:00+01:00",
     "place": "Charing Cross Station <> #",
     "direction": "towards Westbourne Park Bus Garage"
    },
@@ -895,7 +895,7 @@
    "wait_p95_min": 26.8,
    "worst_gap": {
     "min": 160,
-    "start": "2026-09-26T19:29+01:00",
+    "start": "2026-09-26T19:29:00+01:00",
     "place": "Castlebar Road",
     "direction": "towards Golders Green Station <>"
    },
@@ -1000,7 +1000,7 @@
    "wait_p95_min": 23.2,
    "worst_gap": {
     "min": 63,
-    "start": "2026-09-25T04:28+01:00",
+    "start": "2026-09-25T04:28:00+01:00",
     "place": "Pelton Road",
     "direction": "towards North Greenwich Station <>"
    },
@@ -1085,7 +1085,7 @@
    "wait_p95_min": 25.55,
    "worst_gap": {
     "min": 68,
-    "start": "2026-09-20T12:28+01:00",
+    "start": "2026-09-20T12:28:00+01:00",
     "place": "Yeading Tesco",
     "direction": "towards Bulls Bridge Tesco"
    },
@@ -1171,7 +1171,7 @@
    "wait_p95_min": 28.36,
    "worst_gap": {
     "min": 75,
-    "start": "2026-09-22T07:38+01:00",
+    "start": "2026-09-22T07:38:00+01:00",
     "place": "Mottingham Station #",
     "direction": "towards Eltham High Street / Foots Cray Road"
    },
@@ -1335,7 +1335,7 @@
    "wait_p95_min": 22.58,
    "worst_gap": {
     "min": 62,
-    "start": "2026-09-26T04:56+01:00",
+    "start": "2026-09-26T04:56:00+01:00",
     "place": "Mallards Road / River Road",
     "direction": "towards Ilford Hill"
    },
@@ -1420,7 +1420,7 @@
    "wait_p95_min": 21.77,
    "worst_gap": {
     "min": 111,
-    "start": "2026-09-25T12:59+01:00",
+    "start": "2026-09-25T12:59:00+01:00",
     "place": "Albert Road",
     "direction": "towards Finsbury Park Station <> #"
    },
@@ -1505,7 +1505,7 @@
    "wait_p95_min": 26.3,
    "worst_gap": {
     "min": 66,
-    "start": "2026-09-25T19:20+01:00",
+    "start": "2026-09-25T19:20:00+01:00",
     "place": "Shacklewell Lane",
     "direction": "towards Gateway Surgical Centre"
    },
@@ -1589,7 +1589,7 @@
    "wait_p95_min": 22.29,
    "worst_gap": {
     "min": 118,
-    "start": "2026-09-21T13:55+01:00",
+    "start": "2026-09-21T13:55:00+01:00",
     "place": "Target Roundabout",
     "direction": "towards Northolt Station <>"
    },
@@ -1674,7 +1674,7 @@
    "wait_p95_min": 19.33,
    "worst_gap": {
     "min": 80,
-    "start": "2026-09-25T16:42+01:00",
+    "start": "2026-09-25T16:42:00+01:00",
     "place": "Longley Way",
     "direction": "towards Brent Cross West Station #"
    },
@@ -1758,7 +1758,7 @@
    "wait_p95_min": 28.18,
    "worst_gap": {
     "min": 102,
-    "start": "2026-09-20T14:57+01:00",
+    "start": "2026-09-20T14:57:00+01:00",
     "place": "Hounslow Central Station <>",
     "direction": "towards Twickenham Tesco"
    },
@@ -1842,7 +1842,7 @@
    "wait_p95_min": 20.5,
    "worst_gap": {
     "min": 84,
-    "start": "2026-09-25T15:35+01:00",
+    "start": "2026-09-25T15:35:00+01:00",
     "place": "Hyde Park Corner Station <>",
     "direction": "towards Parkgate Road"
    },
@@ -2085,7 +2085,7 @@
    "wait_p95_min": 19.95,
    "worst_gap": {
     "min": 75,
-    "start": "2026-09-23T13:06+01:00",
+    "start": "2026-09-23T13:06:00+01:00",
     "place": "Holborn Circus / Fetter Lane",
     "direction": "towards Streatham Hill / Telford Avenue"
    },
@@ -2169,7 +2169,7 @@
    "wait_p95_min": 21.91,
    "worst_gap": {
     "min": 62,
-    "start": "2026-09-25T23:43+01:00",
+    "start": "2026-09-25T23:43:00+01:00",
     "place": "Island Gardens Station [dlr]",
     "direction": "towards Moorfields Eye Hospital"
    },
@@ -2254,7 +2254,7 @@
    "wait_p95_min": 19.1,
    "worst_gap": {
     "min": 85,
-    "start": "2026-09-22T09:03+01:00",
+    "start": "2026-09-22T09:03:00+01:00",
     "place": "Bloomsbury Square",
     "direction": "towards Great Titchfield St / Oxford Circus Stn <>"
    },
@@ -2348,7 +2348,7 @@
    "wait_p95_min": 23.73,
    "worst_gap": {
     "min": 78,
-    "start": "2026-09-21T09:50+01:00",
+    "start": "2026-09-21T09:50:00+01:00",
     "place": "Durants School",
     "direction": "towards Brimsdown Station #"
    },
@@ -2433,7 +2433,7 @@
    "wait_p95_min": 21.25,
    "worst_gap": {
     "min": 149,
-    "start": "2026-09-26T15:39+01:00",
+    "start": "2026-09-26T15:39:00+01:00",
     "place": "Westmoreland Road",
     "direction": "towards Denmark Hill / Camberwell Green"
    },
@@ -2517,7 +2517,7 @@
    "wait_p95_min": 19.85,
    "worst_gap": {
     "min": 115,
-    "start": "2026-09-21T14:58+01:00",
+    "start": "2026-09-21T14:58:00+01:00",
     "place": "Market Place",
     "direction": "towards Great West Quarter"
    },
@@ -2602,7 +2602,7 @@
    "wait_p95_min": 23.97,
    "worst_gap": {
     "min": 82,
-    "start": "2026-09-23T18:37+01:00",
+    "start": "2026-09-23T18:37:00+01:00",
     "place": "Birkbeck Avenue",
     "direction": "towards Heathrow Central Bus Station"
    },
@@ -2687,7 +2687,7 @@
    "wait_p95_min": 21.97,
    "worst_gap": {
     "min": 61,
-    "start": "2026-09-24T09:30+01:00",
+    "start": "2026-09-24T09:30:00+01:00",
     "place": "Glyn Road",
     "direction": "towards Finsbury Park Interchange <> #"
    },
@@ -2853,7 +2853,7 @@
    "wait_p95_min": 19.99,
    "worst_gap": {
     "min": 87,
-    "start": "2026-09-24T15:03+01:00",
+    "start": "2026-09-24T15:03:00+01:00",
     "place": "Park Road",
     "direction": "towards Edmonton Green Bus Station"
    },
@@ -2938,7 +2938,7 @@
    "wait_p95_min": 23.8,
    "worst_gap": {
     "min": 79,
-    "start": "2026-09-23T21:23+01:00",
+    "start": "2026-09-23T21:23:00+01:00",
     "place": "Anderson Way",
     "direction": "towards Erith Quarry / Fraser Road"
    },
@@ -3023,7 +3023,7 @@
    "wait_p95_min": 21.49,
    "worst_gap": {
     "min": 55,
-    "start": "2026-09-20T18:21+01:00",
+    "start": "2026-09-20T18:21:00+01:00",
     "place": "Limehouse Station # [dlr]",
     "direction": "towards Charing Cross Station <> #"
    },
@@ -3107,7 +3107,7 @@
    "wait_p95_min": 21.23,
    "worst_gap": {
     "min": 47,
-    "start": "2026-09-22T18:34+01:00",
+    "start": "2026-09-22T18:34:00+01:00",
     "place": "Euston Station <>#",
     "direction": "towards Sussex Gardens"
    },
@@ -3192,7 +3192,7 @@
    "wait_p95_min": 21.73,
    "worst_gap": {
     "min": 60,
-    "start": "2026-09-24T23:40+01:00",
+    "start": "2026-09-24T23:40:00+01:00",
     "place": "Rectory Road / Brooke Road",
     "direction": "towards Forest Road"
    },
@@ -3277,7 +3277,7 @@
    "wait_p95_min": 21.45,
    "worst_gap": {
     "min": 53,
-    "start": "2026-09-23T10:01+01:00",
+    "start": "2026-09-23T10:01:00+01:00",
     "place": "Wood Green Station <>",
     "direction": "towards Enfield Island Village"
    },
@@ -3362,7 +3362,7 @@
    "wait_p95_min": 24.08,
    "worst_gap": {
     "min": 50,
-    "start": "2026-09-24T07:06+01:00",
+    "start": "2026-09-24T07:06:00+01:00",
     "place": "Addington Village Interchange >t<",
     "direction": "towards Salcot Crescent"
    },
@@ -3447,7 +3447,7 @@
    "wait_p95_min": 19.92,
    "worst_gap": {
     "min": 53,
-    "start": "2026-09-26T19:22+01:00",
+    "start": "2026-09-26T19:22:00+01:00",
     "place": "Stratford International Station # [dlr]",
     "direction": "towards Chingford Station #"
    },
@@ -3531,7 +3531,7 @@
    "wait_p95_min": 23.56,
    "worst_gap": {
     "min": 102,
-    "start": "2026-09-26T13:23+01:00",
+    "start": "2026-09-26T13:23:00+01:00",
     "place": "Newlands Park",
     "direction": "towards Bell Green / Sainsbury's"
    },
@@ -3626,7 +3626,7 @@
    "wait_p95_min": 22.54,
    "worst_gap": {
     "min": 66,
-    "start": "2026-09-22T12:44+01:00",
+    "start": "2026-09-22T12:44:00+01:00",
     "place": "Northwood Station <>",
     "direction": "towards Ealing Hospital"
    },
@@ -3711,7 +3711,7 @@
    "wait_p95_min": 20.98,
    "worst_gap": {
     "min": 51,
-    "start": "2026-09-22T06:20+01:00",
+    "start": "2026-09-22T06:20:00+01:00",
     "place": "Waterloo Station <> # / Waterloo Road",
     "direction": "towards Canada Water Bus Station <> #"
    },
@@ -3805,7 +3805,7 @@
    "wait_p95_min": 14.93,
    "worst_gap": {
     "min": 93,
-    "start": "2026-09-26T12:18+01:00",
+    "start": "2026-09-26T12:18:00+01:00",
     "place": "Hyde Park Corner",
     "direction": "towards Victoria Bus Station <> #"
    },
@@ -3889,7 +3889,7 @@
    "wait_p95_min": 22.35,
    "worst_gap": {
     "min": 184,
-    "start": "2026-09-24T14:22+01:00",
+    "start": "2026-09-24T14:22:00+01:00",
     "place": "Memorial Hospital",
     "direction": "towards Abbey Wood Road"
    },
@@ -3984,7 +3984,7 @@
    "wait_p95_min": 28.45,
    "worst_gap": {
     "min": 66,
-    "start": "2026-09-20T06:12+01:00",
+    "start": "2026-09-20T06:12:00+01:00",
     "place": "Schooner Close",
     "direction": "towards Minter Road"
    },
@@ -4079,7 +4079,7 @@
    "wait_p95_min": 17.08,
    "worst_gap": {
     "min": 69,
-    "start": "2026-09-23T11:52+01:00",
+    "start": "2026-09-23T11:52:00+01:00",
     "place": "Dowsett Road",
     "direction": "towards Manor House Station <>"
    },
@@ -4164,7 +4164,7 @@
    "wait_p95_min": 25.54,
    "worst_gap": {
     "min": 67,
-    "start": "2026-09-20T11:51+01:00",
+    "start": "2026-09-20T11:51:00+01:00",
     "place": "St James Street Station #",
     "direction": "towards Walthamstow Bus Station <> >lol<"
    },
@@ -4248,7 +4248,7 @@
    "wait_p95_min": 24.73,
    "worst_gap": {
     "min": 66,
-    "start": "2026-09-23T19:12+01:00",
+    "start": "2026-09-23T19:12:00+01:00",
     "place": "Convent Way Shopping Precinct",
     "direction": "towards Hounslow Bus Station"
    },
@@ -4333,7 +4333,7 @@
    "wait_p95_min": 18.84,
    "worst_gap": {
     "min": 83,
-    "start": "2026-09-26T04:15+01:00",
+    "start": "2026-09-26T04:15:00+01:00",
     "place": "Shoreditch Church",
     "direction": "towards Waterloo Station / Mepham Street <> #"
    },
@@ -4417,7 +4417,7 @@
    "wait_p95_min": 19.45,
    "worst_gap": {
     "min": 56,
-    "start": "2026-09-23T15:33+01:00",
+    "start": "2026-09-23T15:33:00+01:00",
     "place": "Angel Corner",
     "direction": "towards King's Cross Road / Pentonville Road"
    },
@@ -4501,7 +4501,7 @@
    "wait_p95_min": 20.45,
    "worst_gap": {
     "min": 61,
-    "start": "2026-09-26T04:11+01:00",
+    "start": "2026-09-26T04:11:00+01:00",
     "place": "Warren Street Station <>",
     "direction": "towards Archway Station <>"
    },
@@ -4585,7 +4585,7 @@
    "wait_p95_min": 21.08,
    "worst_gap": {
     "min": 55,
-    "start": "2026-09-25T18:08+01:00",
+    "start": "2026-09-25T18:08:00+01:00",
     "place": "Plaistow Station <>",
     "direction": "towards Royal Crest Avenue"
    },
@@ -4670,7 +4670,7 @@
    "wait_p95_min": 22.31,
    "worst_gap": {
     "min": 62,
-    "start": "2026-09-20T05:50+01:00",
+    "start": "2026-09-20T05:50:00+01:00",
     "place": "Brockley Station #",
     "direction": "towards Catford Garage"
    },
@@ -4754,7 +4754,7 @@
    "wait_p95_min": 25.71,
    "worst_gap": {
     "min": 57,
-    "start": "2026-09-23T18:42+01:00",
+    "start": "2026-09-23T18:42:00+01:00",
     "place": "Peckham Rye Station #",
     "direction": "towards Fairfield Halls"
    },
@@ -4839,7 +4839,7 @@
    "wait_p95_min": 23.75,
    "worst_gap": {
     "min": 129,
-    "start": "2026-09-20T11:25+01:00",
+    "start": "2026-09-20T11:25:00+01:00",
     "place": "High Barnet Station <>",
     "direction": "towards Barnet Hospital"
    },
@@ -4934,7 +4934,7 @@
    "wait_p95_min": 17.4,
    "worst_gap": {
     "min": 54,
-    "start": "2026-09-21T08:00+01:00",
+    "start": "2026-09-21T08:00:00+01:00",
     "place": "Leyton Station <>",
     "direction": "towards Stratford Bus Station <> # [dlr]"
    },
@@ -5019,7 +5019,7 @@
    "wait_p95_min": 21.86,
    "worst_gap": {
     "min": 51,
-    "start": "2026-09-26T13:42+01:00",
+    "start": "2026-09-26T13:42:00+01:00",
     "place": "Woodford / Roding Lane South",
     "direction": "towards Walthamstow Central Station <> >lol<"
    },
@@ -5103,7 +5103,7 @@
    "wait_p95_min": 22.61,
    "worst_gap": {
     "min": 48,
-    "start": "2026-09-26T21:37+01:00",
+    "start": "2026-09-26T21:37:00+01:00",
     "place": "Addiscombe Road",
     "direction": "towards Canons Hill"
    },
@@ -5188,7 +5188,7 @@
    "wait_p95_min": 18.89,
    "worst_gap": {
     "min": 46,
-    "start": "2026-09-24T21:42+01:00",
+    "start": "2026-09-24T21:42:00+01:00",
     "place": "Highbury & Islington Station <> #",
     "direction": "towards Molesworth Street"
    },
@@ -5273,7 +5273,7 @@
    "wait_p95_min": 19.45,
    "worst_gap": {
     "min": 46,
-    "start": "2026-09-22T13:40+01:00",
+    "start": "2026-09-22T13:40:00+01:00",
     "place": "The Royal Courts of Justice",
     "direction": "towards St Mary of Eton Church"
    },
@@ -5368,7 +5368,7 @@
    "wait_p95_min": 20.05,
    "worst_gap": {
     "min": 75,
-    "start": "2026-09-23T09:37+01:00",
+    "start": "2026-09-23T09:37:00+01:00",
     "place": "Woolwich Arsenal Station # [dlr]",
     "direction": "towards Bluewater Shopping Centre"
    },
@@ -5453,7 +5453,7 @@
    "wait_p95_min": 20.68,
    "worst_gap": {
     "min": 60,
-    "start": "2026-09-25T22:10+01:00",
+    "start": "2026-09-25T22:10:00+01:00",
     "place": "Kimberley Road",
     "direction": "towards Bell Green / Sainsbury's"
    },
@@ -5537,7 +5537,7 @@
    "wait_p95_min": 21.82,
    "worst_gap": {
     "min": 60,
-    "start": "2026-09-21T04:30+01:00",
+    "start": "2026-09-21T04:30:00+01:00",
     "place": "Bromley North Station #",
     "direction": "towards Princess Royal University Hospital"
    },
@@ -5622,7 +5622,7 @@
    "wait_p95_min": 17.0,
    "worst_gap": {
     "min": 64,
-    "start": "2026-09-25T15:07+01:00",
+    "start": "2026-09-25T15:07:00+01:00",
     "place": "Tottenham High Road",
     "direction": "towards Northumberland Park Bus Stand"
    },
@@ -5706,7 +5706,7 @@
    "wait_p95_min": 19.61,
    "worst_gap": {
     "min": 63,
-    "start": "2026-09-24T04:20+01:00",
+    "start": "2026-09-24T04:20:00+01:00",
     "place": "Upper Holloway Station #",
     "direction": "towards Halliwick Park"
    },
@@ -5790,7 +5790,7 @@
    "wait_p95_min": 17.42,
    "worst_gap": {
     "min": 55,
-    "start": "2026-09-25T20:27+01:00",
+    "start": "2026-09-25T20:27:00+01:00",
     "place": "Ilford Broadway",
     "direction": "towards Canning Town Station <> [dlr]"
    },
@@ -5874,7 +5874,7 @@
    "wait_p95_min": 20.0,
    "worst_gap": {
     "min": 48,
-    "start": "2026-09-23T16:32+01:00",
+    "start": "2026-09-23T16:32:00+01:00",
     "place": "Spitalfields Market",
     "direction": "towards Hackney Town Hall"
    },
@@ -5959,7 +5959,7 @@
    "wait_p95_min": 20.43,
    "worst_gap": {
     "min": 65,
-    "start": "2026-09-22T05:09+01:00",
+    "start": "2026-09-22T05:09:00+01:00",
     "place": "Waterloo Station <> # / Waterloo Road",
     "direction": "towards Brockley Rise / Chandos"
    },
@@ -6044,7 +6044,7 @@
    "wait_p95_min": 16.8,
    "worst_gap": {
     "min": 72,
-    "start": "2026-09-26T21:14+01:00",
+    "start": "2026-09-26T21:14:00+01:00",
     "place": "St Loys Road",
     "direction": "towards Edmonton Green Bus Station"
    },
@@ -6128,7 +6128,7 @@
    "wait_p95_min": 26.19,
    "worst_gap": {
     "min": 98,
-    "start": "2026-09-22T19:29+01:00",
+    "start": "2026-09-22T19:29:00+01:00",
     "place": "White City Station<>",
     "direction": "towards Shepherds Bush Green"
    },
@@ -6212,7 +6212,7 @@
    "wait_p95_min": 21.17,
    "worst_gap": {
     "min": 59,
-    "start": "2026-09-21T19:59+01:00",
+    "start": "2026-09-21T19:59:00+01:00",
     "place": "Gallions Reach Station [dlr]",
     "direction": "towards Beckton Bus Station"
    },
@@ -6296,7 +6296,7 @@
    "wait_p95_min": 20.47,
    "worst_gap": {
     "min": 57,
-    "start": "2026-09-21T07:49+01:00",
+    "start": "2026-09-21T07:49:00+01:00",
     "place": "Torcross Road",
     "direction": "towards Ruislip Station <>"
    },
@@ -6380,7 +6380,7 @@
    "wait_p95_min": 15.48,
    "worst_gap": {
     "min": 48,
-    "start": "2026-09-25T23:51+01:00",
+    "start": "2026-09-25T23:51:00+01:00",
     "place": "Seven Sisters Station <> #",
     "direction": "towards Archway Station <>"
    },
@@ -6465,7 +6465,7 @@
    "wait_p95_min": 20.67,
    "worst_gap": {
     "min": 93,
-    "start": "2026-09-22T15:19+01:00",
+    "start": "2026-09-22T15:19:00+01:00",
     "place": "Vauxhall Bus Station",
     "direction": "towards Battersea Park Station #"
    },
@@ -6550,7 +6550,7 @@
    "wait_p95_min": 20.23,
    "worst_gap": {
     "min": 75,
-    "start": "2026-09-22T18:16+01:00",
+    "start": "2026-09-22T18:16:00+01:00",
     "place": "Fleet Street / City Thameslink #",
     "direction": "towards Dulwich Library"
    },
@@ -6634,7 +6634,7 @@
    "wait_p95_min": 20.74,
    "worst_gap": {
     "min": 87,
-    "start": "2026-09-23T05:26+01:00",
+    "start": "2026-09-23T05:26:00+01:00",
     "place": "Caney Mews",
     "direction": "towards Brent Cross Shopping Centre"
    },
@@ -6719,7 +6719,7 @@
    "wait_p95_min": 20.23,
    "worst_gap": {
     "min": 54,
-    "start": "2026-09-25T19:54+01:00",
+    "start": "2026-09-25T19:54:00+01:00",
     "place": "Fernhill Street",
     "direction": "towards Stratford Bus Station <> # [dlr]"
    },
@@ -6803,7 +6803,7 @@
    "wait_p95_min": 17.64,
    "worst_gap": {
     "min": 45,
-    "start": "2026-09-20T15:35+01:00",
+    "start": "2026-09-20T15:35:00+01:00",
     "place": "Elephant & Castle Station <> #",
     "direction": "towards Aldgate Station <>"
    },
@@ -6887,7 +6887,7 @@
    "wait_p95_min": 20.58,
    "worst_gap": {
     "min": 71,
-    "start": "2026-09-25T15:02+01:00",
+    "start": "2026-09-25T15:02:00+01:00",
     "place": "Millennium Leisure Park East",
     "direction": "towards North Greenwich Station <>"
    },
@@ -6971,7 +6971,7 @@
    "wait_p95_min": 19.54,
    "worst_gap": {
     "min": 61,
-    "start": "2026-09-26T04:34+01:00",
+    "start": "2026-09-26T04:34:00+01:00",
     "place": "Bridgend Road",
     "direction": "towards Clapham Junction Stn # / The Falcon"
    },
@@ -7056,7 +7056,7 @@
    "wait_p95_min": 19.76,
    "worst_gap": {
     "min": 76,
-    "start": "2026-09-20T14:22+01:00",
+    "start": "2026-09-20T14:22:00+01:00",
     "place": "Steyne Road",
     "direction": "towards North Acton Station <>"
    },
@@ -7141,7 +7141,7 @@
    "wait_p95_min": 16.41,
    "worst_gap": {
     "min": 62,
-    "start": "2026-09-25T20:43+01:00",
+    "start": "2026-09-25T20:43:00+01:00",
     "place": "Hayes End",
     "direction": "towards White City Bus Station <>"
    },
@@ -7226,7 +7226,7 @@
    "wait_p95_min": 17.74,
    "worst_gap": {
     "min": 44,
-    "start": "2026-09-26T21:46+01:00",
+    "start": "2026-09-26T21:46:00+01:00",
     "place": "Goose Green",
     "direction": "towards Lewisham Station # [dlr]"
    },
@@ -7312,7 +7312,7 @@
    "wait_p95_min": 20.96,
    "worst_gap": {
     "min": 61,
-    "start": "2026-09-26T11:24+01:00",
+    "start": "2026-09-26T11:24:00+01:00",
     "place": "Thamesmead / Carlyle Road",
     "direction": "towards Bromley North Station #"
    },
@@ -7407,7 +7407,7 @@
    "wait_p95_min": 19.33,
    "worst_gap": {
     "min": 49,
-    "start": "2026-09-20T08:30+01:00",
+    "start": "2026-09-20T08:30:00+01:00",
     "place": "Coulsdon Library",
     "direction": "towards Old Coulsdon / Tudor Rose"
    },
@@ -7491,7 +7491,7 @@
    "wait_p95_min": 19.03,
    "worst_gap": {
     "min": 53,
-    "start": "2026-09-26T19:14+01:00",
+    "start": "2026-09-26T19:14:00+01:00",
     "place": "Northumberland Park",
     "direction": "towards Meridian Water Station #"
    },
@@ -7575,7 +7575,7 @@
    "wait_p95_min": 23.36,
    "worst_gap": {
     "min": 64,
-    "start": "2026-09-23T14:41+01:00",
+    "start": "2026-09-23T14:41:00+01:00",
     "place": "Lebanon Gardens",
     "direction": "towards Biggin Hill Valley"
    },
@@ -7660,7 +7660,7 @@
    "wait_p95_min": 18.42,
    "worst_gap": {
     "min": 69,
-    "start": "2026-09-23T18:31+01:00",
+    "start": "2026-09-23T18:31:00+01:00",
     "place": "London Hilton Hotel",
     "direction": "towards Victoria Station <>#"
    },
@@ -7745,7 +7745,7 @@
    "wait_p95_min": 17.32,
    "worst_gap": {
     "min": 49,
-    "start": "2026-09-24T08:49+01:00",
+    "start": "2026-09-24T08:49:00+01:00",
     "place": "Wood Green Shopping City",
     "direction": "towards Turnpike Lane Station <>"
    },
@@ -7829,7 +7829,7 @@
    "wait_p95_min": 17.53,
    "worst_gap": {
     "min": 43,
-    "start": "2026-09-26T18:15+01:00",
+    "start": "2026-09-26T18:15:00+01:00",
     "place": "Strode Road",
     "direction": "towards Pound Lane"
    },
@@ -7913,7 +7913,7 @@
    "wait_p95_min": 20.69,
    "worst_gap": {
     "min": 46,
-    "start": "2026-09-26T22:05+01:00",
+    "start": "2026-09-26T22:05:00+01:00",
     "place": "Horniman Museum",
     "direction": "towards Brixton Station <> #"
    },
@@ -7998,7 +7998,7 @@
    "wait_p95_min": 21.97,
    "worst_gap": {
     "min": 72,
-    "start": "2026-09-20T20:22+01:00",
+    "start": "2026-09-20T20:22:00+01:00",
     "place": "Western Avenue / Savoy Circus",
     "direction": "towards White City Bus Station <>"
    },
@@ -8083,7 +8083,7 @@
    "wait_p95_min": 18.59,
    "worst_gap": {
     "min": 51,
-    "start": "2026-09-21T04:57+01:00",
+    "start": "2026-09-21T04:57:00+01:00",
     "place": "Sydenham Station # / Kirkdale",
     "direction": "towards Penge / Pawleyne Arms"
    },
@@ -8168,7 +8168,7 @@
    "wait_p95_min": 22.06,
    "worst_gap": {
     "min": 50,
-    "start": "2026-09-20T18:21+01:00",
+    "start": "2026-09-20T18:21:00+01:00",
     "place": "West Croydon Bus Station",
     "direction": "towards Morden Station <>"
    },
@@ -8254,7 +8254,7 @@
    "wait_p95_min": 19.34,
    "worst_gap": {
     "min": 67,
-    "start": "2026-09-26T20:29+01:00",
+    "start": "2026-09-26T20:29:00+01:00",
     "place": "Brent Park Tesco",
     "direction": "towards Ikea Brent Park"
    },
@@ -8338,7 +8338,7 @@
    "wait_p95_min": 21.46,
    "worst_gap": {
     "min": 61,
-    "start": "2026-09-20T07:33+01:00",
+    "start": "2026-09-20T07:33:00+01:00",
     "place": "Sutton Green",
     "direction": "towards West Croydon Bus Station"
    },
@@ -8423,7 +8423,7 @@
    "wait_p95_min": 20.97,
    "worst_gap": {
     "min": 71,
-    "start": "2026-09-20T07:44+01:00",
+    "start": "2026-09-20T07:44:00+01:00",
     "place": "Ballards Road",
     "direction": "towards Dagenham Asda"
    },
@@ -8508,7 +8508,7 @@
    "wait_p95_min": 20.88,
    "worst_gap": {
     "min": 78,
-    "start": "2026-09-24T08:51+01:00",
+    "start": "2026-09-24T08:51:00+01:00",
     "place": "Millennium Leisure Park East",
     "direction": "towards North Greenwich Station <>"
    },
@@ -8592,7 +8592,7 @@
    "wait_p95_min": 18.98,
    "worst_gap": {
     "min": 51,
-    "start": "2026-09-25T04:20+01:00",
+    "start": "2026-09-25T04:20:00+01:00",
     "place": "High Street North",
     "direction": "towards Hainault Street"
    },
@@ -8686,7 +8686,7 @@
    "wait_p95_min": 20.64,
    "worst_gap": {
     "min": 63,
-    "start": "2026-09-22T04:13+01:00",
+    "start": "2026-09-22T04:13:00+01:00",
     "place": "Fernhill Street",
     "direction": "towards Manor Park Station #"
    },
@@ -8771,7 +8771,7 @@
    "wait_p95_min": 16.95,
    "worst_gap": {
     "min": 61,
-    "start": "2026-09-26T22:20+01:00",
+    "start": "2026-09-26T22:20:00+01:00",
     "place": "Tottenham Hale Bus Station <> #",
     "direction": "towards Mitchell Road"
    },
@@ -8853,7 +8853,7 @@
    "wait_p95_min": 18.15,
    "worst_gap": {
     "min": 75,
-    "start": "2026-09-21T12:10+01:00",
+    "start": "2026-09-21T12:10:00+01:00",
     "place": "Ingrave Street",
     "direction": "towards White City Bus Station <>"
    },
@@ -8935,7 +8935,7 @@
    "wait_p95_min": 20.18,
    "worst_gap": {
     "min": 46,
-    "start": "2026-09-23T23:31+01:00",
+    "start": "2026-09-23T23:31:00+01:00",
     "place": "Kensington Palace",
     "direction": "towards Vauxhall Bus Station"
    },
@@ -9017,7 +9017,7 @@
    "wait_p95_min": 21.4,
    "worst_gap": {
     "min": 45,
-    "start": "2026-09-22T15:29+01:00",
+    "start": "2026-09-22T15:29:00+01:00",
     "place": "Bethnal Green Station <>",
     "direction": "towards Canning Town Station <> [dlr]"
    },
@@ -9119,7 +9119,7 @@
    "wait_p95_min": 16.5,
    "worst_gap": {
     "min": 43,
-    "start": "2026-09-21T09:18+01:00",
+    "start": "2026-09-21T09:18:00+01:00",
     "place": "Bakers Avenue",
     "direction": "towards Stratford Bus Station <> # [dlr]"
    },
@@ -9201,7 +9201,7 @@
    "wait_p95_min": 18.02,
    "worst_gap": {
     "min": 40,
-    "start": "2026-09-20T20:01+01:00",
+    "start": "2026-09-20T20:01:00+01:00",
     "place": "Meridian Water Station #",
     "direction": "towards Tottenham Hale Station <> #"
    },
@@ -9295,7 +9295,7 @@
    "wait_p95_min": 19.56,
    "worst_gap": {
     "min": 46,
-    "start": "2026-09-24T08:08+01:00",
+    "start": "2026-09-24T08:08:00+01:00",
     "place": "Coombe Girls School",
     "direction": "towards Fairfield Bus Station"
    },
@@ -9387,7 +9387,7 @@
    "wait_p95_min": 20.36,
    "worst_gap": {
     "min": 51,
-    "start": "2026-09-26T06:01+01:00",
+    "start": "2026-09-26T06:01:00+01:00",
     "place": "Woolwich Arsenal Station # [dlr]",
     "direction": "towards Plumstead Bus Garage"
    },
@@ -9469,7 +9469,7 @@
    "wait_p95_min": 19.19,
    "worst_gap": {
     "min": 42,
-    "start": "2026-09-21T06:24+01:00",
+    "start": "2026-09-21T06:24:00+01:00",
     "place": "Sloane Square",
     "direction": "towards Victoria Station <> #"
    },
@@ -9553,7 +9553,7 @@
    "wait_p95_min": 17.19,
    "worst_gap": {
     "min": 53,
-    "start": "2026-09-26T22:50+01:00",
+    "start": "2026-09-26T22:50:00+01:00",
     "place": "Tottenham High Road / Bruce Grove Stn #",
     "direction": "towards King's Cross Station <> # / York Way"
    },
@@ -9637,7 +9637,7 @@
    "wait_p95_min": 19.19,
    "worst_gap": {
     "min": 60,
-    "start": "2026-09-26T04:01+01:00",
+    "start": "2026-09-26T04:01:00+01:00",
     "place": "Piccadilly Circus",
     "direction": "towards Waterloo Station <> # / Waterloo Road"
    },
@@ -9719,7 +9719,7 @@
    "wait_p95_min": 20.2,
    "worst_gap": {
     "min": 54,
-    "start": "2026-09-26T21:25+01:00",
+    "start": "2026-09-26T21:25:00+01:00",
     "place": "Calderwood Street",
     "direction": "towards Garland Road Clinic"
    },
@@ -9803,7 +9803,7 @@
    "wait_p95_min": 21.89,
    "worst_gap": {
     "min": 63,
-    "start": "2026-09-26T14:50+01:00",
+    "start": "2026-09-26T14:50:00+01:00",
     "place": "Green Man Roundabout",
     "direction": "towards Leytonstone Station <>"
    },
@@ -9887,7 +9887,7 @@
    "wait_p95_min": 22.98,
    "worst_gap": {
     "min": 61,
-    "start": "2026-09-20T05:28+01:00",
+    "start": "2026-09-20T05:28:00+01:00",
     "place": "Derby Road",
     "direction": "towards East Beckton / Sainsbury's"
    },
@@ -9969,7 +9969,7 @@
    "wait_p95_min": 17.42,
    "worst_gap": {
     "min": 61,
-    "start": "2026-09-22T05:15+01:00",
+    "start": "2026-09-22T05:15:00+01:00",
     "place": "Hackney Central Station #",
     "direction": "towards Hackney Wick / Trowbridge Road"
    },
@@ -10053,7 +10053,7 @@
    "wait_p95_min": 18.77,
    "worst_gap": {
     "min": 39,
-    "start": "2026-09-22T10:47+01:00",
+    "start": "2026-09-22T10:47:00+01:00",
     "place": "Liverpool Street Station <> #",
     "direction": "towards London Bridge Bus Station <> #"
    },
@@ -10145,7 +10145,7 @@
    "wait_p95_min": 18.8,
    "worst_gap": {
     "min": 53,
-    "start": "2026-09-23T07:57+01:00",
+    "start": "2026-09-23T07:57:00+01:00",
     "place": "Lewisham College",
     "direction": "towards New Cross Sainsbury's"
    },
@@ -10227,7 +10227,7 @@
    "wait_p95_min": 20.6,
    "worst_gap": {
     "min": 54,
-    "start": "2026-09-26T22:28+01:00",
+    "start": "2026-09-26T22:28:00+01:00",
     "place": "Mount Pleasant Hill",
     "direction": "towards Lea Bridge Roundabout"
    },
@@ -10321,7 +10321,7 @@
    "wait_p95_min": 22.58,
    "worst_gap": {
     "min": 66,
-    "start": "2026-09-20T10:27+01:00",
+    "start": "2026-09-20T10:27:00+01:00",
     "place": "Bromley Road / Lewisham Town Hall",
     "direction": "towards Catford Garage"
    },
@@ -10403,7 +10403,7 @@
    "wait_p95_min": 20.59,
    "worst_gap": {
     "min": 62,
-    "start": "2026-09-21T21:59+01:00",
+    "start": "2026-09-21T21:59:00+01:00",
     "place": "Belsize Park Station <>",
     "direction": "towards Brent Cross Shopping Centre"
    },
@@ -10488,7 +10488,7 @@
    "wait_p95_min": 21.89,
    "worst_gap": {
     "min": 62,
-    "start": "2026-09-26T23:16+01:00",
+    "start": "2026-09-26T23:16:00+01:00",
     "place": "Sutton Green",
     "direction": "towards Worcester Park Station #"
    },
@@ -10580,7 +10580,7 @@
    "wait_p95_min": 15.45,
    "worst_gap": {
     "min": 93,
-    "start": "2026-09-24T18:40+01:00",
+    "start": "2026-09-24T18:40:00+01:00",
     "place": "Regent's Park Station <>",
     "direction": "towards Great Central Street"
    },
@@ -10664,7 +10664,7 @@
    "wait_p95_min": 16.24,
    "worst_gap": {
     "min": 52,
-    "start": "2026-09-24T05:09+01:00",
+    "start": "2026-09-24T05:09:00+01:00",
     "place": "Norwood Road / Robson Road",
     "direction": "towards Ernest Avenue"
    },
@@ -10746,7 +10746,7 @@
    "wait_p95_min": 20.1,
    "worst_gap": {
     "min": 66,
-    "start": "2026-09-20T06:18+01:00",
+    "start": "2026-09-20T06:18:00+01:00",
     "place": "Calderwood Street",
     "direction": "towards Orpington Station #"
    },
@@ -10848,7 +10848,7 @@
    "wait_p95_min": 20.53,
    "worst_gap": {
     "min": 54,
-    "start": "2026-09-25T20:06+01:00",
+    "start": "2026-09-25T20:06:00+01:00",
     "place": "Bexleyheath Clock Tower",
     "direction": "towards Queen Mary's Hospital / Chislehurst Road"
    },
@@ -10932,7 +10932,7 @@
    "wait_p95_min": 15.66,
    "worst_gap": {
     "min": 78,
-    "start": "2026-09-25T14:25+01:00",
+    "start": "2026-09-25T14:25:00+01:00",
     "place": "Victoria Coach Station",
     "direction": "towards Victoria Station <>#"
    },
@@ -11016,7 +11016,7 @@
    "wait_p95_min": 20.29,
    "worst_gap": {
     "min": 47,
-    "start": "2026-09-25T08:30+01:00",
+    "start": "2026-09-25T08:30:00+01:00",
     "place": "Eley Trading Estate",
     "direction": "towards Chingford Station #"
    },
@@ -11110,7 +11110,7 @@
    "wait_p95_min": 21.6,
    "worst_gap": {
     "min": 46,
-    "start": "2026-09-23T05:45+01:00",
+    "start": "2026-09-23T05:45:00+01:00",
     "place": "Forest Road / Slade Green Station #",
     "direction": "towards Geddes Place"
    },
@@ -11194,7 +11194,7 @@
    "wait_p95_min": 17.82,
    "worst_gap": {
     "min": 42,
-    "start": "2026-09-25T06:55+01:00",
+    "start": "2026-09-25T06:55:00+01:00",
     "place": "Parliament Hill Fields",
     "direction": "towards Highgate School"
    },
@@ -11276,7 +11276,7 @@
    "wait_p95_min": 17.49,
    "worst_gap": {
     "min": 38,
-    "start": "2026-09-24T19:32+01:00",
+    "start": "2026-09-24T19:32:00+01:00",
     "place": "Dalston Junction Station #",
     "direction": "towards Aldgate Station <>"
    },
@@ -11358,7 +11358,7 @@
    "wait_p95_min": 21.69,
    "worst_gap": {
     "min": 60,
-    "start": "2026-09-22T07:32+01:00",
+    "start": "2026-09-22T07:32:00+01:00",
     "place": "Hillingdon Hospital",
     "direction": "towards Brunel University"
    },
@@ -11450,7 +11450,7 @@
    "wait_p95_min": 21.59,
    "worst_gap": {
     "min": 65,
-    "start": "2026-09-20T08:09+01:00",
+    "start": "2026-09-20T08:09:00+01:00",
     "place": "Calley Down Crescent",
     "direction": "towards Vulcan Way"
    },
@@ -11534,7 +11534,7 @@
    "wait_p95_min": 15.99,
    "worst_gap": {
     "min": 40,
-    "start": "2026-09-20T19:52+01:00",
+    "start": "2026-09-20T19:52:00+01:00",
     "place": "Burdett Road",
     "direction": "towards Aldgate Station <>"
    },
@@ -11616,7 +11616,7 @@
    "wait_p95_min": 18.22,
    "worst_gap": {
     "min": 102,
-    "start": "2026-09-22T04:31+01:00",
+    "start": "2026-09-22T04:31:00+01:00",
     "place": "Harlesden Jubilee Clock",
     "direction": "towards Willesden Junction Station <> #"
    },
@@ -11708,7 +11708,7 @@
    "wait_p95_min": 17.03,
    "worst_gap": {
     "min": 52,
-    "start": "2026-09-23T08:23+01:00",
+    "start": "2026-09-23T08:23:00+01:00",
     "place": "Cambridge Roundabout / East Side",
     "direction": "towards Brent Cross Shopping Centre"
    },
@@ -11790,7 +11790,7 @@
    "wait_p95_min": 15.69,
    "worst_gap": {
     "min": 82,
-    "start": "2026-09-22T14:51+01:00",
+    "start": "2026-09-22T14:51:00+01:00",
     "place": "Hyde Park Corner",
     "direction": "towards Marylebone Station <>"
    },
@@ -11874,7 +11874,7 @@
    "wait_p95_min": 19.12,
    "worst_gap": {
     "min": 45,
-    "start": "2026-09-26T21:11+01:00",
+    "start": "2026-09-26T21:11:00+01:00",
     "place": "Park Road",
     "direction": "towards Beckton Bus Station"
    },
@@ -11956,7 +11956,7 @@
    "wait_p95_min": 18.16,
    "worst_gap": {
     "min": 55,
-    "start": "2026-09-22T06:01+01:00",
+    "start": "2026-09-22T06:01:00+01:00",
     "place": "Blackheath Station #",
     "direction": "towards Blackheath / Royal Standard"
    },
@@ -12048,7 +12048,7 @@
    "wait_p95_min": 19.77,
    "worst_gap": {
     "min": 47,
-    "start": "2026-09-20T07:00+01:00",
+    "start": "2026-09-20T07:00:00+01:00",
     "place": "Caledonian Road / Copenhagen Street",
     "direction": "towards Angel Islington / City Road"
    },
@@ -12130,7 +12130,7 @@
    "wait_p95_min": 20.97,
    "worst_gap": {
     "min": 61,
-    "start": "2026-09-20T06:21+01:00",
+    "start": "2026-09-20T06:21:00+01:00",
     "place": "Arnhem Wharf Primary School",
     "direction": "towards Poplar / All Saints Church"
    },
@@ -12212,7 +12212,7 @@
    "wait_p95_min": 21.97,
    "worst_gap": {
     "min": 61,
-    "start": "2026-09-21T14:31+01:00",
+    "start": "2026-09-21T14:31:00+01:00",
     "place": "Kings Road / Friday Hill",
     "direction": "towards Chingford Station #"
    },
@@ -12296,7 +12296,7 @@
    "wait_p95_min": 16.78,
    "worst_gap": {
     "min": 87,
-    "start": "2026-09-26T16:18+01:00",
+    "start": "2026-09-26T16:18:00+01:00",
     "place": "Grosvenor Gardens",
     "direction": "towards Pound Lane"
    },
@@ -12380,7 +12380,7 @@
    "wait_p95_min": 25.77,
    "worst_gap": {
     "min": 82,
-    "start": "2026-09-20T21:51+01:00",
+    "start": "2026-09-20T21:51:00+01:00",
     "place": "Winsor Park Estate",
     "direction": "towards Newham Town Hall"
    },
@@ -12462,7 +12462,7 @@
    "wait_p95_min": 17.86,
    "worst_gap": {
     "min": 45,
-    "start": "2026-09-26T22:45+01:00",
+    "start": "2026-09-26T22:45:00+01:00",
     "place": "All Souls Avenue",
     "direction": "towards Mill Hill Broadway Station #"
    },
@@ -12544,7 +12544,7 @@
    "wait_p95_min": 16.99,
    "worst_gap": {
     "min": 47,
-    "start": "2026-09-23T06:43+01:00",
+    "start": "2026-09-23T06:43:00+01:00",
     "place": "Staples Corner",
     "direction": "towards Brent Cross Shopping Centre"
    },
@@ -12626,7 +12626,7 @@
    "wait_p95_min": 12.62,
    "worst_gap": {
     "min": 63,
-    "start": "2026-09-26T17:49+01:00",
+    "start": "2026-09-26T17:49:00+01:00",
     "place": "Wembley Central Station <> #",
     "direction": "towards Euston Station <> #"
    },
@@ -12708,7 +12708,7 @@
    "wait_p95_min": 16.49,
    "worst_gap": {
     "min": 41,
-    "start": "2026-09-20T08:14+01:00",
+    "start": "2026-09-20T08:14:00+01:00",
     "place": "Marble Arch",
     "direction": "towards Queen's Park Station <> #"
    },
@@ -12820,7 +12820,7 @@
    "wait_p95_min": 16.82,
    "worst_gap": {
     "min": 81,
-    "start": "2026-09-25T15:22+01:00",
+    "start": "2026-09-25T15:22:00+01:00",
     "place": "Wellington Road South",
     "direction": "towards Syon Lane"
    },
@@ -12902,7 +12902,7 @@
    "wait_p95_min": 20.85,
    "worst_gap": {
     "min": 46,
-    "start": "2026-09-22T04:40+01:00",
+    "start": "2026-09-22T04:40:00+01:00",
     "place": "Anerley Road / Anerley Station #",
     "direction": "towards Crystal Palace Parade"
    },
@@ -12986,7 +12986,7 @@
    "wait_p95_min": 21.49,
    "worst_gap": {
     "min": 62,
-    "start": "2026-09-23T05:04+01:00",
+    "start": "2026-09-23T05:04:00+01:00",
     "place": "Hatton Cross Station <>",
     "direction": "towards West Croydon Bus Station"
    },
@@ -13070,7 +13070,7 @@
    "wait_p95_min": 17.43,
    "worst_gap": {
     "min": 63,
-    "start": "2026-09-23T05:04+01:00",
+    "start": "2026-09-23T05:04:00+01:00",
     "place": "Latymer Court",
     "direction": "towards Glenthorne House"
    },
@@ -13154,7 +13154,7 @@
    "wait_p95_min": 14.44,
    "worst_gap": {
     "min": 43,
-    "start": "2026-09-25T16:17+01:00",
+    "start": "2026-09-25T16:17:00+01:00",
     "place": "Finsbury Park Station <> #",
     "direction": "towards Aldgate Station <>"
    },
@@ -13236,7 +13236,7 @@
    "wait_p95_min": 22.93,
    "worst_gap": {
     "min": 68,
-    "start": "2026-09-20T12:12+01:00",
+    "start": "2026-09-20T12:12:00+01:00",
     "place": "Manor Road / North Sheen Station #",
     "direction": "towards Richmond Bus Station"
    },
@@ -13320,7 +13320,7 @@
    "wait_p95_min": 21.44,
    "worst_gap": {
     "min": 38,
-    "start": "2026-09-23T12:22+01:00",
+    "start": "2026-09-23T12:22:00+01:00",
     "place": "Guildsway",
     "direction": "towards Walthamstow Bus Station <> #"
    },
@@ -13412,7 +13412,7 @@
    "wait_p95_min": 18.07,
    "worst_gap": {
     "min": 57,
-    "start": "2026-09-22T21:54+01:00",
+    "start": "2026-09-22T21:54:00+01:00",
     "place": "East India Dock Road",
     "direction": "towards Forest Road"
    },
@@ -13494,7 +13494,7 @@
    "wait_p95_min": 19.69,
    "worst_gap": {
     "min": 46,
-    "start": "2026-09-26T19:47+01:00",
+    "start": "2026-09-26T19:47:00+01:00",
     "place": "Burgess Road",
     "direction": "towards Walthamstow Bus Station <> #"
    },
@@ -13576,7 +13576,7 @@
    "wait_p95_min": 20.74,
    "worst_gap": {
     "min": 52,
-    "start": "2026-09-20T19:30+01:00",
+    "start": "2026-09-20T19:30:00+01:00",
     "place": "Hotspur Street",
     "direction": "towards Prince Consort Road / Imperial College"
    },
@@ -13658,7 +13658,7 @@
    "wait_p95_min": 14.79,
    "worst_gap": {
     "min": 37,
-    "start": "2026-09-24T08:10+01:00",
+    "start": "2026-09-24T08:10:00+01:00",
     "place": "Roman Road Market",
     "direction": "towards Bow Bus Garage"
    },
@@ -13740,7 +13740,7 @@
    "wait_p95_min": 20.07,
    "worst_gap": {
     "min": 60,
-    "start": "2026-09-26T23:06+01:00",
+    "start": "2026-09-26T23:06:00+01:00",
     "place": "Queensbury Station <>",
     "direction": "towards Meadfield"
    },
@@ -13822,7 +13822,7 @@
    "wait_p95_min": 18.83,
    "worst_gap": {
     "min": 46,
-    "start": "2026-09-24T20:09+01:00",
+    "start": "2026-09-24T20:09:00+01:00",
     "place": "Dover Patrol",
     "direction": "towards North Greenwich Station <>"
    },
@@ -13906,7 +13906,7 @@
    "wait_p95_min": 22.84,
    "worst_gap": {
     "min": 65,
-    "start": "2026-09-20T06:37+01:00",
+    "start": "2026-09-20T06:37:00+01:00",
     "place": "Wembley Park Station <>",
     "direction": "towards Kilburn Park Station <>"
    },
@@ -13988,7 +13988,7 @@
    "wait_p95_min": 20.07,
    "worst_gap": {
     "min": 50,
-    "start": "2026-09-20T08:10+01:00",
+    "start": "2026-09-20T08:10:00+01:00",
     "place": "Orpington Station #",
     "direction": "towards Orpington / Perry Hall Road"
    },
@@ -14070,7 +14070,7 @@
    "wait_p95_min": 18.48,
    "worst_gap": {
     "min": 58,
-    "start": "2026-09-21T07:57+01:00",
+    "start": "2026-09-21T07:57:00+01:00",
     "place": "West Croydon Bus Station",
     "direction": "towards Crystal Palace Parade"
    },
@@ -14154,7 +14154,7 @@
    "wait_p95_min": 16.5,
    "worst_gap": {
     "min": 89,
-    "start": "2026-09-23T18:44+01:00",
+    "start": "2026-09-23T18:44:00+01:00",
     "place": "Carden Road",
     "direction": "towards St Mary's Road"
    },
@@ -14236,7 +14236,7 @@
    "wait_p95_min": 17.36,
    "worst_gap": {
     "min": 52,
-    "start": "2026-09-23T15:53+01:00",
+    "start": "2026-09-23T15:53:00+01:00",
     "place": "Battersea High Street",
     "direction": "towards Victoria Station <>#"
    },
@@ -14318,7 +14318,7 @@
    "wait_p95_min": 21.17,
    "worst_gap": {
     "min": 48,
-    "start": "2026-09-23T06:28+01:00",
+    "start": "2026-09-23T06:28:00+01:00",
     "place": "Steyne Road",
     "direction": "towards Chiswick Business Park"
    },
@@ -14400,7 +14400,7 @@
    "wait_p95_min": 15.64,
    "worst_gap": {
     "min": 71,
-    "start": "2026-09-20T16:20+01:00",
+    "start": "2026-09-20T16:20:00+01:00",
     "place": "South Ealing Station <>",
     "direction": "towards Ealing Broadway Station <> #"
    },
@@ -14482,7 +14482,7 @@
    "wait_p95_min": 18.9,
    "worst_gap": {
     "min": 104,
-    "start": "2026-09-24T08:32+01:00",
+    "start": "2026-09-24T08:32:00+01:00",
     "place": "St Michaels School",
     "direction": "towards Archway Station <>"
    },
@@ -14566,7 +14566,7 @@
    "wait_p95_min": 17.38,
    "worst_gap": {
     "min": 40,
-    "start": "2026-09-22T11:03+01:00",
+    "start": "2026-09-22T11:03:00+01:00",
     "place": "Upper Holloway Station #",
     "direction": "towards London Bridge Bus Station <> #"
    },
@@ -14648,7 +14648,7 @@
    "wait_p95_min": 19.83,
    "worst_gap": {
     "min": 42,
-    "start": "2026-09-25T21:12+01:00",
+    "start": "2026-09-25T21:12:00+01:00",
     "place": "Great Cambridge Road",
     "direction": "towards North Middlesex Hospital"
    },
@@ -14732,7 +14732,7 @@
    "wait_p95_min": 16.25,
    "worst_gap": {
     "min": 41,
-    "start": "2026-09-24T04:47+01:00",
+    "start": "2026-09-24T04:47:00+01:00",
     "place": "Clapham Common Station <>",
     "direction": "towards Clapham Junction Stn # / The Falcon"
    },
@@ -14824,7 +14824,7 @@
    "wait_p95_min": 13.92,
    "worst_gap": {
     "min": 45,
-    "start": "2026-09-23T08:51+01:00",
+    "start": "2026-09-23T08:51:00+01:00",
     "place": "Wood Green Bus Garage",
     "direction": "towards Little Park Gardens"
    },
@@ -14908,7 +14908,7 @@
    "wait_p95_min": 13.9,
    "worst_gap": {
     "min": 51,
-    "start": "2026-09-22T08:23+01:00",
+    "start": "2026-09-22T08:23:00+01:00",
     "place": "Shepherd's Bush Station <> #",
     "direction": "towards White City Bus Station <>"
    },
@@ -15010,7 +15010,7 @@
    "wait_p95_min": 20.23,
    "worst_gap": {
     "min": 88,
-    "start": "2026-09-26T04:08+01:00",
+    "start": "2026-09-26T04:08:00+01:00",
     "place": "Blackheath / Royal Standard",
     "direction": "towards Lewisham Station # [dlr]"
    },
@@ -15092,7 +15092,7 @@
    "wait_p95_min": 12.12,
    "worst_gap": {
     "min": 65,
-    "start": "2026-09-25T20:21+01:00",
+    "start": "2026-09-25T20:21:00+01:00",
     "place": "Tottenham Court Road Station<>",
     "direction": "towards Wood Green Station <>"
    },
@@ -15176,7 +15176,7 @@
    "wait_p95_min": 15.16,
    "worst_gap": {
     "min": 70,
-    "start": "2026-09-26T05:36+01:00",
+    "start": "2026-09-26T05:36:00+01:00",
     "place": "Putney Station #",
     "direction": "towards Putney Heath / Green Man"
    },
@@ -15258,7 +15258,7 @@
    "wait_p95_min": 20.24,
    "worst_gap": {
     "min": 48,
-    "start": "2026-09-20T19:50+01:00",
+    "start": "2026-09-20T19:50:00+01:00",
     "place": "Grove Park Station #",
     "direction": "towards Lewisham Station # [dlr]"
    },
@@ -15340,7 +15340,7 @@
    "wait_p95_min": 21.14,
    "worst_gap": {
     "min": 60,
-    "start": "2026-09-25T04:46+01:00",
+    "start": "2026-09-25T04:46:00+01:00",
     "place": "Firs Avenue",
     "direction": "towards The Spires"
    },
@@ -15422,7 +15422,7 @@
    "wait_p95_min": 12.72,
    "worst_gap": {
     "min": 34,
-    "start": "2026-09-26T12:12+01:00",
+    "start": "2026-09-26T12:12:00+01:00",
     "place": "Stoke Newington High St / Garnham Street",
     "direction": "towards Stoke Newington Common"
    },
@@ -15514,7 +15514,7 @@
    "wait_p95_min": 18.89,
    "worst_gap": {
     "min": 38,
-    "start": "2026-09-21T23:12+01:00",
+    "start": "2026-09-21T23:12:00+01:00",
     "place": "Richmond Station # <>",
     "direction": "towards Richmond / Manor Road"
    },
@@ -15598,7 +15598,7 @@
    "wait_p95_min": 18.13,
    "worst_gap": {
     "min": 78,
-    "start": "2026-09-25T15:08+01:00",
+    "start": "2026-09-25T15:08:00+01:00",
     "place": "Waterloo Station <> # / York Road",
     "direction": "towards County Hall"
    },
@@ -15680,7 +15680,7 @@
    "wait_p95_min": 18.9,
    "worst_gap": {
     "min": 71,
-    "start": "2026-09-25T20:10+01:00",
+    "start": "2026-09-25T20:10:00+01:00",
     "place": "Sutton Station #",
     "direction": "towards Blackshaw Road"
    },
@@ -15764,7 +15764,7 @@
    "wait_p95_min": 19.21,
    "worst_gap": {
     "min": 42,
-    "start": "2026-09-26T09:28+01:00",
+    "start": "2026-09-26T09:28:00+01:00",
     "place": "Bexley Station #",
     "direction": "towards Geddes Place"
    },
@@ -15866,7 +15866,7 @@
    "wait_p95_min": 15.0,
    "worst_gap": {
     "min": 40,
-    "start": "2026-09-20T14:57+01:00",
+    "start": "2026-09-20T14:57:00+01:00",
     "place": "Whitehall / Trafalgar Square",
     "direction": "towards Wandsworth Plain"
    },
@@ -15950,7 +15950,7 @@
    "wait_p95_min": 18.49,
    "worst_gap": {
     "min": 46,
-    "start": "2026-09-25T04:51+01:00",
+    "start": "2026-09-25T04:51:00+01:00",
     "place": "Sutton Green",
     "direction": "towards Sutton Station # / The Quadrant"
    },
@@ -16034,7 +16034,7 @@
    "wait_p95_min": 15.72,
    "worst_gap": {
     "min": 47,
-    "start": "2026-09-20T13:28+01:00",
+    "start": "2026-09-20T13:28:00+01:00",
     "place": "Putney Hill / Green Man",
     "direction": "towards Putney Bridge Station <>"
    },
@@ -16116,7 +16116,7 @@
    "wait_p95_min": 21.4,
    "worst_gap": {
     "min": 69,
-    "start": "2026-09-24T07:18+01:00",
+    "start": "2026-09-24T07:18:00+01:00",
     "place": "Putney Pier >r<",
     "direction": "towards Putney Bridge Station <>"
    },
@@ -16200,7 +16200,7 @@
    "wait_p95_min": 20.9,
    "worst_gap": {
     "min": 49,
-    "start": "2026-09-25T12:43+01:00",
+    "start": "2026-09-25T12:43:00+01:00",
     "place": "Croxley Green",
     "direction": "towards Sidcup / Queen Mary's Hospital"
    },
@@ -16282,7 +16282,7 @@
    "wait_p95_min": 19.04,
    "worst_gap": {
     "min": 61,
-    "start": "2026-09-26T04:24+01:00",
+    "start": "2026-09-26T04:24:00+01:00",
     "place": "Lambeth Town Hall",
     "direction": "towards Peckham Bus Station"
    },
@@ -16364,7 +16364,7 @@
    "wait_p95_min": 18.49,
    "worst_gap": {
     "min": 49,
-    "start": "2026-09-24T09:18+01:00",
+    "start": "2026-09-24T09:18:00+01:00",
     "place": "Brixton Station <> #",
     "direction": "towards Madeira Road"
    },
@@ -16446,7 +16446,7 @@
    "wait_p95_min": 18.63,
    "worst_gap": {
     "min": 63,
-    "start": "2026-09-25T04:03+01:00",
+    "start": "2026-09-25T04:03:00+01:00",
     "place": "East Croydon Station #  >t<",
     "direction": "towards Thornton Heath Pond"
    },
@@ -16528,7 +16528,7 @@
    "wait_p95_min": 16.03,
    "worst_gap": {
     "min": 44,
-    "start": "2026-09-20T05:15+01:00",
+    "start": "2026-09-20T05:15:00+01:00",
     "place": "West Hendon Broadway / Herbert Road",
     "direction": "towards Kilburn Park Station <>"
    },
@@ -16620,7 +16620,7 @@
    "wait_p95_min": 16.51,
    "worst_gap": {
     "min": 68,
-    "start": "2026-09-20T11:10+01:00",
+    "start": "2026-09-20T11:10:00+01:00",
     "place": "California Road",
     "direction": "towards Fairfield Bus Station"
    },
@@ -16702,7 +16702,7 @@
    "wait_p95_min": 17.08,
    "worst_gap": {
     "min": 41,
-    "start": "2026-09-21T05:48+01:00",
+    "start": "2026-09-21T05:48:00+01:00",
     "place": "Bexleyheath Station #",
     "direction": "towards Bexleyheath Clock Tower"
    },
@@ -16784,7 +16784,7 @@
    "wait_p95_min": 21.87,
    "worst_gap": {
     "min": 50,
-    "start": "2026-09-21T21:33+01:00",
+    "start": "2026-09-21T21:33:00+01:00",
     "place": "Claybury Broadway",
     "direction": "towards Claybury Broadway"
    },
@@ -16866,7 +16866,7 @@
    "wait_p95_min": 17.0,
    "worst_gap": {
     "min": 55,
-    "start": "2026-09-26T20:06+01:00",
+    "start": "2026-09-26T20:06:00+01:00",
     "place": "Hammersmith Bus Station",
     "direction": "towards Brunel Road"
    },
@@ -16948,7 +16948,7 @@
    "wait_p95_min": 17.37,
    "worst_gap": {
     "min": 47,
-    "start": "2026-09-20T07:09+01:00",
+    "start": "2026-09-20T07:09:00+01:00",
     "place": "Bell Lane",
     "direction": "towards Golders Green Station <>"
    },
@@ -17030,7 +17030,7 @@
    "wait_p95_min": 17.66,
    "worst_gap": {
     "min": 43,
-    "start": "2026-09-25T23:33+01:00",
+    "start": "2026-09-25T23:33:00+01:00",
     "place": "Henlys Corner",
     "direction": "towards North Finchley Bus Station"
    },
@@ -17112,7 +17112,7 @@
    "wait_p95_min": 16.87,
    "worst_gap": {
     "min": 61,
-    "start": "2026-09-20T04:33+01:00",
+    "start": "2026-09-20T04:33:00+01:00",
     "place": "Albany Road / Wells Way",
     "direction": "towards Elephant & Castle / Newington Causeway"
    },
@@ -17196,7 +17196,7 @@
    "wait_p95_min": 19.5,
    "worst_gap": {
     "min": 90,
-    "start": "2026-09-21T18:19+01:00",
+    "start": "2026-09-21T18:19:00+01:00",
     "place": "Livat Hammersmith Shopping Centre",
     "direction": "towards South Road / Fulwell"
    },
@@ -17278,7 +17278,7 @@
    "wait_p95_min": 13.79,
    "worst_gap": {
     "min": 43,
-    "start": "2026-09-21T23:33+01:00",
+    "start": "2026-09-21T23:33:00+01:00",
     "place": "Lea Bridge Roundabout",
     "direction": "towards Euston Bus Station # <>"
    },
@@ -17360,7 +17360,7 @@
    "wait_p95_min": 18.33,
    "worst_gap": {
     "min": 57,
-    "start": "2026-09-26T17:27+01:00",
+    "start": "2026-09-26T17:27:00+01:00",
     "place": "Arnos Grove Station <>",
     "direction": "towards North Finchley Bus Station"
    },
@@ -17444,7 +17444,7 @@
    "wait_p95_min": 20.45,
    "worst_gap": {
     "min": 84,
-    "start": "2026-09-26T04:08+01:00",
+    "start": "2026-09-26T04:08:00+01:00",
     "place": "Rainham Road",
     "direction": "towards South Street"
    },
@@ -17526,7 +17526,7 @@
    "wait_p95_min": 16.79,
    "worst_gap": {
     "min": 51,
-    "start": "2026-09-22T08:39+01:00",
+    "start": "2026-09-22T08:39:00+01:00",
     "place": "Edgware Road Station <>",
     "direction": "towards Bishop's Bridge / Paddington Station <>"
    },
@@ -17608,7 +17608,7 @@
    "wait_p95_min": 19.58,
    "worst_gap": {
     "min": 40,
-    "start": "2026-09-20T06:14+01:00",
+    "start": "2026-09-20T06:14:00+01:00",
     "place": "Bromley South Station #",
     "direction": "towards Bromley North Station #"
    },
@@ -17692,7 +17692,7 @@
    "wait_p95_min": 17.04,
    "worst_gap": {
     "min": 59,
-    "start": "2026-09-25T20:15+01:00",
+    "start": "2026-09-25T20:15:00+01:00",
     "place": "Carlton Grove",
     "direction": "towards Thamesmead Town Centre"
    },
@@ -17786,7 +17786,7 @@
    "wait_p95_min": 21.27,
    "worst_gap": {
     "min": 59,
-    "start": "2026-09-20T06:07+01:00",
+    "start": "2026-09-20T06:07:00+01:00",
     "place": "Goodmayes Lane",
     "direction": "towards Becontree Heath Leisure Centre"
    },
@@ -17870,7 +17870,7 @@
    "wait_p95_min": 16.28,
    "worst_gap": {
     "min": 39,
-    "start": "2026-09-24T12:51+01:00",
+    "start": "2026-09-24T12:51:00+01:00",
     "place": "Bethnal Green Station <>",
     "direction": "towards Finsbury Park Interchange <> #"
    },
@@ -17952,7 +17952,7 @@
    "wait_p95_min": 18.08,
    "worst_gap": {
     "min": 37,
-    "start": "2026-09-24T18:15+01:00",
+    "start": "2026-09-24T18:15:00+01:00",
     "place": "Plumstead Bus Garage",
     "direction": "towards Market Place"
    },
@@ -18044,7 +18044,7 @@
    "wait_p95_min": 14.55,
    "worst_gap": {
     "min": 52,
-    "start": "2026-09-23T04:48+01:00",
+    "start": "2026-09-23T04:48:00+01:00",
     "place": "Putney Station #",
     "direction": "towards Putney Bridge Station <>"
    },
@@ -18128,7 +18128,7 @@
    "wait_p95_min": 18.85,
    "worst_gap": {
     "min": 58,
-    "start": "2026-09-21T23:36+01:00",
+    "start": "2026-09-21T23:36:00+01:00",
     "place": "Eltham High Street / Passey Place",
     "direction": "towards Stanstead Road / St Dunstans College"
    },
@@ -18210,7 +18210,7 @@
    "wait_p95_min": 16.76,
    "worst_gap": {
     "min": 46,
-    "start": "2026-09-20T20:03+01:00",
+    "start": "2026-09-20T20:03:00+01:00",
     "place": "Whitgift Centre",
     "direction": "towards Warham Road / Brighton Road"
    },
@@ -18302,7 +18302,7 @@
    "wait_p95_min": 12.94,
    "worst_gap": {
     "min": 35,
-    "start": "2026-09-25T21:20+01:00",
+    "start": "2026-09-25T21:20:00+01:00",
     "place": "High Street North",
     "direction": "towards Stratford Bus Station <> # [dlr]"
    },
@@ -18384,7 +18384,7 @@
    "wait_p95_min": 16.37,
    "worst_gap": {
     "min": 41,
-    "start": "2026-09-26T14:03+01:00",
+    "start": "2026-09-26T14:03:00+01:00",
     "place": "Lansdowne Green",
     "direction": "towards Tooting Station #"
    },
@@ -18466,7 +18466,7 @@
    "wait_p95_min": 19.89,
    "worst_gap": {
     "min": 50,
-    "start": "2026-09-20T22:10+01:00",
+    "start": "2026-09-20T22:10:00+01:00",
     "place": "Feltham Tesco",
     "direction": "towards Hatton Cross Station <>"
    },
@@ -18548,7 +18548,7 @@
    "wait_p95_min": 16.77,
    "worst_gap": {
     "min": 37,
-    "start": "2026-09-22T13:41+01:00",
+    "start": "2026-09-22T13:41:00+01:00",
     "place": "North End Road",
     "direction": "towards Hammersmith Bus Station"
    },
@@ -18640,7 +18640,7 @@
    "wait_p95_min": 17.39,
    "worst_gap": {
     "min": 55,
-    "start": "2026-09-20T04:41+01:00",
+    "start": "2026-09-20T04:41:00+01:00",
     "place": "Plaistow Station <>",
     "direction": "towards Canning Town Station <> [dlr]"
    },
@@ -18722,7 +18722,7 @@
    "wait_p95_min": 21.5,
    "worst_gap": {
     "min": 49,
-    "start": "2026-09-25T21:41+01:00",
+    "start": "2026-09-25T21:41:00+01:00",
     "place": "Harlington Corner",
     "direction": "towards Hounslow Bus Station"
    },
@@ -18804,7 +18804,7 @@
    "wait_p95_min": 22.88,
    "worst_gap": {
     "min": 68,
-    "start": "2026-09-26T23:39+01:00",
+    "start": "2026-09-26T23:39:00+01:00",
     "place": "Hayes & Harlington Station <>  #",
     "direction": "towards Charville Lane Estate"
    },
@@ -18888,7 +18888,7 @@
    "wait_p95_min": 15.59,
    "worst_gap": {
     "min": 55,
-    "start": "2026-09-20T15:16+01:00",
+    "start": "2026-09-20T15:16:00+01:00",
     "place": "Putney Exchange",
     "direction": "towards Putney Bridge Station <>"
    },
@@ -18972,7 +18972,7 @@
    "wait_p95_min": 16.03,
    "worst_gap": {
     "min": 58,
-    "start": "2026-09-26T20:28+01:00",
+    "start": "2026-09-26T20:28:00+01:00",
     "place": "Oxford Street / John Lewis",
     "direction": "towards Acton Green"
    },
@@ -19054,7 +19054,7 @@
    "wait_p95_min": 15.46,
    "worst_gap": {
     "min": 61,
-    "start": "2026-09-26T21:08+01:00",
+    "start": "2026-09-26T21:08:00+01:00",
     "place": "Shepherd's Bush Station <> #",
     "direction": "towards White City Bus Station <>"
    },
@@ -19146,7 +19146,7 @@
    "wait_p95_min": 13.51,
    "worst_gap": {
     "min": 43,
-    "start": "2026-09-22T05:16+01:00",
+    "start": "2026-09-22T05:16:00+01:00",
     "place": "High Street North",
     "direction": "towards Hainault Street"
    },
@@ -19228,7 +19228,7 @@
    "wait_p95_min": 21.33,
    "worst_gap": {
     "min": 60,
-    "start": "2026-09-23T04:45+01:00",
+    "start": "2026-09-23T04:45:00+01:00",
     "place": "Gypsy Corner",
     "direction": "towards South Harrow Bus Station"
    },
@@ -19320,7 +19320,7 @@
    "wait_p95_min": 18.56,
    "worst_gap": {
     "min": 63,
-    "start": "2026-09-20T12:50+01:00",
+    "start": "2026-09-20T12:50:00+01:00",
     "place": "Streatham / St Leonard's Church",
     "direction": "towards Atkins Road / New Park Road"
    },
@@ -19402,7 +19402,7 @@
    "wait_p95_min": 16.61,
    "worst_gap": {
     "min": 45,
-    "start": "2026-09-26T09:58+01:00",
+    "start": "2026-09-26T09:58:00+01:00",
     "place": "Putney Bridge <>",
     "direction": "towards Putney Exchange"
    },
@@ -19484,7 +19484,7 @@
    "wait_p95_min": 16.5,
    "worst_gap": {
     "min": 43,
-    "start": "2026-09-26T13:26+01:00",
+    "start": "2026-09-26T13:26:00+01:00",
     "place": "High Street Kensington Station <>",
     "direction": "towards Mapleton Crescent"
    },
@@ -19566,7 +19566,7 @@
    "wait_p95_min": 20.24,
    "worst_gap": {
     "min": 50,
-    "start": "2026-09-20T17:26+01:00",
+    "start": "2026-09-20T17:26:00+01:00",
     "place": "Roebuck Road",
     "direction": "towards Hook Parade"
    },
@@ -19650,7 +19650,7 @@
    "wait_p95_min": 19.24,
    "worst_gap": {
     "min": 60,
-    "start": "2026-09-25T17:43+01:00",
+    "start": "2026-09-25T17:43:00+01:00",
     "place": "Surrey Quays Shopping Centre",
     "direction": "towards Catford Garage"
    },
@@ -19732,7 +19732,7 @@
    "wait_p95_min": 19.66,
    "worst_gap": {
     "min": 47,
-    "start": "2026-09-21T06:09+01:00",
+    "start": "2026-09-21T06:09:00+01:00",
     "place": "Rangefield Road",
     "direction": "towards Grove Park Station #"
    },
@@ -19816,7 +19816,7 @@
    "wait_p95_min": 16.02,
    "worst_gap": {
     "min": 36,
-    "start": "2026-09-20T04:32+01:00",
+    "start": "2026-09-20T04:32:00+01:00",
     "place": "Hounslow West Station <>",
     "direction": "towards Hounslow Bus Station"
    },
@@ -19898,7 +19898,7 @@
    "wait_p95_min": 20.19,
    "worst_gap": {
     "min": 46,
-    "start": "2026-09-26T20:21+01:00",
+    "start": "2026-09-26T20:21:00+01:00",
     "place": "Dingwall Road / East Croydon Station #",
     "direction": "towards Shrublands / Bramble Close"
    },
@@ -19980,7 +19980,7 @@
    "wait_p95_min": 15.88,
    "worst_gap": {
     "min": 59,
-    "start": "2026-09-21T11:52+01:00",
+    "start": "2026-09-21T11:52:00+01:00",
     "place": "Beaufort Street / King's Road",
     "direction": "towards Cadogan Gardens / Sloane Square"
    },
@@ -20062,7 +20062,7 @@
    "wait_p95_min": 14.96,
    "worst_gap": {
     "min": 31,
-    "start": "2026-09-23T07:53+01:00",
+    "start": "2026-09-23T07:53:00+01:00",
     "place": "Yeading / White Hart Roundabout",
     "direction": "towards Heathrow Central Bus Station"
    },
@@ -20144,7 +20144,7 @@
    "wait_p95_min": 17.23,
    "worst_gap": {
     "min": 41,
-    "start": "2026-09-22T08:00+01:00",
+    "start": "2026-09-22T08:00:00+01:00",
     "place": "Southgate Station <>",
     "direction": "towards Station Road"
    },
@@ -20228,7 +20228,7 @@
    "wait_p95_min": 19.52,
    "worst_gap": {
     "min": 59,
-    "start": "2026-09-20T06:57+01:00",
+    "start": "2026-09-20T06:57:00+01:00",
     "place": "Holborn Circus / Fetter Lane",
     "direction": "towards St Bartholomew's Hospital"
    },
@@ -20310,7 +20310,7 @@
    "wait_p95_min": 14.77,
    "worst_gap": {
     "min": 41,
-    "start": "2026-09-21T21:04+01:00",
+    "start": "2026-09-21T21:04:00+01:00",
     "place": "Fiveways Corner",
     "direction": "towards Edgware Station <>"
    },
@@ -20392,7 +20392,7 @@
    "wait_p95_min": 15.87,
    "worst_gap": {
     "min": 43,
-    "start": "2026-09-24T20:56+01:00",
+    "start": "2026-09-24T20:56:00+01:00",
     "place": "Queen's Ride",
     "direction": "towards Fulwell Station #"
    },
@@ -20474,7 +20474,7 @@
    "wait_p95_min": 19.95,
    "worst_gap": {
     "min": 52,
-    "start": "2026-09-20T19:57+01:00",
+    "start": "2026-09-20T19:57:00+01:00",
     "place": "Tooting Broadway <> / Sth Thames College",
     "direction": "towards Francis Grove"
    },
@@ -20576,7 +20576,7 @@
    "wait_p95_min": 16.15,
    "worst_gap": {
     "min": 47,
-    "start": "2026-09-22T17:05+01:00",
+    "start": "2026-09-22T17:05:00+01:00",
     "place": "Clapham Road / Stockwell Station <>",
     "direction": "towards Omnibus Clapham"
    },
@@ -20658,7 +20658,7 @@
    "wait_p95_min": 17.11,
    "worst_gap": {
     "min": 41,
-    "start": "2026-09-26T23:26+01:00",
+    "start": "2026-09-26T23:26:00+01:00",
     "place": "Ealing / Christchurch",
     "direction": "towards Windmill Lane / Three Bridges"
    },
@@ -20740,7 +20740,7 @@
    "wait_p95_min": 20.51,
    "worst_gap": {
     "min": 94,
-    "start": "2026-09-20T18:41+01:00",
+    "start": "2026-09-20T18:41:00+01:00",
     "place": "Imperial Road / Chelsea Harbour",
     "direction": "towards Acton Vale / Bromyard Avenue"
    },
@@ -20832,7 +20832,7 @@
    "wait_p95_min": 17.91,
    "worst_gap": {
     "min": 59,
-    "start": "2026-09-26T06:05+01:00",
+    "start": "2026-09-26T06:05:00+01:00",
     "place": "Malden Manor Station #",
     "direction": "towards Eden Street"
    },
@@ -20914,7 +20914,7 @@
    "wait_p95_min": 17.23,
    "worst_gap": {
     "min": 51,
-    "start": "2026-09-20T13:55+01:00",
+    "start": "2026-09-20T13:55:00+01:00",
     "place": "Feltham Station # / Victoria Road",
     "direction": "towards Feltham Leisure West"
    },
@@ -20996,7 +20996,7 @@
    "wait_p95_min": 15.41,
    "worst_gap": {
     "min": 32,
-    "start": "2026-09-25T13:27+01:00",
+    "start": "2026-09-25T13:27:00+01:00",
     "place": "Lordship Lane / Wood Vale",
     "direction": "towards Crystal Palace Parade"
    },
@@ -21078,7 +21078,7 @@
    "wait_p95_min": 20.47,
    "worst_gap": {
     "min": 101,
-    "start": "2026-09-20T12:48+01:00",
+    "start": "2026-09-20T12:48:00+01:00",
     "place": "Bushey Road / Grand Drive",
     "direction": "towards Walton Avenue"
    },
@@ -21160,7 +21160,7 @@
    "wait_p95_min": 15.3,
    "worst_gap": {
     "min": 38,
-    "start": "2026-09-24T22:13+01:00",
+    "start": "2026-09-24T22:13:00+01:00",
     "place": "Victoria Coach Station",
     "direction": "towards Fulham Town Hall"
    },
@@ -21242,7 +21242,7 @@
    "wait_p95_min": 17.11,
    "worst_gap": {
     "min": 40,
-    "start": "2026-09-26T07:06+01:00",
+    "start": "2026-09-26T07:06:00+01:00",
     "place": "Headstone Drive",
     "direction": "towards Northwick Park Hospital"
    },
@@ -21324,7 +21324,7 @@
    "wait_p95_min": 14.95,
    "worst_gap": {
     "min": 51,
-    "start": "2026-09-22T20:03+01:00",
+    "start": "2026-09-22T20:03:00+01:00",
     "place": "St Leonard's Road",
     "direction": "towards Clifton Road"
    },
@@ -21406,7 +21406,7 @@
    "wait_p95_min": 20.33,
    "worst_gap": {
     "min": 129,
-    "start": "2026-09-23T09:15+01:00",
+    "start": "2026-09-23T09:15:00+01:00",
     "place": "Baird Road",
     "direction": "towards Turnpike Lane Bus Station"
    },
@@ -21488,7 +21488,7 @@
    "wait_p95_min": 20.06,
    "worst_gap": {
     "min": 73,
-    "start": "2026-09-26T13:58+01:00",
+    "start": "2026-09-26T13:58:00+01:00",
     "place": "Isleworth War Memorial",
     "direction": "towards West Middlesex Hospital"
    },
@@ -21570,7 +21570,7 @@
    "wait_p95_min": 15.87,
    "worst_gap": {
     "min": 46,
-    "start": "2026-09-22T07:19+01:00",
+    "start": "2026-09-22T07:19:00+01:00",
     "place": "Hayes By-Pass",
     "direction": "towards Bridge Road"
    },
@@ -21652,7 +21652,7 @@
    "wait_p95_min": 17.13,
    "worst_gap": {
     "min": 43,
-    "start": "2026-09-25T22:44+01:00",
+    "start": "2026-09-25T22:44:00+01:00",
     "place": "Cornwallis Road",
     "direction": "towards Ballards Road"
    },
@@ -21734,7 +21734,7 @@
    "wait_p95_min": 18.9,
    "worst_gap": {
     "min": 63,
-    "start": "2026-09-26T22:28+01:00",
+    "start": "2026-09-26T22:28:00+01:00",
     "place": "Blackbird Cross",
     "direction": "towards Ealing Broadway Stn <> # / Haven Green"
    },
@@ -21816,7 +21816,7 @@
    "wait_p95_min": 17.53,
    "worst_gap": {
     "min": 45,
-    "start": "2026-09-23T20:37+01:00",
+    "start": "2026-09-23T20:37:00+01:00",
     "place": "Finchley Central Station <>",
     "direction": "towards Harrow Bus Station"
    },
@@ -21900,7 +21900,7 @@
    "wait_p95_min": 20.01,
    "worst_gap": {
     "min": 57,
-    "start": "2026-09-25T21:23+01:00",
+    "start": "2026-09-25T21:23:00+01:00",
     "place": "Chislehurst Station #",
     "direction": "towards Bromley North Station #"
    },
@@ -21982,7 +21982,7 @@
    "wait_p95_min": 18.15,
    "worst_gap": {
     "min": 58,
-    "start": "2026-09-26T21:52+01:00",
+    "start": "2026-09-26T21:52:00+01:00",
     "place": "Wembley Central Station <> #",
     "direction": "towards Stonebridge Park Station # <>"
    },
@@ -22064,7 +22064,7 @@
    "wait_p95_min": 18.74,
    "worst_gap": {
     "min": 40,
-    "start": "2026-09-22T17:32+01:00",
+    "start": "2026-09-22T17:32:00+01:00",
     "place": "Purley High Street / Purley Station #",
     "direction": "towards Sutton / Marshall's Road"
    },
@@ -22146,7 +22146,7 @@
    "wait_p95_min": 19.3,
    "worst_gap": {
     "min": 46,
-    "start": "2026-09-24T08:14+01:00",
+    "start": "2026-09-24T08:14:00+01:00",
     "place": "Marks Gate Community Centre",
     "direction": "towards Marks Gate / Billet Road"
    },
@@ -22250,7 +22250,7 @@
    "wait_p95_min": 16.35,
    "worst_gap": {
     "min": 40,
-    "start": "2026-09-23T17:08+01:00",
+    "start": "2026-09-23T17:08:00+01:00",
     "place": "Bounds Green Station <>",
     "direction": "towards Chesterfield Road"
    },
@@ -22332,7 +22332,7 @@
    "wait_p95_min": 17.73,
    "worst_gap": {
     "min": 44,
-    "start": "2026-09-26T06:05+01:00",
+    "start": "2026-09-26T06:05:00+01:00",
     "place": "Barking Station <> #",
     "direction": "towards Becontree Heath Leisure Centre"
    },
@@ -22414,7 +22414,7 @@
    "wait_p95_min": 19.88,
    "worst_gap": {
     "min": 56,
-    "start": "2026-09-22T08:33+01:00",
+    "start": "2026-09-22T08:33:00+01:00",
     "place": "Ravensbourne Gardens",
     "direction": "towards Barking Town Centre"
    },
@@ -22496,7 +22496,7 @@
    "wait_p95_min": 12.62,
    "worst_gap": {
     "min": 40,
-    "start": "2026-09-22T16:45+01:00",
+    "start": "2026-09-22T16:45:00+01:00",
     "place": "Battersea Park Station #",
     "direction": "towards Streatham Hill / Telford Avenue"
    },
@@ -22580,7 +22580,7 @@
    "wait_p95_min": 14.53,
    "worst_gap": {
     "min": 59,
-    "start": "2026-09-26T22:48+01:00",
+    "start": "2026-09-26T22:48:00+01:00",
     "place": "Blackbird Cross",
     "direction": "towards Glacier Way"
    },
@@ -22664,7 +22664,7 @@
    "wait_p95_min": 15.27,
    "worst_gap": {
     "min": 62,
-    "start": "2026-09-20T19:44+01:00",
+    "start": "2026-09-20T19:44:00+01:00",
     "place": "South Kensington Station <>",
     "direction": "towards Peckham Bus Station"
    },
@@ -22746,7 +22746,7 @@
    "wait_p95_min": 20.27,
    "worst_gap": {
     "min": 62,
-    "start": "2026-09-20T08:20+01:00",
+    "start": "2026-09-20T08:20:00+01:00",
     "place": "St Dunstan's Road",
     "direction": "towards Wanstead Park Station #"
    },
@@ -22828,7 +22828,7 @@
    "wait_p95_min": 20.89,
    "worst_gap": {
     "min": 51,
-    "start": "2026-09-24T22:02+01:00",
+    "start": "2026-09-24T22:02:00+01:00",
     "place": "West Hendon Broadway / Herbert Road",
     "direction": "towards Brent Cross Shopping Centre"
    },
@@ -22920,7 +22920,7 @@
    "wait_p95_min": 15.29,
    "worst_gap": {
     "min": 36,
-    "start": "2026-09-20T15:58+01:00",
+    "start": "2026-09-20T15:58:00+01:00",
     "place": "Hobury Street / Worlds End",
     "direction": "towards Limerston Street"
    },
@@ -23012,7 +23012,7 @@
    "wait_p95_min": 17.41,
    "worst_gap": {
     "min": 49,
-    "start": "2026-09-23T08:21+01:00",
+    "start": "2026-09-23T08:21:00+01:00",
     "place": "Anerley Hill / Crystal Palace",
     "direction": "towards Brixton Station <> #"
    },
@@ -23094,7 +23094,7 @@
    "wait_p95_min": 16.4,
    "worst_gap": {
     "min": 53,
-    "start": "2026-09-20T13:38+01:00",
+    "start": "2026-09-20T13:38:00+01:00",
     "place": "Wimbledon Station <> # >t<",
     "direction": "towards Morden Station <>"
    },
@@ -23178,7 +23178,7 @@
    "wait_p95_min": 14.52,
    "worst_gap": {
     "min": 40,
-    "start": "2026-09-21T05:44+01:00",
+    "start": "2026-09-21T05:44:00+01:00",
     "place": "Copt Gilders",
     "direction": "towards Chessington World of Adventures"
    },
@@ -23260,7 +23260,7 @@
    "wait_p95_min": 12.16,
    "worst_gap": {
     "min": 28,
-    "start": "2026-09-21T23:24+01:00",
+    "start": "2026-09-21T23:24:00+01:00",
     "place": "Barking Bus Garage",
     "direction": "towards Romford Market"
    },
@@ -23342,7 +23342,7 @@
    "wait_p95_min": 15.03,
    "worst_gap": {
     "min": 38,
-    "start": "2026-09-24T07:56+01:00",
+    "start": "2026-09-24T07:56:00+01:00",
     "place": "Atkinson Close / Copse Hill",
     "direction": "towards Lambton Road"
    },
@@ -23426,7 +23426,7 @@
    "wait_p95_min": 18.09,
    "worst_gap": {
     "min": 64,
-    "start": "2026-09-20T04:25+01:00",
+    "start": "2026-09-20T04:25:00+01:00",
     "place": "Upton Lane",
     "direction": "towards Stratford Bus Station <> # [dlr]"
    },
@@ -23508,7 +23508,7 @@
    "wait_p95_min": 14.48,
    "worst_gap": {
     "min": 58,
-    "start": "2026-09-23T05:29+01:00",
+    "start": "2026-09-23T05:29:00+01:00",
     "place": "Gracechurch Street / Monument Station <>",
     "direction": "towards Liverpool Street Station"
    },
@@ -23590,7 +23590,7 @@
    "wait_p95_min": 14.05,
    "worst_gap": {
     "min": 41,
-    "start": "2026-09-22T05:07+01:00",
+    "start": "2026-09-22T05:07:00+01:00",
     "place": "Enfield Town / Silver Street",
     "direction": "towards Picketts Lock Centre"
    },
@@ -23672,7 +23672,7 @@
    "wait_p95_min": 19.76,
    "worst_gap": {
     "min": 42,
-    "start": "2026-09-25T22:26+01:00",
+    "start": "2026-09-25T22:26:00+01:00",
     "place": "Hornchurch Town Centre",
     "direction": "towards The Brewery"
    },
@@ -23754,7 +23754,7 @@
    "wait_p95_min": 14.86,
    "worst_gap": {
     "min": 33,
-    "start": "2026-09-21T07:33+01:00",
+    "start": "2026-09-21T07:33:00+01:00",
     "place": "Crystal Palace Park",
     "direction": "towards Jasmine Grove"
    },
@@ -23836,7 +23836,7 @@
    "wait_p95_min": 17.41,
    "worst_gap": {
     "min": 45,
-    "start": "2026-09-25T08:40+01:00",
+    "start": "2026-09-25T08:40:00+01:00",
     "place": "Beckton Triangle Retail Park",
     "direction": "towards Beckton Bus Station"
    },
@@ -23918,7 +23918,7 @@
    "wait_p95_min": 17.09,
    "worst_gap": {
     "min": 39,
-    "start": "2026-09-20T19:00+01:00",
+    "start": "2026-09-20T19:00:00+01:00",
     "place": "Munster Road / Fulham Cross",
     "direction": "towards Battersea Power Station"
    },
@@ -24002,7 +24002,7 @@
    "wait_p95_min": 19.84,
    "worst_gap": {
     "min": 36,
-    "start": "2026-09-24T20:37+01:00",
+    "start": "2026-09-24T20:37:00+01:00",
     "place": "Brunel University",
     "direction": "towards Belmont Road"
    },
@@ -24084,7 +24084,7 @@
    "wait_p95_min": 16.72,
    "worst_gap": {
     "min": 61,
-    "start": "2026-09-24T04:53+01:00",
+    "start": "2026-09-24T04:53:00+01:00",
     "place": "Medfield Street",
     "direction": "towards Minstead Gardens"
    },
@@ -24178,7 +24178,7 @@
    "wait_p95_min": 12.82,
    "worst_gap": {
     "min": 32,
-    "start": "2026-09-20T07:57+01:00",
+    "start": "2026-09-20T07:57:00+01:00",
     "place": "Southwark Station <>",
     "direction": "towards King's Cross Station <> # / York Way"
    },
@@ -24272,7 +24272,7 @@
    "wait_p95_min": 13.95,
    "worst_gap": {
     "min": 37,
-    "start": "2026-09-25T18:52+01:00",
+    "start": "2026-09-25T18:52:00+01:00",
     "place": "Richmond Bus Station",
     "direction": "towards Hounslow / Blenheim Centre"
    },
@@ -24354,7 +24354,7 @@
    "wait_p95_min": 20.17,
    "worst_gap": {
     "min": 51,
-    "start": "2026-09-20T08:24+01:00",
+    "start": "2026-09-20T08:24:00+01:00",
     "place": "Green Lane",
     "direction": "towards Wangey Road"
    },
@@ -24436,7 +24436,7 @@
    "wait_p95_min": 16.48,
    "worst_gap": {
     "min": 40,
-    "start": "2026-09-24T20:54+01:00",
+    "start": "2026-09-24T20:54:00+01:00",
     "place": "Southside Shopping Centre",
     "direction": "towards Tooting Station #"
    },
@@ -24518,7 +24518,7 @@
    "wait_p95_min": 16.26,
    "worst_gap": {
     "min": 38,
-    "start": "2026-09-26T22:33+01:00",
+    "start": "2026-09-26T22:33:00+01:00",
     "place": "Thornton Road",
     "direction": "towards Downview and Highdown Prisons"
    },
@@ -24600,7 +24600,7 @@
    "wait_p95_min": 16.1,
    "worst_gap": {
     "min": 35,
-    "start": "2026-09-24T20:17+01:00",
+    "start": "2026-09-24T20:17:00+01:00",
     "place": "Guinness Close",
     "direction": "towards Prologis Park"
    },
@@ -24684,7 +24684,7 @@
    "wait_p95_min": 19.31,
    "worst_gap": {
     "min": 42,
-    "start": "2026-09-21T20:19+01:00",
+    "start": "2026-09-21T20:19:00+01:00",
     "place": "Hainault Station <>",
     "direction": "towards Barkingside Station <>"
    },
@@ -24766,7 +24766,7 @@
    "wait_p95_min": 16.97,
    "worst_gap": {
     "min": 41,
-    "start": "2026-09-21T08:48+01:00",
+    "start": "2026-09-21T08:48:00+01:00",
     "place": "Hatherley Gardens",
     "direction": "towards Custom House Station <> [dlr] "
    },
@@ -24848,7 +24848,7 @@
    "wait_p95_min": 17.35,
    "worst_gap": {
     "min": 57,
-    "start": "2026-09-22T15:24+01:00",
+    "start": "2026-09-22T15:24:00+01:00",
     "place": "Grosvenor Gardens",
     "direction": "towards North Finchley Bus Station"
    },
@@ -24932,7 +24932,7 @@
    "wait_p95_min": 14.43,
    "worst_gap": {
     "min": 45,
-    "start": "2026-09-20T05:22+01:00",
+    "start": "2026-09-20T05:22:00+01:00",
     "place": "West Croydon Station #",
     "direction": "towards West Croydon Bus Station"
    },
@@ -25024,7 +25024,7 @@
    "wait_p95_min": 17.82,
    "worst_gap": {
     "min": 44,
-    "start": "2026-09-24T18:23+01:00",
+    "start": "2026-09-24T18:23:00+01:00",
     "place": "Manor Road / North Sheen Station #",
     "direction": "towards Richmond Bus Station"
    },
@@ -25118,7 +25118,7 @@
    "wait_p95_min": 18.45,
    "worst_gap": {
     "min": 46,
-    "start": "2026-09-24T07:57+01:00",
+    "start": "2026-09-24T07:57:00+01:00",
     "place": "The Catford Broadway",
     "direction": "towards Lewisham Station # [dlr]"
    },
@@ -25200,7 +25200,7 @@
    "wait_p95_min": 16.08,
    "worst_gap": {
     "min": 34,
-    "start": "2026-09-25T21:40+01:00",
+    "start": "2026-09-25T21:40:00+01:00",
     "place": "Cambridge Roundabout / East Side",
     "direction": "towards Edmonton Green Bus Station"
    },
@@ -25282,7 +25282,7 @@
    "wait_p95_min": 14.5,
    "worst_gap": {
     "min": 47,
-    "start": "2026-09-21T08:18+01:00",
+    "start": "2026-09-21T08:18:00+01:00",
     "place": "Kent Gardens",
     "direction": "towards Brentford Bus Depot"
    },
@@ -25364,7 +25364,7 @@
    "wait_p95_min": 16.93,
    "worst_gap": {
     "min": 38,
-    "start": "2026-09-22T20:38+01:00",
+    "start": "2026-09-22T20:38:00+01:00",
     "place": "Collier Row Roundabout / Clockhouse Lane",
     "direction": "towards Hillrise Estate"
    },
@@ -25446,7 +25446,7 @@
    "wait_p95_min": 18.05,
    "worst_gap": {
     "min": 45,
-    "start": "2026-09-26T06:42+01:00",
+    "start": "2026-09-26T06:42:00+01:00",
     "place": "Harrow & Wealdstone Station <> #",
     "direction": "towards Long Elmes"
    },
@@ -25528,7 +25528,7 @@
    "wait_p95_min": 16.95,
    "worst_gap": {
     "min": 51,
-    "start": "2026-09-22T04:53+01:00",
+    "start": "2026-09-22T04:53:00+01:00",
     "place": "Cemetery Lane",
     "direction": "towards Plumstead Road / Burrage Road"
    },
@@ -25610,7 +25610,7 @@
    "wait_p95_min": 18.24,
    "worst_gap": {
     "min": 63,
-    "start": "2026-09-20T05:27+01:00",
+    "start": "2026-09-20T05:27:00+01:00",
     "place": "Canons Park Station <>",
     "direction": "towards Harrow Bus Station"
    },
@@ -25702,7 +25702,7 @@
    "wait_p95_min": 12.55,
    "worst_gap": {
     "min": 39,
-    "start": "2026-09-26T06:08+01:00",
+    "start": "2026-09-26T06:08:00+01:00",
     "place": "Chippenham Road",
     "direction": "towards Dagnam Park Square"
    },
@@ -25784,7 +25784,7 @@
    "wait_p95_min": 17.42,
    "worst_gap": {
     "min": 43,
-    "start": "2026-09-26T16:01+01:00",
+    "start": "2026-09-26T16:01:00+01:00",
     "place": "Harrow Town Centre",
     "direction": "towards Northwick Park Hospital Social Club"
    },
@@ -25866,7 +25866,7 @@
    "wait_p95_min": 16.12,
    "worst_gap": {
     "min": 37,
-    "start": "2026-09-22T21:36+01:00",
+    "start": "2026-09-22T21:36:00+01:00",
     "place": "Lexington Way",
     "direction": "towards Moor Lane"
    },
@@ -25948,7 +25948,7 @@
    "wait_p95_min": 15.05,
    "worst_gap": {
     "min": 41,
-    "start": "2026-09-25T05:27+01:00",
+    "start": "2026-09-25T05:27:00+01:00",
     "place": "Dean Gardens / Bedford Road",
     "direction": "towards Ealing Broadway Stn <> # / Haven Green"
    },
@@ -26032,7 +26032,7 @@
    "wait_p95_min": 22.32,
    "worst_gap": {
     "min": 52,
-    "start": "2026-09-26T14:48+01:00",
+    "start": "2026-09-26T14:48:00+01:00",
     "place": "Colyton Close",
     "direction": "towards Wembley Central Station <> #"
    },
@@ -26116,7 +26116,7 @@
    "wait_p95_min": 17.65,
    "worst_gap": {
     "min": 60,
-    "start": "2026-09-20T06:36+01:00",
+    "start": "2026-09-20T06:36:00+01:00",
     "place": "Arena Tram Stop >t<",
     "direction": "towards Elmers End Interchange # >t<"
    },
@@ -26200,7 +26200,7 @@
    "wait_p95_min": 17.39,
    "worst_gap": {
     "min": 81,
-    "start": "2026-09-26T04:02+01:00",
+    "start": "2026-09-26T04:02:00+01:00",
     "place": "Tooting Broadway Station <>",
     "direction": "towards Blackshaw Road"
    },
@@ -26282,7 +26282,7 @@
    "wait_p95_min": 15.62,
    "worst_gap": {
     "min": 43,
-    "start": "2026-09-26T22:20+01:00",
+    "start": "2026-09-26T22:20:00+01:00",
     "place": "Harrow Bus Station",
     "direction": "towards Bannister Playing Fields"
    },
@@ -26364,7 +26364,7 @@
    "wait_p95_min": 16.67,
    "worst_gap": {
     "min": 52,
-    "start": "2026-09-24T20:54+01:00",
+    "start": "2026-09-24T20:54:00+01:00",
     "place": "Earls Court Station <>",
     "direction": "towards Clapham Junction Stn # / The Falcon"
    },
@@ -26446,7 +26446,7 @@
    "wait_p95_min": 20.21,
    "worst_gap": {
     "min": 44,
-    "start": "2026-09-26T05:36+01:00",
+    "start": "2026-09-26T05:36:00+01:00",
     "place": "Burnt Oak Station <>",
     "direction": "towards Arnos Grove Station <>"
    },
@@ -26530,7 +26530,7 @@
    "wait_p95_min": 13.69,
    "worst_gap": {
     "min": 43,
-    "start": "2026-09-24T04:56+01:00",
+    "start": "2026-09-24T04:56:00+01:00",
     "place": "Newington Butts",
     "direction": "towards Blackshaw Road"
    },
@@ -26612,7 +26612,7 @@
    "wait_p95_min": 17.2,
    "worst_gap": {
     "min": 45,
-    "start": "2026-09-26T05:49+01:00",
+    "start": "2026-09-26T05:49:00+01:00",
     "place": "Jack Dash House",
     "direction": "towards Isle of Dogs Asda"
    },
@@ -26694,7 +26694,7 @@
    "wait_p95_min": 15.1,
    "worst_gap": {
     "min": 40,
-    "start": "2026-09-23T17:46+01:00",
+    "start": "2026-09-23T17:46:00+01:00",
     "place": "The Bell",
     "direction": "towards Hounslow Bus Station"
    },
@@ -26779,7 +26779,7 @@
    "wait_p95_min": 19.14,
    "worst_gap": {
     "min": 59,
-    "start": "2026-09-26T21:54+01:00",
+    "start": "2026-09-26T21:54:00+01:00",
     "place": "Apple Tree Avenue",
     "direction": "towards York Road"
    },
@@ -26861,7 +26861,7 @@
    "wait_p95_min": 18.96,
    "worst_gap": {
     "min": 70,
-    "start": "2026-09-20T08:41+01:00",
+    "start": "2026-09-20T08:41:00+01:00",
     "place": "Lee Gardens Avenue",
     "direction": "towards Essex Gardens"
    },
@@ -26945,7 +26945,7 @@
    "wait_p95_min": 19.12,
    "worst_gap": {
     "min": 44,
-    "start": "2026-09-25T21:45+01:00",
+    "start": "2026-09-25T21:45:00+01:00",
     "place": "High Street / Feltham",
     "direction": "towards Heathrow Terminal 5"
    },
@@ -27049,7 +27049,7 @@
    "wait_p95_min": 15.69,
    "worst_gap": {
     "min": 58,
-    "start": "2026-09-26T17:48+01:00",
+    "start": "2026-09-26T17:48:00+01:00",
     "place": "The Admiral Nelson / Whitton",
     "direction": "towards Tolworth Station #"
    },
@@ -27131,7 +27131,7 @@
    "wait_p95_min": 13.92,
    "worst_gap": {
     "min": 40,
-    "start": "2026-09-26T23:13+01:00",
+    "start": "2026-09-26T23:13:00+01:00",
     "place": "Brixton Station <> #",
     "direction": "towards Streatham Station #"
    },
@@ -27213,7 +27213,7 @@
    "wait_p95_min": 14.83,
    "worst_gap": {
     "min": 36,
-    "start": "2026-09-20T06:14+01:00",
+    "start": "2026-09-20T06:14:00+01:00",
     "place": "High Street / Maple Road",
     "direction": "towards Crystal Palace"
    },
@@ -27297,7 +27297,7 @@
    "wait_p95_min": 13.2,
    "worst_gap": {
     "min": 35,
-    "start": "2026-09-20T06:43+01:00",
+    "start": "2026-09-20T06:43:00+01:00",
     "place": "Telford Avenue",
     "direction": "towards Brixton Station <> #"
    },
@@ -27379,7 +27379,7 @@
    "wait_p95_min": 17.11,
    "worst_gap": {
     "min": 39,
-    "start": "2026-09-21T22:09+01:00",
+    "start": "2026-09-21T22:09:00+01:00",
     "place": "Richmond Station <> #",
     "direction": "towards Richmond Bus Station"
    },
@@ -27471,7 +27471,7 @@
    "wait_p95_min": 19.69,
    "worst_gap": {
     "min": 64,
-    "start": "2026-09-20T05:23+01:00",
+    "start": "2026-09-20T05:23:00+01:00",
     "place": "Eastern Avenue",
     "direction": "towards Collier Row / Clockhouse Lane"
    },
@@ -27563,7 +27563,7 @@
    "wait_p95_min": 15.74,
    "worst_gap": {
     "min": 33,
-    "start": "2026-09-20T06:31+01:00",
+    "start": "2026-09-20T06:31:00+01:00",
     "place": "Rayners Lane",
     "direction": "towards South Harrow Bus Station"
    },
@@ -27647,7 +27647,7 @@
    "wait_p95_min": 17.69,
    "worst_gap": {
     "min": 46,
-    "start": "2026-09-26T06:22+01:00",
+    "start": "2026-09-26T06:22:00+01:00",
     "place": "National Physical Laboratory",
     "direction": "towards Kingston / Wood Street"
    },
@@ -27729,7 +27729,7 @@
    "wait_p95_min": 18.51,
    "worst_gap": {
     "min": 68,
-    "start": "2026-09-20T07:03+01:00",
+    "start": "2026-09-20T07:03:00+01:00",
     "place": "Osterley Station <>",
     "direction": "towards Hounslow West Station <>"
    },
@@ -27813,7 +27813,7 @@
    "wait_p95_min": 15.69,
    "worst_gap": {
     "min": 31,
-    "start": "2026-09-24T22:25+01:00",
+    "start": "2026-09-24T22:25:00+01:00",
     "place": "Hatherley Gardens",
     "direction": "towards Stratford Bus Station <> # [dlr]"
    },
@@ -27895,7 +27895,7 @@
    "wait_p95_min": 15.31,
    "worst_gap": {
     "min": 43,
-    "start": "2026-09-21T22:49+01:00",
+    "start": "2026-09-21T22:49:00+01:00",
     "place": "Southcroft Road / Mitcham Lane",
     "direction": "towards Elephant & Castle / Newington Causeway"
    },
@@ -27977,7 +27977,7 @@
    "wait_p95_min": 15.27,
    "worst_gap": {
     "min": 41,
-    "start": "2026-09-20T05:48+01:00",
+    "start": "2026-09-20T05:48:00+01:00",
     "place": "Southside Shopping Centre",
     "direction": "towards Putney Bridge Station <>"
    },
@@ -28069,7 +28069,7 @@
    "wait_p95_min": 16.12,
    "worst_gap": {
     "min": 44,
-    "start": "2026-09-20T19:27+01:00",
+    "start": "2026-09-20T19:27:00+01:00",
     "place": "The Dysart",
     "direction": "towards Manor Road / Sainsbury's"
    },
@@ -28153,7 +28153,7 @@
    "wait_p95_min": 20.37,
    "worst_gap": {
     "min": 58,
-    "start": "2026-09-21T23:46+01:00",
+    "start": "2026-09-21T23:46:00+01:00",
     "place": "Sidcup / Carlton Road",
     "direction": "towards Greenwich Town Centre / Cutty Sark"
    },
@@ -28235,7 +28235,7 @@
    "wait_p95_min": 16.32,
    "worst_gap": {
     "min": 42,
-    "start": "2026-09-26T19:09+01:00",
+    "start": "2026-09-26T19:09:00+01:00",
     "place": "Hackbridge Corner / Hackbridge Station #",
     "direction": "towards Purley Station #"
    },
@@ -28317,7 +28317,7 @@
    "wait_p95_min": 19.76,
    "worst_gap": {
     "min": 43,
-    "start": "2026-09-21T20:51+01:00",
+    "start": "2026-09-21T20:51:00+01:00",
     "place": "Vauxhall Bus Station",
     "direction": "towards Elephant & Castle / Newington Causeway"
    },
@@ -28409,7 +28409,7 @@
    "wait_p95_min": 15.83,
    "worst_gap": {
     "min": 70,
-    "start": "2026-09-23T04:25+01:00",
+    "start": "2026-09-23T04:25:00+01:00",
     "place": "Harlington Corner",
     "direction": "towards Heathrow Central Bus Station"
    },
@@ -28491,7 +28491,7 @@
    "wait_p95_min": 16.76,
    "worst_gap": {
     "min": 39,
-    "start": "2026-09-24T20:28+01:00",
+    "start": "2026-09-24T20:28:00+01:00",
     "place": "Pettits Lane",
     "direction": "towards Chase Cross"
    },
@@ -28573,7 +28573,7 @@
    "wait_p95_min": 14.01,
    "worst_gap": {
     "min": 63,
-    "start": "2026-09-21T05:32+01:00",
+    "start": "2026-09-21T05:32:00+01:00",
     "place": "Colney Hatch Lane",
     "direction": "towards Tally Ho Corner"
    },
@@ -28655,7 +28655,7 @@
    "wait_p95_min": 18.48,
    "worst_gap": {
     "min": 51,
-    "start": "2026-09-23T21:19+01:00",
+    "start": "2026-09-23T21:19:00+01:00",
     "place": "Birdhurst Road / South Croydon Station #",
     "direction": "towards Addington Village Interchange >t<"
    },
@@ -28737,7 +28737,7 @@
    "wait_p95_min": 15.7,
    "worst_gap": {
     "min": 43,
-    "start": "2026-09-22T08:09+01:00",
+    "start": "2026-09-22T08:09:00+01:00",
     "place": "East Croydon Bus Station",
     "direction": "towards Bromley North Station #"
    },
@@ -28819,7 +28819,7 @@
    "wait_p95_min": 19.4,
    "worst_gap": {
     "min": 44,
-    "start": "2026-09-20T18:44+01:00",
+    "start": "2026-09-20T18:44:00+01:00",
     "place": "The Bell",
     "direction": "towards Ashford Hospital"
    },
@@ -28903,7 +28903,7 @@
    "wait_p95_min": 16.61,
    "worst_gap": {
     "min": 45,
-    "start": "2026-09-24T05:25+01:00",
+    "start": "2026-09-24T05:25:00+01:00",
     "place": "Clapham Common Station <>",
     "direction": "towards Clapham Road / Stockwell Station <>"
    },
@@ -28997,7 +28997,7 @@
    "wait_p95_min": 16.1,
    "worst_gap": {
     "min": 38,
-    "start": "2026-09-26T06:53+01:00",
+    "start": "2026-09-26T06:53:00+01:00",
     "place": "Clapham Common Station <>",
     "direction": "towards Omnibus Clapham"
    },
@@ -29082,7 +29082,7 @@
    "wait_p95_min": 18.39,
    "worst_gap": {
     "min": 44,
-    "start": "2026-09-20T20:50+01:00",
+    "start": "2026-09-20T20:50:00+01:00",
     "place": "Brixton Water Lane",
     "direction": "towards Tulse Hill Station #"
    },
@@ -29164,7 +29164,7 @@
    "wait_p95_min": 21.47,
    "worst_gap": {
     "min": 50,
-    "start": "2026-09-21T21:53+01:00",
+    "start": "2026-09-21T21:53:00+01:00",
     "place": "White Hart Lane",
     "direction": "towards Havering Park"
    },
@@ -29256,7 +29256,7 @@
    "wait_p95_min": 14.88,
    "worst_gap": {
     "min": 44,
-    "start": "2026-09-23T04:50+01:00",
+    "start": "2026-09-23T04:50:00+01:00",
     "place": "Wimbledon Station <> # >t<",
     "direction": "towards Vauxhall Bus Station"
    },
@@ -29340,7 +29340,7 @@
    "wait_p95_min": 15.45,
    "worst_gap": {
     "min": 43,
-    "start": "2026-09-26T22:19+01:00",
+    "start": "2026-09-26T22:19:00+01:00",
     "place": "Chaplin Road",
     "direction": "towards Edgware Station <>"
    },
@@ -29422,7 +29422,7 @@
    "wait_p95_min": 14.38,
    "worst_gap": {
     "min": 33,
-    "start": "2026-09-24T16:22+01:00",
+    "start": "2026-09-24T16:22:00+01:00",
     "place": "Squires Lane",
     "direction": "towards Barnet Hospital"
    },
@@ -29504,7 +29504,7 @@
    "wait_p95_min": 14.32,
    "worst_gap": {
     "min": 31,
-    "start": "2026-09-21T19:54+01:00",
+    "start": "2026-09-21T19:54:00+01:00",
     "place": "St Mark's Church",
     "direction": "towards Victoria Bus Station # <> "
    },
@@ -29586,7 +29586,7 @@
    "wait_p95_min": 17.92,
    "worst_gap": {
     "min": 40,
-    "start": "2026-09-20T18:37+01:00",
+    "start": "2026-09-20T18:37:00+01:00",
     "place": "Warlingham Green",
     "direction": "towards West Croydon Bus Station"
    },
@@ -29757,7 +29757,7 @@
    "wait_p95_min": 13.57,
    "worst_gap": {
     "min": 69,
-    "start": "2026-09-25T04:19+01:00",
+    "start": "2026-09-25T04:19:00+01:00",
     "place": "St Mark's Church",
     "direction": "towards Oxford Circus Station <>"
    },
@@ -29841,7 +29841,7 @@
    "wait_p95_min": 17.39,
    "worst_gap": {
     "min": 35,
-    "start": "2026-09-26T07:45+01:00",
+    "start": "2026-09-26T07:45:00+01:00",
     "place": "Northborough Road",
     "direction": "towards South Lodge Avenue / Yorkshire Road"
    },
@@ -29925,7 +29925,7 @@
    "wait_p95_min": 16.31,
    "worst_gap": {
     "min": 35,
-    "start": "2026-09-21T08:06+01:00",
+    "start": "2026-09-21T08:06:00+01:00",
     "place": "Plaistow Station <>",
     "direction": "towards Gallions Reach Shopping Park"
    },
@@ -30353,7 +30353,7 @@
    "wait_p95_min": 27.9,
    "worst_gap": {
     "min": 73,
-    "start": "2026-09-22T15:50+01:00",
+    "start": "2026-09-22T15:50:00+01:00",
     "place": "Moat Farm Road",
     "direction": "towards Haven Grn / Ealing Broadway Stn <> # "
    },
@@ -31293,7 +31293,7 @@
    "wait_p95_min": 21.48,
    "worst_gap": {
     "min": 64,
-    "start": "2026-09-23T09:20+01:00",
+    "start": "2026-09-23T09:20:00+01:00",
     "place": "New Barnet Station # / Station Road",
     "direction": "towards Edgware Station <>"
    },
@@ -31375,7 +31375,7 @@
    "wait_p95_min": 26.16,
    "worst_gap": {
     "min": 89,
-    "start": "2026-09-22T09:07+01:00",
+    "start": "2026-09-22T09:07:00+01:00",
     "place": "Grove Road",
     "direction": "towards Hammersmith Bus Station"
    },
@@ -31521,7 +31521,7 @@
    "wait_p95_min": 30.13,
    "worst_gap": {
     "min": 65,
-    "start": "2026-09-26T10:48+01:00",
+    "start": "2026-09-26T10:48:00+01:00",
     "place": "Bromley South Station #",
     "direction": "towards Bromley North Station #"
    },
@@ -31603,7 +31603,7 @@
    "wait_p95_min": 64.58,
    "worst_gap": {
     "min": 86,
-    "start": "2026-09-26T11:34+01:00",
+    "start": "2026-09-26T11:34:00+01:00",
     "place": "Bromley South Station #",
     "direction": "towards Bromley North Station #"
    },
@@ -31685,7 +31685,7 @@
    "wait_p95_min": 21.99,
    "worst_gap": {
     "min": 56,
-    "start": "2026-09-21T22:03+01:00",
+    "start": "2026-09-21T22:03:00+01:00",
     "place": "Barbican Station <>",
     "direction": "towards Liverpool Street Station"
    },
@@ -31767,7 +31767,7 @@
    "wait_p95_min": 28.08,
    "worst_gap": {
     "min": 69,
-    "start": "2026-09-25T19:11+01:00",
+    "start": "2026-09-25T19:11:00+01:00",
     "place": "Catford Road / Lewisham Town Hall",
     "direction": "towards Sidcup Station #"
    },
@@ -31849,7 +31849,7 @@
    "wait_p95_min": 24.94,
    "worst_gap": {
     "min": 63,
-    "start": "2026-09-26T06:29+01:00",
+    "start": "2026-09-26T06:29:00+01:00",
     "place": "Domonic Drive / Edgebury",
     "direction": "towards Eltham Bus Station #"
    },
@@ -31951,7 +31951,7 @@
    "wait_p95_min": 26.87,
    "worst_gap": {
     "min": 65,
-    "start": "2026-09-20T09:30+01:00",
+    "start": "2026-09-20T09:30:00+01:00",
     "place": "Regina Coeli School",
     "direction": "towards West Croydon Bus Station"
    },
@@ -32043,7 +32043,7 @@
    "wait_p95_min": 31.25,
    "worst_gap": {
     "min": 76,
-    "start": "2026-09-22T07:26+01:00",
+    "start": "2026-09-22T07:26:00+01:00",
     "place": "Highland Avenue",
     "direction": "towards Loughton Station <>"
    },
@@ -32125,7 +32125,7 @@
    "wait_p95_min": 24.07,
    "worst_gap": {
     "min": 51,
-    "start": "2026-09-21T06:39+01:00",
+    "start": "2026-09-21T06:39:00+01:00",
     "place": "Lee Green",
     "direction": "towards Lewisham Station # [dlr]"
    },
@@ -32209,7 +32209,7 @@
    "wait_p95_min": 25.07,
    "worst_gap": {
     "min": 78,
-    "start": "2026-09-25T22:58+01:00",
+    "start": "2026-09-25T22:58:00+01:00",
     "place": "Swiss Cottage Station <>",
     "direction": "towards Central Middlesex Hospital"
    },
@@ -32291,7 +32291,7 @@
    "wait_p95_min": 26.62,
    "worst_gap": {
     "min": 93,
-    "start": "2026-09-20T15:04+01:00",
+    "start": "2026-09-20T15:04:00+01:00",
     "place": "Fulham Cross",
     "direction": "towards Empress State Building / W Brompton Stn <> #"
    },
@@ -32375,7 +32375,7 @@
    "wait_p95_min": 31.78,
    "worst_gap": {
     "min": 101,
-    "start": "2026-09-22T11:21+01:00",
+    "start": "2026-09-22T11:21:00+01:00",
     "place": "Bakers Avenue",
     "direction": "towards Burton Road"
    },
@@ -32457,7 +32457,7 @@
    "wait_p95_min": 30.84,
    "worst_gap": {
     "min": 60,
-    "start": "2026-09-24T05:46+01:00",
+    "start": "2026-09-24T05:46:00+01:00",
     "place": "Atwater Close",
     "direction": "towards Dulwich Road"
    },
@@ -32539,7 +32539,7 @@
    "wait_p95_min": 27.5,
    "worst_gap": {
     "min": 65,
-    "start": "2026-09-25T19:09+01:00",
+    "start": "2026-09-25T19:09:00+01:00",
     "place": "South Street",
     "direction": "towards Staines Bus Station"
    },
@@ -32687,7 +32687,7 @@
    "wait_p95_min": 35.95,
    "worst_gap": {
     "min": 81,
-    "start": "2026-09-24T08:47+01:00",
+    "start": "2026-09-24T08:47:00+01:00",
     "place": "Jewel Road",
     "direction": "towards Lee Valley Campsite"
    },
@@ -32843,7 +32843,7 @@
    "wait_p95_min": 29.34,
    "worst_gap": {
     "min": 89,
-    "start": "2026-09-26T21:44+01:00",
+    "start": "2026-09-26T21:44:00+01:00",
     "place": "Wembley Park Station <>",
     "direction": "towards Wembley Central Station <> #"
    },
@@ -32991,7 +32991,7 @@
    "wait_p95_min": 31.49,
    "worst_gap": {
     "min": 80,
-    "start": "2026-09-21T20:51+01:00",
+    "start": "2026-09-21T20:51:00+01:00",
     "place": "Lewisham Station # [dlr]",
     "direction": "towards Canada Water Bus Station <> #"
    },
@@ -33075,7 +33075,7 @@
    "wait_p95_min": 35.94,
    "worst_gap": {
     "min": 90,
-    "start": "2026-09-21T23:23+01:00",
+    "start": "2026-09-21T23:23:00+01:00",
     "place": "Old Oak Common Lane / Savoy Circus",
     "direction": "towards Central Middlesex Hospital"
    },
@@ -33223,7 +33223,7 @@
    "wait_p95_min": 20.72,
    "worst_gap": {
     "min": 78,
-    "start": "2026-09-23T08:00+01:00",
+    "start": "2026-09-23T08:00:00+01:00",
     "place": "White Hart Lane",
     "direction": "towards Turnpike Lane Bus Station"
    },
@@ -33373,7 +33373,7 @@
    "wait_p95_min": 27.88,
    "worst_gap": {
     "min": 61,
-    "start": "2026-09-26T21:03+01:00",
+    "start": "2026-09-26T21:03:00+01:00",
     "place": "Birchwood Corner",
     "direction": "towards Beechenlea Lane"
    },
@@ -33455,7 +33455,7 @@
    "wait_p95_min": 19.83,
    "worst_gap": {
     "min": 43,
-    "start": "2026-09-24T15:29+01:00",
+    "start": "2026-09-24T15:29:00+01:00",
     "place": "Cloister Gardens",
     "direction": "towards Edgware Station <>"
    },
@@ -33675,7 +33675,7 @@
    "wait_p95_min": 29.29,
    "worst_gap": {
     "min": 90,
-    "start": "2026-09-20T22:16+01:00",
+    "start": "2026-09-20T22:16:00+01:00",
     "place": "Harrow Park",
     "direction": "towards Watford Junction Station"
    },
@@ -33757,7 +33757,7 @@
    "wait_p95_min": 20.99,
    "worst_gap": {
     "min": 76,
-    "start": "2026-09-21T20:43+01:00",
+    "start": "2026-09-21T20:43:00+01:00",
     "place": "Hampstead Station <>/ Hampstead High St",
     "direction": "towards O2 Centre / Sainsbury's"
    },
@@ -33839,7 +33839,7 @@
    "wait_p95_min": 21.93,
    "worst_gap": {
     "min": 46,
-    "start": "2026-09-20T19:58+01:00",
+    "start": "2026-09-20T19:58:00+01:00",
     "place": "Hammersmith Hospital",
     "direction": "towards Shepherd's Bush Station <> #"
    },
@@ -33921,7 +33921,7 @@
    "wait_p95_min": 28.99,
    "worst_gap": {
     "min": 64,
-    "start": "2026-09-22T22:13+01:00",
+    "start": "2026-09-22T22:13:00+01:00",
     "place": "Lee Station #",
     "direction": "towards Conington Road"
    },
@@ -34003,7 +34003,7 @@
    "wait_p95_min": 22.15,
    "worst_gap": {
     "min": 63,
-    "start": "2026-09-20T04:00+01:00",
+    "start": "2026-09-20T04:00:00+01:00",
     "place": "West End Lane",
     "direction": "towards Heathrow Central Bus Station"
    },
@@ -34085,7 +34085,7 @@
    "wait_p95_min": 20.62,
    "worst_gap": {
     "min": 54,
-    "start": "2026-09-26T05:49+01:00",
+    "start": "2026-09-26T05:49:00+01:00",
     "place": "Barking Town Centre",
     "direction": "towards Barking Station <> #"
    },
@@ -34231,7 +34231,7 @@
    "wait_p95_min": 31.58,
    "worst_gap": {
     "min": 69,
-    "start": "2026-09-22T18:40+01:00",
+    "start": "2026-09-22T18:40:00+01:00",
     "place": "Burnt Oak Broadway",
     "direction": "towards Rossington Avenue"
    },
@@ -34379,7 +34379,7 @@
    "wait_p95_min": 23.25,
    "worst_gap": {
     "min": 68,
-    "start": "2026-09-20T19:18+01:00",
+    "start": "2026-09-20T19:18:00+01:00",
     "place": "Romford Market",
     "direction": "towards Romford Station #"
    },
@@ -34461,7 +34461,7 @@
    "wait_p95_min": 36.29,
    "worst_gap": {
     "min": 95,
-    "start": "2026-09-21T18:24+01:00",
+    "start": "2026-09-21T18:24:00+01:00",
     "place": "Highview Gardens",
     "direction": "towards Arnos Grove Station <>"
    },
@@ -34543,7 +34543,7 @@
    "wait_p95_min": 29.01,
    "worst_gap": {
     "min": 60,
-    "start": "2026-09-26T23:15+01:00",
+    "start": "2026-09-26T23:15:00+01:00",
     "place": "Southgate Station <>",
     "direction": "towards Muswell Hill"
    },
@@ -34625,7 +34625,7 @@
    "wait_p95_min": 23.64,
    "worst_gap": {
     "min": 50,
-    "start": "2026-09-22T22:52+01:00",
+    "start": "2026-09-22T22:52:00+01:00",
     "place": "Beckton Bus Station",
     "direction": "towards Wordsworth Health Centre"
    },
@@ -34707,7 +34707,7 @@
    "wait_p95_min": 27.04,
    "worst_gap": {
     "min": 77,
-    "start": "2026-09-20T18:26+01:00",
+    "start": "2026-09-20T18:26:00+01:00",
     "place": "Bacon Lane",
     "direction": "towards Edgware Station <>"
    },
@@ -34809,7 +34809,7 @@
    "wait_p95_min": 29.11,
    "worst_gap": {
     "min": 98,
-    "start": "2026-09-23T18:40+01:00",
+    "start": "2026-09-23T18:40:00+01:00",
     "place": "Station Road / Chingford Station #",
     "direction": "towards Potters Bar Station #"
    },
@@ -34891,7 +34891,7 @@
    "wait_p95_min": 26.12,
    "worst_gap": {
     "min": 59,
-    "start": "2026-09-20T08:45+01:00",
+    "start": "2026-09-20T08:45:00+01:00",
     "place": "St Peters Church",
     "direction": "towards Rothschild Street"
    },
@@ -34973,7 +34973,7 @@
    "wait_p95_min": 27.86,
    "worst_gap": {
     "min": 65,
-    "start": "2026-09-20T12:56+01:00",
+    "start": "2026-09-20T12:56:00+01:00",
     "place": "Enfield Town Station >lol<",
     "direction": "towards Little Park Gardens"
    },
@@ -35055,7 +35055,7 @@
    "wait_p95_min": 20.41,
    "worst_gap": {
     "min": 46,
-    "start": "2026-09-26T20:47+01:00",
+    "start": "2026-09-26T20:47:00+01:00",
     "place": "Norwood Road / Robson Road",
     "direction": "towards The Pavement"
    },
@@ -35137,7 +35137,7 @@
    "wait_p95_min": 22.46,
    "worst_gap": {
     "min": 67,
-    "start": "2026-09-22T20:30+01:00",
+    "start": "2026-09-22T20:30:00+01:00",
     "place": "Star Lane Station [dlr]",
     "direction": "towards Mile End Station <>"
    },
@@ -35221,7 +35221,7 @@
    "wait_p95_min": 31.21,
    "worst_gap": {
     "min": 86,
-    "start": "2026-09-26T21:18+01:00",
+    "start": "2026-09-26T21:18:00+01:00",
     "place": "Brent Cross Shopping Centre",
     "direction": "towards Tesco Brent Cross"
    },
@@ -35303,7 +35303,7 @@
    "wait_p95_min": 42.15,
    "worst_gap": {
     "min": 85,
-    "start": "2026-09-22T15:12+01:00",
+    "start": "2026-09-22T15:12:00+01:00",
     "place": "Totteridge Road",
     "direction": "towards Waltham Cross Bus Station"
    },
@@ -35385,7 +35385,7 @@
    "wait_p95_min": 29.3,
    "worst_gap": {
     "min": 61,
-    "start": "2026-09-22T20:18+01:00",
+    "start": "2026-09-22T20:18:00+01:00",
     "place": "Northwood Station <>",
     "direction": "towards Belmont Road"
    },
@@ -35467,7 +35467,7 @@
    "wait_p95_min": 21.87,
    "worst_gap": {
     "min": 62,
-    "start": "2026-09-22T22:04+01:00",
+    "start": "2026-09-22T22:04:00+01:00",
     "place": "Rangefield Road / Southover",
     "direction": "towards Locksbottom / Pallant Way"
    },
@@ -35549,7 +35549,7 @@
    "wait_p95_min": 26.89,
    "worst_gap": {
     "min": 63,
-    "start": "2026-09-21T06:42+01:00",
+    "start": "2026-09-21T06:42:00+01:00",
     "place": "Burgess Road",
     "direction": "towards Leytonstone Station <>/ Grove Green Road"
    },
@@ -35759,7 +35759,7 @@
    "wait_p95_min": 24.47,
    "worst_gap": {
     "min": 82,
-    "start": "2026-09-26T14:07+01:00",
+    "start": "2026-09-26T14:07:00+01:00",
     "place": "Hayes & Harlington Station <>  #",
     "direction": "towards Heathrow Terminal 5"
    },
@@ -35841,7 +35841,7 @@
    "wait_p95_min": 27.65,
    "worst_gap": {
     "min": 60,
-    "start": "2026-09-23T20:19+01:00",
+    "start": "2026-09-23T20:19:00+01:00",
     "place": "Stone Park Avenue / Chinese Garage",
     "direction": "towards Bell Green / Sainsbury's"
    },
@@ -35923,7 +35923,7 @@
    "wait_p95_min": 30.59,
    "worst_gap": {
     "min": 70,
-    "start": "2026-09-26T09:36+01:00",
+    "start": "2026-09-26T09:36:00+01:00",
     "place": "Carlton Parade",
     "direction": "towards Ramsden Estate / Rye Crescent"
    },
@@ -36071,7 +36071,7 @@
    "wait_p95_min": 36.15,
    "worst_gap": {
     "min": 83,
-    "start": "2026-09-23T11:03+01:00",
+    "start": "2026-09-23T11:03:00+01:00",
     "place": "Croydon Road / Elmers End Road",
     "direction": "towards Sydenham Hill / Kirkdale"
    },
@@ -36163,7 +36163,7 @@
    "wait_p95_min": 30.34,
    "worst_gap": {
     "min": 59,
-    "start": "2026-09-25T14:36+01:00",
+    "start": "2026-09-25T14:36:00+01:00",
     "place": "Walthamstow / Crooked Billet Roundabout",
     "direction": "towards Hatch Lane"
    },
@@ -36309,7 +36309,7 @@
    "wait_p95_min": 45.83,
    "worst_gap": {
     "min": 117,
-    "start": "2026-09-23T16:37+01:00",
+    "start": "2026-09-23T16:37:00+01:00",
     "place": "Brocket Way / The Lowe",
     "direction": "towards King George Hospital"
    },
@@ -36411,7 +36411,7 @@
    "wait_p95_min": 36.17,
    "worst_gap": {
     "min": 123,
-    "start": "2026-09-26T21:43+01:00",
+    "start": "2026-09-26T21:43:00+01:00",
     "place": "Dingwall Road / East Croydon Station #",
     "direction": "towards Bromley North Station #"
    },
@@ -36493,7 +36493,7 @@
    "wait_p95_min": 26.62,
    "worst_gap": {
     "min": 66,
-    "start": "2026-09-23T21:34+01:00",
+    "start": "2026-09-23T21:34:00+01:00",
     "place": "Edmund Road",
     "direction": "towards Hornchurch Town Centre"
    },
@@ -36718,7 +36718,7 @@
    "wait_p95_min": 18.31,
    "worst_gap": {
     "min": 75,
-    "start": "2026-09-21T08:46+01:00",
+    "start": "2026-09-21T08:46:00+01:00",
     "place": "Commondale",
     "direction": "towards Putney Bridge <>"
    },
@@ -36864,7 +36864,7 @@
    "wait_p95_min": 26.5,
    "worst_gap": {
     "min": 75,
-    "start": "2026-09-23T19:10+01:00",
+    "start": "2026-09-23T19:10:00+01:00",
     "place": "Hail And Ride Parkside Gardens",
     "direction": "towards Millbrook Park"
    },
@@ -37020,7 +37020,7 @@
    "wait_p95_min": 27.96,
    "worst_gap": {
     "min": 61,
-    "start": "2026-09-21T22:34+01:00",
+    "start": "2026-09-21T22:34:00+01:00",
     "place": "Hail & Ride Hertford Road",
     "direction": "towards Edgware Station <>"
    },
@@ -37102,7 +37102,7 @@
    "wait_p95_min": 66.21,
    "worst_gap": {
     "min": 79,
-    "start": "2026-09-22T13:46+01:00",
+    "start": "2026-09-22T13:46:00+01:00",
     "place": "Kings Head Hill / Sewardstone Road",
     "direction": "towards Chingford Station #"
    },
@@ -37184,7 +37184,7 @@
    "wait_p95_min": 24.96,
    "worst_gap": {
     "min": 55,
-    "start": "2026-09-23T13:32+01:00",
+    "start": "2026-09-23T13:32:00+01:00",
     "place": "Rodmere Street",
     "direction": "towards Royal Parade"
    },
@@ -37330,7 +37330,7 @@
    "wait_p95_min": 21.8,
    "worst_gap": {
     "min": 45,
-    "start": "2026-09-24T20:04+01:00",
+    "start": "2026-09-24T20:04:00+01:00",
     "place": "Trelawney Estate",
     "direction": "towards Tolpuddle St / Islington Police Station"
    },
@@ -37412,7 +37412,7 @@
    "wait_p95_min": 33.47,
    "worst_gap": {
     "min": 66,
-    "start": "2026-09-20T13:59+01:00",
+    "start": "2026-09-20T13:59:00+01:00",
     "place": "Greenford Station <> # / Rockware Avenue",
     "direction": "towards Westway Cross Retail Park"
    },
@@ -37494,7 +37494,7 @@
    "wait_p95_min": 28.71,
    "worst_gap": {
     "min": 69,
-    "start": "2026-09-22T08:23+01:00",
+    "start": "2026-09-22T08:23:00+01:00",
     "place": "Chadwell Heath Lane",
     "direction": "towards Roden Street"
    },
@@ -37596,7 +37596,7 @@
    "wait_p95_min": 30.72,
    "worst_gap": {
     "min": 72,
-    "start": "2026-09-20T12:05+01:00",
+    "start": "2026-09-20T12:05:00+01:00",
     "place": "Loughton Library & Town Hall",
     "direction": "towards The Broadway"
    },
@@ -37678,7 +37678,7 @@
    "wait_p95_min": 29.53,
    "worst_gap": {
     "min": 63,
-    "start": "2026-09-20T09:34+01:00",
+    "start": "2026-09-20T09:34:00+01:00",
     "place": "Eastcote Station <>",
     "direction": "towards Ruislip Station <>"
    },
@@ -37826,7 +37826,7 @@
    "wait_p95_min": 27.36,
    "worst_gap": {
     "min": 61,
-    "start": "2026-09-22T19:37+01:00",
+    "start": "2026-09-22T19:37:00+01:00",
     "place": "Thamesmead / Carlyle Road",
     "direction": "towards Bexleyheath Clock Tower"
    },
@@ -37972,7 +37972,7 @@
    "wait_p95_min": 29.37,
    "worst_gap": {
     "min": 70,
-    "start": "2026-09-26T06:27+01:00",
+    "start": "2026-09-26T06:27:00+01:00",
     "place": "Merstham Station #",
     "direction": "towards Redhill Bus Station"
    },
@@ -38064,7 +38064,7 @@
    "wait_p95_min": 30.12,
    "worst_gap": {
     "min": 72,
-    "start": "2026-09-21T19:41+01:00",
+    "start": "2026-09-21T19:41:00+01:00",
     "place": "Surbiton Hill Road / Hollyfield School",
     "direction": "towards Epsom Hospital"
    },
@@ -38210,7 +38210,7 @@
    "wait_p95_min": 28.64,
    "worst_gap": {
     "min": 63,
-    "start": "2026-09-20T13:32+01:00",
+    "start": "2026-09-20T13:32:00+01:00",
     "place": "Swan & Sugar Loaf",
     "direction": "towards Purley High Street"
    },
@@ -38292,7 +38292,7 @@
    "wait_p95_min": 27.89,
    "worst_gap": {
     "min": 79,
-    "start": "2026-09-20T09:45+01:00",
+    "start": "2026-09-20T09:45:00+01:00",
     "place": "West Sutton Station #",
     "direction": "towards Sutton Bus Garage"
    },
@@ -38440,7 +38440,7 @@
    "wait_p95_min": 25.42,
    "worst_gap": {
     "min": 52,
-    "start": "2026-09-21T11:43+01:00",
+    "start": "2026-09-21T11:43:00+01:00",
     "place": "North Dulwich Station #",
     "direction": "towards Appold Street"
    },
@@ -38522,7 +38522,7 @@
    "wait_p95_min": 27.99,
    "worst_gap": {
     "min": 62,
-    "start": "2026-09-26T20:55+01:00",
+    "start": "2026-09-26T20:55:00+01:00",
     "place": "Hatton Road North",
     "direction": "towards Hounslow Bus Station"
    },
@@ -38604,7 +38604,7 @@
    "wait_p95_min": 41.06,
    "worst_gap": {
     "min": 105,
-    "start": "2026-09-24T07:37+01:00",
+    "start": "2026-09-24T07:37:00+01:00",
     "place": "Bothwell Street",
     "direction": "towards Putney Heath / Green Man"
    },
@@ -38696,7 +38696,7 @@
    "wait_p95_min": 32.3,
    "worst_gap": {
     "min": 90,
-    "start": "2026-09-20T11:40+01:00",
+    "start": "2026-09-20T11:40:00+01:00",
     "place": "Colebrooke Street",
     "direction": "towards Erith Town Centre / Riverside"
    },
@@ -38778,7 +38778,7 @@
    "wait_p95_min": 34.65,
    "worst_gap": {
     "min": 70,
-    "start": "2026-09-20T15:26+01:00",
+    "start": "2026-09-20T15:26:00+01:00",
     "place": "Purley High Street / Purley Station #",
     "direction": "towards Ridgemount Avenue"
    },
@@ -38860,7 +38860,7 @@
    "wait_p95_min": 34.41,
    "worst_gap": {
     "min": 84,
-    "start": "2026-09-22T14:40+01:00",
+    "start": "2026-09-22T14:40:00+01:00",
     "place": "Whyteleafe Station #",
     "direction": "towards Wapses Lodge Roundabout"
    },
@@ -39021,7 +39021,7 @@
    "wait_p95_min": 38.47,
    "worst_gap": {
     "min": 89,
-    "start": "2026-09-21T18:05+01:00",
+    "start": "2026-09-21T18:05:00+01:00",
     "place": "Forty Hill",
     "direction": "towards North Middlesex Hospital"
    },
@@ -39103,7 +39103,7 @@
    "wait_p95_min": 28.71,
    "worst_gap": {
     "min": 68,
-    "start": "2026-09-24T19:56+01:00",
+    "start": "2026-09-24T19:56:00+01:00",
     "place": "The Lowe",
     "direction": "towards Hainault Street"
    },
@@ -39313,7 +39313,7 @@
    "wait_p95_min": 53.24,
    "worst_gap": {
     "min": 104,
-    "start": "2026-09-20T09:43+01:00",
+    "start": "2026-09-20T09:43:00+01:00",
     "place": "Claremont Road / Surbiton Station #",
     "direction": "towards Eden Street"
    },
@@ -39493,7 +39493,7 @@
    "wait_p95_min": 62.0,
    "worst_gap": {
     "min": 140,
-    "start": "2026-09-25T12:32+01:00",
+    "start": "2026-09-25T12:32:00+01:00",
     "place": "Reigate Road / Green Man",
     "direction": "towards Elmcroft Drive"
    },
@@ -39577,7 +39577,7 @@
    "wait_p95_min": 23.41,
    "worst_gap": {
     "min": 59,
-    "start": "2026-09-20T19:22+01:00",
+    "start": "2026-09-20T19:22:00+01:00",
     "place": "Woolwich Arsenal Station # [dlr]",
     "direction": "towards Queen Elizabeth Hospital / West Entrance"
    },
@@ -39659,7 +39659,7 @@
    "wait_p95_min": 29.72,
    "worst_gap": {
     "min": 60,
-    "start": "2026-09-26T18:47+01:00",
+    "start": "2026-09-26T18:47:00+01:00",
     "place": "Merton Abbey",
     "direction": "towards Colliers Wood Station <>"
    },
@@ -39815,7 +39815,7 @@
    "wait_p95_min": 29.94,
    "worst_gap": {
     "min": 98,
-    "start": "2026-09-22T17:03+01:00",
+    "start": "2026-09-22T17:03:00+01:00",
     "place": "Heathrow Terminal 4",
     "direction": "towards Bridge Road"
    },
@@ -40093,7 +40093,7 @@
    "wait_p95_min": 32.66,
    "worst_gap": {
     "min": 68,
-    "start": "2026-09-25T16:28+01:00",
+    "start": "2026-09-25T16:28:00+01:00",
     "place": "Solar Way",
     "direction": "towards North Middlesex Hospital"
    },
@@ -40175,7 +40175,7 @@
    "wait_p95_min": 46.35,
    "worst_gap": {
     "min": 102,
-    "start": "2026-09-21T11:41+01:00",
+    "start": "2026-09-21T11:41:00+01:00",
     "place": "Station Road / Crescent Road",
     "direction": "towards Bluewater Shopping Centre"
    },
@@ -40257,7 +40257,7 @@
    "wait_p95_min": 19.76,
    "worst_gap": {
     "min": 47,
-    "start": "2026-09-21T15:47+01:00",
+    "start": "2026-09-21T15:47:00+01:00",
     "place": "Harold Wood Library",
     "direction": "towards Harold Wood Station #"
    },
@@ -40329,7 +40329,7 @@
    "wait_p95_min": 25.54,
    "worst_gap": {
     "min": 55,
-    "start": "2026-09-24T21:31+01:00",
+    "start": "2026-09-24T21:31:00+01:00",
     "place": "Rom Valley Way",
     "direction": "towards Queen's Hospital"
    },
@@ -40411,7 +40411,7 @@
    "wait_p95_min": 31.85,
    "worst_gap": {
     "min": 105,
-    "start": "2026-09-20T12:45+01:00",
+    "start": "2026-09-20T12:45:00+01:00",
     "place": "Cu London University / Wood Lane",
     "direction": "towards Gallows Corner / Tesco"
    },
@@ -40887,7 +40887,7 @@
    "wait_p95_min": 25.24,
    "worst_gap": {
     "min": 47,
-    "start": "2026-09-22T17:02+01:00",
+    "start": "2026-09-22T17:02:00+01:00",
     "place": "Goodmead Road",
     "direction": "towards Chislehurst / Gordon Arms"
    },
@@ -44911,7 +44911,7 @@
    "wait_p95_min": 28.57,
    "worst_gap": {
     "min": 50,
-    "start": "2026-09-25T16:58+01:00",
+    "start": "2026-09-25T16:58:00+01:00",
     "place": "The Square",
     "direction": "towards Belmont Road"
    },
@@ -44993,7 +44993,7 @@
    "wait_p95_min": 25.79,
    "worst_gap": {
     "min": 41,
-    "start": "2026-09-22T23:46+01:00",
+    "start": "2026-09-22T23:46:00+01:00",
     "place": "Harris Garrard Academy",
     "direction": "towards Bexleyheath Bus Garage"
    },
@@ -45149,7 +45149,7 @@
    "wait_p95_min": 27.15,
    "worst_gap": {
     "min": 61,
-    "start": "2026-09-21T11:03+01:00",
+    "start": "2026-09-21T11:03:00+01:00",
     "place": "Iris Avenue",
     "direction": "towards New Eltham Station # / Southwood Road"
    },
@@ -45241,7 +45241,7 @@
    "wait_p95_min": 35.8,
    "worst_gap": {
     "min": 93,
-    "start": "2026-09-24T11:31+01:00",
+    "start": "2026-09-24T11:31:00+01:00",
     "place": "Canterbury Avenue",
     "direction": "towards Bexleyheath Library"
    },
@@ -45323,7 +45323,7 @@
    "wait_p95_min": 30.28,
    "worst_gap": {
     "min": 69,
-    "start": "2026-09-26T22:33+01:00",
+    "start": "2026-09-26T22:33:00+01:00",
     "place": "Bexleyheath Station #",
     "direction": "towards Friswell Place"
    },
@@ -45405,7 +45405,7 @@
    "wait_p95_min": 27.15,
    "worst_gap": {
     "min": 62,
-    "start": "2026-09-23T22:01+01:00",
+    "start": "2026-09-23T22:01:00+01:00",
     "place": "Bexleyheath Clock Tower",
     "direction": "towards Wingfield School"
    },
@@ -45487,7 +45487,7 @@
    "wait_p95_min": 27.08,
    "worst_gap": {
     "min": 66,
-    "start": "2026-09-23T23:05+01:00",
+    "start": "2026-09-23T23:05:00+01:00",
     "place": "Leamouth Road",
     "direction": "towards Bonner Road"
    },
@@ -45589,7 +45589,7 @@
    "wait_p95_min": 23.68,
    "worst_gap": {
     "min": 57,
-    "start": "2026-09-25T21:08+01:00",
+    "start": "2026-09-25T21:08:00+01:00",
     "place": "Canary Wharf Station [dlr]",
     "direction": "towards Isle of Dogs Asda"
    },
@@ -45671,7 +45671,7 @@
    "wait_p95_min": 27.0,
    "worst_gap": {
     "min": 73,
-    "start": "2026-09-22T19:36+01:00",
+    "start": "2026-09-22T19:36:00+01:00",
     "place": "Brentside High School",
     "direction": "towards Clifton Road"
    },
@@ -45881,7 +45881,7 @@
    "wait_p95_min": 30.32,
    "worst_gap": {
     "min": 60,
-    "start": "2026-09-26T21:29+01:00",
+    "start": "2026-09-26T21:29:00+01:00",
     "place": "Clapham South Station <>",
     "direction": "towards Hermitage Lane"
    },
@@ -46017,7 +46017,7 @@
    "wait_p95_min": 23.4,
    "worst_gap": {
     "min": 59,
-    "start": "2026-09-21T20:55+01:00",
+    "start": "2026-09-21T20:55:00+01:00",
     "place": "Drury Road",
     "direction": "towards Mount Vernon Hospital"
    },
@@ -46099,7 +46099,7 @@
    "wait_p95_min": 36.08,
    "worst_gap": {
     "min": 65,
-    "start": "2026-09-20T07:16+01:00",
+    "start": "2026-09-20T07:16:00+01:00",
     "place": "High Road Eastcote",
     "direction": "towards Ruislip Lido"
    },
@@ -46225,7 +46225,7 @@
    "wait_p95_min": 32.19,
    "worst_gap": {
     "min": 65,
-    "start": "2026-09-20T09:18+01:00",
+    "start": "2026-09-20T09:18:00+01:00",
     "place": "Durham Road",
     "direction": "towards Kymberley Road"
    },
@@ -46361,7 +46361,7 @@
    "wait_p95_min": 28.94,
    "worst_gap": {
     "min": 84,
-    "start": "2026-09-20T20:23+01:00",
+    "start": "2026-09-20T20:23:00+01:00",
     "place": "Browells Lane",
     "direction": "towards Hatton Cross Station <>"
    },
@@ -46445,7 +46445,7 @@
    "wait_p95_min": 31.33,
    "worst_gap": {
     "min": 85,
-    "start": "2026-09-26T19:41+01:00",
+    "start": "2026-09-26T19:41:00+01:00",
     "place": "Twickenham Rd / West Middlesex Hospital",
     "direction": "towards Bulls Bridge Tesco"
    },
@@ -46719,7 +46719,7 @@
    "wait_p95_min": 46.86,
    "worst_gap": {
     "min": 67,
-    "start": "2026-09-22T09:34+01:00",
+    "start": "2026-09-22T09:34:00+01:00",
     "place": "Surbiton Station #",
     "direction": "towards Kingston Hospital"
    },
@@ -46801,7 +46801,7 @@
    "wait_p95_min": 51.9,
    "worst_gap": {
     "min": 90,
-    "start": "2026-09-22T07:30+01:00",
+    "start": "2026-09-22T07:30:00+01:00",
     "place": "California Road",
     "direction": "towards Beaufort Road"
    },
@@ -50999,7 +50999,7 @@
    "wait_p95_min": 24.96,
    "worst_gap": {
     "min": 70,
-    "start": "2026-09-23T23:45+01:00",
+    "start": "2026-09-23T23:45:00+01:00",
     "place": "Canada Water Bus Station <> #",
     "direction": "towards Surrey Quays Shopping Centre"
    },
@@ -51081,7 +51081,7 @@
    "wait_p95_min": 22.49,
    "worst_gap": {
     "min": 54,
-    "start": "2026-09-20T13:02+01:00",
+    "start": "2026-09-20T13:02:00+01:00",
     "place": "Goose Green",
     "direction": "towards Streatham Station #"
    },
@@ -51163,7 +51163,7 @@
    "wait_p95_min": 20.97,
    "worst_gap": {
     "min": 64,
-    "start": "2026-09-23T21:34+01:00",
+    "start": "2026-09-23T21:34:00+01:00",
     "place": "Penrose Street / Walworth Road",
     "direction": "towards Patmore Estate / Drury House"
    },
@@ -51245,7 +51245,7 @@
    "wait_p95_min": 28.26,
    "worst_gap": {
     "min": 62,
-    "start": "2026-09-20T19:19+01:00",
+    "start": "2026-09-20T19:19:00+01:00",
     "place": "Bridgewater Close",
     "direction": "towards High Street / Worlds End Lane"
    },
@@ -51391,7 +51391,7 @@
    "wait_p95_min": 31.04,
    "worst_gap": {
     "min": 64,
-    "start": "2026-09-25T16:58+01:00",
+    "start": "2026-09-25T16:58:00+01:00",
     "place": "Orpington Station #",
     "direction": "towards Orpington Police Station"
    },
@@ -51475,7 +51475,7 @@
    "wait_p95_min": 28.96,
    "worst_gap": {
     "min": 71,
-    "start": "2026-09-24T21:30+01:00",
+    "start": "2026-09-24T21:30:00+01:00",
     "place": "Locksbottom / St Michael's Church",
     "direction": "towards Orpington Station #"
    },
@@ -51687,7 +51687,7 @@
    "wait_p95_min": 21.37,
    "worst_gap": {
     "min": 64,
-    "start": "2026-09-26T09:36+01:00",
+    "start": "2026-09-26T09:36:00+01:00",
     "place": "Manor Circus",
     "direction": "towards Kew Retail Park"
    },
@@ -51833,7 +51833,7 @@
    "wait_p95_min": 92.43,
    "worst_gap": {
     "min": 177,
-    "start": "2026-09-23T12:18+01:00",
+    "start": "2026-09-23T12:18:00+01:00",
     "place": "Village Green Way",
     "direction": "towards Lebanon Gardens"
    },
@@ -51981,7 +51981,7 @@
    "wait_p95_min": 20.36,
    "worst_gap": {
     "min": 44,
-    "start": "2026-09-20T13:16+01:00",
+    "start": "2026-09-20T13:16:00+01:00",
     "place": "Mitcham Fair Green",
     "direction": "towards Victoria Road / Lavender Fields"
    },
@@ -52063,7 +52063,7 @@
    "wait_p95_min": 25.89,
    "worst_gap": {
     "min": 43,
-    "start": "2026-09-22T08:24+01:00",
+    "start": "2026-09-22T08:24:00+01:00",
     "place": "St Helier Hospital",
     "direction": "towards Epsom High Street"
    },
@@ -52145,7 +52145,7 @@
    "wait_p95_min": 35.55,
    "worst_gap": {
     "min": 91,
-    "start": "2026-09-24T07:32+01:00",
+    "start": "2026-09-24T07:32:00+01:00",
     "place": "North Cheam / Sainsbury's",
     "direction": "towards Belmont Station #"
    },
@@ -52227,7 +52227,7 @@
    "wait_p95_min": 32.24,
    "worst_gap": {
     "min": 68,
-    "start": "2026-09-24T18:12+01:00",
+    "start": "2026-09-24T18:12:00+01:00",
     "place": "Beddington Cross",
     "direction": "towards Sutton / Marshall's Road"
    },
@@ -52373,7 +52373,7 @@
    "wait_p95_min": 27.66,
    "worst_gap": {
     "min": 88,
-    "start": "2026-09-20T06:24+01:00",
+    "start": "2026-09-20T06:24:00+01:00",
     "place": "Austins Lane",
     "direction": "towards Ruislip Station <>"
    },
@@ -52519,7 +52519,7 @@
    "wait_p95_min": 29.94,
    "worst_gap": {
     "min": 60,
-    "start": "2026-09-21T07:20+01:00",
+    "start": "2026-09-21T07:20:00+01:00",
     "place": "Uxbridge County Court",
     "direction": "towards Belmont Road"
    },
@@ -52601,7 +52601,7 @@
    "wait_p95_min": 37.22,
    "worst_gap": {
     "min": 67,
-    "start": "2026-09-20T18:07+01:00",
+    "start": "2026-09-20T18:07:00+01:00",
     "place": "The Furrows",
     "direction": "towards Belmont Road"
    },
@@ -52683,7 +52683,7 @@
    "wait_p95_min": 26.41,
    "worst_gap": {
     "min": 48,
-    "start": "2026-09-22T19:44+01:00",
+    "start": "2026-09-22T19:44:00+01:00",
     "place": "Carisbrooke Road",
     "direction": "towards Rensburg Road"
    },
