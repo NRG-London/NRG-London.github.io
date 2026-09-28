@@ -27,7 +27,9 @@
          median itself is over frequent routes only, since they are the only
          ones that carry an excess wait. */ -}}
   {{- $freq := where (where $d.routes "frequency_type" "!=" "timetabled") "service_class" "!=" "night" -}}
-  {{- $label = printf "is the middling frequent London bus route's excess wait — the time a rider loses to gaps in the service, beyond what the timetable already asks of them. %d of %d frequent routes reported in the week ending %s." (len (where $freq "ewt_min" "!=" nil)) (len $freq) (dateFormat "2 January 2006" $d.week_ending) -}}
+  {{- /* The median, said as a person would say it (house rule, 28 Sep): "half
+         of London's routes kept it to this or less", never "the middling route". */ -}}
+  {{- $label = printf "excess wait or less on half of London's frequent bus routes — the time a rider loses to gaps in the service, beyond what the timetable already asks of them. %d of %d frequent routes reported in the week ending %s." (len (where $freq "ewt_min" "!=" nil)) (len $freq) (dateFormat "2 January 2006" $d.week_ending) -}}
 {{- end -}}
 
 <div class="ngbus ngbus-hero">

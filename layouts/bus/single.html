@@ -130,8 +130,12 @@
     <p class="ngbus-hero__stat">{{ lang.FormatPercent 0 (mul $row.on_time_pct 100) }} on time<small>of
       departures in the week ending {{ dateFormat "2 January 2006" $w.week_ending }}
       {{- with $otEarly }}, leaving no more than {{ . }} minutes early or {{ $otLate }} minutes late{{ end }}.
-      The middle London timetabled route managed
-      {{ lang.FormatPercent 0 (mul (index $ots (div (len $ots) 2)).on_time_pct 100) }}.</small></p>
+      {{- /* The median, said as a person would say it (house rule): "half of
+             London's routes managed X or better", never "the middle route". It
+             also makes plain that the comparison is between routes, not
+             journeys. */}}
+      Half of London's timetabled routes managed
+      {{ lang.FormatPercent 0 (mul (index $ots (div (len $ots) 2)).on_time_pct 100) }} or better.</small></p>
       {{- else }}
     <p class="ngbus-hero__stat">No data<small>too few of route {{ $route }}'s departures were
       captured this week to publish a figure. This is a gap in the observation, not a verdict
@@ -139,14 +143,99 @@
       {{- end }}
     {{- else if ne $row.ewt_min nil }}
     <p class="ngbus-hero__stat">{{ lang.FormatNumber 1 $row.ewt_min }} min<small>excess wait
-      in the week ending {{ dateFormat "2 January 2006" $w.week_ending }}, against a London
-      middle of {{ lang.FormatNumber 1 $w.summary.median_ewt_min }} min.</small></p>
+      in the week ending {{ dateFormat "2 January 2006" $w.week_ending }}. Half of London's
+      frequent routes kept it to {{ lang.FormatNumber 1 $w.summary.median_ewt_min }} min or less.</small></p>
     {{- else }}
     <p class="ngbus-hero__stat">No data<small>too little of this week was captured on
       route {{ $route }} to publish a figure. This is a gap in the observation, not a verdict
       on the route.</small></p>
     {{- end }}
   </div>
+
+  {{- if gt (len $units) 0 }}
+  {{- /* First thing under the headline figure: the chart opens on the last
+         week, day by day, and "what happened this week?" is what most people
+         arrive with (Neil, 28 Sep). The chart is drawn by ngbus-chart.js into
+         this box. The weekly figures
+         below it are NOT a fallback bolted on afterwards — they are the page's
+         primary disclosure, present in the HTML whether or not any JavaScript
+         runs, and they are what a screen reader gets instead of an SVG. */ -}}
+  <div class="ngbus-chart" id="ngbus-chart">
+    <div class="ngbus-chart__title" id="ngbus-chart-title">{{ if $dailyOk }}The last week, day by day{{ else }}Week by week{{ end }}</div>
+    <div class="ngbus-chart__subtitle" id="ngbus-chart-sub">
+      {{- if eq $class "timetabled" }}Share of departures leaving on time.
+      {{- else }}Share of waiting time spent inside a gap longer than ten minutes.{{ end }}</div>
+    <div class="ngbus-controls">
+      <div class="ngbus-chips" role="group" aria-label="Which measure to plot">
+        {{- if eq $class "timetabled" }}
+        <button type="button" class="ngbus-chip" data-metric="ot" aria-pressed="true">On time</button>
+        {{- else }}
+        <button type="button" class="ngbus-chip" data-metric="p" aria-pressed="true">Wait &gt; 10 min</button>
+        <button type="button" class="ngbus-chip" data-metric="ewt" aria-pressed="false">Excess wait</button>
+        {{- end }}
+        {{- if $anyCur }}
+        <button type="button" class="ngbus-chip" data-metric="cur" aria-pressed="false">Cut short</button>
+        {{- end }}
+      </div>
+      {{- /* Rolling spans back from the week on show, in the order a reader zooms
+             out: this week first, the whole record last. The last week and month
+             are drawn from the daily figures, which only exist for the most
+             recent 35 days, so those two chips appear only when they do. */ -}}
+      <div class="ngbus-chips ngbus-chips--range" role="group" aria-label="Time span">
+        {{- if $dailyOk }}
+        <button type="button" class="ngbus-chip" data-range="week" aria-pressed="true">Last week</button>
+        <button type="button" class="ngbus-chip" data-range="month" aria-pressed="false">Last month</button>
+        {{- end }}
+        <button type="button" class="ngbus-chip" data-range="3m" aria-pressed="false">Last 3 months</button>
+        <button type="button" class="ngbus-chip" data-range="12m" aria-pressed="false">Last 12 months</button>
+        <button type="button" class="ngbus-chip" data-range="all" aria-pressed="{{ not $dailyOk }}">All data</button>
+      </div>
+    </div>
+    <div class="ngbus-chart__plot" id="ngbus-chart-plot"></div>
+    <div class="ngbus-legend" id="ngbus-chart-legend"></div>
+  </div>
+
+  <details class="ngbus-weeks">
+    <summary>The weekly figures</summary>
+    <p class="ngbus-weeks__hint">
+      {{- if eq $class "timetabled" }}The share of departures that left on time.
+      {{- else }}Excess wait, then the share of waiting spent in a gap longer than ten minutes.{{ end }}</p>
+    <div class="ngbus-tablewrap">
+      <table class="ngbus-table">
+        <thead>
+          <tr>
+            <th scope="col">Week ending</th>
+            {{- range $units }}
+            <th scope="col">{{ .name }}</th>
+            {{- end }}
+          </tr>
+        </thead>
+        <tbody>
+          {{- range $i, $week := $w.weeks }}
+          <tr>
+            <td>{{ dateFormat "2 Jan 2006" $week }}</td>
+            {{- range $units }}
+              {{- $c := index .series $i }}
+              {{- $v := cond (eq $class "timetabled") $c.on_time_pct $c.ewt_min }}
+              {{- if and (ne $v nil) (ge $c.coverage $thr) }}
+            {{- /* A week can publish on less than a full week's collection. The
+                   chart shades those; this is the same fact for a reader with no
+                   JavaScript, who has only this table. */ -}}
+            <td>{{ if eq $class "timetabled" }}{{ lang.FormatPercent 0 (mul $v 100) }}
+              {{- else }}{{ lang.FormatNumber 1 $v }} min
+                {{- with $c.wait_bands }}{{ $b := index . "10" }}{{ if ne $b.actual nil }} · {{ lang.FormatPercent 0 (mul $b.actual 100) }}{{ end }}{{ end }}{{ end }}
+              {{- if lt $c.coverage 0.9 }} <span class="ngbus-thinmark" title="Bus data was collected for only {{ lang.FormatPercent 0 (mul $c.coverage 100) }} of this week, across the whole of London">thin</span>{{ end }}</td>
+              {{- else }}
+            <td><span class="ngbus-nd" title="Too little data this week">no data</span></td>
+              {{- end }}
+            {{- end }}
+          </tr>
+          {{- end }}
+        </tbody>
+      </table>
+    </div>
+  </details>
+  {{- end }}
 
   {{- /* The strapline is the same fact in the language a passenger uses, from
          the worse of the two directions: a rider waits for a bus going one way,
@@ -273,9 +362,24 @@
   <p class="ngbus-worstgap"><strong>{{ lang.FormatNumber 0 .min }} minutes</strong> was the
     longest gap between buses this week{{ with .place }}, at {{ partial "bus-place.html" . }}{{ end }}
     {{- with .direction }} {{ partial "bus-place.html" . }}{{ end }}
-    {{- with .start }}{{ $d := substr . 0 10 }}{{ $t := substr . 11 5 }}, on
-      {{ dateFormat "Monday 2 January" $d }} at {{ $t }}{{ end }}.
-    Gaps caused by holes in our own data are left out.</p>
+    {{- /* `start` is when the gap began — the bus before it — so the end is
+           start plus the gap, and the page gives both: "at 18:21" left a reader
+           asking whether that was when the wait started or when it finally
+           ended. Parsed as a time when it carries seconds (from 28 Sep), sliced
+           as a string when it does not. A gap that runs past midnight names
+           both days. */ -}}
+    {{- $gmin := .min }}
+    {{- with .start }}
+      {{- if findRE `T\d\d:\d\d:\d\d` . }}
+        {{- $t0 := time.AsTime . }}{{ $t1 := $t0.Add (time.ParseDuration (printf "%dm" (int $gmin))) }}
+        {{- if eq ($t0.Format "2006-01-02") ($t1.Format "2006-01-02") }}, on
+      {{ $t0.Format "Monday 2 January" }} from {{ $t0.Format "15:04" }} to {{ $t1.Format "15:04" }}
+        {{- else }}, from {{ $t0.Format "15:04" }} on {{ $t0.Format "Monday 2 January" }} to
+      {{ $t1.Format "15:04" }} on {{ $t1.Format "Monday 2 January" }}{{ end }}
+      {{- else }}{{ $d := substr . 0 10 }}{{ $t := substr . 11 5 }}, on
+      {{ dateFormat "Monday 2 January" $d }}, starting at {{ $t }}{{ end }}
+    {{- end }}.
+    This excludes any gaps caused by holes in our own data.</p>
   {{- end }}
   {{- end }}
 
@@ -312,106 +416,41 @@
   {{- end }}
   {{- end }}
 
-  {{- if gt (len $units) 0 }}
-  {{- /* The chart is drawn by ngbus-chart.js into this box. The weekly figures
-         below it are NOT a fallback bolted on afterwards — they are the page's
-         primary disclosure, present in the HTML whether or not any JavaScript
-         runs, and they are what a screen reader gets instead of an SVG. */ -}}
-  <div class="ngbus-chart" id="ngbus-chart">
-    <div class="ngbus-chart__title" id="ngbus-chart-title">{{ if $dailyOk }}The last week, day by day{{ else }}Week by week{{ end }}</div>
-    <div class="ngbus-chart__subtitle" id="ngbus-chart-sub">
-      {{- if eq $class "timetabled" }}Share of departures leaving on time.
-      {{- else }}Share of waiting time spent inside a gap longer than ten minutes.{{ end }}</div>
-    <div class="ngbus-controls">
-      <div class="ngbus-chips" role="group" aria-label="Which measure to plot">
-        {{- if eq $class "timetabled" }}
-        <button type="button" class="ngbus-chip" data-metric="ot" aria-pressed="true">On time</button>
-        {{- else }}
-        <button type="button" class="ngbus-chip" data-metric="p" aria-pressed="true">Wait &gt; 10 min</button>
-        <button type="button" class="ngbus-chip" data-metric="ewt" aria-pressed="false">Excess wait</button>
-        {{- end }}
-        {{- if $anyCur }}
-        <button type="button" class="ngbus-chip" data-metric="cur" aria-pressed="false">Cut short</button>
-        {{- end }}
-      </div>
-      {{- /* Rolling spans back from the week on show, in the order a reader zooms
-             out: this week first, the whole record last. The last week and month
-             are drawn from the daily figures, which only exist for the most
-             recent 35 days, so those two chips appear only when they do. */ -}}
-      <div class="ngbus-chips ngbus-chips--range" role="group" aria-label="Time span">
-        {{- if $dailyOk }}
-        <button type="button" class="ngbus-chip" data-range="week" aria-pressed="true">Last week</button>
-        <button type="button" class="ngbus-chip" data-range="month" aria-pressed="false">Last month</button>
-        {{- end }}
-        <button type="button" class="ngbus-chip" data-range="3m" aria-pressed="false">Last 3 months</button>
-        <button type="button" class="ngbus-chip" data-range="12m" aria-pressed="false">Last 12 months</button>
-        <button type="button" class="ngbus-chip" data-range="all" aria-pressed="{{ not $dailyOk }}">All data</button>
-      </div>
-    </div>
-    <div class="ngbus-chart__plot" id="ngbus-chart-plot"></div>
-    <div class="ngbus-legend" id="ngbus-chart-legend"></div>
-  </div>
 
-  <details class="ngbus-weeks">
-    <summary>The weekly figures</summary>
-    <p class="ngbus-weeks__hint">
-      {{- if eq $class "timetabled" }}The share of departures that left on time.
-      {{- else }}Excess wait, then the share of waiting spent in a gap longer than ten minutes.{{ end }}</p>
-    <div class="ngbus-tablewrap">
-      <table class="ngbus-table">
-        <thead>
-          <tr>
-            <th scope="col">Week ending</th>
-            {{- range $units }}
-            <th scope="col">{{ .name }}</th>
-            {{- end }}
-          </tr>
-        </thead>
-        <tbody>
-          {{- range $i, $week := $w.weeks }}
-          <tr>
-            <td>{{ dateFormat "2 Jan 2006" $week }}</td>
-            {{- range $units }}
-              {{- $c := index .series $i }}
-              {{- $v := cond (eq $class "timetabled") $c.on_time_pct $c.ewt_min }}
-              {{- if and (ne $v nil) (ge $c.coverage $thr) }}
-            {{- /* A week can publish on less than a full week's collection. The
-                   chart shades those; this is the same fact for a reader with no
-                   JavaScript, who has only this table. */ -}}
-            <td>{{ if eq $class "timetabled" }}{{ lang.FormatPercent 0 (mul $v 100) }}
-              {{- else }}{{ lang.FormatNumber 1 $v }} min
-                {{- with $c.wait_bands }}{{ $b := index . "10" }}{{ if ne $b.actual nil }} · {{ lang.FormatPercent 0 (mul $b.actual 100) }}{{ end }}{{ end }}{{ end }}
-              {{- if lt $c.coverage 0.9 }} <span class="ngbus-thinmark" title="Bus data was collected for only {{ lang.FormatPercent 0 (mul $c.coverage 100) }} of this week, across the whole of London">thin</span>{{ end }}</td>
-              {{- else }}
-            <td><span class="ngbus-nd" title="Too little data this week">no data</span></td>
-              {{- end }}
-            {{- end }}
-          </tr>
-          {{- end }}
-        </tbody>
-      </table>
-    </div>
-  </details>
-  {{- end }}
-
-  {{- with $h.curtailment_detail }}
+  {{- /* JOURNEYS CUT SHORT — the complaint in the mailbag more than any other.
+         One block, three layers, each shown when its data is there:
+         1. "Last week:" — the route's share this week, from the timing-point
+            measure;
+         2. "Last four weeks:" — the older four-week count and its hour-of-day
+            profile, while the sweep still sends `curtailment_detail` (there is
+            no hour profile on the new basis yet; asked for);
+         3. each direction's count and where its buses were turned round, from
+            `turned_short_at`, which covers every route — the older detail only
+            covered routes over its reporting threshold, which left the 38,
+            turning 45% of its Victoria journeys short, with no block at all.
+         The labels lead each paragraph so a reader can see at a glance that the
+         two figures cover different periods; the sentence after each still
+         gives the exact dates. */ -}}
+  {{- $turnDirs := slice -}}
+  {{- range $dirs }}{{ if .turned_short_at }}{{ $turnDirs = $turnDirs | append (slice .) }}{{ end }}{{ end -}}
+  {{- $cd := $h.curtailment_detail -}}
+  {{- if or $turnDirs $cd (and (ne $row.journeys_turned_short_pct nil) (gt (len $dirs) 0)) }}
   <section class="ngbus-curtblock">
     <h2 class="ngbus-curtblock__title">Journeys cut short</h2>
-    {{- /* The two route-level figures that came with the timing-point measure:
-           how many journeys were turned back, and how much of the excess wait
-           that accounts for. A bus turned short is now missing from the stops it
-           never reached, rather than counted at a stand it never left. */ -}}
     {{- if ne $row.journeys_turned_short_pct nil }}
-    <p class="ngbus-curtblock__lead"><strong>{{ lang.FormatPercent 1 (mul $row.journeys_turned_short_pct 100) }}</strong>
+    <p class="ngbus-curtblock__lead"><strong>Last week:</strong>
+      <strong>{{ lang.FormatPercent 1 (mul $row.journeys_turned_short_pct 100) }}</strong>
       of journeys were turned back before the end of the line in the week ending
       {{ dateFormat "2 January 2006" $w.week_ending }}{{ if and (ne $row.ewt_turned_short_min nil) (ge $row.ewt_turned_short_min 0.05) }}, and that
       accounts for <strong>{{ lang.FormatNumber 1 $row.ewt_turned_short_min }} minutes</strong> of
-      the excess wait above{{ end }}.</p>
+      the excess wait above{{ end }}.
+      Anyone still on board is put off, and anyone waiting further along the route is left
+      for the next bus: a cancellation that only the far end of the route ever sees.</p>
     {{- end }}
+    {{- with $cd }}
     {{- /* `weeks` is the LIST of week-endings the count covers, not a number of
-           them — printing it directly put a raw JSON array in the middle of the
-           sentence. They are not necessarily consecutive either, so the page
-           says how many weeks were watched and names the span. */ -}}
+           them. They are not necessarily consecutive either, so the page says
+           how many weeks were watched and names the span. */ -}}
     {{- $wk := .weeks }}{{ $n := 0 }}{{ $span := "" -}}
     {{- if reflect.IsSlice $wk -}}
       {{- $n = len $wk -}}
@@ -422,32 +461,29 @@
     {{- else -}}
       {{- $n = int $wk -}}
     {{- end -}}
-    {{- /* The rate, not just the total. A four-week count is a number nobody can
-           picture; "about twelve a day" is one anybody can. It is also what makes
-           the chart below legible, because the bars there are per day and add up
-           to this figure. */ -}}
+    {{- /* The rate, not just the total: "about twelve a day" is a number anybody
+           can picture, and the bars below are per day and add up to it. */ -}}
     {{- $days := mul $n 7 -}}
     {{- $perDay := cond (gt $days 0) (div (float .curtailments) (float $days)) 0.0 -}}
-    <p class="ngbus-curtblock__lead">
+    {{- $nWords := partial "bus-words.html" $n }}
+    <p class="ngbus-curtblock__lead"><strong>Last {{ cond (eq $n 1) "week" (printf "%s weeks" $nWords) }}:</strong>
       <strong>{{ lang.FormatNumber 0 .curtailments }}</strong> journeys on route {{ $route }} were
-      turned back before the end of the line over {{ partial "bus-words.html" $n }}
+      turned back before the end of the line over {{ $nWords }}
       {{ cond (eq $n 1) "week" "weeks" }} of watching{{ with $span }}, {{ . }}{{ end }} —
       <strong>{{ if lt $perDay 1.0 }}fewer than one a day{{ else }}about
         {{ if ge $perDay 10.0 }}{{ lang.FormatNumber 0 $perDay }}{{ else }}{{ lang.FormatNumber 1 $perDay }}{{ end }}
-        a day{{ end }}</strong>.
-      The bus terminates early and turns round, so anyone waiting further along the route waits for
-      the next one instead: a cancellation that only the far half of the route ever sees.
-    </p>
+        a day{{ end }}</strong>.</p>
     {{- with .per_10_days_by_hour }}
     {{ partial "bus-hours.html" (dict "values" .
         "label" (printf "Journeys cut short by hour of day on route %s" $route)) }}
     <p class="ngbus-curtblock__note">Where those journeys fall across the day. Each bar is the
       number cut short in that hour on an average day, so the bars together come to the daily figure
-      above. Hours the route was not watched enough to say are shaded rather than drawn as nought.</p>
+      above; hover a bar for its hour. Hours the route was not watched enough to say are shaded
+      rather than drawn as nought.</p>
     {{- end }}
-    {{- /* `turn_stops` is a top-five, not the whole list: across the live data it
-           accounts for anywhere between 52% and 100% of a route's total, so the
-           remainder is stated rather than left as a puzzle. */ -}}
+    {{- /* The older top-five turning points, only when nothing newer says where:
+           `turned_short_at` below supersedes them. */ -}}
+    {{- if not $turnDirs }}
     {{- $total := .curtailments -}}
     {{- with .turn_stops }}
     {{- $listed := 0 }}{{ range . }}{{ $listed = add $listed .count }}{{ end -}}
@@ -466,6 +502,41 @@
       often. The other {{ lang.FormatNumber 0 $rest }} turned round somewhere else along the
       route.</p>
     {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- end }}
+    {{- range $dirs }}
+      {{- $c := dict }}{{ if ge $ci 0 }}{{ $c = index .series $ci }}{{ end }}
+      {{- $hasCount := and (ne $c.journeys nil) (ne $c.journeys_turned_short nil) (gt ($c.journeys | default 0.0) 0.0) }}
+      {{- if or $hasCount .turned_short_at }}
+    <h3 class="ngbus-curtblock__sub">{{ partial "bus-place.html" .name }}</h3>
+        {{- if $hasCount }}
+    <p class="ngbus-curtblock__dirline">
+      {{- if eq (int $c.journeys_turned_short) 0 }}Last week, none of {{ lang.FormatNumber 0 $c.journeys }} journeys was turned short.
+      {{- else }}Last week, <strong>{{ lang.FormatNumber 0 $c.journeys_turned_short }}</strong> of
+        {{ lang.FormatNumber 0 $c.journeys }} journeys
+        ({{ lang.FormatPercent 0 (mul (div (float $c.journeys_turned_short) (float $c.journeys)) 100) }})
+        were turned short.{{ end }}</p>
+        {{- end }}
+        {{- with .turned_short_at }}
+    <ul class="ngbus-turnstops">
+      {{- range . }}
+      <li>
+        <span class="ngbus-turnstops__name">
+          {{- with .place }}{{ partial "bus-place.html" . }}{{ else }}Elsewhere along the route{{ end }}
+          {{- with .median_short_km }}<span class="ngbus-turnstops__far">{{ lang.FormatNumber 1 . }} km short of the end</span>{{ end -}}
+        </span>
+        <span class="ngbus-turnstops__count">{{ lang.FormatNumber 0 .count }}</span>
+      </li>
+      {{- end }}
+    </ul>
+        {{- end }}
+      {{- end }}
+    {{- end }}
+    {{- if $turnDirs }}
+    <p class="ngbus-curtblock__note">Each place is the last stop the bus was timed at before it
+      turned round, with the typical distance it fell short of the end of the line. The five
+      busiest are named; the rest are counted together.</p>
     {{- end }}
   </section>
   {{- end }}
@@ -509,6 +580,21 @@
       own timetable; ours are computed from the buses' public position feed. They are the same
       calculation on independent data, so they should broadly agree and move together rather than
       match exactly.</p>
+    {{- /* The reason ours runs higher, from the back end's check against TfL's
+           quarterly figures (E:\Road Data\docs\bus-performance-methodology.md,
+           15 Sep): take out the waiting caused by buses turned short and ours
+           lands close to TfL's — the network mean for Apr–Jun 2026 falls from
+           1.39 to 1.23 against TfL's 1.08, and on the routes where the two
+           disagreed most (12, 159, E8) it lands almost exactly on TfL's figure.
+           Only for the excess-wait rows: punctuality is a different sum. */ -}}
+    {{- if where $shown "tfl_ewt_min" "!=" nil }}
+    <p class="ngbus-curtblock__note"><strong>Why ours is usually a little higher.</strong> When a bus
+      is turned back before the end of the line, everyone waiting further along has to wait for the
+      next one. Our figure counts that waiting; TfL's published figure appears not to. Take it out
+      and the two come close: across London in April to June 2026, our average excess wait falls
+      from 1.39 to 1.23 minutes against TfL's 1.08, and on the routes where the two differed most it
+      lands almost exactly on TfL's number.</p>
+    {{- end }}
   </section>
   {{- end }}
   {{- end }}
@@ -691,6 +777,6 @@
 
 {{ partial "bus-assets.html" . }}
 {{- if gt (len $units) 0 }}
-<script src="/js/ngbus-chart.js?v=8" defer></script>
+<script src="/js/ngbus-chart.js?v=9" defer></script>
 {{- end }}
 {{ end }}

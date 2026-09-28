@@ -37,46 +37,75 @@
 
 {{- $hi := 0.0 }}{{ $peakHour := 0 -}}
 {{- range $i, $y := $v }}{{ if and (ne $y nil) (gt $y $hi) }}{{ $hi = $y }}{{ $peakHour = $i }}{{ end }}{{ end -}}
-{{- if le $hi 0.0 }}{{ $hi = 1.0 }}{{ end -}}
 
-{{- $W := 480.0 }}{{ $H := 132.0 }}{{ $plot := 96.0 }}{{ $pad := 4.0 -}}
-{{- $step := div (sub $W (mul $pad 2)) (float $n) -}}
-{{- $bw := mul $step 0.66 -}}
+{{- /* A y scale, because without one the bars had shape but no size: the note
+       said "number cut short in that hour on an average day" and nothing on the
+       chart said what any bar came to. The smallest round step from a fixed list
+       that clears the busiest hour in at most four ticks — a fixed three ticks
+       put a busiest hour of 1.5 under an axis running to 3. */ -}}
+{{- $step := 0.0 }}{{ $nt := 1 -}}
+{{- range slice 0.1 0.2 0.5 1.0 2.0 5.0 10.0 20.0 50.0 100.0 -}}
+  {{- $k := int (math.Ceil (div $hi .)) -}}
+  {{- if and (eq $step 0.0) (le $k 4) }}{{ $step = . }}{{ $nt = math.Max 1 $k }}{{ end -}}
+{{- end -}}
+{{- if eq $step 0.0 }}{{ $step = 100.0 }}{{ $nt = 4 }}{{ end -}}
+{{- $nt = int $nt -}}
+{{- $top := mul $step (float $nt) -}}
+{{- $dec := cond (lt $step 1.0) 1 0 -}}
+
+{{- $W := 480.0 }}{{ $H := 132.0 }}{{ $plot := 96.0 }}{{ $ptop := 18.0 -}}
+{{- $L := 30.0 }}{{ $pad := 4.0 -}}
+{{- $bstep := div (sub (sub $W $L) $pad) (float $n) -}}
+{{- $bw := mul $bstep 0.66 -}}
 
 <svg class="ngbus-hours" viewBox="0 0 480 132" role="img"
      aria-label="{{ .label | default "Curtailments by hour of day" }}" focusable="false">
-  {{- /* baseline */}}
-  <line class="ngbus-hours__base" x1="{{ $pad }}" y1="{{ $plot }}" x2="{{ sub $W $pad }}" y2="{{ $plot }}"/>
+  {{- /* y grid, ticks and unit */}}
+  {{- range $k := seq 0 $nt }}
+    {{- $tv := mul $step (float $k) -}}
+    {{- $ty := sub $plot (mul (div $tv $top) (sub $plot $ptop)) }}
+  <line class="{{ if eq $k 0 }}ngbus-hours__base{{ else }}ngbus-hours__grid{{ end }}" x1="{{ $L }}" y1="{{ printf "%.2f" $ty }}" x2="{{ sub $W $pad }}" y2="{{ printf "%.2f" $ty }}"/>
+  <text class="ngbus-hours__ax" x="{{ sub $L 5.0 }}" y="{{ printf "%.2f" (add $ty 3.5) }}" text-anchor="end">{{ if eq $k 0 }}0{{ else }}{{ lang.FormatNumber $dec $tv }}{{ end }}</text>
+  {{- end }}
+  <text class="ngbus-hours__ax ngbus-hours__unit" x="{{ $L }}" y="10" text-anchor="start">journeys cut short a day, by hour</text>
 
   {{- range $i, $y := $v }}
-    {{- $x := add $pad (mul $step (float $i)) -}}
-    {{- $cx := add $x (div $step 2) -}}
+    {{- $x := add $L (mul $bstep (float $i)) -}}
+    {{- $cx := add $x (div $bstep 2) -}}
+    {{- $hour := printf "%02d:00–%02d:00" $i (mod (add $i 1) 24) -}}
+  <g class="ngbus-hours__col">
+    {{- /* A native tooltip per hour, on a full-height target: a bar can be two
+           pixels tall and a shaded hour has no bar at all, so the bar itself is
+           too small to hover. */}}
+    <title>{{ $hour }}: {{ if eq $y nil }}not watched enough to say{{ else }}{{ lang.FormatNumber 1 $y }} cut short on an average day{{ end }}</title>
     {{- if eq $y nil }}
-  <rect class="ngbus-hours__gap" x="{{ printf "%.2f" $x }}" y="0"
-        width="{{ printf "%.2f" $step }}" height="{{ $plot }}"/>
+    <rect class="ngbus-hours__gap" x="{{ printf "%.2f" $x }}" y="{{ $ptop }}"
+          width="{{ printf "%.2f" $bstep }}" height="{{ sub $plot $ptop }}"/>
     {{- else }}
-      {{- $h := mul (div $y $hi) (sub $plot 6.0) -}}
+      {{- $h := mul (div $y $top) (sub $plot $ptop) -}}
       {{- /* A measured zero still gets a mark, so the hour reads as counted
              rather than as missing. */ -}}
       {{- if lt $h 1.5 }}{{ $h = 1.5 }}{{ end }}
-  <rect class="ngbus-hours__bar" x="{{ printf "%.2f" (sub $cx (div $bw 2)) }}"
-        y="{{ printf "%.2f" (sub $plot $h) }}"
-        width="{{ printf "%.2f" $bw }}" height="{{ printf "%.2f" $h }}" rx="1"/>
+    <rect class="ngbus-hours__bar" x="{{ printf "%.2f" (sub $cx (div $bw 2)) }}"
+          y="{{ printf "%.2f" (sub $plot $h) }}"
+          width="{{ printf "%.2f" $bw }}" height="{{ printf "%.2f" $h }}" rx="1"/>
     {{- end }}
+    <rect class="ngbus-hours__hit" x="{{ printf "%.2f" $x }}" y="{{ $ptop }}"
+          width="{{ printf "%.2f" $bstep }}" height="{{ sub $plot $ptop }}"/>
+  </g>
     {{- if in (slice 0 6 12 18) $i }}
-      {{- /* Midnight's bar is half a step from the left edge, so a centred label
-             hangs off the viewBox and gets clipped. Anchor the first one to the
-             start instead of nudging every other label out of true. */ -}}
       {{- $anchor := cond (eq $i 0) "start" "middle" -}}
-      {{- $lx := cond (eq $i 0) $pad $cx -}}
+      {{- $lx := cond (eq $i 0) $x $cx -}}
   <text class="ngbus-hours__ax" x="{{ printf "%.2f" $lx }}" y="{{ add $plot 16 }}"
         text-anchor="{{ $anchor }}">{{ printf "%02d:00" $i }}</text>
     {{- end }}
   {{- end }}
 
   {{- /* Naming the hour as well as the height: "1.5 a day" alone leaves the
-         reader hunting along the axis for which bar it was. */ -}}
-  <text class="ngbus-hours__ax ngbus-hours__peak" x="{{ sub $W 8.0 }}" y="12" text-anchor="end">
+         reader hunting along the axis for which bar it was. */}}
+  {{- if gt $hi 0.0 }}
+  <text class="ngbus-hours__ax ngbus-hours__peak" x="{{ sub $W 8.0 }}" y="10" text-anchor="end">
     busiest hour {{ printf "%02d:00" $peakHour }} — {{ lang.FormatNumber 1 $hi }} a day
   </text>
+  {{- end }}
 </svg>

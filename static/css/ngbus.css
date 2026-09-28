@@ -837,6 +837,10 @@
   font-variant-numeric: tabular-nums;
 }
 .ngbus-hours__peak { font-size: 10px; }
+.ngbus-hours__grid { stroke: var(--warm-grey, #dde3df); stroke-width: 1; }
+.ngbus-hours__unit { font-size: 10px; }
+.ngbus-hours__hit { fill: transparent; cursor: help; }
+.ngbus-hours__col:hover .ngbus-hours__bar { opacity: 0.9; }
 
 .ngbus-turnstops { list-style: none; margin: 0; padding: 0; }
 .ngbus-turnstops li {
@@ -961,5 +965,15 @@
 
 .ngbus-tfl-compare { margin: 2rem 0 0; }
 .ngbus-tfl-compare__when {
+  display: block; font-size: 0.74rem; color: var(--mid-grey, #8a9490); font-variant-numeric: tabular-nums;
+}
+
+
+/* Journeys cut short, per direction (28 Sep): the week's count for the
+   direction, then where its buses turned round. */
+.ngbus-curtblock__dirline {
+  font-size: 0.88rem; line-height: 1.55; margin: 0 0 0.5rem; font-variant-numeric: tabular-nums;
+}
+.ngbus-turnstops__far {
   display: block; font-size: 0.74rem; color: var(--mid-grey, #8a9490); font-variant-numeric: tabular-nums;
 }

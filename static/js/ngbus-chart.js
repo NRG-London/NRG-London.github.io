@@ -142,13 +142,15 @@
   function fmt(v) {
     if (v == null) return 'no data';
     if (metric === 'ewt') return v.toFixed(1) + ' min';
-    if (metric === 'cur') return (v * 100).toFixed(2) + '%';
+    /* Two decimals only while the figure is under 1%: a weekly route-wide rate
+       of 0.34% needs them, a day on the 38 at 45.50% does not. */
+    if (metric === 'cur') return (v * 100).toFixed(v < 0.01 ? 2 : 1) + '%';
     return Math.round(v * 100) + '%';
   }
 
   function axisLabel(v) {
     if (metric === 'ewt') return v.toFixed(1);
-    if (metric === 'cur') return (v * 100).toFixed(1) + '%';
+    if (metric === 'cur') return (v * 100).toFixed(axisStep < 0.01 ? 1 : 0) + '%';
     return Math.round(v * 100) + '%';
   }
 
@@ -313,7 +315,8 @@
   /* ---- draw --------------------------------------------------------------- */
 
   var cursor = null;
-  var current = null;      // the view being drawn, for the hover readout
+  var current = null;
+  var axisStep = 1;        // tick spacing, so axis labels carry only the decimals they need      // the view being drawn, for the hover readout
 
   function draw() {
     pickGeom();
@@ -368,6 +371,7 @@
 
     var y = function (v) { return G.t + IH - ((v - dom.lo) / (dom.hi - dom.lo)) * IH; };
     var hw = halfStep();
+    axisStep = dom.step;
 
     var svg = el('svg', {
       viewBox: '0 0 ' + G.W + ' ' + G.H,

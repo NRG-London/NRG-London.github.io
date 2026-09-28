@@ -93,6 +93,33 @@ found turning at Hyde Park Corner and Piccadilly Circus. Please confirm none of
 those are *timetabled* to terminate short; a scheduled short working counted as a
 curtailment would overstate it.
 
+**Delivered 28 Sep, and in use.** Daily `journeys` / `journeys_turned_short` light
+the "Cut short" line on the last-week and last-month views with no page change.
+`directions[].turned_short_at` (not asked for) now drives the "Journeys cut short"
+block for every route that has it: the week's share, then each direction's count and
+its turning points with the distance short. The old gate-based `curtailment_detail`
+block is kept only as a fallback for a route with nothing newer (13 routes this
+week). The 38's 45% is confirmed as unplanned. `worst_gap.start` now carries seconds.
+
+**One thing the new block lost: *when* in the day buses are turned.** The old
+`per_10_days_by_hour` drew a 24-bar profile; there is no equivalent on the new basis,
+so the new block has no time-of-day view. Wanted, when convenient: per direction, the
+week's `journeys_turned_short` by hour of day (24 entries, `null` for an hour not
+measured).
+
+**"Why ours is usually a little higher" (added 29 Sep).** The TfL table on each route
+page now carries a note explaining the gap, from the back end's own check: our figure
+counts the waiting that turned-short buses cause further along the route and TfL's
+published one appears not to (network mean Apr–Jun 2026: 1.39 ours, 1.23 without that
+waiting, 1.08 TfL). The note quotes the network figures only. Worth adding, if it is
+cheap: `our_ewt_ex_turned_short_min` beside `our_ewt_min` in each `tfl_quarterly` row,
+so a route's own page can show its three numbers side by side.
+
+**Next from the back end (agreed 28 Sep):** the waiting that turning short causes,
+measured at the stops beyond each turning point ("at Victoria, buses turned short
+added 6 minutes to the average wait on Tuesday"). The front end will build it
+dormant once the field shape is known.
+
 **Two notes from the rebuild:**
 
 - **`worst_gap.start` is `2026-09-15T23:05+01:00`** — no seconds, so it is not
