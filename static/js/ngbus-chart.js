@@ -113,6 +113,12 @@
   var range = pressedValue('range', 'all');
   var legend = document.getElementById('ngbus-chart-legend');
   var sub = document.getElementById('ngbus-chart-sub');
+  var title = document.getElementById('ngbus-chart-title');
+  /* The heading says what span is on show, because the chart now opens on the
+     last week, and "Week by week" over seven daily points would be wrong. */
+  var SPAN_TITLES = { week: 'The last week, day by day', month: 'The last month, day by day',
+                      '3m': 'The last three months, week by week',
+                      '12m': 'The last twelve months, week by week', all: 'Week by week' };
 
   var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -338,6 +344,9 @@
     });
 
     current = V;
+    if (title) title.textContent = V.mode === 'day' ? SPAN_TITLES[range]
+                                 : (SPAN_TITLES[range] && range !== 'week' && range !== 'month'
+                                    ? SPAN_TITLES[range] : 'Week by week');
     plot.textContent = '';
     if (legend) legend.textContent = '';
     if (!V.idx.length) return;
@@ -546,7 +555,11 @@
     });
     var baseY = G.t + IH;
     kept.forEach(function (lb) {
-      var t = el('text', { 'class': 'ngbus-ax', x: xt(V.times[lb.i]), y: baseY + 20, 'text-anchor': 'middle' });
+      /* A label centred on the last point overhangs the plot and is clipped by
+         the card ("26 Se"), so one near the right edge is right-aligned. */
+      var lx = xt(V.times[lb.i]);
+      var anchor = lx > G.l + IW - 18 ? 'end' : 'middle';
+      var t = el('text', { 'class': 'ngbus-ax', x: lx, y: baseY + 20, 'text-anchor': anchor });
       t.textContent = lb.text;
       svg.appendChild(t);
       if (lb.newYear) {

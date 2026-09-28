@@ -67,6 +67,17 @@
 {{- $anyCur := false -}}
 {{- range $units }}{{ range .series }}{{ if or (ne .curtailment_rate nil) (and (ne .journeys_turned_short nil) (ne .journeys nil)) }}{{ $anyCur = true }}{{ end }}{{ end }}{{ end -}}
 
+{{- /* The chart opens on the last week, day by day — "what happened this
+       week?" is the question most people arrive with, and zooming out is the
+       next move rather than the first. That needs daily figures in the route's
+       own measure for at least one of the last seven days; without them the
+       chart opens on all the weekly data instead, rather than on an empty box. */ -}}
+{{- $dailyOk := false -}}
+{{- with $h.daily }}{{ with .series -}}
+  {{- $key := cond (eq $class "timetabled") "on_time_pct" "p_wait_gt10" -}}
+  {{- range . }}{{ with index . $key }}{{ range last 7 . }}{{ if ne . nil }}{{ $dailyOk = true }}{{ end }}{{ end }}{{ end }}{{ end -}}
+{{- end }}{{ end -}}
+
 {{- /* "every day, 05:00-23:59" as the sweep writes it, with a proper dash. Read
        from the data because the window has changed once already. */ -}}
 {{- $window := replaceRE `(\d)-(\d)` "$1–$2" ($w.window | default "") -}}
@@ -206,7 +217,9 @@
         {{- else }}
         <dt><span class="ngbus-help" title="How much longer people waited, on average, than they would have if every bus had run exactly to the timetable. Nought means the buses came as evenly as planned. This is the measure TfL itself uses for frequent routes.">Excess wait</span></dt>
         <dd>{{ if and $ok (ne $c.ewt_min nil) }}{{ lang.FormatNumber 1 $c.ewt_min }} min
-          {{- if ne $c.ewt_turned_short_min nil }}<span class="ngbus-terminus__sub" title="Part of the excess wait above, caused by buses turned back before the end of the line">{{ lang.FormatNumber 1 $c.ewt_turned_short_min }} min of it from buses turned short</span>{{ end }}
+          {{- /* Only when it rounds to something: "0.0 min of it from buses turned
+                 short" reads as a figure when it is really an absence of one. */ -}}
+          {{- if and (ne $c.ewt_turned_short_min nil) (ge $c.ewt_turned_short_min 0.05) }}<span class="ngbus-terminus__sub" title="Part of the excess wait above, caused by buses turned back before the end of the line">{{ lang.FormatNumber 1 $c.ewt_turned_short_min }} min of it from buses turned short</span>{{ end }}
           {{- else }}<span class="ngbus-nd" title="Too little data this week">no data</span>{{ end }}</dd>
         {{- /* Each band beside what the timetable alone would give. Over ten
                minutes mostly reflects how often the route is timetabled; over
@@ -228,6 +241,22 @@
         <dt><span class="ngbus-help" title="Nineteen people in twenty get a bus sooner than this. A fairer picture of a bad-but-ordinary wait than the single longest gap, which can be a one-off.">1 in 20 wait over</span></dt>
         <dd>{{ lang.FormatNumber 0 $c.wait_p95_min }} min</dd>
         {{- end }}
+        {{- end }}
+        {{- /* Journeys cut short, this week, in this direction. The complaint in the
+               mailbag more than any other: put off a bus before your stop, or
+               waiting further down the line for one that turned round before it
+               got to you. So it sits in the card beside the waits rather than only
+               in a block further down the page. Nought is shown as 0%, not hidden:
+               a direction that turned nothing back has earned the figure. */ -}}
+        {{- if $ok }}
+          {{- if and (ne $c.journeys_turned_short nil) (ne $c.journeys nil) (gt ($c.journeys | default 0.0) 0.0) }}
+        <dt><span class="ngbus-help" title="Journeys turned back before the end of the line this week. Anyone still on board is put off, and anyone waiting further along is left for the next bus.">Cut short</span></dt>
+        <dd>{{ lang.FormatPercent 1 (mul (div (float $c.journeys_turned_short) (float $c.journeys)) 100) }}
+          <span class="ngbus-terminus__sub">{{ lang.FormatNumber 0 $c.journeys_turned_short }} of {{ lang.FormatNumber 0 $c.journeys }} journeys</span></dd>
+          {{- else if ne $c.curtailment_rate nil }}
+        <dt><span class="ngbus-help" title="Journeys turned back before the end of the line this week. Anyone still on board is put off, and anyone waiting further along is left for the next bus.">Cut short</span></dt>
+        <dd>{{ lang.FormatPercent 1 (mul $c.curtailment_rate 100) }}</dd>
+          {{- end }}
         {{- end }}
       </dl>
     </div>
@@ -289,7 +318,7 @@
          primary disclosure, present in the HTML whether or not any JavaScript
          runs, and they are what a screen reader gets instead of an SVG. */ -}}
   <div class="ngbus-chart" id="ngbus-chart">
-    <div class="ngbus-chart__title">Week by week</div>
+    <div class="ngbus-chart__title" id="ngbus-chart-title">{{ if $dailyOk }}The last week, day by day{{ else }}Week by week{{ end }}</div>
     <div class="ngbus-chart__subtitle" id="ngbus-chart-sub">
       {{- if eq $class "timetabled" }}Share of departures leaving on time.
       {{- else }}Share of waiting time spent inside a gap longer than ten minutes.{{ end }}</div>
@@ -305,17 +334,18 @@
         <button type="button" class="ngbus-chip" data-metric="cur" aria-pressed="false">Cut short</button>
         {{- end }}
       </div>
-      {{- /* Rolling spans back from the week on show. The last month and week
+      {{- /* Rolling spans back from the week on show, in the order a reader zooms
+             out: this week first, the whole record last. The last week and month
              are drawn from the daily figures, which only exist for the most
              recent 35 days, so those two chips appear only when they do. */ -}}
       <div class="ngbus-chips ngbus-chips--range" role="group" aria-label="Time span">
-        <button type="button" class="ngbus-chip" data-range="all" aria-pressed="true">All data</button>
-        <button type="button" class="ngbus-chip" data-range="12m" aria-pressed="false">Last 12 months</button>
-        <button type="button" class="ngbus-chip" data-range="3m" aria-pressed="false">Last 3 months</button>
-        {{- if and $h.daily $h.daily.days }}
+        {{- if $dailyOk }}
+        <button type="button" class="ngbus-chip" data-range="week" aria-pressed="true">Last week</button>
         <button type="button" class="ngbus-chip" data-range="month" aria-pressed="false">Last month</button>
-        <button type="button" class="ngbus-chip" data-range="week" aria-pressed="false">Last week</button>
         {{- end }}
+        <button type="button" class="ngbus-chip" data-range="3m" aria-pressed="false">Last 3 months</button>
+        <button type="button" class="ngbus-chip" data-range="12m" aria-pressed="false">Last 12 months</button>
+        <button type="button" class="ngbus-chip" data-range="all" aria-pressed="{{ not $dailyOk }}">All data</button>
       </div>
     </div>
     <div class="ngbus-chart__plot" id="ngbus-chart-plot"></div>
@@ -374,7 +404,7 @@
     {{- if ne $row.journeys_turned_short_pct nil }}
     <p class="ngbus-curtblock__lead"><strong>{{ lang.FormatPercent 1 (mul $row.journeys_turned_short_pct 100) }}</strong>
       of journeys were turned back before the end of the line in the week ending
-      {{ dateFormat "2 January 2006" $w.week_ending }}{{ if ne $row.ewt_turned_short_min nil }}, and that
+      {{ dateFormat "2 January 2006" $w.week_ending }}{{ if and (ne $row.ewt_turned_short_min nil) (ge $row.ewt_turned_short_min 0.05) }}, and that
       accounts for <strong>{{ lang.FormatNumber 1 $row.ewt_turned_short_min }} minutes</strong> of
       the excess wait above{{ end }}.</p>
     {{- end }}
@@ -632,8 +662,22 @@
         {{- if ne . nil }}{{ $b := index . "10" }}{{ $dtt = $dtt | append $b.timetable -}}
         {{- else }}{{ $dtt = $dtt | append nil }}{{ end -}}
       {{- end -}}
+      {{- /* Journeys cut short, day by day — dormant until the sweep carries
+             daily `journeys` and `journeys_turned_short` (ask N). The weekly
+             cells have both; the daily ones do not yet, which is the only reason
+             "Cut short" is greyed out on the last week and month. */ -}}
+      {{- $dcur := slice -}}
+      {{- $dj := .journeys }}{{ $djs := .journeys_turned_short -}}
+      {{- if and $dj $djs -}}
+        {{- range $i, $n := $dj -}}
+          {{- $k := index $djs $i -}}
+          {{- if and (ne $n nil) (ne $k nil) (gt (float ($n | default 0)) 0.0) }}{{ $dcur = $dcur | append (div (float $k) (float $n)) }}
+          {{- else }}{{ $dcur = $dcur | append nil }}{{ end -}}
+        {{- end -}}
+      {{- end -}}
       {{- $ds := dict "name" (partial "bus-place.html" .name) "p" $dp "tt" $dtt
-                      "ewt" (.ewt_min | default slice) "ot" (.on_time_pct | default slice) -}}
+                      "ewt" (.ewt_min | default slice) "ot" (.on_time_pct | default slice)
+                      "cur" $dcur -}}
       {{- $dseries = $dseries | append (slice $ds) -}}
     {{- end -}}
     {{- $daily = dict "days" $h.daily.days "coverage" $h.daily.coverage "series" $dseries -}}
@@ -647,6 +691,6 @@
 
 {{ partial "bus-assets.html" . }}
 {{- if gt (len $units) 0 }}
-<script src="/js/ngbus-chart.js?v=7" defer></script>
+<script src="/js/ngbus-chart.js?v=8" defer></script>
 {{- end }}
 {{ end }}

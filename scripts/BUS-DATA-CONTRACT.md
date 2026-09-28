@@ -61,6 +61,38 @@ lands, then drop it and tell the front end.
 3. The daily series carry no turned-short figure, so the "Cut short" chip is
    disabled on the last-month and last-week spans.
 
+### Ask N (28 Sep): journeys cut short, day by day
+
+**The route chart now opens on the last week, day by day** — "what happened this
+week?" is what most people come to the page with. Journeys cut short are the
+single biggest complaint in Neil's mailbag, and they are the one measure that
+chart **cannot draw**: the weekly direction cells carry `journeys` and
+`journeys_turned_short`, the daily series do not. Wanted: the same two counts in
+each daily direction series, aligned with `daily.days`, `null` on a day under the
+noise floor.
+
+```jsonc
+"daily": { "series": [{ "name": "towards Victoria", …,
+  "journeys": [212, 208, …], "journeys_turned_short": [14, 31, …] }] }
+```
+
+The page is already built for it: the daily "Cut short" line lights up the moment
+both arrays arrive, with no front-end change. Until then the chip is greyed on the
+last week and month, and the week's figure is shown in each direction's card
+instead ("Cut short 5.2% — 31 of 597 journeys").
+
+`ewt_turned_short_min` is in the daily series already, but it is not a stand-in:
+averaged over every stop and every hour it sits at 0.0–0.1 minutes a day, and a
+line along the floor would say curtailments don't matter. If the wait cost is to be
+shown, it wants measuring where it falls — at the stops beyond the turning point —
+which is a separate and bigger ask.
+
+**Worth checking: the 38 towards Victoria reads 45% cut short** (616 of 1,357
+journeys, week ending 26 Sep) — consistent with the 40% of "from Victoria" trips
+found turning at Hyde Park Corner and Piccadilly Circus. Please confirm none of
+those are *timetabled* to terminate short; a scheduled short working counted as a
+curtailment would overstate it.
+
 **Two notes from the rebuild:**
 
 - **`worst_gap.start` is `2026-09-15T23:05+01:00`** — no seconds, so it is not
