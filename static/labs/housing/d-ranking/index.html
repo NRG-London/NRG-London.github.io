@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D · Dumbbell ranking + calculator — housing costs lab</title>
+<link rel="stylesheet" href="../lab.css">
+<style>
+  .grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(280px, 1fr); gap: 1.8rem; margin-top: 0.8rem; align-items: start; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  #chart svg { display: block; width: 100%; }
+  .row { transition: transform 0.6s cubic-bezier(.2,.7,.2,1); cursor: pointer; }
+  .row .hit { fill: transparent; }
+  .row:hover .hit, .row.sel .hit { fill: var(--blue-light); }
+  .row .nm { font-size: 12.5px; fill: var(--ink); }
+  .row.lon .nm, .row.sel .nm { font-weight: 700; }
+  .row .gl { font-size: 12px; font-weight: 600; fill: var(--muted-ink); font-variant-numeric: tabular-nums; }
+  .row.lon .gl { fill: var(--ink); }
+  /* a rect, not a line: x and width animate as CSS properties, x1/x2 don't */
+  .row .conn { fill: #cfdde8; transition: x 0.6s cubic-bezier(.2,.7,.2,1), width 0.6s cubic-bezier(.2,.7,.2,1); }
+  .row.lon .conn { fill: #f2d9b0; }
+  .row circle { transition: cx 0.6s cubic-bezier(.2,.7,.2,1); }
+  .row .soc { fill: var(--amber); stroke: var(--amber-dark); stroke-width: 1.5; }
+  .row .pri { fill: var(--blue); stroke: var(--white); stroke-width: 1.5; }
+  .axis text { font-size: 11px; fill: var(--mid-grey); font-variant-numeric: tabular-nums; }
+  .axis line { stroke: var(--warm-grey); }
+  .lg { display: flex; gap: 1.2rem; font-size: 0.8rem; color: var(--muted-ink); margin-bottom: 0.3rem; flex-wrap: wrap; }
+  .lg .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 0.35rem; vertical-align: -1px; }
+  .lg .cn { display: inline-block; width: 22px; height: 6px; border-radius: 3px; background: #cfdde8; margin-right: 0.35rem; vertical-align: 1px; }
+
+  .calc { border: 1px solid var(--warm-grey); padding: 1.1rem 1.2rem 1.2rem; background: var(--white); position: sticky; top: 1rem; }
+  .calc h2 { font-family: var(--serif); font-size: 1.05rem; margin: 0 0 0.2rem; }
+  .calc .intro { font-size: 0.8rem; color: var(--muted-ink); margin: 0 0 0.8rem; }
+  .calc select { font: inherit; font-size: 0.9rem; width: 100%; padding: 0.4rem 0.5rem; border: 1px solid var(--warm-grey); background: var(--paper); border-radius: 4px; }
+  .calc .f { margin-top: 0.85rem; }
+  .calc .f .ctl-l { display: flex; justify-content: space-between; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mid-grey); margin-bottom: 0.25rem; }
+  .calc .f .ctl-l b { color: var(--ink); letter-spacing: 0; font-size: 0.85rem; text-transform: none; }
+  .calc input[type=range] { width: 100%; accent-color: var(--deep); }
+  .calc .presets { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-top: 0.3rem; }
+  .calc .presets button { font: inherit; font-size: 0.72rem; border: 1px solid var(--warm-grey); background: var(--white); border-radius: 999px; padding: 0.15rem 0.55rem; cursor: pointer; color: var(--muted-ink); }
+  .calc .presets button:hover { border-color: var(--blue); color: var(--blue); }
+  .calc .out { margin-top: 1.1rem; padding-top: 0.9rem; border-top: 2px solid var(--amber); }
+  .calc .out .big { font-size: 2.3rem; font-weight: 700; line-height: 1.05; font-variant-numeric: tabular-nums; }
+  .calc .out .big-l { font-size: 0.82rem; color: var(--muted-ink); }
+  .calc .out .sum { font-size: 0.8rem; color: var(--muted-ink); margin-top: 0.7rem; line-height: 1.55; font-variant-numeric: tabular-nums; }
+  .calc .out .sum b { color: var(--ink); }
+  .calc .pills button { font-size: 0.78rem; padding: 0.28rem 0.62rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="lab-bar"><a href="../">&larr; Lab hub</a><span>Prototype D · dumbbell ranking (no map) + tenancy value calculator</span></div>
+  <div class="card">
+    <div class="eyebrow">Housing costs · London boroughs</div>
+    <h1>Across London, social rents barely move. Private rents double.</h1>
+    <p class="sub">Typical private rent and social rent for the same size of home in each borough, ranked by the gap between them.</p>
+    <div class="controls">
+      <div class="ctl"><label class="ctl-l">Home size</label><div id="size"></div></div>
+    </div>
+    <div class="grid">
+      <div>
+        <div class="lg"><span><span class="dot swatch-social"></span>Social rent</span><span><span class="dot swatch-private"></span>Private rent</span><span><span class="cn"></span>The gap (figure on the right, £ a month)</span></div>
+        <div id="chart"></div>
+      </div>
+      <div class="calc" id="calc">
+        <h2>What is a social tenancy worth?</h2>
+        <p class="intro">The rent a household doesn&rsquo;t pay, added up over the years and expressed in today&rsquo;s money.</p>
+        <div class="f"><label class="ctl-l" for="c-b">Borough</label><select id="c-b"></select></div>
+        <div class="f"><label class="ctl-l">Home size</label><div id="c-size"></div></div>
+        <div class="f"><label class="ctl-l" for="c-y">Tenancy length <b id="c-y-v"></b></label><input id="c-y" type="range" min="5" max="50" step="1" value="25">
+          <div class="presets"><button data-y="12">12 yrs (average so far)</button><button data-y="25">25 yrs</button><button data-y="40">40 yrs</button></div></div>
+        <div class="f"><label class="ctl-l" for="c-r">Discount rate <b id="c-r-v"></b></label><input id="c-r" type="range" min="2" max="6" step="0.1" value="3.5">
+          <div class="presets"><button data-r="3.5">3.5% Green Book</button><button data-r="3.0">3.0% from 28 Oct</button></div></div>
+        <div class="f"><label class="ctl-l" for="c-g">Real rent growth in the gap <b id="c-g-v"></b></label><input id="c-g" type="range" min="-1" max="2" step="0.1" value="0"></div>
+        <div class="out" aria-live="polite">
+          <div class="big" id="c-out"></div>
+          <div class="big-l" id="c-out-l"></div>
+          <div class="sum" id="c-sum"></div>
+        </div>
+      </div>
+    </div>
+    <div class="foot"><i>Sources: ONS Price Index of Private Rents (Aug 2026); Regulator of Social Housing, stock and rents 2025, uprated to 2026/27 by the maximum permitted increases; ONS Census 2021. Contains public sector information licensed under the Open Government Licence v3.0.</i><span>Prototype D</span></div>
+  </div>
+</div>
+<script src="../shared.js"></script>
+<script>
+(async function () {
+  const D = await HC.load();
+  const S = { size: 'mix', sel: null };
+  const C = { code: 'E12000007', size: 'mix' };
+  const tip = HC.tooltip();
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  const ROW = 22, TOP = 26, LEFT = 150, RIGHT = 62;
+  const rowsData = [...D.boroughs.filter((b) => b.private.mix != null), D.london];
+  const byCode = Object.fromEntries([...D.boroughs, D.london].map((b) => [b.code, b]));
+  const chart = document.getElementById('chart');
+  const svg = document.createElementNS(SVGNS, 'svg');
+  chart.appendChild(svg);
+  const axis = document.createElementNS(SVGNS, 'g');
+  axis.setAttribute('class', 'axis');
+  svg.appendChild(axis);
+  const rows = {};
+  rowsData.forEach((b) => {
+    const g = document.createElementNS(SVGNS, 'g');
+    g.setAttribute('class', 'row' + (b === D.london ? ' lon' : ''));
+    g.innerHTML = '<rect class="hit" x="0" y="0" height="' + ROW + '" rx="3"/>' +
+      '<text class="nm" x="6" y="15">' + (b === D.london ? 'London' : b.name) + '</text>' +
+      '<rect class="conn" y="8" height="6" rx="3"/><circle class="soc" cy="11" r="5.5"/><circle class="pri" cy="11" r="5.5"/>' +
+      '<text class="gl" y="15" text-anchor="end"></text>';
+    g.addEventListener('pointermove', (e) => tip.show(HC.tipHTML(b, S.size, D), e.clientX, e.clientY));
+    g.addEventListener('pointerleave', () => tip.hide());
+    g.addEventListener('click', () => { calcSet({ code: b.code }); document.getElementById('c-b').value = b.code; });
+    svg.appendChild(g);
+    rows[b.code] = g;
+  });
+  const note = document.createElementNS(SVGNS, 'text');
+  note.setAttribute('class', 'axis');
+  svg.appendChild(note);
+
+  function drawChart() {
+    const W = chart.clientWidth, H = TOP + ROW * rowsData.length + 8;
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.setAttribute('height', H);
+    const k = S.size;
+    const maxP = Math.max(...rowsData.map((b) => b.private[k]));
+    const step = maxP > 3000 ? 1000 : 500;
+    const xmax = Math.ceil(maxP / step) * step;
+    const narrow = W < 520;
+    const left = narrow ? 112 : LEFT;
+    const x = (v) => left + (W - left - RIGHT) * v / xmax;
+    let a = '';
+    for (let t = 0; t <= xmax; t += step) {
+      a += '<line x1="' + x(t) + '" x2="' + x(t) + '" y1="' + (TOP - 6) + '" y2="' + (H - 6) + '"/>' +
+        '<text x="' + x(t) + '" y="' + (TOP - 11) + '" text-anchor="middle">' + (t === 0 ? '£0' : '£' + (t / 1000) + 'k') + '</text>';
+    }
+    axis.innerHTML = a;
+    const sorted = rowsData.slice().sort((p, q) => q.gap[k] - p.gap[k]);
+    sorted.forEach((b, i) => {
+      const g = rows[b.code];
+      g.style.transform = 'translateY(' + (TOP + i * ROW) + 'px)';
+      g.querySelector('.hit').setAttribute('width', W);
+      const nm = g.querySelector('.nm');
+      nm.textContent = b === D.london ? 'London' : (narrow ? b.short : b.name);
+      const xs = x(b.social[k]), xp = x(b.private[k]);
+      const c = g.querySelector('.conn');
+      c.setAttribute('x', xs); c.setAttribute('width', Math.max(0, xp - xs));
+      g.querySelector('.soc').setAttribute('cx', xs);
+      g.querySelector('.pri').setAttribute('cx', xp);
+      const gl = g.querySelector('.gl');
+      gl.setAttribute('x', W - 4);
+      gl.textContent = HC.fmt.gbp(b.gap[k]);
+      g.classList.toggle('sel', b.code === C.code && b !== D.london);
+    });
+  }
+
+  // ---- calculator ----
+  const sel = document.getElementById('c-b');
+  sel.innerHTML = '<option value="E12000007">London (all boroughs)</option>' +
+    D.boroughs.filter((b) => b.private.mix != null).slice().sort((p, q) => p.name.localeCompare(q.name))
+      .map((b) => '<option value="' + b.code + '">' + b.name + '</option>').join('');
+  const $ = (id) => document.getElementById(id);
+  function calc() {
+    const b = byCode[C.code], k = C.size;
+    const years = +$('c-y').value, r = +$('c-r').value / 100, gr = +$('c-g').value / 100;
+    $('c-y-v').textContent = years + ' years';
+    $('c-r-v').textContent = (+$('c-r').value).toFixed(1) + '%';
+    $('c-g-v').textContent = (gr > 0 ? '+' : '') + (+$('c-g').value).toFixed(1) + '% a year';
+    const f = HC.npvFactor(years, r, gr);
+    const gapPa = b.gap[k] * 12, npv = gapPa * f;
+    const sz = HC.SIZES.find((s) => s.key === k);
+    $('c-out').textContent = HC.fmt.gbpK(npv);
+    $('c-out-l').textContent = 'for one ' + (k === 'mix' ? 'typical' : sz.label) + ' social home in ' + (b === D.london ? 'London' : b.name) + ', over ' + years + ' years';
+    const total = npv * (b.units[k] || 0);
+    $('c-sum').innerHTML = 'Private ' + HC.fmt.gbp(b.private[k]) + ' − social ' + HC.fmt.gbp(b.social[k]) + ' = <b>' + HC.fmt.gbp(b.gap[k]) + ' a month</b>, or ' + HC.fmt.gbp(gapPa) + ' a year.<br>' +
+      '× ' + f.toFixed(2) + ' (the value today of £1 a year for ' + years + ' years at ' + (r * 100).toFixed(1) + '%' + (gr ? ', gap growing ' + (gr * 100).toFixed(1) + '% a year' : '') + ').<br>' +
+      'Across all ' + (b.units[k] || 0).toLocaleString('en-GB') + ' ' + (k === 'mix' ? '' : sz.label + ' ') + 'social homes' + (b === D.london ? ' in London' : ' here') + ': <b>' + HC.fmt.gbpM(total / 1e6) + '</b>.';
+  }
+  function calcSet(o) { Object.assign(C, o); calc(); drawChart(); }
+  sel.addEventListener('change', () => calcSet({ code: sel.value }));
+  ['c-y', 'c-r', 'c-g'].forEach((id) => $(id).addEventListener('input', calc));
+  document.querySelectorAll('.presets button').forEach((b) => b.addEventListener('click', () => {
+    if (b.dataset.y) $('c-y').value = b.dataset.y;
+    if (b.dataset.r) $('c-r').value = b.dataset.r;
+    calc();
+  }));
+
+  HC.pills($('size'), HC.SIZES, S.size, (k) => { S.size = k; drawChart(); $('c-size').select(k); });
+  HC.pills($('c-size'), HC.SIZES, C.size, (k) => calcSet({ size: k }));
+  drawChart(); calc();
+  addEventListener('resize', drawChart);
+  window.__state = () => ({ S, C });
+  window.__set = (k, v) => { const el = document.getElementById(k); if (el && el.select) el.select(v); };
+  window.__NG_DONE__ = true;
+})().catch((e) => { window.__NG_ERROR__ = String(e); console.error(e); });
+</script>
+</body>
+</html>

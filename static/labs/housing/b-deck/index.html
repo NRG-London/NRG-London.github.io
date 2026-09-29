@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B · 3D borough map (deck.gl) — housing costs lab</title>
+<link rel="stylesheet" href="../lab.css">
+<style>
+  #stage { position: relative; height: 640px; margin-top: 0.8rem; background: var(--paper); border: 1px solid var(--warm-grey); overflow: hidden; touch-action: none; }
+  #stage canvas { outline: none; }
+  .overlay { position: absolute; left: 12px; bottom: 10px; background: rgba(255,255,255,0.92); padding: 0.5rem 0.7rem 0.55rem; border: 1px solid var(--warm-grey); }
+  .overlay .legend { margin-top: 0; }
+  .overlay .h { font-size: 0.7rem; color: var(--muted-ink); margin-bottom: 0.3rem; }
+  .view-ctl { position: absolute; right: 12px; top: 12px; }
+  .hint { position: absolute; right: 12px; bottom: 12px; font-size: 0.7rem; color: var(--mid-grey); }
+  @media (max-width: 640px) { #stage { height: 480px; } .hint { display: none; } .overlay { right: 12px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="lab-bar"><a href="../">&larr; Lab hub</a><span>Prototype B · deck.gl extruded boroughs, height and colour = the chosen measure</span></div>
+  <div class="card">
+    <div class="eyebrow">Housing costs · London boroughs</div>
+    <h1>What a social tenancy is worth, borough by borough</h1>
+    <p class="sub">The gap between a typical private rent and a social rent for the same size of home, in the same borough.</p>
+    <div class="stats" id="stats"></div>
+    <div class="controls">
+      <div class="ctl"><label class="ctl-l">Show</label><div id="metric"></div></div>
+      <div class="ctl"><label class="ctl-l">Home size</label><div id="size"></div></div>
+    </div>
+    <p class="metric-note" id="note"></p>
+    <div id="stage">
+      <div class="view-ctl"><div id="tilt"></div></div>
+      <div class="overlay"><div class="h">Height and colour: <span id="lg-h"></span></div><div class="legend" id="legend"></div></div>
+      <div class="hint">Drag to pan · right-drag or two fingers to rotate · scroll to zoom</div>
+    </div>
+    <div class="foot"><i>Sources: ONS Price Index of Private Rents (Aug 2026); Regulator of Social Housing, stock and rents 2025, uprated to 2026/27 by the maximum permitted increases; ONS Census 2021. Contains public sector information licensed under the Open Government Licence v3.0.</i><span>Prototype B</span></div>
+  </div>
+</div>
+<script src="/js/deck.min.js"></script>
+<script src="../shared.js"></script>
+<script>
+(async function () {
+  const D = await HC.load();
+  await document.fonts.load('600 16px "DM Sans"');
+  const S = { metric: 'gap', size: 'mix', tilt: true };
+  const tip = HC.tooltip();
+  const stage = document.getElementById('stage');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const rgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const byCode = Object.fromEntries(D.boroughs.map((b) => [b.code, b]));
+  const MAX_H = 9000; // metres for the tallest borough — London is ~45 km across
+
+  // one row per polygon part (multipolygons split), all carrying the borough code
+  const parts = [];
+  D.boroughs.forEach((b) => D.ll.shapes[b.code].forEach((poly) => parts.push({ code: b.code, polygon: poly })));
+
+  function fitView(tilt) {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    const vp = new deck.WebMercatorViewport({ width: w, height: h })
+      .fitBounds([[-0.51, 51.29], [0.33, 51.69]], { padding: Math.min(40, w * 0.04) });
+    return tilt
+      ? { longitude: vp.longitude + 0.01, latitude: vp.latitude - 0.06, zoom: vp.zoom + 0.3, pitch: 50, bearing: -12 }
+      : { longitude: vp.longitude, latitude: vp.latitude, zoom: vp.zoom, pitch: 0, bearing: 0 };
+  }
+
+  const lighting = new deck.LightingEffect({
+    ambient: new deck.AmbientLight({ color: [255, 255, 255], intensity: 1.1 }),
+    sun: new deck.DirectionalLight({ color: [255, 250, 240], intensity: 1.2, direction: [-2, -4, -1.6] }),
+  });
+
+  let viewState = fitView(true);
+  const dk = new deck.Deck({
+    parent: stage,
+    style: { position: 'absolute', inset: 0 },
+    initialViewState: viewState,
+    controller: { dragRotate: true, touchRotate: true, scrollZoom: true },
+    effects: [lighting],
+    onViewStateChange: ({ viewState: v }) => { viewState = v; dk.setProps({ viewState: v }); },
+    getCursor: ({ isHovering }) => (isHovering ? 'pointer' : 'grab'),
+    onHover: (info) => {
+      if (!info.object) { tip.hide(); return; }
+      const r = stage.getBoundingClientRect();
+      tip.show(HC.tipHTML(byCode[info.object.code], S.size, D), r.left + info.x, r.top + info.y);
+    },
+  });
+  stage.querySelector('canvas').style.zIndex = 0;
+  stage.querySelectorAll('.overlay,.view-ctl,.hint').forEach((e) => { e.style.zIndex = 2; });
+
+  function layers() {
+    const sc = HC.scale(D, S.metric, S.size);
+    const src = sc.metric.shared === 'rent' ? 'private' : S.metric;
+    const max = Math.max(...D.boroughs.map((b) => HC.val(b, src, S.size) || 0));
+    const v = (code) => HC.val(byCode[code], S.metric, S.size);
+    const elev = (code) => { const x = v(code); return x == null || !S.tilt ? 0 : MAX_H * x / max; };
+    const trig = S.metric + '|' + S.size + '|' + S.tilt;
+    const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+    const dur = reduced ? 0 : 750;
+    return [
+      new deck.PolygonLayer({
+        id: 'boroughs', data: parts, getPolygon: (d) => d.polygon,
+        extruded: true, wireframe: false, pickable: true, autoHighlight: true,
+        highlightColor: [224, 162, 78, 255],
+        getElevation: (d) => elev(d.code),
+        getFillColor: (d) => { const c = sc.colour(v(d.code)); return c ? rgb(c) : [214, 220, 216]; },
+        getLineColor: [255, 255, 255, 45], lineWidthMinPixels: 1,
+        // high ambient keeps the tops close to the true ramp colour; the sun shades the walls
+        material: { ambient: 0.8, diffuse: 0.35, shininess: 8, specularColor: [30, 35, 40] },
+        updateTriggers: { getElevation: trig, getFillColor: trig },
+        transitions: { getElevation: { duration: dur, easing: ease }, getFillColor: { duration: dur, easing: ease } },
+      }),
+      new deck.TextLayer({
+        // flat mode only: in 3D, labels float at mixed heights and collide; the tooltip carries the numbers
+        id: 'labels', data: D.boroughs.filter((b) => v(b.code) != null), visible: !S.tilt,
+        getPosition: (b) => [...D.ll.labels[b.code], elev(b.code) + 150],
+        getText: (b) => b.abbr + '\n' + sc.metric.fmtShort(v(b.code)),
+        getSize: 12, lineHeight: 1.15, fontFamily: '"DM Sans", system-ui, sans-serif', fontWeight: 600,
+        characterSet: 'auto', background: true, getBackgroundColor: [255, 255, 255, 215], backgroundPadding: [4, 2, 4, 1],
+        getColor: [26, 35, 50, 255],
+        parameters: { depthCompare: 'always' },
+        extensions: [new deck.CollisionFilterExtension()],
+        // priority must sit in [-1000, 1000]: the biggest values win the space
+        getCollisionPriority: (b) => Math.round(1000 * (v(b.code) || 0) / max), collisionTestProps: { sizeScale: 1.05 },
+        updateTriggers: { getPosition: trig, getText: trig, getCollisionPriority: trig },
+        transitions: { getPosition: { duration: dur, easing: ease } },
+      }),
+    ];
+  }
+
+  function stats() {
+    const L = D.london, k = S.size, sz = HC.SIZES.find((s) => s.key === k);
+    const scope = k === 'mix' ? 'per social home, London average' : 'per ' + sz.label + ' social home, London average';
+    document.getElementById('stats').innerHTML =
+      '<div class="stat key"><b>' + HC.fmt.gbp(L.gap[k]) + '</b><span>a month gap ' + scope + '</span></div>' +
+      '<div class="stat"><b>' + HC.fmt.gbpK(L.npv[k]) + '</b><span>worth over a 25-year tenancy</span></div>' +
+      '<div class="stat"><b>' + HC.fmt.gbpM(L.aggM[k]) + '</b><span>a year across ' + L.units[k].toLocaleString('en-GB') + ' ' + (k === 'mix' ? '' : sz.label + ' ') + 'social homes</span></div>';
+  }
+
+  function render() {
+    const sc = HC.scale(D, S.metric, S.size);
+    document.getElementById('note').textContent = sc.metric.note(S.size);
+    document.getElementById('legend').innerHTML = HC.legendHTML(sc);
+    document.getElementById('lg-h').textContent = sc.metric.label.toLowerCase();
+    stats();
+    dk.setProps({ layers: layers() });
+  }
+
+  function setTilt(on) {
+    S.tilt = on;
+    dk.setProps({ layers: layers() });
+    viewState = { ...fitView(on), transitionDuration: reduced ? 0 : 900, transitionInterpolator: new deck.LinearInterpolator(['longitude', 'latitude', 'zoom', 'pitch', 'bearing']) };
+    dk.setProps({ viewState });
+  }
+
+  HC.pills(document.getElementById('metric'), HC.METRICS, S.metric, (k) => { S.metric = k; render(); });
+  HC.pills(document.getElementById('size'), HC.SIZES, S.size, (k) => { S.size = k; render(); });
+  HC.pills(document.getElementById('tilt'), [{ key: true, label: '3D' }, { key: false, label: 'Flat' }], true, setTilt);
+  dk.setProps({ viewState });
+  render();
+  addEventListener('resize', () => setTilt(S.tilt));
+
+  window.__state = () => S;
+  window.__set = (k, v) => { const el = document.getElementById(k); if (el && el.select) el.select(v); };
+  setTimeout(() => { window.__NG_DONE__ = true; }, 400);
+})().catch((e) => { window.__NG_ERROR__ = String(e); console.error(e); });
+</script>
+</body>
+</html>

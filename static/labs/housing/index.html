@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[LAB] Housing costs workbench</title>
+<link rel="stylesheet" href="lab.css">
+<style>
+  .protos { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-top: 1.2rem; }
+  .proto { background: var(--white); border: 1px solid var(--warm-grey); display: flex; flex-direction: column; text-decoration: none; color: inherit; transition: border-color 0.15s, box-shadow 0.15s; }
+  .proto:hover { border-color: var(--blue); box-shadow: 0 4px 18px rgba(26,35,50,0.08); }
+  .proto .thumb { aspect-ratio: 16 / 10; background: var(--paper) center top / cover no-repeat; border-bottom: 1px solid var(--warm-grey); }
+  .proto .body { padding: 0.9rem 1rem 1rem; }
+  .proto h2 { font-family: var(--serif); font-size: 1.02rem; margin: 0 0 0.3rem; }
+  .proto .tag { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--blue); }
+  .proto ul { margin: 0.5rem 0 0; padding-left: 1.1rem; font-size: 0.85rem; color: var(--muted-ink); }
+  .proto li { margin: 0.15rem 0; }
+  .proto li.pro::marker { content: '+  '; color: var(--teal); font-weight: 700; }
+  .proto li.con::marker { content: '\2212  '; color: var(--amber-dark); font-weight: 700; }
+  .verdict { margin-top: 1.4rem; border-left: 3px solid var(--amber); padding: 0.2rem 0 0.2rem 1rem; max-width: 70ch; }
+  .verdict h2 { font-family: var(--serif); font-size: 1.1rem; margin: 0 0 0.4rem; }
+  .verdict p, .verdict li { font-size: 0.92rem; }
+  .verdict ol, .verdict ul { padding-left: 1.2rem; }
+  .verdict.about { border-left-color: var(--warm-grey); }
+  .verdict.about li { margin: 0.35rem 0; color: var(--muted-ink); }
+  .verdict.about li b { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="eyebrow">Lab · work in progress</div>
+    <h1>London housing costs: four ways to chart it</h1>
+    <p class="sub">Four prototype charts of private v social rent in each London borough. They use the same data, controls and colour scale, but each takes a different form. Hover or tap anything; every page works at phone width.</p>
+    <p class="sub"><b>Status, 29 Sep 2026:</b> direction chosen &mdash; map A (with its data box), followed by D&rsquo;s dumbbell chart and calculator, on one page. B and C are kept here for reference. Nothing on the main site links to this page yet.</p>
+
+    <div class="protos">
+      <a class="proto" href="a-map/"><div class="thumb" style="background-image:url(thumbs/a-map-gap.png)"></div><div class="body">
+        <div class="tag">A · Flat SVG map</div><h2>Borough map + linked ranking</h2>
+        <ul><li class="pro">Real geography, the Thames and the Inner London line tell you where you are straight away</li>
+        <li class="pro">Ranked bars next to it do the precise comparison; hovering either one highlights both</li>
+        <li class="pro">No libraries: about 200 KB of data and a few KB of script</li>
+        <li class="con">Small central boroughs (Kensington, Hammersmith, Islington) get 4-letter codes and small labels</li>
+        <li class="con">At phone width the map labels are hidden; you tap for the figures or read the ranking</li></ul></div></a>
+
+      <a class="proto" href="b-deck/"><div class="thumb" style="background-image:url(thumbs/b-deck-gap.png)"></div><div class="body">
+        <div class="tag">B · deck.gl 3D</div><h2>Extruded boroughs</h2>
+        <ul><li class="pro">Most eye-catching; heights ease 750 ms between measures; you can tilt and rotate it</li>
+        <li class="pro">The Flat mode is a good labelled map in its own right</li>
+        <li class="con">With 33 areas, height adds spectacle but no information: tall boroughs at the front hide central London</li>
+        <li class="con">Labels don't work in 3D, so the numbers are only in the tooltip; 1.6 MB of library</li></ul></div></a>
+
+      <a class="proto" href="c-tiles/"><div class="thumb" style="background-image:url(thumbs/c-tiles-gap.png)"></div><div class="body">
+        <div class="tag">C · Tile map</div><h2>Equal squares + detail panel</h2>
+        <ul><li class="pro">Every borough is the same size, so central London gets the same room as Bromley and every figure is readable</li>
+        <li class="pro">Each tile has a small bar: social rent as a share of the private rent</li>
+        <li class="pro">The fixed panel works on phones better than a floating tooltip</li>
+        <li class="con">Readers have to learn the grid, and the 4-letter codes are a bit cryptic</li>
+        <li class="con">Loses real shape and the river</li></ul></div></a>
+
+      <a class="proto" href="d-ranking/"><div class="thumb" style="background-image:url(thumbs/d-ranking-gap.png)"></div><div class="body">
+        <div class="tag">D · No map</div><h2>Dumbbell ranking + value calculator</h2>
+        <ul><li class="pro">Makes the main point without explanation: the social dots sit in a narrow band and the private dots spread out</li>
+        <li class="pro">The calculator turns the NPV into something a reader can try themselves (tenancy, discount rate, growth), using the pack's own formula</li>
+        <li class="pro">Click a row to load that borough into the calculator</li>
+        <li class="con">Not a map, so it doesn't answer "what about my borough?" as quickly</li></ul></div></a>
+    </div>
+
+    <div class="verdict">
+      <h2>The chosen direction: one page, three parts</h2>
+      <ol>
+        <li><b>A (flat map + ranking)</b> at the top: map and ranking side by side, with the headline stats.</li>
+        <li><b>D's dumbbell</b> next, with the title "social rents barely move; private rents double". This chart is the argument.</li>
+        <li><b>D's calculator</b> last, for readers who want to test the NPV, with the pack's caveats under it.</li>
+      </ol>
+      <p>C remains the alternative to A if every figure needs to be readable on the map itself. B isn't going forward: with only 33 areas, the 3D adds weight without adding anything to the argument.</p>
+    </div>
+
+    <div class="verdict about">
+      <h2>About the data</h2>
+      <ul>
+        <li><b>Private rent</b> is the ONS Price Index of Private Rents for August 2026, by borough and bedroom size. It is an average across all existing private tenancies, so new lets cost more and the gap is, if anything, understated.</li>
+        <li><b>Social rent</b> is the Regulator of Social Housing&rsquo;s average net rent for general needs homes owned by councils and larger housing associations (1,000+ homes), uprated to 2026/27 by the maximum permitted increases. Smaller associations (about 3% of London&rsquo;s social homes) publish no rents by size and are left out.</li>
+        <li><b>Typical homes, not the same home.</b> The gap compares a typical private home of that size in the borough with a typical social one. Size, condition and location within the borough differ.</li>
+        <li><b>Service charges.</b> Social rents exclude them; private rents generally include them. Where they apply, they would narrow the gap by roughly &pound;20&ndash;110 a month.</li>
+        <li><b>Who gains.</b> For households on housing benefit or the Universal Credit housing element, a lower rent partly reduces the benefit bill rather than the household&rsquo;s own costs.</li>
+        <li><b>Borough totals are notional.</b> They are the rent forgone compared with today&rsquo;s typical private rents. Nobody could collect them: letting that many homes at market rents would itself move the market.</li>
+        <li><b>25-year value</b> discounts the gap at 3.5% a year in real terms (the Treasury Green Book rate), with the gap held constant in real terms.</li>
+        <li><b>City of London</b> is shown as no data: ONS publishes no private rent for it, and most City Corporation council homes are on estates in other boroughs.</li>
+      </ul>
+    </div>
+
+    <div class="foot"><i>Sources: ONS Price Index of Private Rents (Aug 2026); Regulator of Social Housing, stock and rents 2025; ONS Census 2021. Contains public sector information licensed under the Open Government Licence v3.0.</i><span>Lab</span></div>
+  </div>
+</div>
+</body>
+</html>

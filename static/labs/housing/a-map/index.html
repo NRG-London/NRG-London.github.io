@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A · Flat borough map — housing costs lab</title>
+<link rel="stylesheet" href="../lab.css">
+<style>
+  .grid { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(260px, 1fr); gap: 1.6rem; margin-top: 0.8rem; align-items: start; }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+  #map svg { width: 100%; height: auto; display: block; }
+  .rank-h { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mid-grey); margin-bottom: 0.4rem; display: flex; justify-content: space-between; }
+  .rank { position: relative; font-size: 0.78rem; font-variant-numeric: tabular-nums; }
+  .row { position: absolute; left: 0; right: 0; height: 17px; display: grid; grid-template-columns: 8.2rem 1fr 3.4rem; align-items: center; gap: 0.4rem; transition: transform 0.6s cubic-bezier(.2,.7,.2,1); cursor: pointer; }
+  .row .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink); }
+  .row .tr { position: relative; height: 11px; }
+  .row .br { position: absolute; left: 0; top: 0; bottom: 0; background: var(--blue-muted); border-radius: 0 3px 3px 0; transition: width 0.6s cubic-bezier(.2,.7,.2,1), background 0.15s; }
+  .row .vl { text-align: right; color: var(--muted-ink); }
+  .row.hot .br { background: var(--deep); }
+  .row.hot .nm, .row.hot .vl { font-weight: 700; color: var(--ink); }
+  .row.lon .nm { font-weight: 700; }
+  .row.lon .br { background: var(--amber); }
+  .row.nod .vl { font-style: italic; }
+  .ref { position: absolute; top: -4px; bottom: -4px; width: 0; border-left: 1.5px dashed var(--ink); opacity: 0.45; transition: left 0.6s cubic-bezier(.2,.7,.2,1); pointer-events: none; }
+  .map-key { font-size: 0.72rem; color: var(--muted-ink); display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.3rem; }
+  .map-key svg { vertical-align: middle; }
+  /* at phone width the labels would be ~5px: tap a borough for the data box, or read the ranking */
+  @media (max-width: 640px) { .b-label { display: none; } }
+
+  /* data box: fills the space under the map that the longer ranking leaves; follows the hover */
+  .dbox { margin-top: 1rem; border: 1px solid var(--warm-grey); padding: 0.8rem 1rem 0.85rem; background: var(--white); }
+  .dbox .hd { display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; }
+  .dbox h3 { font-family: var(--serif); font-size: 1.05rem; margin: 0; }
+  .dbox .io { font-size: 0.68rem; color: var(--mid-grey); text-transform: uppercase; letter-spacing: 0.06em; }
+  .dbox .hint { margin-left: auto; font-size: 0.7rem; color: var(--mid-grey); }
+  .dbox .cells { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.5rem; margin-top: 0.6rem; }
+  .dbox .cell { border-top: 2px solid var(--warm-grey); padding-top: 0.3rem; min-width: 0; }
+  .dbox .cell.on { border-top-color: var(--amber); }
+  .dbox .cell .k { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mid-grey); white-space: nowrap; }
+  .dbox .cell .k .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.3rem; }
+  .dbox .cell b { display: block; font-size: 1.15rem; line-height: 1.25; font-variant-numeric: tabular-nums; }
+  .dbox .cell span { font-size: 0.72rem; color: var(--muted-ink); }
+  .dbox .bar { margin-top: 0.7rem; height: 8px; background: var(--blue); border-radius: 2px; position: relative; overflow: hidden; }
+  .dbox .bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--amber); border-right: 2px solid var(--white); transition: width 0.3s; }
+  .dbox .ft { font-size: 0.74rem; color: var(--muted-ink); margin-top: 0.3rem; }
+  .dbox .nd { font-size: 0.82rem; color: var(--muted-ink); margin-top: 0.4rem; }
+  @media (max-width: 640px) { .dbox .cells { grid-template-columns: repeat(2, minmax(0, 1fr)); } .dbox .hint { display: none; } }
+  @media (prefers-reduced-motion: reduce) { .row, .row .br, .ref { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="lab-bar"><a href="../">&larr; Lab hub</a><span>Prototype A · flat SVG borough map + linked ranking</span></div>
+  <div class="card">
+    <div class="eyebrow">Housing costs · London boroughs</div>
+    <h1>What a social tenancy is worth, borough by borough</h1>
+    <p class="sub">The gap between a typical private rent and a social rent for the same size of home, in the same borough.</p>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="controls">
+      <div class="ctl"><label class="ctl-l">Show</label><div id="metric"></div></div>
+      <div class="ctl"><label class="ctl-l">Home size</label><div id="size"></div></div>
+    </div>
+    <p class="metric-note" id="note"></p>
+
+    <div class="grid">
+      <div>
+        <div id="map"></div>
+        <div class="legend" id="legend"></div>
+        <div class="map-key"><span><svg width="26" height="8"><line x1="0" y1="4" x2="26" y2="4" stroke="#1a2332" stroke-width="1.4" stroke-dasharray="5 4" opacity=".55"/></svg> Inner London</span></div>
+        <div class="dbox" id="dbox" aria-live="polite"></div>
+      </div>
+      <div>
+        <div class="rank-h"><span id="rank-title">Ranked</span><span>- - London</span></div>
+        <div class="rank" id="rank"></div>
+      </div>
+    </div>
+
+    <div class="foot"><i>Sources: ONS Price Index of Private Rents (Aug 2026); Regulator of Social Housing, stock and rents 2025, uprated to 2026/27 by the maximum permitted increases; ONS Census 2021. Contains public sector information licensed under the Open Government Licence v3.0.</i><span>Prototype A</span></div>
+  </div>
+</div>
+<script src="../shared.js"></script>
+<script>
+(async function () {
+  const D = await HC.load();
+  const S = { metric: 'gap', size: 'mix', hot: null };
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  // crowded inner boroughs take the 4-letter code; a few labels are nudged off their neighbours
+  const small = new Set(['E09000001', 'E09000020', 'E09000013', 'E09000019', 'E09000033', 'E09000007', 'E09000012', 'E09000030']);
+  const NUDGE = { E09000032: [-38, 12], E09000022: [8, 40], E09000030: [-6, 0], E09000020: [4, 6], E09000013: [-17, -53] };
+  const byCode = Object.fromEntries([...D.boroughs, D.london].map((b) => [b.code, b]));
+
+  // ---- map ----
+  const svg = document.createElementNS(SVGNS, 'svg');
+  svg.setAttribute('viewBox', '0 0 ' + D.svg.w + ' ' + D.svg.h);
+  svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', 'Map of London boroughs coloured by the selected measure');
+  svg.innerHTML = '<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">' +
+    '<rect width="6" height="6" fill="#fff"/><rect width="2" height="6" fill="#c9d0cc"/></pattern></defs>';
+  const gShapes = document.createElementNS(SVGNS, 'g');
+  const gInner = document.createElementNS(SVGNS, 'path');
+  const gLabels = document.createElementNS(SVGNS, 'g');
+  gInner.setAttribute('d', D.svg.inner);
+  gInner.setAttribute('class', 'inner-line');
+  const gOutline = document.createElementNS(SVGNS, 'path');
+  gOutline.setAttribute('d', D.svg.outline);
+  gOutline.setAttribute('class', 'outline');
+  svg.append(gShapes, gOutline, gInner, gLabels);
+  document.getElementById('map').appendChild(svg);
+
+  const shapes = {}, labels = {};
+  D.boroughs.forEach((b) => {
+    const p = document.createElementNS(SVGNS, 'path');
+    p.setAttribute('d', D.svg.paths[b.code]);
+    p.setAttribute('class', 'b-shape');
+    p.setAttribute('tabindex', '0');
+    p.dataset.code = b.code;
+    gShapes.appendChild(p);
+    shapes[b.code] = p;
+
+    const nd = NUDGE[b.code] || [0, 0];
+    const x = D.svg.labels[b.code][0] + nd[0], y = D.svg.labels[b.code][1] + nd[1];
+    const t = document.createElementNS(SVGNS, 'text');
+    t.setAttribute('class', 'b-label');
+    const isSmall = small.has(b.code);
+    t.innerHTML = '<tspan class="n" x="' + x + '" y="' + (y - (isSmall ? 3 : 4)) + '"' + (isSmall ? ' style="font-size:13px"' : '') + '>' +
+      (isSmall ? b.abbr : b.short) + '</tspan><tspan class="v" x="' + x + '" y="' + (y + (isSmall ? 12 : 16)) + '"' +
+      (isSmall ? ' style="font-size:15px"' : '') + '></tspan>';
+    if (b.code === 'E09000001') t.style.display = 'none';
+    gLabels.appendChild(t);
+    labels[b.code] = t;
+  });
+
+  // The data box: London until something is hovered, tapped or focused.
+  function dataBox() {
+    const b = byCode[S.hot] || D.london, k = S.size, isLon = b === D.london;
+    const sz = HC.SIZES.find((s) => s.key === k);
+    const el = document.getElementById('dbox');
+    const head = '<div class="hd"><h3>' + (isLon ? 'London' : b.name) + '</h3><span class="io">' +
+      (isLon ? 'All 32 boroughs' : b.io + ' London') + ' \u00b7 ' + sz.label.toLowerCase() + '</span>' +
+      '<span class="hint">' + (isLon ? 'Hover or tap a borough' : 'Move off the map for London') + '</span></div>';
+    if (b.private[k] == null) {
+      el.innerHTML = head + '<div class="nd">No figure: ONS publishes no private rent for the City, and most of the City Corporation\u2019s ' +
+        b.units.mix.toLocaleString('en-GB') + ' council homes are on estates in other boroughs.</div>';
+      return;
+    }
+    const p = b.private[k], so = b.social[k], g = b.gap[k], units = b.units[k] || 0, share = Math.round(100 * so / p);
+    const cell = (key, label, v, sub) => '<div class="cell' + (S.metric === key ? ' on' : '') + '"><div class="k">' + label +
+      '</div><b>' + v + '</b><span>' + sub + '</span></div>';
+    el.innerHTML = head + '<div class="cells">' +
+      cell('private', '<span class="dot swatch-private"></span>Private', HC.fmt.gbp(p), 'a month') +
+      cell('social', '<span class="dot swatch-social"></span>Social', HC.fmt.gbp(so), 'a month') +
+      cell('gap', 'Gap', HC.fmt.gbp(g), HC.fmt.gbp(g * 12) + ' a year') +
+      cell('aggM', 'Total', HC.fmt.gbpM(b.aggM[k]), 'a year, ' + units.toLocaleString('en-GB') + ' homes') +
+      cell('npv', '25 years', HC.fmt.gbpK(b.npv[k]), 'per home, today\u2019s \u00a3') +
+      '</div><div class="bar"><i style="width:' + share + '%"></i></div>' +
+      '<div class="ft">Social rent is ' + share + '% of the private rent' +
+      (isLon ? '' : ' \u00b7 gap ' + (g >= D.london.gap[k] ? '+' : '\u2212') + HC.fmt.gbp(Math.abs(g - D.london.gap[k])) + ' v London') +
+      ' \u00b7 ' + b.pctSocial + '% of households rent socially</div>';
+  }
+
+  function hover(code) {
+    if (code === S.hot) return;
+    S.hot = code;
+    Object.values(shapes).forEach((p) => p.classList.toggle('hot', p.dataset.code === code));
+    if (shapes[code]) gShapes.appendChild(shapes[code]); // raise so the outline isn't under neighbours
+    document.querySelectorAll('.row').forEach((r) => r.classList.toggle('hot', r.dataset.code === code));
+    dataBox();
+  }
+  // pointerdown too: a tap on a phone doesn't always produce a pointermove
+  ['pointermove', 'pointerdown'].forEach((t) => gShapes.addEventListener(t, (e) => { const c = e.target.dataset.code; if (c) hover(c); }));
+  gShapes.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') hover(null); });
+  gShapes.addEventListener('focusin', (e) => hover(e.target.dataset.code));
+  gShapes.addEventListener('focusout', () => hover(null));
+
+  // ---- ranking ----
+  const rank = document.getElementById('rank');
+  const ROW = 18;
+  const rows = {};
+  const ref = document.createElement('div');
+  ref.className = 'ref';
+  [...D.boroughs, D.london].forEach((b) => {
+    const r = document.createElement('div');
+    r.className = 'row' + (b === D.london ? ' lon' : '');
+    r.dataset.code = b.code;
+    r.innerHTML = '<span class="nm">' + (b === D.london ? 'London average' : b.name) + '</span><span class="tr"><span class="br"></span></span><span class="vl"></span>';
+    r.addEventListener('pointermove', () => hover(b.code));
+    r.addEventListener('pointerdown', () => hover(b.code));
+    r.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') hover(null); });
+    rank.appendChild(r);
+    rows[b.code] = r;
+  });
+  rank.style.height = (ROW * (D.boroughs.length + 1)) + 'px';
+
+  function stats() {
+    const L = D.london, k = S.size, sz = HC.SIZES.find((s) => s.key === k);
+    const scope = k === 'mix' ? 'per social home, London average' : 'per ' + sz.label + ' social home, London average';
+    document.getElementById('stats').innerHTML =
+      '<div class="stat key"><b>' + HC.fmt.gbp(L.gap[k]) + '</b><span>a month gap ' + scope + '</span></div>' +
+      '<div class="stat"><b>' + HC.fmt.gbpK(L.npv[k]) + '</b><span>worth over a 25-year tenancy</span></div>' +
+      '<div class="stat"><b>' + HC.fmt.gbpM(L.aggM[k]) + '</b><span>a year across ' + L.units[k].toLocaleString('en-GB') + ' ' + (k === 'mix' ? '' : sz.label + ' ') + 'social homes</span></div>';
+  }
+
+  function render() {
+    const sc = HC.scale(D, S.metric, S.size);
+    const m = sc.metric;
+    document.getElementById('note').textContent = m.note(S.size);
+    document.getElementById('legend').innerHTML = HC.legendHTML(sc);
+    stats();
+
+    D.boroughs.forEach((b) => {
+      const v = HC.val(b, S.metric, S.size);
+      const c = sc.colour(v);
+      const p = shapes[b.code];
+      p.classList.toggle('nodata', c == null);
+      p.style.fill = c || '';
+      p.setAttribute('aria-label', b.name + ': ' + (v == null ? 'no data' : m.fmt(v)));
+      const t = labels[b.code];
+      t.setAttribute('class', 'b-label ' + (c ? HC.inkOn(c) : 'dark'));
+      t.lastChild.textContent = v == null ? '' : m.fmtShort(v);
+    });
+
+    // ranking: London row sits where its value falls; shared rent scale keeps social bars short
+    const src = m.shared === 'rent' ? 'private' : S.metric;
+    const max = Math.max(...D.boroughs.map((b) => HC.val(b, src, S.size) || 0));
+    const all = [...D.boroughs, D.london].map((b) => ({ b, v: HC.val(b, S.metric, S.size) }));
+    all.sort((a, z) => (z.v == null ? -1 : z.v) - (a.v == null ? -1 : a.v));
+    // the London total isn't comparable with a borough total, so hide that row for aggM
+    let i = 0;
+    all.forEach(({ b, v }) => {
+      const r = rows[b.code];
+      const hide = b === D.london && S.metric === 'aggM';
+      r.style.visibility = hide ? 'hidden' : '';
+      r.classList.toggle('nod', v == null);
+      r.querySelector('.br').style.width = (v == null || hide ? 0 : 100 * v / max) + '%';
+      r.querySelector('.vl').textContent = v == null ? 'no data' : m.fmtShort(v);
+      if (!hide) { r.style.transform = 'translateY(' + (i * ROW) + 'px)'; i++; }
+    });
+    const lonV = D.london[S.metric][S.size];
+    document.getElementById('rank-title').textContent = 'Ranked · ' + m.label.toLowerCase();
+    const tr = rows[D.boroughs[0].code].querySelector('.tr');
+    ref.style.display = S.metric === 'aggM' ? 'none' : '';
+    if (!ref.parentNode) rank.appendChild(ref);
+    requestAnimationFrame(() => {
+      const rr = rank.getBoundingClientRect(), tb = tr.getBoundingClientRect();
+      ref.style.left = (tb.left - rr.left + tb.width * lonV / max) + 'px';
+    });
+    dataBox();
+  }
+  addEventListener('resize', () => render());
+
+  HC.pills(document.getElementById('metric'), HC.METRICS, S.metric, (k) => { S.metric = k; render(); });
+  HC.pills(document.getElementById('size'), HC.SIZES, S.size, (k) => { S.size = k; render(); });
+  render();
+  window.__state = () => S;
+  window.__set = (k, v) => { const el = document.getElementById(k); if (el && el.select) el.select(v); else { S[k] = v; render(); } };
+  window.__NG_DONE__ = true;
+})().catch((e) => { window.__NG_ERROR__ = String(e); console.error(e); });
+</script>
+</body>
+</html>
