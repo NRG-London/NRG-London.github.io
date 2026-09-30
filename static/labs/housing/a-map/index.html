@@ -142,8 +142,7 @@
       (isLon ? 'All 32 boroughs' : b.io + ' London') + ' \u00b7 ' + sz.label.toLowerCase() + '</span>' +
       '<span class="hint">' + (isLon ? 'Hover or tap a borough' : 'Move off the map for London') + '</span></div>';
     if (b.private[k] == null) {
-      el.innerHTML = head + '<div class="nd">No figure: ONS publishes no private rent for the City, and most of the City Corporation\u2019s ' +
-        b.units.mix.toLocaleString('en-GB') + ' council homes are on estates in other boroughs.</div>';
+      el.innerHTML = head + '<div class="nd">' + HC.cityNote(b) + '</div>';
       return;
     }
     const p = b.private[k], so = b.social[k], g = b.gap[k], units = b.units[k] || 0, share = Math.round(100 * so / p);
@@ -158,7 +157,7 @@
       '</div><div class="bar"><i style="width:' + share + '%"></i></div>' +
       '<div class="ft">Social rent is ' + share + '% of the private rent' +
       (isLon ? '' : ' \u00b7 gap ' + (g >= D.london.gap[k] ? '+' : '\u2212') + HC.fmt.gbp(Math.abs(g - D.london.gap[k])) + ' v London') +
-      ' \u00b7 ' + b.pctSocial + '% of households rent socially</div>';
+      ' \u00b7 ' + HC.tenureLine(b) + '</div>';
   }
 
   function hover(code) {

@@ -143,6 +143,7 @@
       '<tr><td>Social homes' + (k === 'mix' ? '' : ' (' + sz.label + ')') + '</td><td>' + (b.units[k] || 0).toLocaleString('en-GB') + '</td></tr>' +
       '<tr><td>Across them all, a year</td><td>' + HC.fmt.gbpM(b.aggM[k]) + '</td></tr>' +
       '<tr><td>Households renting socially</td><td>' + b.pctSocial + '%</td></tr>' +
+      '<tr><td>Households renting privately</td><td>' + b.pctPrivate + '%</td></tr>' +
       '</table>' +
       '<div class="hint">' + (b === D.london ? 'Hover or tap a tile for its figures.' : 'Move off the map to see London as a whole.') + '</div>';
   }

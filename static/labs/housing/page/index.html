@@ -184,7 +184,7 @@
       <li><b>Who gains.</b> For households on housing benefit or the Universal Credit housing element, a lower rent partly reduces the benefit bill rather than the household&rsquo;s own costs.</li>
       <li><b>Borough totals are notional.</b> They are the rent forgone compared with today&rsquo;s typical private rents. Nobody could collect them: letting that many homes at market rents would itself move the market.</li>
       <li><b>25-year value</b> discounts the gap at 3.5% a year in real terms (the Treasury Green Book rate), with the gap held constant in real terms. The calculator lets you change both.</li>
-      <li><b>City of London</b> is shown as no data: ONS publishes no private rent for it, and most City Corporation council homes are on estates in other boroughs.</li>
+      <li><b>City of London</b> is shown as no data. Only 8,583 people live there (Census 2021); ONS publishes no private rent for it, and most City Corporation council homes are on estates in other boroughs.</li>
     </ul>
     <div class="foot"><i>Sources: ONS Price Index of Private Rents (Aug 2026); Regulator of Social Housing, stock and rents 2025, uprated to 2026/27 by the maximum permitted increases; ONS Census 2021. Contains public sector information licensed under the Open Government Licence v3.0.</i></div>
   </section>
@@ -253,8 +253,7 @@
       (isLon ? 'All 32 boroughs' : b.io + ' London') + ' · ' + sizeOf(k).label.toLowerCase() + '</span>' +
       '<span class="hint">' + (isLon ? 'Hover or tap a borough' : 'Move off the map for London') + '</span></div>';
     if (b.private[k] == null) {
-      el.innerHTML = head + '<div class="nd">No figure: ONS publishes no private rent for the City, and most of the City Corporation’s ' +
-        b.units.mix.toLocaleString('en-GB') + ' council homes are on estates in other boroughs.</div>';
+      el.innerHTML = head + '<div class="nd">' + HC.cityNote(b) + '</div>';
       return;
     }
     const p = b.private[k], so = b.social[k], g = b.gap[k], units = b.units[k] || 0, share = Math.round(100 * so / p);
@@ -269,7 +268,7 @@
       '</div><div class="bar"><i style="width:' + share + '%"></i></div>' +
       '<div class="ft">Social rent is ' + share + '% of the private rent' +
       (isLon ? '' : ' · gap ' + (g >= D.london.gap[k] ? '+' : '−') + HC.fmt.gbp(Math.abs(g - D.london.gap[k])) + ' v London') +
-      ' · ' + b.pctSocial + '% of households rent socially</div>' +
+      ' · ' + HC.tenureLine(b) + '</div>' +
       '<button type="button" class="go" data-code="' + b.code + '">Work out what a tenancy ' + (isLon ? 'in London' : 'here') + ' is worth ↓</button>';
   }
   $('dbox').addEventListener('click', (e) => {

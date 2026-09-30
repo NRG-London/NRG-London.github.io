@@ -110,12 +110,18 @@
     el.select = (key) => { const i = items.findIndex((it) => it.key === key); if (i >= 0) el.children[i].click(); };
   }
 
+  // Census 2021 tenure, shared by every page's borough readout
+  const tenureLine = (b) => 'Households renting: ' + b.pctSocial + '% socially, ' + b.pctPrivate + '% privately';
+  // The City's no-data explanation: most readers don't know how few people live there
+  const cityNote = (b) => 'Only ' + b.population.toLocaleString('en-GB') + ' people live in the City of London (Census 2021). ' +
+    'ONS publishes no private rent for it, and most of the City Corporation\u2019s ' + b.units.mix.toLocaleString('en-GB') +
+    ' council homes are on estates in other boroughs.';
+
   function tipHTML(b, size, data) {
     const sz = SIZES.find((s) => s.key === size);
     if (b.private[size] == null) {
       return '<h3>' + b.name + '</h3><div class="io">' + b.io + ' London</div>' +
-        '<div class="note">No figure: ONS publishes no private rent for the City, and most of the City Corporation’s ' +
-        b.units.mix.toLocaleString('en-GB') + ' council homes are on estates in other boroughs.</div>';
+        '<div class="note">' + cityNote(b) + '</div>';
     }
     const p = b.private[size], s = b.social[size], g = b.gap[size];
     const share = Math.round(100 * s / p);
@@ -132,7 +138,7 @@
       '<div class="bar"><i style="width:' + share + '%"></i></div>' +
       '<div class="bar-l">Social rent is ' + share + '% of the private rent' + (vsLon ? ' · gap ' + vsLon : '') + '</div>' +
       '<div class="note">' + (b.units[size] || 0).toLocaleString('en-GB') + ' social homes' +
-      (size === 'mix' ? '' : ' of this size') + ' · ' + b.pctSocial + '% of households rent socially</div>';
+      (size === 'mix' ? '' : ' of this size') + '</div><div class="note">' + tenureLine(b) + '</div>';
   }
 
   function tooltip() {
@@ -168,6 +174,6 @@
     return r.json();
   }
 
-  window.HC = { RAMP, SIZES, METRICS, val, scale, legendHTML, inkOn, pills, tipHTML, tooltip,
+  window.HC = { tenureLine, cityNote, RAMP, SIZES, METRICS, val, scale, legendHTML, inkOn, pills, tipHTML, tooltip,
     npvFactor, load, fmt: { gbp, gbpK, gbpM, gbpShortK } };
 })();
