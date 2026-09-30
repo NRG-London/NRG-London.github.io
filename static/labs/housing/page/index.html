@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What a social tenancy is worth — housing costs lab</title>
+<link rel="stylesheet" href="../lab.css">
+<style>
+  .card + .card { margin-top: 1.4rem; }
+  h2.sec { font-family: var(--serif); font-size: 1.3rem; line-height: 1.3; margin: 0; letter-spacing: -0.01em; }
+
+  /* ---------- 1. map + ranking + data box ---------- */
+  .map-grid { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(260px, 1fr); gap: 1.6rem; margin-top: 0.8rem; align-items: start; }
+  @media (max-width: 860px) { .map-grid { grid-template-columns: 1fr; } }
+  #map svg { width: 100%; height: auto; display: block; }
+  .rank-h { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mid-grey); margin-bottom: 0.4rem; display: flex; justify-content: space-between; }
+  .rank { position: relative; font-size: 0.78rem; font-variant-numeric: tabular-nums; }
+  .rk { position: absolute; left: 0; right: 0; height: 17px; display: grid; grid-template-columns: 8.2rem 1fr 3.4rem; align-items: center; gap: 0.4rem; transition: transform 0.6s cubic-bezier(.2,.7,.2,1); cursor: pointer; }
+  .rk .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink); }
+  .rk .tr { position: relative; height: 11px; }
+  .rk .br { position: absolute; left: 0; top: 0; bottom: 0; background: var(--blue-muted); border-radius: 0 3px 3px 0; transition: width 0.6s cubic-bezier(.2,.7,.2,1), background 0.15s; }
+  .rk .vl { text-align: right; color: var(--muted-ink); }
+  .rk.hot .br { background: var(--deep); }
+  .rk.hot .nm, .rk.hot .vl { font-weight: 700; color: var(--ink); }
+  .rk.lon .nm { font-weight: 700; }
+  .rk.lon .br { background: var(--amber); }
+  .rk.nod .vl { font-style: italic; }
+  .ref { position: absolute; top: -4px; bottom: -4px; width: 0; border-left: 1.5px dashed var(--ink); opacity: 0.45; transition: left 0.6s cubic-bezier(.2,.7,.2,1); pointer-events: none; }
+  .map-key { font-size: 0.72rem; color: var(--muted-ink); display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.3rem; }
+  .map-key svg { vertical-align: middle; }
+  /* at phone width the labels would be ~5px: tap a borough for the data box, or read the ranking */
+  @media (max-width: 640px) { .b-label { display: none; } }
+
+  .dbox { margin-top: 1rem; border: 1px solid var(--warm-grey); padding: 0.8rem 1rem 0.85rem; background: var(--white); }
+  .dbox .hd { display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; }
+  .dbox h3 { font-family: var(--serif); font-size: 1.05rem; margin: 0; }
+  .dbox .io { font-size: 0.68rem; color: var(--mid-grey); text-transform: uppercase; letter-spacing: 0.06em; }
+  .dbox .hint { margin-left: auto; font-size: 0.7rem; color: var(--mid-grey); }
+  .dbox .cells { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.5rem; margin-top: 0.6rem; }
+  .dbox .cell { border-top: 2px solid var(--warm-grey); padding-top: 0.3rem; min-width: 0; }
+  .dbox .cell.on { border-top-color: var(--amber); }
+  .dbox .cell .k { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mid-grey); white-space: nowrap; }
+  .dbox .cell .k .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.3rem; }
+  .dbox .cell b { display: block; font-size: 1.15rem; line-height: 1.25; font-variant-numeric: tabular-nums; }
+  .dbox .cell span { font-size: 0.72rem; color: var(--muted-ink); }
+  .dbox .bar { margin-top: 0.7rem; height: 8px; background: var(--blue); border-radius: 2px; position: relative; overflow: hidden; }
+  .dbox .bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--amber); border-right: 2px solid var(--white); transition: width 0.3s; }
+  .dbox .ft { font-size: 0.74rem; color: var(--muted-ink); margin-top: 0.3rem; }
+  .dbox .nd { font-size: 0.82rem; color: var(--muted-ink); margin-top: 0.4rem; }
+  .dbox .go { font: inherit; font-size: 0.78rem; font-weight: 600; margin-top: 0.55rem; border: 0; background: none; padding: 0; color: var(--blue); cursor: pointer; }
+  .dbox .go:hover { color: var(--ink); text-decoration: underline; }
+  @media (max-width: 640px) { .dbox .cells { grid-template-columns: repeat(2, minmax(0, 1fr)); } .dbox .hint { display: none; } }
+
+  /* ---------- 2. dumbbell ---------- */
+  #db svg { display: block; width: 100%; }
+  .db-row { transition: transform 0.6s cubic-bezier(.2,.7,.2,1); cursor: pointer; }
+  .db-row .hit { fill: transparent; }
+  .db-row:hover .hit, .db-row.sel .hit { fill: var(--blue-light); }
+  .db-row .nm { font-size: 12.5px; fill: var(--ink); }
+  .db-row.lon .nm, .db-row.sel .nm { font-weight: 700; }
+  .db-row .gl { font-size: 12px; font-weight: 600; fill: var(--muted-ink); font-variant-numeric: tabular-nums; }
+  .db-row.lon .gl, .db-row:hover .gl, .db-row.sel .gl { fill: var(--ink); }
+  /* a rect, not a line: x and width animate as CSS properties, x1/x2 don't */
+  .db-row .conn { fill: #cfdde8; transition: x 0.6s cubic-bezier(.2,.7,.2,1), width 0.6s cubic-bezier(.2,.7,.2,1); }
+  .db-row.lon .conn { fill: #f2d9b0; }
+  .db-row circle { transition: cx 0.6s cubic-bezier(.2,.7,.2,1); }
+  .db-row .soc { fill: var(--amber); stroke: var(--amber-dark); stroke-width: 1.5; }
+  .db-row .pri { fill: var(--blue); stroke: var(--white); stroke-width: 1.5; }
+  /* the two rents appear beside their dots on hover and on the selected row, not as a tooltip */
+  .db-row .vs, .db-row .vp { font-size: 11px; fill: var(--muted-ink); font-variant-numeric: tabular-nums; opacity: 0; transition: opacity 0.15s, x 0.6s cubic-bezier(.2,.7,.2,1); pointer-events: none; }
+  .db-row:hover .vs, .db-row:hover .vp, .db-row.sel .vs, .db-row.sel .vp { opacity: 1; }
+  .db-axis text { font-size: 11px; fill: var(--mid-grey); font-variant-numeric: tabular-nums; }
+  .db-axis line { stroke: var(--warm-grey); }
+  .lg { display: flex; gap: 1.2rem; font-size: 0.8rem; color: var(--muted-ink); margin: 1rem 0 0.3rem; flex-wrap: wrap; }
+  .lg .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 0.35rem; vertical-align: -1px; }
+  /* phones: no room beside the dots, so the tapped row's rents are read out above the chart */
+  .db-read { font-size: 0.82rem; color: var(--muted-ink); margin: 0.2rem 0 0.4rem; font-variant-numeric: tabular-nums; }
+  .db-read b { color: var(--ink); }
+  .lg .cn { display: inline-block; width: 22px; height: 6px; border-radius: 3px; background: #cfdde8; margin-right: 0.35rem; vertical-align: 1px; }
+
+  /* ---------- 3. calculator ---------- */
+  .calc-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.4rem 2.4rem; margin-top: 1rem; align-items: start; }
+  @media (max-width: 760px) { .calc-grid { grid-template-columns: 1fr; } }
+  .calc select { font: inherit; font-size: 0.92rem; width: 100%; padding: 0.45rem 0.5rem; border: 1px solid var(--warm-grey); background: var(--paper); border-radius: 4px; color: var(--ink); }
+  .calc .f + .f { margin-top: 1rem; }
+  .calc .f .ctl-l { display: flex; justify-content: space-between; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mid-grey); margin-bottom: 0.3rem; }
+  .calc .f .ctl-l b { color: var(--ink); letter-spacing: 0; font-size: 0.88rem; text-transform: none; }
+  .calc input[type=range] { width: 100%; accent-color: var(--deep); }
+  .calc .presets { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-top: 0.3rem; }
+  .calc .presets button { font: inherit; font-size: 0.74rem; border: 1px solid var(--warm-grey); background: var(--white); border-radius: 999px; padding: 0.15rem 0.6rem; cursor: pointer; color: var(--muted-ink); }
+  .calc .presets button:hover { border-color: var(--blue); color: var(--blue); }
+  .calc .out { border-top: 3px solid var(--amber); padding-top: 0.9rem; }
+  .calc .out .big { font-size: 3rem; font-weight: 700; line-height: 1.05; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+  .calc .out .big-l { font-size: 0.92rem; color: var(--muted-ink); margin-top: 0.2rem; }
+  .calc .steps { margin-top: 1rem; font-size: 0.85rem; font-variant-numeric: tabular-nums; border-collapse: collapse; width: 100%; }
+  .calc .steps td { padding: 0.32rem 0; border-top: 1px solid var(--warm-grey); vertical-align: top; }
+  .calc .steps td:last-child { text-align: right; font-weight: 600; white-space: nowrap; padding-left: 1rem; }
+  .calc .steps tr.tot td { font-weight: 700; }
+  .calc .steps .s { color: var(--mid-grey); font-size: 0.76rem; display: block; }
+  .calc .note { font-size: 0.78rem; color: var(--muted-ink); margin-top: 0.8rem; }
+
+  /* ---------- 4. about ---------- */
+  .about ul { padding-left: 1.1rem; margin: 0.8rem 0 0; max-width: 75ch; }
+  .about li { font-size: 0.88rem; color: var(--muted-ink); margin: 0.4rem 0; }
+  .about li b { color: var(--ink); }
+
+  @media (prefers-reduced-motion: reduce) { .rk, .rk .br, .ref, .db-row, .db-row circle, .db-row .conn { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="lab-bar"><a href="../">&larr; Lab hub</a><span>Combined page · map, dumbbell and calculator</span></div>
+
+  <!-- 1. The map -->
+  <section class="card" aria-labelledby="t-map">
+    <div class="eyebrow">Housing costs · London boroughs</div>
+    <h1 id="t-map">What a social tenancy is worth, borough by borough</h1>
+    <p class="sub">The gap between a typical private rent and a social rent for the same size of home, in the same borough.</p>
+    <div class="stats" id="stats"></div>
+    <div class="controls">
+      <div class="ctl"><label class="ctl-l">Show</label><div id="metric"></div></div>
+      <div class="ctl"><label class="ctl-l">Home size</label><div id="size"></div></div>
+    </div>
+    <p class="metric-note" id="note"></p>
+    <div class="map-grid">
+      <div>
+        <div id="map"></div>
+        <div class="legend" id="legend"></div>
+        <div class="map-key"><span><svg width="26" height="8"><line x1="0" y1="4" x2="26" y2="4" stroke="#1a2332" stroke-width="1.4" stroke-dasharray="5 4" opacity=".55"/></svg> Inner London</span></div>
+        <div class="dbox" id="dbox" aria-live="polite"></div>
+      </div>
+      <div>
+        <div class="rank-h"><span id="rank-title">Ranked</span><span>- - London</span></div>
+        <div class="rank" id="rank"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. The dumbbell -->
+  <section class="card" aria-labelledby="t-db">
+    <div class="eyebrow">Private v social rent</div>
+    <h2 class="sec" id="t-db">Across London, social rents barely move. Private rents double.</h2>
+    <p class="sub">Typical private rent and social rent for the same size of home in each borough, ranked by the gap between them. Hover or tap a row for the two rents.</p>
+    <div class="controls"><div class="ctl"><label class="ctl-l">Home size</label><div id="size-db"></div></div></div>
+    <div class="lg"><span><span class="dot swatch-social"></span>Social rent</span><span><span class="dot swatch-private"></span>Private rent</span><span><span class="cn"></span>The gap (on the right, &pound; a month)</span></div>
+    <div class="db-read" id="db-read" aria-live="polite"></div>
+    <div id="db"></div>
+  </section>
+
+  <!-- 3. The calculator -->
+  <section class="card calc" id="calc" aria-labelledby="t-calc">
+    <div class="eyebrow">Calculator</div>
+    <h2 class="sec" id="t-calc">What is a social tenancy worth?</h2>
+    <p class="sub">The rent a household doesn&rsquo;t pay, added up over the years and expressed in today&rsquo;s money. Choose a borough and home size, then change the assumptions.</p>
+    <div class="calc-grid">
+      <div>
+        <div class="f"><label class="ctl-l" for="c-b">Borough</label><select id="c-b"></select></div>
+        <div class="f"><label class="ctl-l">Home size</label><div id="size-calc"></div></div>
+        <div class="f"><label class="ctl-l" for="c-y">Tenancy length <b id="c-y-v"></b></label><input id="c-y" type="range" min="5" max="50" step="1" value="25">
+          <div class="presets"><button type="button" data-y="12">12 yrs (average so far)</button><button type="button" data-y="25">25 yrs</button><button type="button" data-y="40">40 yrs</button></div></div>
+        <div class="f"><label class="ctl-l" for="c-r">Discount rate <b id="c-r-v"></b></label><input id="c-r" type="range" min="2" max="6" step="0.1" value="3.5">
+          <div class="presets"><button type="button" data-r="3.5">3.5% Green Book</button><button type="button" data-r="3.0">3.0% from 28 Oct</button></div></div>
+        <div class="f"><label class="ctl-l" for="c-g">Real growth in the gap <b id="c-g-v"></b></label><input id="c-g" type="range" min="-1" max="2" step="0.1" value="0"></div>
+      </div>
+      <div class="out" aria-live="polite">
+        <div class="big" id="c-out"></div>
+        <div class="big-l" id="c-out-l"></div>
+        <table class="steps" id="c-steps"></table>
+        <p class="note">Social renters have lived in their current home for 12 years on average so far (English Housing Survey 2024&ndash;25), but those tenancies are still running, and moving to another social home keeps the benefit.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. About the data -->
+  <section class="card about" aria-labelledby="t-about">
+    <div class="eyebrow">About the data</div>
+    <h2 class="sec" id="t-about">How these figures are worked out</h2>
+    <ul>
+      <li><b>Private rent</b> is the ONS Price Index of Private Rents for August 2026, by borough and bedroom size. It is an average across all existing private tenancies, so new lets cost more and the gap is, if anything, understated.</li>
+      <li><b>Social rent</b> is the Regulator of Social Housing&rsquo;s average net rent for general needs homes owned by councils and larger housing associations (1,000+ homes), uprated to 2026/27 by the maximum permitted increases. Smaller associations (about 3% of London&rsquo;s social homes) publish no rents by size and are left out.</li>
+      <li><b>Typical homes, not the same home.</b> The gap compares a typical private home of that size in the borough with a typical social one. Size, condition and location within the borough differ.</li>
+      <li><b>Service charges.</b> Social rents exclude them; private rents generally include them. Where they apply, they would narrow the gap by roughly &pound;20&ndash;110 a month.</li>
+      <li><b>Who gains.</b> For households on housing benefit or the Universal Credit housing element, a lower rent partly reduces the benefit bill rather than the household&rsquo;s own costs.</li>
+      <li><b>Borough totals are notional.</b> They are the rent forgone compared with today&rsquo;s typical private rents. Nobody could collect them: letting that many homes at market rents would itself move the market.</li>
+      <li><b>25-year value</b> discounts the gap at 3.5% a year in real terms (the Treasury Green Book rate), with the gap held constant in real terms. The calculator lets you change both.</li>
+      <li><b>City of London</b> is shown as no data: ONS publishes no private rent for it, and most City Corporation council homes are on estates in other boroughs.</li>
+    </ul>
+    <div class="foot"><i>Sources: ONS Price Index of Private Rents (Aug 2026); Regulator of Social Housing, stock and rents 2025, uprated to 2026/27 by the maximum permitted increases; ONS Census 2021. Contains public sector information licensed under the Open Government Licence v3.0.</i></div>
+  </section>
+</div>
+<script src="../shared.js"></script>
+<script>
+(async function () {
+  const D = await HC.load();
+  // One home size for the whole page; the calculator's borough is set from anywhere a borough is clicked.
+  const S = { metric: 'gap', size: 'mix', hot: null, calc: 'E12000007' };
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  const $ = (id) => document.getElementById(id);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const byCode = Object.fromEntries([...D.boroughs, D.london].map((b) => [b.code, b]));
+  const sizeOf = (k) => HC.SIZES.find((s) => s.key === k);
+
+  // ================= 1. map =================
+  // crowded inner boroughs take the 4-letter code; a few labels are nudged off their neighbours
+  const small = new Set(['E09000001', 'E09000020', 'E09000013', 'E09000019', 'E09000033', 'E09000007', 'E09000012', 'E09000030']);
+  const NUDGE = { E09000032: [-38, 12], E09000022: [8, 40], E09000030: [-6, 0], E09000020: [4, 6], E09000013: [-17, -53] };
+
+  const svg = document.createElementNS(SVGNS, 'svg');
+  svg.setAttribute('viewBox', '0 0 ' + D.svg.w + ' ' + D.svg.h);
+  svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', 'Map of London boroughs coloured by the selected measure');
+  svg.innerHTML = '<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">' +
+    '<rect width="6" height="6" fill="#fff"/><rect width="2" height="6" fill="#c9d0cc"/></pattern></defs>';
+  const gShapes = document.createElementNS(SVGNS, 'g');
+  const gLabels = document.createElementNS(SVGNS, 'g');
+  const gInner = document.createElementNS(SVGNS, 'path');
+  gInner.setAttribute('d', D.svg.inner);
+  gInner.setAttribute('class', 'inner-line');
+  const gOutline = document.createElementNS(SVGNS, 'path');
+  gOutline.setAttribute('d', D.svg.outline);
+  gOutline.setAttribute('class', 'outline');
+  svg.append(gShapes, gOutline, gInner, gLabels);
+  $('map').appendChild(svg);
+
+  const shapes = {}, labels = {};
+  D.boroughs.forEach((b) => {
+    const p = document.createElementNS(SVGNS, 'path');
+    p.setAttribute('d', D.svg.paths[b.code]);
+    p.setAttribute('class', 'b-shape');
+    p.setAttribute('tabindex', '0');
+    p.dataset.code = b.code;
+    gShapes.appendChild(p);
+    shapes[b.code] = p;
+    const nd = NUDGE[b.code] || [0, 0];
+    const x = D.svg.labels[b.code][0] + nd[0], y = D.svg.labels[b.code][1] + nd[1];
+    const t = document.createElementNS(SVGNS, 'text');
+    t.setAttribute('class', 'b-label');
+    const isSmall = small.has(b.code);
+    t.innerHTML = '<tspan class="n" x="' + x + '" y="' + (y - (isSmall ? 3 : 4)) + '"' + (isSmall ? ' style="font-size:13px"' : '') + '>' +
+      (isSmall ? b.abbr : b.short) + '</tspan><tspan class="v" x="' + x + '" y="' + (y + (isSmall ? 12 : 16)) + '"' +
+      (isSmall ? ' style="font-size:15px"' : '') + '></tspan>';
+    if (b.code === 'E09000001') t.style.display = 'none';
+    gLabels.appendChild(t);
+    labels[b.code] = t;
+  });
+
+  // The data box: London until something is hovered, tapped or focused.
+  function dataBox() {
+    const b = byCode[S.hot] || D.london, k = S.size, isLon = b === D.london;
+    const el = $('dbox');
+    const head = '<div class="hd"><h3>' + (isLon ? 'London' : b.name) + '</h3><span class="io">' +
+      (isLon ? 'All 32 boroughs' : b.io + ' London') + ' · ' + sizeOf(k).label.toLowerCase() + '</span>' +
+      '<span class="hint">' + (isLon ? 'Hover or tap a borough' : 'Move off the map for London') + '</span></div>';
+    if (b.private[k] == null) {
+      el.innerHTML = head + '<div class="nd">No figure: ONS publishes no private rent for the City, and most of the City Corporation’s ' +
+        b.units.mix.toLocaleString('en-GB') + ' council homes are on estates in other boroughs.</div>';
+      return;
+    }
+    const p = b.private[k], so = b.social[k], g = b.gap[k], units = b.units[k] || 0, share = Math.round(100 * so / p);
+    const cell = (key, label, v, sub) => '<div class="cell' + (S.metric === key ? ' on' : '') + '"><div class="k">' + label +
+      '</div><b>' + v + '</b><span>' + sub + '</span></div>';
+    el.innerHTML = head + '<div class="cells">' +
+      cell('private', '<span class="dot swatch-private"></span>Private', HC.fmt.gbp(p), 'a month') +
+      cell('social', '<span class="dot swatch-social"></span>Social', HC.fmt.gbp(so), 'a month') +
+      cell('gap', 'Gap', HC.fmt.gbp(g), HC.fmt.gbp(g * 12) + ' a year') +
+      cell('aggM', 'Total', HC.fmt.gbpM(b.aggM[k]), 'a year, ' + units.toLocaleString('en-GB') + ' homes') +
+      cell('npv', '25 years', HC.fmt.gbpK(b.npv[k]), 'per home, today’s £') +
+      '</div><div class="bar"><i style="width:' + share + '%"></i></div>' +
+      '<div class="ft">Social rent is ' + share + '% of the private rent' +
+      (isLon ? '' : ' · gap ' + (g >= D.london.gap[k] ? '+' : '−') + HC.fmt.gbp(Math.abs(g - D.london.gap[k])) + ' v London') +
+      ' · ' + b.pctSocial + '% of households rent socially</div>' +
+      '<button type="button" class="go" data-code="' + b.code + '">Work out what a tenancy ' + (isLon ? 'in London' : 'here') + ' is worth ↓</button>';
+  }
+  $('dbox').addEventListener('click', (e) => {
+    const go = e.target.closest('.go');
+    if (!go) return;
+    setCalc(go.dataset.code);
+    $('calc').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+  });
+
+  function hover(code) {
+    if (code === S.hot) return;
+    S.hot = code;
+    Object.values(shapes).forEach((p) => p.classList.toggle('hot', p.dataset.code === code));
+    if (shapes[code]) gShapes.appendChild(shapes[code]); // raise so the outline isn't under neighbours
+    document.querySelectorAll('.rk').forEach((r) => r.classList.toggle('hot', r.dataset.code === code));
+    dataBox();
+  }
+  // pointerdown too: a tap on a phone doesn't always produce a pointermove
+  ['pointermove', 'pointerdown'].forEach((t) => gShapes.addEventListener(t, (e) => { const c = e.target.dataset.code; if (c) hover(c); }));
+  gShapes.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') hover(null); });
+  gShapes.addEventListener('focusin', (e) => hover(e.target.dataset.code));
+  gShapes.addEventListener('focusout', (e) => { if (!e.relatedTarget || !e.relatedTarget.closest('.dbox')) hover(null); });
+
+  const rank = $('rank');
+  const ROW = 18;
+  const rows = {};
+  const ref = document.createElement('div');
+  ref.className = 'ref';
+  [...D.boroughs, D.london].forEach((b) => {
+    const r = document.createElement('div');
+    r.className = 'rk' + (b === D.london ? ' lon' : '');
+    r.dataset.code = b.code;
+    r.innerHTML = '<span class="nm">' + (b === D.london ? 'London average' : b.name) + '</span><span class="tr"><span class="br"></span></span><span class="vl"></span>';
+    r.addEventListener('pointermove', () => hover(b.code));
+    r.addEventListener('pointerdown', () => hover(b.code));
+    r.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') hover(null); });
+    rank.appendChild(r);
+    rows[b.code] = r;
+  });
+  rank.appendChild(ref);
+  rank.style.height = (ROW * (D.boroughs.length + 1)) + 'px';
+
+  function stats() {
+    const L = D.london, k = S.size, sz = sizeOf(k);
+    const scope = k === 'mix' ? 'per social home, London average' : 'per ' + sz.label + ' social home, London average';
+    $('stats').innerHTML =
+      '<div class="stat key"><b>' + HC.fmt.gbp(L.gap[k]) + '</b><span>a month gap ' + scope + '</span></div>' +
+      '<div class="stat"><b>' + HC.fmt.gbpK(L.npv[k]) + '</b><span>worth over a 25-year tenancy</span></div>' +
+      '<div class="stat"><b>' + HC.fmt.gbpM(L.aggM[k]) + '</b><span>a year across ' + L.units[k].toLocaleString('en-GB') + ' ' + (k === 'mix' ? '' : sz.label + ' ') + 'social homes</span></div>';
+  }
+
+  function drawMap() {
+    const sc = HC.scale(D, S.metric, S.size), m = sc.metric;
+    $('note').textContent = m.note(S.size);
+    $('legend').innerHTML = HC.legendHTML(sc);
+    stats();
+    D.boroughs.forEach((b) => {
+      const v = HC.val(b, S.metric, S.size), c = sc.colour(v), p = shapes[b.code];
+      p.classList.toggle('nodata', c == null);
+      p.style.fill = c || '';
+      p.setAttribute('aria-label', b.name + ': ' + (v == null ? 'no data' : m.fmt(v)));
+      const t = labels[b.code];
+      t.setAttribute('class', 'b-label ' + (c ? HC.inkOn(c) : 'dark'));
+      t.lastChild.textContent = v == null ? '' : m.fmtShort(v);
+    });
+    // ranking: London row sits where its value falls; shared rent scale keeps social bars short
+    const src = m.shared === 'rent' ? 'private' : S.metric;
+    const max = Math.max(...D.boroughs.map((b) => HC.val(b, src, S.size) || 0));
+    const all = [...D.boroughs, D.london].map((b) => ({ b, v: HC.val(b, S.metric, S.size) }));
+    all.sort((a, z) => (z.v == null ? -1 : z.v) - (a.v == null ? -1 : a.v));
+    let i = 0;
+    all.forEach(({ b, v }) => {
+      const r = rows[b.code];
+      const hide = b === D.london && S.metric === 'aggM'; // a London total isn't comparable with a borough's
+      r.style.visibility = hide ? 'hidden' : '';
+      r.classList.toggle('nod', v == null);
+      r.querySelector('.br').style.width = (v == null || hide ? 0 : 100 * v / max) + '%';
+      r.querySelector('.vl').textContent = v == null ? 'no data' : m.fmtShort(v);
+      if (!hide) { r.style.transform = 'translateY(' + (i * ROW) + 'px)'; i++; }
+    });
+    const lonV = D.london[S.metric][S.size];
+    $('rank-title').textContent = 'Ranked · ' + m.label.toLowerCase();
+    ref.style.display = S.metric === 'aggM' ? 'none' : '';
+    const tr = rows[D.boroughs[0].code].querySelector('.tr');
+    requestAnimationFrame(() => {
+      const rr = rank.getBoundingClientRect(), tb = tr.getBoundingClientRect();
+      ref.style.left = (tb.left - rr.left + tb.width * lonV / max) + 'px';
+    });
+    dataBox();
+  }
+
+  // ================= 2. dumbbell =================
+  const DB_ROW = 22, DB_TOP = 26, DB_RIGHT = 62;
+  const dbData = [...D.boroughs.filter((b) => b.private.mix != null), D.london];
+  const db = $('db');
+  const dsvg = document.createElementNS(SVGNS, 'svg');
+  db.appendChild(dsvg);
+  const axis = document.createElementNS(SVGNS, 'g');
+  axis.setAttribute('class', 'db-axis');
+  dsvg.appendChild(axis);
+  const drows = {};
+  dbData.forEach((b) => {
+    const g = document.createElementNS(SVGNS, 'g');
+    g.setAttribute('class', 'db-row' + (b === D.london ? ' lon' : ''));
+    g.dataset.code = b.code;
+    g.innerHTML = '<rect class="hit" x="0" y="0" height="' + DB_ROW + '" rx="3"/>' +
+      '<text class="nm" x="6" y="15"></text>' +
+      '<rect class="conn" y="8" height="6" rx="3"/><circle class="soc" cy="11" r="5.5"/><circle class="pri" cy="11" r="5.5"/>' +
+      '<text class="vs" y="15" text-anchor="end"></text><text class="vp" y="15"></text>' +
+      '<text class="gl" y="15" text-anchor="end"></text>';
+    g.addEventListener('click', () => setCalc(b.code));
+    dsvg.appendChild(g);
+    drows[b.code] = g;
+  });
+
+  function drawDumbbell() {
+    const W = db.clientWidth, H = DB_TOP + DB_ROW * dbData.length + 8, k = S.size;
+    dsvg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    dsvg.setAttribute('height', H);
+    const maxP = Math.max(...dbData.map((b) => b.private[k]));
+    const step = maxP > 3000 ? 1000 : 500;
+    const xmax = Math.ceil(maxP / step) * step;
+    const narrow = W < 520;
+    const left = narrow ? 112 : 170;
+    const x = (v) => left + (W - left - DB_RIGHT - (narrow ? 0 : 50)) * v / xmax;
+    let a = '';
+    for (let t = 0; t <= xmax; t += step) {
+      a += '<line x1="' + x(t) + '" x2="' + x(t) + '" y1="' + (DB_TOP - 6) + '" y2="' + (H - 6) + '"/>' +
+        '<text x="' + x(t) + '" y="' + (DB_TOP - 11) + '" text-anchor="middle">' + (t === 0 ? '£0' : '£' + (t / 1000) + 'k') + '</text>';
+    }
+    axis.innerHTML = a;
+    dbData.slice().sort((p, q) => q.gap[k] - p.gap[k]).forEach((b, i) => {
+      const g = drows[b.code];
+      g.style.transform = 'translateY(' + (DB_TOP + i * DB_ROW) + 'px)';
+      g.querySelector('.hit').setAttribute('width', W);
+      g.querySelector('.nm').textContent = b === D.london ? 'London' : (narrow ? b.short : b.name);
+      const xs = x(b.social[k]), xp = x(b.private[k]);
+      const c = g.querySelector('.conn');
+      c.setAttribute('x', xs); c.setAttribute('width', Math.max(0, xp - xs));
+      g.querySelector('.soc').setAttribute('cx', xs);
+      g.querySelector('.pri').setAttribute('cx', xp);
+      const vs = g.querySelector('.vs'), vp = g.querySelector('.vp');
+      vs.setAttribute('x', xs - 9); vs.textContent = HC.fmt.gbp(b.social[k]);
+      vp.setAttribute('x', xp + 9); vp.textContent = HC.fmt.gbp(b.private[k]);
+      // on a phone the private label would collide with the gap column: hide it there
+      vp.style.display = narrow ? 'none' : '';
+      vs.style.display = narrow && xs - 9 < left + 30 ? 'none' : '';
+      const gl = g.querySelector('.gl');
+      gl.setAttribute('x', W - 4);
+      gl.textContent = HC.fmt.gbp(b.gap[k]);
+      g.classList.toggle('sel', b.code === S.calc && b !== D.london);
+    });
+    const r = byCode[S.calc];
+    $('db-read').hidden = !narrow;
+    $('db-read').innerHTML = '<b>' + (r === D.london ? 'London' : r.name) + ':</b> social ' + HC.fmt.gbp(r.social[k]) +
+      ', private ' + HC.fmt.gbp(r.private[k]) + ', gap <b>' + HC.fmt.gbp(r.gap[k]) + '</b> a month';
+  }
+
+  // ================= 3. calculator =================
+  const sel = $('c-b');
+  sel.innerHTML = '<option value="E12000007">London (all boroughs)</option>' +
+    D.boroughs.filter((b) => b.private.mix != null).slice().sort((p, q) => p.name.localeCompare(q.name))
+      .map((b) => '<option value="' + b.code + '">' + b.name + '</option>').join('');
+  function calc() {
+    const b = byCode[S.calc], k = S.size, isLon = b === D.london, sz = sizeOf(k);
+    const years = +$('c-y').value, r = +$('c-r').value / 100, gr = +$('c-g').value / 100;
+    $('c-y-v').textContent = years + ' years';
+    $('c-r-v').textContent = (r * 100).toFixed(1) + '% a year';
+    $('c-g-v').textContent = (gr > 0 ? '+' : '') + (gr * 100).toFixed(1) + '% a year';
+    const f = HC.npvFactor(years, r, gr);
+    const gapPa = b.gap[k] * 12, npv = gapPa * f, units = b.units[k] || 0;
+    $('c-out').textContent = HC.fmt.gbpK(npv);
+    $('c-out-l').textContent = 'for one ' + (k === 'mix' ? 'typical' : sz.label) + ' social home in ' + (isLon ? 'London' : b.name) + ', over ' + years + ' years';
+    $('c-steps').innerHTML =
+      '<tr><td>Typical private rent<span class="s">ONS, August 2026</span></td><td>' + HC.fmt.gbp(b.private[k]) + ' a month</td></tr>' +
+      '<tr><td>Social rent<span class="s">2026/27</span></td><td>− ' + HC.fmt.gbp(b.social[k]) + ' a month</td></tr>' +
+      '<tr><td>Gap</td><td>' + HC.fmt.gbp(b.gap[k]) + ' a month<br>' + HC.fmt.gbp(gapPa) + ' a year</td></tr>' +
+      '<tr><td>× value today of £1 a year for ' + years + ' years<span class="s">at ' + (r * 100).toFixed(1) + '%' +
+        (gr ? ', gap growing ' + (gr * 100).toFixed(1) + '% a year' : ', gap constant in real terms') + '</span></td><td>× ' + f.toFixed(2) + '</td></tr>' +
+      '<tr class="tot"><td>Value of one tenancy</td><td>' + HC.fmt.gbpK(npv) + '</td></tr>' +
+      '<tr><td>Across all ' + units.toLocaleString('en-GB') + ' ' + (k === 'mix' ? '' : sz.label + ' ') + 'social homes' + (isLon ? ' in London' : ' in the borough') +
+        '<span class="s">notional: nobody could collect it</span></td><td>' + HC.fmt.gbpM(npv * units / 1e6) + '</td></tr>';
+  }
+  function setCalc(code) {
+    if (!byCode[code] || byCode[code].private.mix == null) return; // the City has no private rent
+    S.calc = code;
+    sel.value = code;
+    calc();
+    drawDumbbell();
+  }
+  sel.addEventListener('change', () => setCalc(sel.value));
+  ['c-y', 'c-r', 'c-g'].forEach((id) => $(id).addEventListener('input', calc));
+  document.querySelectorAll('.presets button').forEach((b) => b.addEventListener('click', () => {
+    if (b.dataset.y) $('c-y').value = b.dataset.y;
+    if (b.dataset.r) $('c-r').value = b.dataset.r;
+    calc();
+  }));
+  // a click on the map or the ranking also loads that borough into the calculator
+  gShapes.addEventListener('click', (e) => { if (e.target.dataset.code) setCalc(e.target.dataset.code); });
+  rank.addEventListener('click', (e) => { const r = e.target.closest('.rk'); if (r) setCalc(r.dataset.code); });
+
+  // ================= wiring =================
+  const SIZE_PILLS = ['size', 'size-db', 'size-calc'];
+  function setSize(k) {
+    S.size = k;
+    const i = HC.SIZES.findIndex((s) => s.key === k);
+    // keep all three home-size controls showing the same choice
+    SIZE_PILLS.forEach((id) => [...$(id).children].forEach((btn, j) => btn.setAttribute('aria-pressed', String(j === i))));
+    drawMap(); drawDumbbell(); calc();
+  }
+  HC.pills($('metric'), HC.METRICS, S.metric, (k) => { S.metric = k; drawMap(); });
+  SIZE_PILLS.forEach((id) => HC.pills($(id), HC.SIZES, S.size, setSize));
+  setSize(S.size);
+  let rz;
+  addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { drawMap(); drawDumbbell(); }, 100); });
+
+  window.__state = () => S;
+  window.__set = (k, v) => { if (k === 'calc') return setCalc(v); const el = $(k); if (el && el.select) el.select(v); };
+  window.__NG_DONE__ = true;
+})().catch((e) => { window.__NG_ERROR__ = String(e); console.error(e); });
+</script>
+</body>
+</html>
