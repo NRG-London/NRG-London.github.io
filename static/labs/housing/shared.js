@@ -117,6 +117,15 @@
     'ONS publishes no private rent for it, and most of the City Corporation\u2019s ' + b.units.mix.toLocaleString('en-GB') +
     ' council homes are on estates in other boroughs.';
 
+  // Rough context, not a precise figure: a plain fraction first, the percentage after.
+  const FRACTIONS = [[1, 2], [3, 5], [2, 3], [7, 10], [3, 4], [4, 5]];
+  const helpLine = (b, isLon) => {
+    if (b.helpPct == null) return '';
+    const f = FRACTIONS.reduce((a, c) => (Math.abs(100 * c[0] / c[1] - b.helpPct) < Math.abs(100 * a[0] / a[1] - b.helpPct) ? c : a));
+    return 'About ' + f[0] + ' in ' + f[1] + ' social-renting households ' + (isLon ? 'in London' : 'here') + ' (' + b.helpPct +
+      '%) get help with rent through Housing Benefit or Universal Credit, covering some or all of their rent.';
+  };
+
   function tipHTML(b, size, data) {
     const sz = SIZES.find((s) => s.key === size);
     if (b.private[size] == null) {
@@ -174,6 +183,6 @@
     return r.json();
   }
 
-  window.HC = { tenureLine, cityNote, RAMP, SIZES, METRICS, val, scale, legendHTML, inkOn, pills, tipHTML, tooltip,
+  window.HC = { helpLine, tenureLine, cityNote, RAMP, SIZES, METRICS, val, scale, legendHTML, inkOn, pills, tipHTML, tooltip,
     npvFactor, load, fmt: { gbp, gbpK, gbpM, gbpShortK } };
 })();
