@@ -15,12 +15,12 @@ summary: "What a social tenancy is really worth, borough by borough: typical pri
 
 What politicians and the building industry call "affordable housing" is really "subsidised housing". If we used that name for it instead, you'd probably have two questions:
 
-1) How much is this subsidy? And,
-2) who's paying it?
+1) How much is this subsidy?
+2) Who's paying it?
 
-The answers are "A lot: billions of pounds every year" and, unless you live in social housing yourself, "You're paying for it".
+The answers are "A lot: billions of pounds every year" and, unless you live in social housing yourself, "You".
 
-Once you understand how this system works, an important point will become obvious. That "more affordable housing" isn't necessarily a good idea, because it's extremely expensive so the money might be better spent on something else, which means there's no way we could ever solve our housing problem this way.
+Once you understand how this system works, two important points will become obvious. First, that "just build more affordable housing" isn't the no-brainer plan people often assume, because it's so expensive it'll suck too much money out of everything else. Second, it can only ever be part of the picture not the answer to all our housing problems, not just because the bill would be impossibly high but because we can't all be subsidising each other!
 
 *See "About the data" at the bottom for details on where this information comes from, what it means, and what assumptions I've made.*
 
