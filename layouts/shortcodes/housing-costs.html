@@ -1,0 +1,104 @@
+{{- /*
+  housing-costs — private v social rent by London borough, INLINE (no iframe).
+  The interactive on the "Subsidised Not Affordable" campaign page.
+
+  Placed once per part, so prose can sit between them:
+    {{< housing-costs part="map" >}}         map + ranked list + data box
+    {{< housing-costs part="spread" >}}      dumbbell: social v private rent per borough
+    {{< housing-costs part="calculator" >}}  what a tenancy is worth (NPV)
+  Any part can be left out; /js/housing-costs.js wires whichever are present,
+  and they share one state: a single home size for the page, and the borough
+  in the calculator (set by clicking a borough anywhere).
+
+  Optional overrides for each card's heading and standfirst:
+    {{< housing-costs part="spread" title="…" sub="…" >}}
+
+  Why inline: 2D SVG needs no WebGL isolation, so — like ng-chart2 — it
+  inherits main.css's fonts and palette, stays responsive and selectable, and
+  can be interleaved with the page text. Cards break out of the 800px column
+  (the map needs the width); prose stays in it.
+
+  Needs:  /css/housing-costs.css, /js/housing-costs.js,
+          /interactive/housing-costs/housing.json  (~110 KB; rents, social
+          stock, Census tenure, DWP help-with-rent share, borough outlines)
+  Built:  housing-costs-lab/ (outside this repo): build_data.py, then
+          publish_campaign.py writes the JSON here. Proven first in the
+          unlisted /labs/housing/page/ workbench.
+  NB: ?v= on the three asset URLs below is a manual cache-buster — bump it
+      whenever any of them changes.
+*/ -}}
+{{- $v := "1" -}}
+{{- $part := .Get "part" | default "map" -}}
+{{- if not (in (slice "map" "spread" "calculator") $part) -}}
+  {{- errorf "housing-costs: unknown part %q (map | spread | calculator) on %s" $part .Page.File.Path -}}
+{{- end -}}
+{{- $src := printf "/interactive/housing-costs/housing.json?v=%s" $v -}}
+{{- if not (.Page.Store.Get "hcAssets") -}}
+  {{- .Page.Store.Set "hcAssets" true }}
+<link rel="stylesheet" href="/css/housing-costs.css?v={{ $v }}">
+<script src="/js/housing-costs.js?v={{ $v }}" defer></script>
+{{- end }}
+
+{{- if eq $part "map" }}
+<section class="hc hc-wide hc-card" aria-labelledby="hc-t-map" data-hc-src="{{ $src }}">
+  <div class="eyebrow">Housing costs · London boroughs</div>
+  <h2 class="hc-title" id="hc-t-map">{{ .Get "title" | default "What a social tenancy is worth, borough by borough" }}</h2>
+  <p class="sub">{{ .Get "sub" | default "The gap between a typical private rent and a social rent for the same size of home, in the same borough." }}</p>
+  <div class="stats" id="hc-stats"></div>
+  <div class="controls">
+    <div class="ctl"><span class="ctl-l">Show</span><div id="hc-metric"></div></div>
+    <div class="ctl"><span class="ctl-l">Home size</span><div data-hc-size></div></div>
+  </div>
+  <p class="metric-note" id="hc-note"></p>
+  <div class="map-grid">
+    <div>
+      <div class="hc-map" id="hc-map"></div>
+      <div class="legend" id="hc-legend"></div>
+      <div class="map-key"><span><svg width="26" height="8" aria-hidden="true"><line x1="0" y1="4" x2="26" y2="4" stroke="#1a2332" stroke-width="1.4" stroke-dasharray="5 4" opacity=".55"/></svg> Inner London</span></div>
+      <div class="dbox" id="hc-dbox" aria-live="polite"></div>
+    </div>
+    <div>
+      <div class="rank-h"><span id="hc-rank-title">Ranked</span><span>- - London</span></div>
+      <div class="rank" id="hc-rank"></div>
+    </div>
+  </div>
+  <noscript><p class="sub">This interactive map needs JavaScript.</p></noscript>
+</section>
+
+{{- else if eq $part "spread" }}
+<section class="hc hc-wide hc-card" aria-labelledby="hc-t-db" data-hc-src="{{ $src }}">
+  <div class="eyebrow">Private v social rent</div>
+  <h2 class="hc-title" id="hc-t-db">{{ .Get "title" | default "Across London, social rents barely move. Private rents double." }}</h2>
+  <p class="sub">{{ .Get "sub" | default "Typical private rent and social rent for the same size of home in each borough, ranked by the gap between them. Hover or tap a row for the two rents." }}</p>
+  <div class="controls"><div class="ctl"><span class="ctl-l">Home size</span><div data-hc-size></div></div></div>
+  <div class="lg"><span><span class="dot swatch-social"></span>Social rent</span><span><span class="dot swatch-private"></span>Private rent</span><span><span class="cn"></span>The gap (on the right, &pound; a month)</span></div>
+  <div class="db-read" id="hc-db-read" aria-live="polite" hidden></div>
+  <div class="hc-db" id="hc-db"></div>
+  <noscript><p class="sub">This chart needs JavaScript.</p></noscript>
+</section>
+
+{{- else }}
+<section class="hc hc-wide hc-card hc-calc" id="hc-calc" aria-labelledby="hc-t-calc" data-hc-src="{{ $src }}">
+  <div class="eyebrow">Calculator</div>
+  <h2 class="hc-title" id="hc-t-calc">{{ .Get "title" | default "What is a social tenancy worth?" }}</h2>
+  <p class="sub">{{ .Get "sub" | default "The rent a household doesn’t pay, added up over the years and expressed in today’s money. Choose a borough and home size, then change the assumptions." }}</p>
+  <div class="calc-grid">
+    <div>
+      <div class="f"><label class="ctl-l" for="hc-c-b">Borough</label><select id="hc-c-b"></select></div>
+      <div class="f"><span class="ctl-l">Home size</span><div data-hc-size></div></div>
+      <div class="f"><label class="ctl-l" for="hc-c-y">Tenancy length <b id="hc-c-y-v"></b></label><input id="hc-c-y" type="range" min="5" max="50" step="1" value="25">
+        <div class="presets"><button type="button" data-y="12">12 yrs (average so far)</button><button type="button" data-y="25">25 yrs</button><button type="button" data-y="40">40 yrs</button></div></div>
+      <div class="f"><label class="ctl-l" for="hc-c-r">Discount rate <b id="hc-c-r-v"></b></label><input id="hc-c-r" type="range" min="2" max="6" step="0.1" value="3.5">
+        <div class="presets"><button type="button" data-r="3.5">3.5% Green Book</button><button type="button" data-r="3.0">3.0% from 28 Oct</button></div></div>
+      <div class="f"><label class="ctl-l" for="hc-c-g">Real growth in the gap <b id="hc-c-g-v"></b></label><input id="hc-c-g" type="range" min="-1" max="2" step="0.1" value="0"></div>
+    </div>
+    <div class="out" aria-live="polite">
+      <div class="big" id="hc-c-out"></div>
+      <div class="big-l" id="hc-c-out-l"></div>
+      <table class="steps" id="hc-c-steps"></table>
+      <p class="note">Social renters have lived in their current home for 12 years on average so far (English Housing Survey 2024&ndash;25), but those tenancies are still running, and moving to another social home keeps the benefit.</p>
+    </div>
+  </div>
+  <noscript><p class="sub">This calculator needs JavaScript.</p></noscript>
+</section>
+{{- end }}
