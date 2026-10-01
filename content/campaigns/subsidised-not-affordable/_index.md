@@ -2,13 +2,27 @@
 title: "Subsidised Not Affordable"
 weight: 6
 category: "Housing"
+themes: ["Housing", "Mapping London"]
 image: "/images/campaigns/subsidised-card.jpg"
 stat: "£1,553"
 stat_label: "a month: the gap between private and social rent for the average London social home"
 summary: "What a social tenancy is really worth, borough by borough: typical private rents against social rents for the same size of home, the gap between them, and its value over a tenancy."
 ---
 
-This page explains the reality behind affordable housing in London and why subsidised housing is a better term.
+> Why is some new housing is "affordable" but not all of it? If a new block is 40% affordable flats, why not 100%? If it seems baffling, the answer is quite interesting.
+
+# Subsidised not Affordable
+
+What politicians and the building industry call "affordable housing" is really "subsidised housing". If we used that name for it instead, you'd probably have two questions:
+
+1) How much is this subsidy? And,
+2) who's paying it?
+
+The answers are "A lot: billions of pounds every year" and, unless you live in social housing yourself, "You're paying for it".
+
+Once you understand how this system works, an important point will become obvious. That "more affordable housing" isn't necessarily a good idea, because it's extremely expensive so the money might be better spent on something else, which means there's no way we could ever solve our housing problem this way.
+
+*See "About the data" at the bottom for details on where this information comes from, what it means, and what assumptions I've made.*
 
 {{< housing-costs part="map" >}}
 
