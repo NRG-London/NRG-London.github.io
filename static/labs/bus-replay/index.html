@@ -42,9 +42,7 @@
 
   .row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
   .lbl { font-size: 12px; color: var(--muted); }
-  input[type=text] { background: #222; color: var(--ink); border: 1px solid #444;
-                     border-radius: 4px; padding: 4px 6px; font: inherit; font-size: 14px;
-                     width: 4.5em; text-transform: uppercase; }
+  #route { font-size: 14px; min-width: 5em; }
   select { background: #222; color: var(--ink); border: 1px solid #444;
            border-radius: 4px; padding: 4px; font: inherit; font-size: 13px; }
   button { font: inherit; }
@@ -125,8 +123,7 @@
   <div class="more">
     <div class="row">
       <label class="lbl" for="route">Route</label>
-      <input id="route" type="text" list="routes" autocomplete="off" spellcheck="false">
-      <datalist id="routes"></datalist>
+      <select id="route" aria-label="Route"></select>
       <button id="prev" class="btn" title="Previous day" aria-label="Previous day">&lsaquo;</button>
       <span id="daylabel"></span>
       <button id="next" class="btn" title="Next day" aria-label="Next day">&rsaquo;</button>

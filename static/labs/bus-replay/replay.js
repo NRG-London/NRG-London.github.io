@@ -35,7 +35,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var el = {
     hud: $('hud'), title: $('title'), badge: $('badge'), route: $('route'),
-    routes: $('routes'), prev: $('prev'), next: $('next'), daylabel: $('daylabel'),
+    prev: $('prev'), next: $('next'), daylabel: $('daylabel'),
     days: $('days'), clock: $('clock'), meta: $('meta'), timeline: $('timeline'),
     tl: $('tl'), slider: $('slider'), play: $('play'), speed: $('speed'),
     copylink: $('copylink'), save: $('save'), open: $('open'), file: $('file'),
@@ -105,7 +105,8 @@
 
   /* ---- deck.gl + the passive vector basemap ------------------------------ */
 
-  var LONDON = { longitude: -0.11, latitude: 51.48, zoom: 9.6, pitch: 0, bearing: 0 };
+  var LONDON = { longitude: -0.11, latitude: 51.48, zoom: 9.6, pitch: 0, bearing: 0,
+                 maxPitch: 0 };
 
   var deckgl = new deck.DeckGL({
     container: 'map',
@@ -114,7 +115,10 @@
        (see crime-hotspots for the full story). */
     map: false,
     initialViewState: LONDON,
-    controller: true,
+    /* A flat, north-up map: no tilt, no rotation. keyboard: false because
+       deck's keyboard controller pans on the arrow keys, which here step
+       the replay a minute at a time. */
+    controller: { dragRotate: false, touchRotate: false, keyboard: false },
     getTooltip: function (info) {
       var o = info.object;
       if (!o) return null;
@@ -204,7 +208,7 @@
       vs = { longitude: (minLon + maxLon) / 2, latitude: (minLat + maxLat) / 2, zoom: 12 };
     }
     lastView = { longitude: vs.longitude, latitude: vs.latitude,
-                 zoom: Math.min(15, vs.zoom), pitch: 0, bearing: 0 };
+                 zoom: Math.min(15, vs.zoom), pitch: 0, bearing: 0, maxPitch: 0 };
     deckgl.setProps({ initialViewState: Object.assign({}, lastView) });
   }
 
@@ -252,6 +256,11 @@
     el.title.textContent = 'Route ' + payload.route + ' \u00b7 ' +
       fmtDay(payload.date, { year: 'numeric' });
     document.title = '[LAB] Bus replay: route ' + payload.route + ', ' + payload.date;
+    if (!Array.prototype.some.call(el.route.options, function (o) { return o.value === payload.route; })) {
+      var o = document.createElement('option');
+      o.value = payload.route; o.textContent = payload.route + ' (your file)';
+      el.route.appendChild(o);
+    }
     el.route.value = payload.route;
     el.save.disabled = false;
     if (opts.source === 'file') {
@@ -572,7 +581,9 @@
 
   function tick(now) {
     if (playing && cur) {
-      simT += speed * (now - lastFrame) / 1000;
+      // Cap the step: a frame that stalled (shader compile, background tab)
+      // must not throw the replay minutes forward.
+      simT += speed * Math.min(250, now - lastFrame) / 1000;
       if (simT > cur.payload.t1 - cur.payload.t0) simT = 0;
       render();
     }
@@ -626,7 +637,7 @@
     el.play.textContent = playing ? 'Pause' : 'Play';
     el.play.classList.toggle('paused', !playing);
   };
-  el.speed.onchange = function () { speed = +el.speed.value; };
+  el.speed.onchange = function () { speed = +el.speed.value; el.speed.blur(); };
   el.slider.oninput = function () {
     if (!cur) return;
     simT = (cur.payload.t1 - cur.payload.t0) * (+el.slider.value / 1000);
@@ -642,12 +653,8 @@
   el.next.onclick = function () { stepDay(1); };
   el.route.addEventListener('change', function () {
     var key = resolveRoute(el.route.value);
-    if (!key) {
-      say(el.route.value.trim()
-        ? 'No replays on the server for route ' + el.route.value.trim().toUpperCase() + '.'
-        : '');
-      return;
-    }
+    el.route.blur();
+    if (!key) { say('No replays on the server for route ' + el.route.value + '.'); return; }
     var dates = availableDates(key);
     var keep = cur && dates.indexOf(cur.payload.date) !== -1 ? cur.payload.date : dates[dates.length - 1];
     loadServerDay(key, keep);
@@ -657,7 +664,7 @@
   el.file.onchange = function () { if (el.file.files[0]) loadFile(el.file.files[0]); el.file.value = ''; };
   el.copylink.onclick = copyLink;
   el.mapstyle.onchange = function () {
-    mapMode = el.mapstyle.value; applyBright(); mountBasemap();
+    mapMode = el.mapstyle.value; applyBright(); mountBasemap(); el.mapstyle.blur();
   };
   el.mapbright.oninput = function () {
     BRIGHT[mapMode] = +el.mapbright.value; applyBright();
@@ -689,9 +696,22 @@
     if (f) loadFile(f);
   });
 
+  /* Keyboard: space = play/pause, arrows = a minute (shift: ten), wherever
+     focus is except a dropdown or the brightness slider. A button clicked
+     with the mouse gives its focus up, or space would press it AND toggle
+     play — two toggles, nothing seen to happen. The time slider is ours:
+     its own arrow-key step (1/1000 of the day) is replaced by a minute. */
+  el.hud.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('button');
+    if (b && e.detail > 0) b.blur();
+  });
+  el.slider.addEventListener('pointerup', function () { el.slider.blur(); });
   window.addEventListener('keydown', function (e) {
-    var tag = (e.target && e.target.tagName) || '';
-    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || !cur) return;
+    var t = e.target || {};
+    if (!cur || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA' || t === el.mapbright ||
+        (t.tagName === 'INPUT' && t.type !== 'range')) return;
+    // a button reached by Tab keeps its own space/enter (on Play, that IS play)
+    if (t.tagName === 'BUTTON' && (e.key === ' ' || e.key === 'Enter')) return;
     if (e.key === ' ') { e.preventDefault(); el.play.click(); }
     else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
       e.preventDefault();
@@ -702,6 +722,10 @@
   });
   window.addEventListener('resize', function () { drawTimelineBase(); drawTimeline(); });
 
+  window.__cam = function () {
+    var v = currentCam();
+    return [v.longitude, v.latitude, v.zoom, v.pitch || 0, v.bearing || 0];
+  };
   // For the smoke driver (and the curious): what the page thinks it is showing.
   window.__replay = function () {
     return cur ? {
@@ -736,8 +760,8 @@
     Object.keys(index.routes || {}).forEach(function (k) {
       routeKey[k.toUpperCase()] = k;
       var o = document.createElement('option');
-      o.value = k;
-      el.routes.appendChild(o);
+      o.value = k; o.textContent = k;
+      el.route.appendChild(o);
     });
     var want = q.get('route');
     var key = resolveRoute(want || DEFAULT_ROUTE) || Object.keys(routeKey).map(function (k) { return routeKey[k]; })[0];
