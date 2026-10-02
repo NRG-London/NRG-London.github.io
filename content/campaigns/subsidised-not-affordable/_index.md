@@ -9,7 +9,7 @@ stat_label: "a month: the gap between private and social rent for the average Lo
 summary: "What a social tenancy is really worth, borough by borough: typical private rents against social rents for the same size of home, the gap between them, and its value over a tenancy."
 ---
 
-> Why is some new housing is "affordable" but not all of it? If a new block is 40% affordable flats, why not 100%? If it seems baffling, the answer is quite interesting.
+> Why is some new housing "affordable" but not all of it? If a new block is 40% affordable flats, why not 100%? If it seems baffling, the answer is quite interesting.
 
 # Subsidised not Affordable
 
