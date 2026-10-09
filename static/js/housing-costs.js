@@ -32,6 +32,8 @@
   const gbpK = (v) => v >= 1e6 ? '£' + (v / 1e6).toFixed(2) + 'm'
     : '£' + Math.round(v / 1000).toLocaleString('en-GB') + 'k';
   const gbpShortK = (v) => v >= 10000 ? '£' + Math.round(v / 1000) + 'k' : '£' + (v / 1000).toFixed(1) + 'k';
+  const pct1 = (v) => v.toFixed(1) + '%';
+  const pct0 = (v) => Math.round(v) + '%';
   const gbpM = (v) => v >= 1000 ? '£' + (v / 1000).toFixed(1) + 'bn' : '£' + Math.round(v) + 'm';
 
   // Menu order is the reading order: the two rents, then the gap and what it adds up to.
@@ -49,9 +51,18 @@
         'social homes and the typical private rent, per year.' },
     { key: 'npv', label: 'Value over 25 years', fmt: gbpK, fmtShort: gbpK, fmtTick: gbpK,
       note: () => 'The total cash value of a 25-year social tenancy in today’s money (discounted at the Treasury Green Book 3.5%).' },
+    // One figure per borough, not per home size: `val` returns it whatever size is chosen.
+    { key: 'pctSocial', label: '% social housing', fmt: pct1, fmtShort: pct0, fmtTick: pct0,
+      note: () => 'Share of households renting from a council or housing association (Census 2021). The same whatever home size is chosen.' },
   ];
 
-  const val = (b, metric, size) => { const v = b[metric][size]; return v == null ? null : v; };
+  // Most measures are keyed by home size; a few (Census tenure) are one number per borough.
+  const val = (b, metric, size) => {
+    const x = b[metric];
+    if (x == null) return null;
+    if (typeof x === 'number') return x;
+    return x[size] == null ? null : x[size];
+  };
 
   // Two significant figures: breaks a reader can say out loud.
   function nice(v) {
@@ -76,12 +87,13 @@
   function scale(D, metric, size) {
     const m = METRICS.find((x) => x.key === metric);
     const src = m.shared === 'rent' ? 'private' : metric; // rents share the private scale
-    const br = breaksFor(D.boroughs.map((b) => val(b, src, size)));
+    const vals = D.boroughs.map((b) => val(b, src, size));
+    const br = breaksFor(vals);
     const n = br.length + 1;
     // with fewer breaks than steps, spread the classes across the whole ramp
     const idx = (c) => Math.round(c * (RAMP.length - 1) / (n - 1));
     return {
-      breaks: br, metric: m,
+      breaks: br, metric: m, missing: vals.some((v) => v == null),
       cls(v) { if (v == null) return -1; let c = 0; while (c < br.length && v >= br[c]) c++; return idx(c); },
       colour(v) { const c = this.cls(v); return c < 0 ? null : RAMP[c]; },
     };
@@ -91,7 +103,7 @@
     const cols = Array.from({ length: n }, (_, c) => RAMP[Math.round(c * (RAMP.length - 1) / (n - 1))]);
     return '<div><div class="ramp">' + cols.map((c) => '<i style="background:' + c + '"></i>').join('') +
       '</div><div class="ticks">' + sc.breaks.map((b) => '<span>' + sc.metric.fmtTick(b) + '</span>').join('') + '<span></span></div></div>' +
-      '<span class="nodata"><i></i>No data (City of London)</span>';
+      (sc.missing ? '<span class="nodata"><i></i>No data (City of London)</span>' : '');
   }
   // text colour that reads on a given ramp step
   const inkOn = (hex) => (RAMP.indexOf(hex) >= 3 ? 'light' : 'dark');
@@ -112,7 +124,9 @@
   const press = (el, items, key) => [...el.children].forEach((btn, j) => btn.setAttribute('aria-pressed', String(items[j].key === key)));
 
   // Census 2021 tenure
-  const tenureLine = (b) => 'Households renting: ' + b.pctSocial + '% socially, ' + b.pctPrivate + '% privately';
+  // `on` bolds the social share while the map is showing it
+  const tenureLine = (b, on) => 'Households renting: ' + (on ? '<b>' + b.pctSocial + '% socially</b>' : b.pctSocial + '% socially') +
+    ', ' + b.pctPrivate + '% privately';
   // The City's no-data explanation: most readers don't know how few people live there
   const cityNote = (b) => 'Only ' + b.population.toLocaleString('en-GB') + ' people live in the City of London (Census 2021). ' +
     'ONS publishes no private rent for it, and most of the City Corporation’s ' + b.units.mix.toLocaleString('en-GB') +
@@ -201,7 +215,7 @@
           (isLon ? 'All 32 boroughs' : b.io + ' London') + ' · ' + sizeOf(k).label.toLowerCase() + '</span>' +
           '<span class="hint">' + (isLon ? 'Hover or tap a borough' : 'Move off the map for London') + '</span></div>';
         if (b.private[k] == null) {
-          el.innerHTML = head + '<div class="nd">' + cityNote(b) + '</div>';
+          el.innerHTML = head + '<div class="nd">' + cityNote(b) + '</div><div class="ft">' + tenureLine(b, S.metric === 'pctSocial') + '</div>';
           return;
         }
         const p = b.private[k], so = b.social[k], g = b.gap[k], units = b.units[k] || 0, share = Math.round(100 * so / p);
@@ -216,7 +230,7 @@
           '</div><div class="bar"><i style="width:' + share + '%"></i></div>' +
           '<div class="ft">Social rent is ' + share + '% of the private rent' +
           (isLon ? '' : ' · gap ' + (g >= D.london.gap[k] ? '+' : '−') + gbp(Math.abs(g - D.london.gap[k])) + ' v London') +
-          ' · ' + tenureLine(b) + '</div>' +
+          ' · ' + tenureLine(b, S.metric === 'pctSocial') + '</div>' +
           '<div class="ft">' + helpLine(b, isLon) + '</div>' +
           ($('calc') ? '<button type="button" class="go" data-code="' + b.code + '">Work out what a tenancy ' + (isLon ? 'in London' : 'here') + ' is worth ↓</button>' : '');
       };
@@ -300,7 +314,7 @@
           r.querySelector('.vl').textContent = v == null ? 'no data' : m.fmtShort(v);
           if (!hide) { r.style.transform = 'translateY(' + (i * ROW) + 'px)'; i++; }
         });
-        const lonV = D.london[S.metric][S.size];
+        const lonV = val(D.london, S.metric, S.size);
         $('rank-title').textContent = 'Ranked · ' + m.label.toLowerCase();
         ref.style.display = S.metric === 'aggM' ? 'none' : '';
         const tr = rows[D.boroughs[0].code].querySelector('.tr');
