@@ -27,7 +27,7 @@
   NB: ?v= on the three asset URLs below is a manual cache-buster — bump it
       whenever any of them changes.
 */ -}}
-{{- $v := "2" -}}
+{{- $v := "3" -}}
 {{- $part := .Get "part" | default "map" -}}
 {{- if not (in (slice "map" "spread" "calculator") $part) -}}
   {{- errorf "housing-costs: unknown part %q (map | spread | calculator) on %s" $part .Page.File.Path -}}

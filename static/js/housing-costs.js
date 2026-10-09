@@ -53,7 +53,9 @@
       note: () => 'The total cash value of a 25-year social tenancy in today’s money (discounted at the Treasury Green Book 3.5%).' },
     // One figure per borough, not per home size: `val` returns it whatever size is chosen.
     { key: 'pctSocial', label: '% social housing', fmt: pct1, fmtShort: pct0, fmtTick: pct0,
-      note: () => 'Share of households renting from a council or housing association (Census 2021). The same whatever home size is chosen.' },
+      note: () => 'Share of households renting from a council or housing association (ONS estimate for 2024). The same whatever home size is chosen.' },
+    { key: 'pctTA', label: '% temporary accommodation', fmt: pct1, fmtShort: pct1, fmtTick: pct1,
+      note: () => 'Households in temporary accommodation arranged by the council (31 March 2026), as a share of all the borough’s households (2024). Counted by the council that placed them, which may be in another borough.' },
   ];
 
   // Most measures are keyed by home size; a few (Census tenure) are one number per borough.
@@ -125,8 +127,10 @@
 
   // Census 2021 tenure
   // `on` bolds the social share while the map is showing it
-  const tenureLine = (b, on) => 'Households renting: ' + (on ? '<b>' + b.pctSocial + '% socially</b>' : b.pctSocial + '% socially') +
-    ', ' + b.pctPrivate + '% privately';
+  const bold = (on, t) => (on ? '<b>' + t + '</b>' : t);
+  const tenureLine = (b, metric) => 'Households renting (2024): ' + bold(metric === 'pctSocial', b.pctSocial + '% socially') +
+    ', ' + b.pctPrivate + '% privately' +
+    (b.pctTA == null ? '' : ' · ' + bold(metric === 'pctTA', (+b.pctTA).toFixed(1) + '% in temporary accommodation'));
   // The City's no-data explanation: most readers don't know how few people live there
   const cityNote = (b) => 'Only ' + b.population.toLocaleString('en-GB') + ' people live in the City of London (Census 2021). ' +
     'ONS publishes no private rent for it, and most of the City Corporation’s ' + b.units.mix.toLocaleString('en-GB') +
@@ -215,7 +219,7 @@
           (isLon ? 'All 32 boroughs' : b.io + ' London') + ' · ' + sizeOf(k).label.toLowerCase() + '</span>' +
           '<span class="hint">' + (isLon ? 'Hover or tap a borough' : 'Move off the map for London') + '</span></div>';
         if (b.private[k] == null) {
-          el.innerHTML = head + '<div class="nd">' + cityNote(b) + '</div><div class="ft">' + tenureLine(b, S.metric === 'pctSocial') + '</div>';
+          el.innerHTML = head + '<div class="nd">' + cityNote(b) + '</div><div class="ft">' + tenureLine(b, S.metric) + '</div>';
           return;
         }
         const p = b.private[k], so = b.social[k], g = b.gap[k], units = b.units[k] || 0, share = Math.round(100 * so / p);
@@ -230,7 +234,7 @@
           '</div><div class="bar"><i style="width:' + share + '%"></i></div>' +
           '<div class="ft">Social rent is ' + share + '% of the private rent' +
           (isLon ? '' : ' · gap ' + (g >= D.london.gap[k] ? '+' : '−') + gbp(Math.abs(g - D.london.gap[k])) + ' v London') +
-          ' · ' + tenureLine(b, S.metric === 'pctSocial') + '</div>' +
+          ' · ' + tenureLine(b, S.metric) + '</div>' +
           '<div class="ft">' + helpLine(b, isLon) + '</div>' +
           ($('calc') ? '<button type="button" class="go" data-code="' + b.code + '">Work out what a tenancy ' + (isLon ? 'in London' : 'here') + ' is worth ↓</button>' : '');
       };
