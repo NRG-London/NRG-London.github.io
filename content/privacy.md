@@ -9,7 +9,7 @@ Plain-English summary first: this site sets no cookies of its own, runs no adver
 
 For this website, the data controller is **Neil Garratt**, Member of the London Assembly for Croydon & Sutton. You can contact me at [London@NeilGarratt.com](mailto:London@NeilGarratt.com) about anything on this page.
 
-This privacy notice covers `neilgarratt.com` and the GitHub Pages address it sits on. It does not cover separate services I link to — including [Substack](https://neilgarratt.substack.com), my newsletter platform, which has its own privacy policy.
+This privacy notice covers `neilgarratt.com` and the GitHub Pages address it sits on. It does not cover separate services I link to — including [Substack](https://newsletter.neilgarratt.com), my newsletter platform, which has its own privacy policy.
 
 ## What this site collects about your visit
 
@@ -29,19 +29,20 @@ I look at this data to understand which pages get read and which campaigns reson
 
 ## Cookies
 
-This site sets **no cookies**. None for analytics, none for advertising, none for "preferences." If your browser shows cookies set by `neilgarratt.com`, something has gone wrong — please [let me know](mailto:London@NeilGarratt.com).
+This site sets **no cookies**. None for analytics, none for advertising, none for "preferences." The one exception is my newsletter at `newsletter.neilgarratt.com`, which Substack runs and where Substack sets its own cookies: your browser may list those under `neilgarratt.com`. Any other cookie from `neilgarratt.com` means something has gone wrong, please [let me know](mailto:London@NeilGarratt.com).
 
 ## Third-party content embedded on the site
 
 A few features pull content from elsewhere. Each one carries its own implications:
 
 - **YouTube videos.** Where I embed a video, I use YouTube's `youtube-nocookie` privacy mode. YouTube only learns about your visit if you press play. If you do, YouTube's own [privacy policy](https://policies.google.com/privacy) applies.
-- **Newsletter feed.** The homepage lists my recent Substack posts. The list is fetched from Substack's public RSS feed via a bridge service called [rss2json](https://rss2json.com), which sees the request but is not used for any analytics or tracking.
-- **Newsletter signup.** Clicking *Subscribe* takes you to Substack, where signing up is governed by Substack's own [privacy policy](https://substack.com/privacy).
+- **Newsletter feed.** The homepage and Recent Activity list my recent newsletter posts. I copy them from Substack's public feed into this site when I publish, so viewing them doesn't contact Substack.
+- **Newsletter signup.** The signup form comes from Substack and only loads when you click *Subscribe free*, nothing is sent to Substack before then. From that point, including sign-up, Substack's own [privacy policy](https://substack.com/privacy) applies and Substack may set cookies. After you subscribe, Substack opens a welcome page in a new tab.
 
 ## Email
 
-If you email me at the address above, I'll have your message and your email address until I no longer need them to deal with whatever you wrote about. I don't add correspondents to a mailing list — the only way onto my newsletter is to sign up via Substack yourself.
+If you email me at the address above, I'll have your message and your email address until I no longer need them to deal with whatever you wrote about. I don't add correspondents to a mailing list, so the only way onto my newsletter is to sign up via Substack yourself.
+
 
 ## Your rights
 
@@ -49,6 +50,6 @@ Under UK GDPR you have the right to ask what data I hold about you, to ask me to
 
 ## Changes to this notice
 
-If I change anything material on this page, I'll update the date below. Cosmetic edits don't get noted.
+If I change anything material on this page, I'll update the date below.
 
-*Last updated: April 2026.*
+*Last updated: October 2026.*
