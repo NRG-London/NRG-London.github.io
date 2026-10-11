@@ -728,14 +728,15 @@ section {
 
 .substack-btn:focus-visible { outline: 2px solid var(--blue-muted); outline-offset: 2px; }
 
-/* Substack's sign-up form, swapped in on click by partials/newsletter-signup.html */
+/* Substack's sign-up form, swapped in on click by partials/newsletter-signup.html.
+   Loaded with ?transparent=true, so it sits on the page background, unboxed. */
 .newsletter-embed {
   display: block;
   width: 100%;
   max-width: 480px;
   height: 320px;
-  border: 1px solid var(--warm-grey);
-  background: white;
+  border: 0;
+  background: transparent;
 }
 
 /* Substack's card is laid out for 480x320 and gets cramped when narrower. On
