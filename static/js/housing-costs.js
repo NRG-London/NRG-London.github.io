@@ -441,6 +441,166 @@
       draw.push(calc);
     }
 
+    // ================= 4. who lives in each tenure (PROTOTYPE) =================
+    // Census 2021 composition by tenure, from who.json (fetch_who.py). Each bar is
+    // 100% of one tenure's people or households; hovering a segment states the
+    // numerator and denominator in words, because "a % of what?" is the whole risk.
+    let setWhoArea = () => {};
+    if ($('who')) {
+      const W = await (await fetch($('who').dataset.hcWho)).json();
+      const CAT = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#4a3aa7']; // validated, light surface
+      const DIV = { space: ['#E0A24E', '#c9d0cc', '#80B4DD', '#1877B8'] };
+      const seqCols = (n, rev) => {
+        const c = Array.from({ length: n }, (_, i) => RAMP[Math.round(i * (RAMP.length - 1) / (n - 1))]);
+        return rev ? c.reverse() : c;
+      };
+      const colours = (t) => (t.scale === 'cat' ? CAT.slice(0, t.groups.length)
+        : t.scale === 'div' ? DIV[t.id] : seqCols(t.groups.length, t.id === 'disability'));
+      const lightText = (hex) => { const n = parseInt(hex.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) < 150; };
+
+      // how a reader should hear each group, in the plural; the households basis turns "were" into "was"
+      const SAY = {
+        hhtype: ['were people aged 66 or over living alone', 'were people under 66 living alone', 'were couples without children',
+          'were couples with dependent children', 'were lone parents with dependent children', 'were families whose children are all grown up',
+          'were other households, including sharers'],
+        space: ['were overcrowded (fewer bedrooms than they need)', 'had just enough bedrooms', 'had one spare bedroom', 'had two or more spare bedrooms'],
+        work: ['were in work', 'were unemployed', 'were retired', 'were students', 'were looking after home or family', 'were long-term sick or disabled', 'were otherwise not working'],
+        disability: ['were disabled, with day-to-day activities limited a lot', 'were disabled, with day-to-day activities limited a little', 'were not disabled'],
+        age: ['were under 16', 'were aged 16 to 24', 'were aged 25 to 44', 'were aged 45 to 64', 'were aged 65 to 74', 'were aged 75 or over'],
+        birth: ['were born in the United Kingdom', 'were born in Ireland', 'were born elsewhere in Europe', 'were born in Africa',
+          'were born in the Middle East or Asia', 'were born in the Americas or the Caribbean', 'were born in Oceania or elsewhere'],
+        arrival: ['were born in the UK', 'had lived in the UK for 10 years or more', 'had lived in the UK for 5 to 10 years',
+          'had lived in the UK for 2 to 5 years', 'had lived in the UK for under 2 years'],
+        ethnicity: ['described themselves as White British', 'described themselves as from another White group', 'described themselves as Asian',
+          'described themselves as Black', 'described themselves as Mixed', 'described themselves as from another ethnic group'],
+        passport: ['held a UK passport', 'held a passport from another country only', 'held no passport'],
+      };
+      const HEAD = {
+        hhtype: 'Lone parents with dependent children', space: 'Overcrowded', work: 'In work', disability: 'Disabled',
+        age: 'Aged 65 or over', birth: 'Born outside the UK', arrival: 'In the UK for under 5 years', passport: 'Holding a UK passport',
+      };
+      const HEADSAY = { birth: 'were born outside the UK', arrival: 'had been in the UK for under 5 years',
+        disability: 'were disabled', age: 'were aged 65 or over' };
+      const TEN_PEOPLE = { 2: 'living in social homes', 0: 'living in homes owned outright', 1: 'living in homes with a mortgage or shared ownership',
+        3: 'living in privately rented homes', all: 'living in all homes' };
+      const TEN_HH = { 2: 'renting socially', 0: 'owning outright', 1: 'with a mortgage or shared ownership', 3: 'renting privately', all: '' };
+      const ROWS = [...W.tenures.map((t) => t.id), 'all'];
+      const LABEL = Object.fromEntries([...W.tenures.map((t) => [t.id, t.label]), ['all', 'All households']]);
+      const areaName = (c) => (c === 'E12000007' ? 'London' : byCode[c].name);
+
+      const T = { topic: 'birth', unit: 'households', area: 'E12000007', hl: null };
+      const topicOf = () => W.topics.find((t) => t.id === T.topic);
+      const unitFor = (t) => (t.units.includes(T.unit) ? T.unit : t.units[0]);
+
+      const counts = (t, unit, row) => {
+        const d = W.areas[T.area][unit][t.id];
+        if (row !== 'all') return d[row];
+        return t.groups.map((_, i) => Object.values(d).reduce((s, c) => s + c[i], 0));
+      };
+      const pct = (n, N) => (N ? 100 * n / N : 0);
+      const fmtP = (p) => (p < 10 ? p.toFixed(1) : Math.round(p)) + '%';
+      const nounFor = (t, unit) => (unit === 'people' ? (t.id === 'work' ? 'adults' : 'people') : 'households');
+
+      // "Of the 790,959 households renting socially in London, 376,754 (47.6%) had a household reference person who was born outside..."
+      const sentence = (t, unit, row, gis) => {
+        const c = counts(t, unit, row), N = c.reduce((a, b) => a + b, 0), n = gis.reduce((s, i) => s + c[i], 0);
+        const where = ' in ' + areaName(T.area);
+        let say = gis.length === 1 ? SAY[t.id][gis[0]] : null;
+        if (!say) say = HEADSAY[t.id];
+        const nn = n.toLocaleString('en-GB'), NN = N.toLocaleString('en-GB'), p = pct(n, N).toFixed(1) + '%';
+        if (unit === 'people') {
+          return 'Of the ' + NN + ' ' + nounFor(t, unit) + (t.id === 'work' ? ' (aged 16+) ' : ' ') + TEN_PEOPLE[row] + where + ', <b>' + nn + ' (' + p + ') ' + say + '</b>.';
+        }
+        if (t.units.includes('people')) { // a person topic, counted by the household reference person
+          return 'Of the ' + NN + ' households ' + (TEN_HH[row] ? TEN_HH[row] + ' ' : '') + where.trim() + ', <b>' + nn + ' (' + p +
+            ') had a household reference person who ' + say.replace(/^were /, 'was ').replace(/^described themselves/, 'described themselves') + '</b>.';
+        }
+        return 'Of the ' + NN + ' households ' + (TEN_HH[row] ? TEN_HH[row] + ' ' : '') + where.trim() + ', <b>' + nn + ' (' + p + ') ' + say + '</b>.';
+      };
+
+      const sel = $('who-area');
+      sel.innerHTML = '<option value="E12000007">London</option>' +
+        D.boroughs.slice().sort((p, q) => p.name.localeCompare(q.name)).map((b) => '<option value="' + b.code + '">' + b.name + '</option>').join('');
+      const UNITS = [{ key: 'people', label: 'People' }, { key: 'households', label: 'Households' }];
+
+      const drawWho = () => {
+        const t = topicOf(), unit = unitFor(t), cols = colours(t), noun = nounFor(t, unit);
+        sel.value = T.area;
+        press($('who-topic'), W.topics.map((x) => ({ key: x.id })), T.topic);
+        press($('who-unit'), UNITS, unit);
+        $('who-unit').children[0].disabled = !t.units.includes('people');
+        $('who-unit').children[0].title = t.units.includes('people') ? '' : 'This topic describes the household itself, so it is counted by household only';
+        $('who-note').innerHTML = unit === 'people'
+          ? 'Each bar is 100% of the ' + noun + (t.id === 'work' ? ' aged 16 and over' : ', children included,') + ' living in that kind of home.'
+          : (t.units.includes('people')
+            ? 'Each bar is 100% of the households in that kind of home, each counted once by its <i>household reference person</i> &mdash; usually the oldest adult in work. This is the basis of most published figures.'
+            : 'Each bar is 100% of the households in that kind of home.') +
+            (T.area === 'E09000001' ? ' <b>Small numbers:</b> the City has about 730 social-renting households, so its shares are rough.' : '');
+        // headline: social v all
+        if (HEAD[t.id]) {
+          const gis = t.head;
+          const share = (row) => { const c = counts(t, unit, row); return pct(gis.reduce((s, i) => s + c[i], 0), c.reduce((a, b) => a + b, 0)); };
+          $('who-head').innerHTML = '<b>' + HEAD[t.id] + ':</b> ' + share('2').toFixed(1) + '% of ' + noun + ' in social homes, against ' +
+            share('all').toFixed(1) + '% of all ' + noun + ' in ' + areaName(T.area) + '.';
+        } else $('who-head').textContent = '';
+        $('who-legend').innerHTML = t.groups.map((g, i) => '<span data-g="' + i + '"><i style="background:' + cols[i] + '"></i>' + g + '</span>').join('');
+        $('who-chart').innerHTML = ROWS.map((row) => {
+          const c = counts(t, unit, row), N = c.reduce((a, b) => a + b, 0);
+          return '<div class="who-row' + (row === '2' ? ' soc' : '') + (row === 'all' ? ' all' : '') + '" data-row="' + row + '">' +
+            '<div class="who-rl"><b>' + LABEL[row] + '</b><span>' + N.toLocaleString('en-GB') + ' ' + noun + '</span></div>' +
+            '<div class="who-bar">' + c.map((n, i) => {
+              const p = pct(n, N);
+              if (p <= 0) return '';
+              return '<span class="who-seg" data-g="' + i + '" data-row="' + row + '" style="flex:' + p + ' 1 0;background:' + cols[i] +
+                ';color:' + (lightText(cols[i]) ? '#fff' : '#1a2332') + '">' + (p >= 6 ? '<em>' + fmtP(p) + '</em>' : '') + '</span>';
+            }).join('') + '</div></div>';
+        }).join('');
+        // table view: groups down, tenures across; each column sums to 100%
+        $('who-tbl').innerHTML = '<table><thead><tr><th>' + t.label + '</th>' + ROWS.map((r) => '<th>' + LABEL[r] + '</th>').join('') + '</tr></thead><tbody>' +
+          t.groups.map((g, i) => '<tr><td>' + g + '</td>' + ROWS.map((r) => { const c = counts(t, unit, r); return '<td>' + fmtP(pct(c[i], c.reduce((a, b) => a + b, 0))) + '</td>'; }).join('') + '</tr>').join('') +
+          '<tr class="tot"><td>Total (' + noun + ')</td>' + ROWS.map((r) => '<td>' + counts(t, unit, r).reduce((a, b) => a + b, 0).toLocaleString('en-GB') + '</td>').join('') + '</tr></tbody></table>';
+        read();
+        // a label only stays inside its segment if it fits with room to spare
+        requestAnimationFrame(() => $('who-chart').querySelectorAll('.who-seg em').forEach((em) => {
+          em.style.visibility = em.offsetWidth > em.parentNode.clientWidth - 6 ? 'hidden' : '';
+        }));
+      };
+      // the readout: London social row by default, or whatever segment is hovered or tapped
+      const read = () => {
+        const t = topicOf(), unit = unitFor(t);
+        const h = T.hl || { row: '2', g: t.head.length ? t.head : [0] };
+        $('who-read').innerHTML = sentence(t, unit, h.row, Array.isArray(h.g) ? h.g : [h.g]);
+        $('who-chart').querySelectorAll('.who-seg').forEach((s) => s.classList.toggle('dim', T.hl != null && +s.dataset.g !== T.hl.g));
+        $('who-legend').querySelectorAll('span').forEach((s) => s.classList.toggle('dim', T.hl != null && +s.dataset.g !== T.hl.g));
+      };
+      const pick = (e) => {
+        const s = e.target.closest('.who-seg');
+        if (!s) return;
+        T.hl = { row: s.dataset.row, g: +s.dataset.g };
+        read();
+      };
+      $('who-chart').addEventListener('pointermove', pick);
+      $('who-chart').addEventListener('pointerdown', pick);
+      $('who-chart').addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') { T.hl = null; read(); } });
+      $('who-legend').addEventListener('pointerover', (e) => {
+        const s = e.target.closest('[data-g]'); if (!s) return; T.hl = { row: '2', g: +s.dataset.g }; read();
+      });
+      $('who-legend').addEventListener('pointerleave', () => { T.hl = null; read(); });
+      pills($('who-topic'), W.topics.map((x) => ({ key: x.id, label: x.label })), T.topic, (k) => { T.topic = k; T.hl = null; drawWho(); });
+      pills($('who-unit'), UNITS, T.unit, (k) => { T.unit = k; T.hl = null; drawWho(); });
+      sel.addEventListener('change', () => { T.area = sel.value; T.hl = null; drawWho(); if (sel.value !== 'E09000001') setCalc(sel.value); });
+      $('who-tbl-btn').addEventListener('click', () => {
+        const open = $('who-tbl').hidden;
+        $('who-tbl').hidden = !open;
+        $('who-tbl-btn').setAttribute('aria-expanded', String(open));
+        $('who-tbl-btn').textContent = open ? 'Hide the table' : 'Show as a table';
+      });
+      setWhoArea = (code) => { if (W.areas[code]) { T.area = code; T.hl = null; drawWho(); } };
+      drawWho();
+      draw.push(drawWho); // so a resize re-checks which labels fit
+      window.__who = { state: () => T, draw: drawWho, set: (o) => { Object.assign(T, o); drawWho(); } };
+    }
+
     // a click on a borough anywhere loads it into the calculator (and highlights it on the dumbbell)
     setCalc = (code) => {
       if (!byCode[code] || byCode[code].private.mix == null) return; // the City has no private rent
@@ -448,6 +608,7 @@
       if ($('c-b')) $('c-b').value = code;
       calc();
       redrawDb();
+      setWhoArea(code);
     };
 
     // ================= one home size for the whole page =================

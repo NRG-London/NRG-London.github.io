@@ -5,3 +5,6 @@ hugo.lock
 .DS_Store
 projectsummary.md
 __pycache__/
+
+# local-only dev previews (draft pages, never built live)
+content/dev/

@@ -151,6 +151,43 @@
 .hc .steps .s { color: var(--mid-grey, #8a9490); font-size: 0.76rem; display: block; }
 .hc p.note { font-size: 0.78rem; line-height: 1.5; color: var(--muted-ink); margin: 0.8rem 0 0; }
 
+/* ---------- 4. who lives in each tenure (PROTOTYPE) ---------- */
+.hc .who-ctl2 { margin-top: 0.6rem; }
+.hc .who-ctl2 select { width: auto; min-width: 14rem; }
+.hc .pills button:disabled { opacity: 0.4; cursor: not-allowed; background: transparent; }
+.hc p.who-head { font-size: 0.95rem; line-height: 1.5; margin: 0.9rem 0 0; color: var(--ink, #1a2332); min-height: 1.5em; }
+.hc .who-legend { display: flex; flex-wrap: wrap; gap: 0.35rem 1rem; font-size: 0.78rem; color: var(--muted-ink); margin: 0.9rem 0 0.6rem; }
+.hc .who-legend span { display: inline-flex; align-items: center; gap: 0.35rem; cursor: default; transition: opacity 0.15s; }
+.hc .who-legend i { width: 11px; height: 11px; border-radius: 2px; display: inline-block; }
+.hc .who-legend span.dim { opacity: 0.35; }
+.hc .who-row { display: grid; grid-template-columns: 12.5rem minmax(0, 1fr); gap: 0.8rem; align-items: center; margin: 0.45rem 0; }
+.hc .who-row.all { margin-top: 0.9rem; padding-top: 0.9rem; border-top: 1px solid var(--warm-grey, #dde3df); }
+.hc .who-rl { font-size: 0.82rem; line-height: 1.25; }
+.hc .who-rl b { display: block; font-weight: 600; color: var(--ink, #1a2332); }
+.hc .who-row.soc .who-rl b { font-weight: 800; }
+.hc .who-rl span { font-size: 0.72rem; color: var(--mid-grey, #8a9490); font-variant-numeric: tabular-nums; }
+.hc .who-bar { display: flex; gap: 2px; height: 30px; }
+.hc .who-seg { min-width: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; transition: opacity 0.15s; }
+.hc .who-seg:first-child { border-radius: 4px 0 0 4px; }
+.hc .who-seg:last-child { border-radius: 0 4px 4px 0; }
+.hc .who-seg em { font-style: normal; font-size: 0.72rem; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; pointer-events: none; }
+.hc .who-seg.dim { opacity: 0.25; }
+.hc .who-row.soc .who-bar { height: 36px; }
+.hc p.who-read { font-size: 0.88rem; line-height: 1.5; color: var(--muted-ink); margin: 0.9rem 0 0; padding: 0.6rem 0.8rem; background: var(--paper, #f3f6f4); border-left: 3px solid var(--amber, #E0A24E); min-height: 3.2em; }
+.hc p.who-read b { color: var(--ink, #1a2332); }
+.hc .who-tbl-btn { font: inherit; font-size: 0.8rem; margin-top: 0.8rem; border: 1px solid var(--warm-grey, #dde3df); background: var(--white, #fff); border-radius: 999px; padding: 0.25rem 0.8rem; cursor: pointer; color: var(--ink, #1a2332); }
+.hc .who-tbl-wrap { overflow-x: auto; margin-top: 0.8rem; }
+.hc .who-tbl-wrap table { border-collapse: collapse; font-size: 0.82rem; font-variant-numeric: tabular-nums; min-width: 34rem; width: 100%; }
+.hc .who-tbl-wrap th, .hc .who-tbl-wrap td { padding: 0.3rem 0.5rem; border-bottom: 1px solid var(--warm-grey, #dde3df); text-align: right; }
+.hc .who-tbl-wrap th:first-child, .hc .who-tbl-wrap td:first-child { text-align: left; }
+.hc .who-tbl-wrap th { font-size: 0.72rem; color: var(--mid-grey, #8a9490); font-weight: 700; }
+.hc .who-tbl-wrap tr.tot td { font-weight: 600; color: var(--muted-ink); }
+@media (max-width: 640px) {
+  .hc .who-row { grid-template-columns: 1fr; gap: 0.25rem; }
+  .hc .who-rl b { display: inline; margin-right: 0.4rem; }
+  .hc .who-ctl2 select { min-width: 0; width: 100%; }
+}
+
 @media (max-width: 860px) { .hc .map-grid { grid-template-columns: 1fr; } }
 @media (max-width: 760px) { .hc .calc-grid { grid-template-columns: 1fr; } }
 @media (max-width: 640px) {

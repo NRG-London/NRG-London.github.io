@@ -6,6 +6,7 @@
     {{< housing-costs part="map" >}}         map + ranked list + data box
     {{< housing-costs part="spread" >}}      dumbbell: social v private rent per borough
     {{< housing-costs part="calculator" >}}  what a tenancy is worth (NPV)
+    {{< housing-costs part="who" >}}         who lives in each tenure (Census 2021)
   Any part can be left out; /js/housing-costs.js wires whichever are present,
   and they share one state: a single home size for the page, and the borough
   in the calculator (set by clicking a borough anywhere).
@@ -27,12 +28,13 @@
   NB: ?v= on the three asset URLs below is a manual cache-buster — bump it
       whenever any of them changes.
 */ -}}
-{{- $v := "3" -}}
+{{- $v := "4" -}}
 {{- $part := .Get "part" | default "map" -}}
-{{- if not (in (slice "map" "spread" "calculator") $part) -}}
-  {{- errorf "housing-costs: unknown part %q (map | spread | calculator) on %s" $part .Page.File.Path -}}
+{{- if not (in (slice "map" "spread" "calculator" "who") $part) -}}
+  {{- errorf "housing-costs: unknown part %q (map | spread | calculator | who) on %s" $part .Page.File.Path -}}
 {{- end -}}
 {{- $src := printf "/interactive/housing-costs/housing.json?v=%s" $v -}}
+{{- $who := printf "/interactive/housing-costs/who.json?v=%s" $v -}}
 {{- if not (.Page.Store.Get "hcAssets") -}}
   {{- .Page.Store.Set "hcAssets" true }}
 <link rel="stylesheet" href="/css/housing-costs.css?v={{ $v }}">
@@ -74,6 +76,29 @@
   <div class="lg"><span><span class="dot swatch-social"></span>Social rent</span><span><span class="dot swatch-private"></span>Private rent</span><span><span class="cn"></span>The gap (on the right, &pound; a month)</span></div>
   <div class="db-read" id="hc-db-read" aria-live="polite" hidden></div>
   <div class="hc-db" id="hc-db"></div>
+  <noscript><p class="sub">This chart needs JavaScript.</p></noscript>
+</section>
+
+{{- else if eq $part "who" }}
+{{- /* Who lives in each tenure, Census 2021. Oct 2026: in review on the unlisted, noindexed /campaigns/subsidised-not-affordable/who-lives/ page; not on the main campaign page. Data: who.json from housing-costs-lab/fetch_who.py. */}}
+<section class="hc hc-wide hc-card hc-who" id="hc-who" aria-labelledby="hc-t-who" data-hc-src="{{ $src }}" data-hc-who="{{ $who }}">
+  <div class="eyebrow">Census 2021</div>
+  <h2 class="hc-title" id="hc-t-who">{{ .Get "title" | default "Who lives in social housing?" }}</h2>
+  <p class="sub">{{ .Get "sub" | default "Who lives in each kind of home, borough by borough. Every bar adds up to 100%: all the people, or all the households, in that tenure." }}</p>
+  <div class="controls">
+    <div class="ctl"><span class="ctl-l">Topic</span><div id="hc-who-topic"></div></div>
+  </div>
+  <div class="controls who-ctl2">
+    <div class="ctl"><span class="ctl-l">Count</span><div id="hc-who-unit"></div></div>
+    <div class="ctl"><label class="ctl-l" for="hc-who-area">Area</label><select id="hc-who-area"></select></div>
+  </div>
+  <p class="metric-note" id="hc-who-note"></p>
+  <p class="who-head" id="hc-who-head"></p>
+  <div class="who-legend" id="hc-who-legend"></div>
+  <div class="who-chart" id="hc-who-chart"></div>
+  <p class="who-read" id="hc-who-read" aria-live="polite"></p>
+  <button type="button" class="who-tbl-btn" id="hc-who-tbl-btn" aria-expanded="false">Show as a table</button>
+  <div class="who-tbl-wrap" id="hc-who-tbl" hidden></div>
   <noscript><p class="sub">This chart needs JavaScript.</p></noscript>
 </section>
 
