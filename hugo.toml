@@ -8,6 +8,7 @@ title = "Neil Garratt"
   email = "London@NeilGarratt.com"
   substackURL = "https://newsletter.neilgarratt.com"
   substackRSS = "https://newsletter.neilgarratt.com/feed"
+  newsletterSignup = "click"  # "click": Subscribe opens Substack's form on the page; anything else: a plain link
   imprint = "Promoted by Neil Garratt, Donnington House, 2a Sutton Court Road, Sutton, SM1 4SY."
   goatcounterURL = "https://neilgarratt.goatcounter.com/count"
 

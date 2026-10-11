@@ -1,0 +1,36 @@
+{{- /* Newsletter sign-up for the homepage newsletter section.
+       With newsletterSignup = "click" (hugo.toml), clicking the button swaps
+       Substack's official /embed form into the page. The form waits in an
+       inert <template>, so nothing loads from Substack (which sets cookies)
+       until the visitor asks for it; content/privacy.md says so. Ctrl/Cmd/
+       Shift-click, no JavaScript, or any other setting: the button is a plain
+       link to Substack's subscribe page. */ -}}
+{{- $base := .Site.Params.substackURL -}}
+{{- $click := eq (.Site.Params.newsletterSignup | default "link") "click" -}}
+<div class="newsletter-signup">
+  <a href="{{ $base }}/subscribe" class="substack-btn" target="_blank" rel="noopener"{{ if $click }} data-nl-open{{ end }}>
+    <span>Subscribe free</span>
+    <span aria-hidden="true">&rarr;</span>
+  </a>
+  {{- if $click }}
+  <template id="nl-embed">
+    <iframe class="newsletter-embed" src="{{ $base }}/embed" title="Newsletter sign-up form (Substack)" width="480" height="320"></iframe>
+    <p class="newsletter-alt"><a href="{{ $base }}/subscribe" target="_blank" rel="noopener">Problems? Subscribe on Substack instead &rarr;</a></p>
+  </template>
+  <script>
+    (function () {
+      var btn = document.querySelector('[data-nl-open]');
+      var tpl = document.getElementById('nl-embed');
+      if (!btn || !tpl) return;
+      btn.addEventListener('click', function (e) {
+        if (e.button || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+        e.preventDefault();
+        var form = tpl.content.cloneNode(true);
+        var frame = form.querySelector('iframe');
+        btn.replaceWith(form);
+        frame.focus();
+      });
+    })();
+  </script>
+  {{- end }}
+</div>

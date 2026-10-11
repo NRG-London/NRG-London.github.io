@@ -726,6 +726,34 @@ section {
   color: white;
 }
 
+.substack-btn:focus-visible { outline: 2px solid var(--blue-muted); outline-offset: 2px; }
+
+/* Substack's sign-up form, swapped in on click by partials/newsletter-signup.html */
+.newsletter-embed {
+  display: block;
+  width: 100%;
+  max-width: 480px;
+  height: 320px;
+  border: 1px solid var(--warm-grey);
+  background: white;
+}
+
+/* Substack's card is laid out for 480x320 and gets cramped when narrower. On
+   phones the frame borrows the container's 2rem side padding, and frames under
+   ~350px wide (screens under 390px) get 400px of height. Sizes were checked
+   against screenshots of the live form; 360px and 420px both clip it. */
+@media (max-width: 600px) {
+  .newsletter-embed { width: calc(100% + 4rem); max-width: none; margin: 0 -2rem; }
+}
+@media (max-width: 389px) {
+  .newsletter-embed { height: 400px; }
+}
+
+.newsletter-about .newsletter-alt {
+  margin: 0.75rem 0 0;
+  font-size: 0.8rem;
+}
+
 .recent-posts {
   display: flex;
   flex-direction: column;

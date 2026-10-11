@@ -3,17 +3,14 @@
   <div class="container">
     <div class="section-header">
       <h2>Newsletter</h2>
-      <a href="{{ .Site.Params.substackURL }}" class="view-all" target="_blank" rel="noopener">Subscribe on Substack &rarr;</a>
+      <a href="{{ .Site.Params.substackURL }}/archive" class="view-all" target="_blank" rel="noopener">All issues &rarr;</a>
     </div>
     <div class="newsletter-section">
       <div class="newsletter-about">
         <h3>{{ .Params.newsletter_title }}</h3>
         <p>{{ .Params.newsletter_description }}</p>
         <p class="subscriber-count">More than 2,000 people subscribe.</p>
-        <a href="{{ .Site.Params.substackURL }}" class="substack-btn" target="_blank" rel="noopener">
-          <span>Subscribe free</span>
-          <span>&rarr;</span>
-        </a>
+        {{ partial "newsletter-signup.html" . }}
       </div>
       <div class="recent-posts">
         {{ range first 4 (partialCached "substack-feed.html" .) }}
@@ -22,7 +19,7 @@
           {{ with .summary }}<div class="post-desc">{{ . }}</div>{{ end }}
         </a>
         {{ else }}
-        <p><a href="{{ .Site.Params.substackURL }}">Read the newsletter on Substack &rarr;</a></p>
+        <p><a href="{{ .Site.Params.substackURL }}">Read the newsletter &rarr;</a></p>
         {{ end }}
       </div>
     </div>
