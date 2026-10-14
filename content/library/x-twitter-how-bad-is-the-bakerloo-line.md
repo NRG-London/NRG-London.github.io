@@ -4,7 +4,7 @@ date: 2026-10-14
 format: "appearance"
 type_label: "Post"
 outlet: "X / Twitter"
-campaigns: []
+campaigns: ["rail-performance", "improving-travel-times"]
 youtube_id: ""
 external_url: "https://x.com/NeilGarratt/status/2110303260993093713"
 thumbnail: ""
