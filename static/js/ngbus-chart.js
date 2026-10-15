@@ -587,6 +587,17 @@
 
   var tip, timer = null;
 
+  /* A day in day view opens that day in the replay (/bus/replay/), while the
+     replay still holds it: it keeps the last `spec.replay.days` days. */
+  function replayURL(V, i) {
+    var rp = spec.replay;
+    if (!rp || V.mode !== 'day') return null;
+    var iso = V.labels[i];
+    var oldest = new Date(Date.now() - (rp.days - 1) * DAY).toISOString().slice(0, 10);
+    if (iso < oldest) return null;
+    return rp.url + '?route=' + encodeURIComponent(spec.route) + '&date=' + iso;
+  }
+
   function wireHover(svg, V, hw) {
     V.idx.forEach(function (i) {
       var x1 = clampX(xt(V.times[i]) - hw), x2 = clampX(xt(V.times[i]) + hw);
@@ -599,6 +610,11 @@
         if (tip && !tip.hidden) { show(i); return; }
         timer = window.setTimeout(function () { show(i); }, HOVER_DELAY);
       });
+      var go = replayURL(V, i);
+      if (go) {
+        hit.setAttribute('class', 'ngbus-hit ngbus-hit--replay');
+        hit.addEventListener('click', function () { window.location.href = go; });
+      }
       svg.appendChild(hit);
     });
     svg.addEventListener('mouseleave', hide);
@@ -643,6 +659,7 @@
       lines.push('<span class="ngl2-gap"><strong>' + esc(holeLabel(h)) + '</strong> ' +
                  esc(h.reason) + '</span>');
     });
+    if (replayURL(V, i)) lines.push('<span class="ngl2-tt">Click to watch this day &#9654;</span>');
     tip.innerHTML = lines.join('<br>');
     tip.hidden = false;
 

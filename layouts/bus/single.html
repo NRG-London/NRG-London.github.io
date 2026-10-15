@@ -202,6 +202,13 @@
     <div class="ngbus-legend" id="ngbus-chart-legend"></div>
   </div>
 
+  {{- /* The replay: every bus on this route, a day at a time, on the map. The
+         route pages are its front door; /bus/replay/ has no other link. In
+         day view the chart's days open it too (ngbus-chart.js). Wording is a
+         placeholder for Neil's. */}}
+  <p class="ngbus-replaylink"><a href="/bus/replay/?route={{ $route | urlquery }}">Watch a day of route {{ $route }}&rsquo;s buses</a>:
+    every bus, replayed on the map.{{ if $dailyOk }} Or click a day on the chart.{{ end }}</p>
+
   <details class="ngbus-weeks">
     <summary>The weekly figures</summary>
     <p class="ngbus-weeks__hint">
@@ -366,6 +373,22 @@
          ping cannot invent it. */ -}}
   {{- with $row.worst_gap }}
   {{- if ne .min nil }}
+  {{- /* "Watch it happen": the replay opens five minutes before the gap began,
+         zoomed to the stop. A gap before 03:00 belongs to the previous day's
+         replay (each runs 03:00 to 05:00 the next morning). Only while the
+         replay still holds the day: it keeps 35. */ -}}
+  {{- $wg := . -}}
+  {{- $watch := "" -}}
+  {{- with .start }}{{ if findRE `T\d\d:\d\d:\d\d` . }}
+    {{- $g0 := time.AsTime . -}}
+    {{- if $g0.After (now.AddDate 0 0 -34) -}}
+      {{- $day := $g0 }}{{ if lt $g0.Hour 3 }}{{ $day = $g0.AddDate 0 0 -1 }}{{ end -}}
+      {{- $from := $g0.Add (time.ParseDuration "-5m") -}}
+      {{- if and (eq $g0.Hour 3) (lt $g0.Minute 5) }}{{ $from = $g0 }}{{ end -}}
+      {{- $watch = printf "/bus/replay/?route=%s&date=%s&t=%s&gap=%d" (urlquery $route) ($day.Format "2006-01-02") ($from.Format "15:04") (int $wg.min) -}}
+      {{- with $wg.place }}{{ $watch = printf "%s&at=%s" $watch (urlquery .) }}{{ end -}}
+    {{- end -}}
+  {{- end }}{{ end -}}
   <p class="ngbus-worstgap"><strong>{{ lang.FormatNumber 0 .min }} minutes</strong> was the
     longest gap between buses this week{{ with .place }}, at {{ partial "bus-place.html" . }}{{ end }}
     {{- with .direction }} {{ partial "bus-place.html" . }}{{ end }}
@@ -386,7 +409,8 @@
       {{- else }}{{ $d := substr . 0 10 }}{{ $t := substr . 11 5 }}, on
       {{ dateFormat "Monday 2 January" $d }}, starting at {{ $t }}{{ end }}
     {{- end }}.
-    This excludes any gaps caused by holes in our own data.</p>
+    This excludes any gaps caused by holes in our own data.
+    {{- with $watch }} <a class="ngbus-watch" href="{{ . }}">Watch it happen &rarr;</a>{{ end }}</p>
   {{- end }}
   {{- end }}
 
@@ -819,12 +843,13 @@
   <script type="application/json" id="ngbus-chart-data">{{ dict
       "route" $route "weeks" $w.weeks "current" $w.week_ending "holes" $w.holes
       "series" $series "daily" $daily "threshold" $thr
+      "replay" (dict "url" "/bus/replay/" "days" 35)
       | jsonify | safeJS }}</script>
   {{- end }}
 </div>
 
 {{ partial "bus-assets.html" . }}
 {{- if gt (len $units) 0 }}
-<script src="/js/ngbus-chart.js?v=10" defer></script>
+<script src="/js/ngbus-chart.js?v=11" defer></script>
 {{- end }}
 {{ end }}

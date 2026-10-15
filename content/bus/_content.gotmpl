@@ -27,6 +27,11 @@
 {{- end -}}
 
 {{- range $d.routes -}}
+  {{- /* /bus/replay/ is the replay viewer (content/bus/replay.md). A route
+         of that name would silently fight it for the address. */ -}}
+  {{- if eq (lower .route) "replay" -}}
+    {{- errorf "content/bus/_content.gotmpl: a route called %q would collide with /bus/replay/" .route -}}
+  {{- end -}}
   {{- $.AddPage (dict
       "path" (lower .route)
       "kind" "page"

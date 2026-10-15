@@ -11,6 +11,9 @@ title = "Neil Garratt"
   newsletterSignup = "click"  # "click": Subscribe opens Substack's form on the page; anything else: a plain link
   imprint = "Promoted by Neil Garratt, Donnington House, 2a Sutton Court Road, Sutton, SM1 4SY."
   goatcounterURL = "https://neilgarratt.goatcounter.com/count"
+  # Bus replay data (/bus/replay/): an R2 bucket NRG-1 fills daily, served by a
+  # Cloudflare Worker (E:\VM cloudflare/bus-replay-worker.js).
+  busReplayData = "https://bus-replay.neil-garratt.workers.dev/"
 
   [params.social]
     twitter = "https://twitter.com/NeilGarratt"

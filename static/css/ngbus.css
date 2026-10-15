@@ -767,6 +767,9 @@
 .ngl2-gap strong { color: var(--ink, #1a2332); }
 
 .ngbus-hit { cursor: crosshair; }
+.ngbus-hit--replay { cursor: pointer; }        /* day view: opens the replay */
+.ngbus-replaylink { margin: .4rem 0 1.4rem; font-size: .95rem; }
+.ngbus-watch { white-space: nowrap; font-weight: 600; }
 .ngbus-cursor { stroke: var(--mid-grey, #8a9490); stroke-width: 1; stroke-dasharray: 3 3; pointer-events: none; }
 /* The same measure as the solid line, but as the timetable alone would give it:
    the gap between the two is what the buses are doing. */

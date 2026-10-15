@@ -766,6 +766,58 @@ week" spans on these.
 
 (Illustrative: the exact keys follow whatever the weekly direction cells use.)
 
+## Bus replay (/bus/replay/) — added 15 Oct 2026
+
+Every bus on one route for one service day, replayed on a map. Unlike the rest of
+this contract, **its data is not in the site repo**: NRG-1 writes it daily and
+Cloudflare serves it, so a day of replays never becomes a commit.
+
+**Where it comes from.** `E:\Road Data\platform\export_replay.py`, run on NRG-1 by
+`bods-replay-export.timer` at 06:15 London (E:\VM `server/systemd/`). It writes
+`/data/road/data/bods/replay/` and mirrors it to the R2 bucket `nrg-bus-replay`,
+served read-only by the Worker at `params.busReplayData` in `hugo.toml`
+(`https://bus-replay.neil-garratt.workers.dev/`; code in E:\VM
+`cloudflare/bus-replay-worker.js`). The Worker answers only for the files below,
+and only gives browser access (CORS) to neilgarratt.com and the local preview (port 1313).
+
+| File | What | Size |
+|---|---|---|
+| `routes.json` | `{routes: {ROUTE: [first, last, n]}, missing: [{start, end, kind, reason}]}` — the route list and whole-day gaps | ~25 KB (~5 KB compressed) |
+| `i/<ROUTE>.json` | `{route, days: {iso: {bytes, pings, vehicles, holes_min, ewt_min?, journeys?, cut_short?, dirs?, pinned?}}}` — one route's days, what a page loads first | ~3 KB |
+| `index.json` | every route-day in one file; tools only, the page falls back to it if the two above are missing | 2.3 MB |
+| `d/<ROUTE>/<YYYY-MM-DD>.json.gz` | one service day: `ng-bus-replay` v1, gzipped JSON (format in `export_replay.py`'s docstring; decoded by `static/js/ngbus-replay-data.js`) | ~60 KB, up to ~200 KB |
+
+**The service day** for date D runs 03:00 D to 05:00 D+1, London, so night routes sit
+whole in the night they belong to. The bus pages' daily window (05:00–23:59) falls
+inside it. The days either side overlap by two hours, on purpose.
+
+**Kept for 35 days**, matching `daily.days`, so every day a route page's day chart shows
+can be replayed. Days listed in `pins.txt` on NRG-1 (`ROUTE YYYY-MM-DD  # why`) are kept
+for good. Readers can keep any day themselves with "Save this day".
+
+**Links.** The route pages are the front door; `/bus/replay/` has no other link.
+
+| From | Link |
+|---|---|
+| "Watch a day" under the chart | `/bus/replay/?route=38` (latest day) |
+| a day in the chart's day view | `/bus/replay/?route=38&date=2026-10-08` (only within the last 35 days) |
+| the worst gap ("Watch it happen") | `/bus/replay/?route=38&date=2026-10-08&t=13:59&gap=89&at=<place>` — opens 5 minutes before `worst_gap.start`, zoomed to the stop named `worst_gap.place`, which is marked |
+| shared by a reader ("Copy link") | `?route=&date=&t=[&speed=]` |
+
+- `date` is the **service day**: a gap starting before 03:00 links to the previous
+  date, whose replay runs to 05:00.
+- `at` is matched against the day file's stop names after both have had TfL's
+  interchange markup stripped (`<>`, `#`, `>t<`, `>lol<`, `[dlr]`), exactly as
+  `bus-place.html` does. So **`worst_gap.place` must stay a stop name from TfL's
+  bus-sequences list**, as it is today; a renamed or reworded place quietly loses
+  its marker, though the link still opens at the right moment.
+- `worst_gap.start` must carry seconds and an offset (`2026-10-08T14:04:08+01:00`,
+  as since 28 Sep). Without them the page prints the gap but offers no replay link.
+
+**Day strip shading** on the replay page uses `daily.series[]`'s `journeys` and
+`journeys_turned_short`, read on NRG-1 from its clone of this repo. A day the
+weekly run has not reached yet is unshaded ("no figure yet"), never shaded as good.
+
 ## The rules the front end will not break
 
 - **A `null` metric, or `coverage` below `coverage_threshold`, renders as

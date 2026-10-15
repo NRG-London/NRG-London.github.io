@@ -1,23 +1,26 @@
-/* Bus replay lab — one route, one day, every bus, from BODS positions.
+/* Bus replay — one route, one day, every bus, from BODS positions.
  *
- * Data files are made by E:\Road Data\platform\prototypes\export_replay.py
- * (format `ng-bus-replay` v1; reading and expanding them is replay-data.js).
- * The page is otherwise the offline replay_template.html, moved onto the
- * site's vector basemap and taught to navigate, save and open files.
+ * /bus/replay/ (layouts/bus/replay.html). The data comes from the R2 bucket
+ * behind the Worker named in hugo.toml (params.busReplayData), written daily
+ * by NRG-1's export_replay.py (E:\Road Data\platform). Reading and expanding
+ * a day file is ngbus-replay-data.js.
  *
- * Deep link: ?route=127&date=2026-07-22[&t=08:15][&speed=60]
+ * Links: ?route=60[&date=2026-10-01][&t=08:15][&at=<stop name>][&gap=56][&speed=60]
+ *   at + gap  come from a route page's worst gap ("watch it happen"): the map
+ *             zooms to that stop and marks it.
+ *
+ * Loading is sized for a phone that came to watch one route: routes.json (the
+ * route list, a few KB), i/<ROUTE>.json (that route's days, ~3 KB), then the
+ * day itself (~100 KB). The days either side are fetched in the background so
+ * stepping through them does not wait. If the per-route files are missing
+ * (an older Worker), it falls back to the full index.json once.
  */
 (function () {
   'use strict';
 
   var R = window.ReplayData;
-
-  /* Where the data lives: the export_replay.py output directory, i.e.
-     <root>/index.json and <root>/d/<ROUTE>/<YYYY-MM-DD>.json.gz. The lab
-     serves a sample from the site itself; the production store (R2 or
-     similar) is a change to this one line. */
-  var DATA_ROOT = './';
-  var DEFAULT_ROUTE = '60';
+  var DATA_ROOT = document.body.getAttribute('data-replay-root') || './';
+  if (DATA_ROOT.slice(-1) !== '/') DATA_ROOT += '/';
 
   var CARTO_KEY = 'cb1_2jwn_1_b719f4820b3d9fc06421d20e';
   var STYLES = {
@@ -31,11 +34,12 @@
   var SATURATE = { dark: 1, street: 0.7 };
   var TRAIL_S = 900;
   var TZ = 'Europe/London';
+  var PREFETCH_KEEP = 6;
 
   var $ = function (id) { return document.getElementById(id); };
   var el = {
     hud: $('hud'), title: $('title'), badge: $('badge'), route: $('route'),
-    prev: $('prev'), next: $('next'), daylabel: $('daylabel'),
+    back: $('back'), prev: $('prev'), next: $('next'), daylabel: $('daylabel'),
     days: $('days'), clock: $('clock'), meta: $('meta'), timeline: $('timeline'),
     tl: $('tl'), slider: $('slider'), play: $('play'), speed: $('speed'),
     copylink: $('copylink'), save: $('save'), open: $('open'), file: $('file'),
@@ -43,9 +47,19 @@
     banner: $('banner'), drop: $('drop'), collapse: $('collapse'),
   };
 
-  var index = null;          // index.json
+  // Routes that have a performance page, so "back" can go there (others
+  // fall back to the A-Z). Written into the page by the layout.
+  var PAGES = {};
+  try {
+    JSON.parse(($('ngbus-replay-pages') || {}).textContent || '[]')
+      .forEach(function (r) { PAGES[String(r).toUpperCase()] = true; });
+  } catch (e) { /* no list: every back link is the A-Z */ }
+
+  var catalogue = null;      // {routes: {KEY: [first, last, n]}, missing: [...]}
+  var routeDays = {};        // KEY -> {iso: record}, loaded per route
+  var fullIndex = null;      // only if the per-route files are unavailable
   var routeKey = {};         // UPPER -> key as stored
-  var cur = null;            // {payload, bytes, E, source, routeChanged}
+  var cur = null;            // {payload, bytes, E, source}
   var simT = 0;              // seconds after payload.t0
   var playing = true;
   var speed = 60;
@@ -54,8 +68,27 @@
   var tlBase = null;         // pre-drawn timeline, playhead added per frame
   var mapMode = 'dark';
   var staticLayers = [];
+  var markLayers = [];       // the worst-gap stop, when a link named one
   var trips = [];
   var colors = [];
+
+  /* ---- names, as a reader should see them --------------------------------- */
+
+  // TfL's stop names carry interchange markup: "Aldgate Station <>",
+  // "Anerley Station #", ">t<" tram, ">lol<" Overground, "[dlr]". Stripped for
+  // display, exactly as layouts/partials/bus-place.html does on the route
+  // pages, so a stop reads the same on both.
+  function cleanName(s) {
+    return String(s || '')
+      .replace(/>[a-z]+</gi, ' ')
+      .replace(/\[[a-z]+\]/gi, ' ')
+      .replace(/<>/g, ' ')
+      .replace(/#/g, ' ')
+      .replace(/\s+/g, ' ')
+      .replace(/\s*\/\s*/g, ' / ')
+      .replace(/^[\s/]+/, '')
+      .replace(/[\s/]+$/, '');
+  }
 
   /* ---- time, in London ---------------------------------------------------- */
 
@@ -122,8 +155,8 @@
     getTooltip: function (info) {
       var o = info.object;
       if (!o) return null;
-      if (o.reg) return { text: o.reg + '\nblind: ' + o.blind };
-      if (o.name) return { text: o.name };
+      if (o.reg) return { text: o.reg + '\n' + (o.dead ? 'not in service: ' : 'to ') + cleanName(o.blind) };
+      if (o.name) return { text: cleanName(o.name) };
       return null;
     },
     onAfterRender: syncBasemap,
@@ -186,6 +219,23 @@
   }
 
   var lastView = null;
+  function fitBox(minLon, minLat, maxLon, maxLat, maxZoom) {
+    var w = window.innerWidth, h = window.innerHeight;
+    var wide = w >= 900;
+    var pad = wide
+      ? { left: el.hud.offsetWidth + 40, right: 40, top: 40, bottom: 40 }
+      : { left: 20, right: 20, top: Math.min(el.hud.offsetHeight + 20, h * 0.55), bottom: 20 };
+    var vs;
+    try {
+      vs = new deck.WebMercatorViewport({ width: w, height: h })
+        .fitBounds([[minLon, minLat], [maxLon, maxLat]], { padding: pad, maxZoom: maxZoom });
+    } catch (e) {
+      vs = { longitude: (minLon + maxLon) / 2, latitude: (minLat + maxLat) / 2, zoom: 12 };
+    }
+    lastView = { longitude: vs.longitude, latitude: vs.latitude,
+                 zoom: Math.min(maxZoom, vs.zoom), pitch: 0, bearing: 0, maxPitch: 0 };
+    deckgl.setProps({ initialViewState: Object.assign({}, lastView) });
+  }
   function fitTo(payload) {
     var minLon = 180, maxLon = -180, minLat = 90, maxLat = -90;
     function fit(p) {
@@ -195,21 +245,7 @@
     payload.shapes.forEach(function (s) { s.path.forEach(fit); });
     if (minLon > maxLon) trips.forEach(function (t) { t.path.forEach(fit); });
     if (minLon > maxLon) return;
-    var w = window.innerWidth, h = window.innerHeight;
-    var wide = w >= 900;
-    var pad = wide
-      ? { left: el.hud.offsetWidth + 40, right: 40, top: 40, bottom: 40 }
-      : { left: 20, right: 20, top: Math.min(el.hud.offsetHeight + 20, h * 0.55), bottom: 20 };
-    var vs;
-    try {
-      vs = new deck.WebMercatorViewport({ width: w, height: h })
-        .fitBounds([[minLon, minLat], [maxLon, maxLat]], { padding: pad, maxZoom: 15 });
-    } catch (e) {
-      vs = { longitude: (minLon + maxLon) / 2, latitude: (minLat + maxLat) / 2, zoom: 12 };
-    }
-    lastView = { longitude: vs.longitude, latitude: vs.latitude,
-                 zoom: Math.min(15, vs.zoom), pitch: 0, bearing: 0, maxPitch: 0 };
-    deckgl.setProps({ initialViewState: Object.assign({}, lastView) });
+    fitBox(minLon, minLat, maxLon, maxLat, 15);
   }
 
   /* ---- colours ----------------------------------------------------------- */
@@ -221,6 +257,46 @@
       return Math.round(255 * (l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1))));
     };
     return [f(0), f(8), f(4)];
+  }
+
+  /* ---- the worst-gap stop -------------------------------------------------- */
+
+  // A route page's "watch it happen" link names the stop where the gap was.
+  // Every stop of that name is marked (usually one each side of the road)
+  // and the map closes in on them, about a kilometre across.
+  function markStop(payload, at, gap, t) {
+    markLayers = [];
+    if (!at) return false;
+    var want = cleanName(at).toLowerCase();
+    var hits = (payload.stops || []).filter(function (s) {
+      return cleanName(s.name).toLowerCase() === want;
+    });
+    if (!hits.length) return false;
+    markLayers = [
+      new deck.ScatterplotLayer({
+        id: 'mark', data: hits, stroked: true, filled: true,
+        getPosition: function (d) { return [d.lon, d.lat]; },
+        getFillColor: [224, 162, 78, 60], getLineColor: [224, 162, 78, 255],
+        getRadius: 60, radiusMinPixels: 12, radiusMaxPixels: 26,
+        lineWidthUnits: 'pixels', getLineWidth: 3,
+      }),
+      new deck.TextLayer({
+        id: 'mark-label', data: [hits[0]],
+        getPosition: function (d) { return [d.lon, d.lat]; },
+        getText: function () { return cleanName(at); },
+        getColor: [255, 226, 176, 255], getSize: 13, getPixelOffset: [0, 26],
+        fontFamily: 'DM Sans, system-ui, sans-serif', fontWeight: 600,
+        outlineWidth: 3, outlineColor: [17, 17, 17, 230], fontSettings: { sdf: true },
+      }),
+    ];
+    var lon = hits.reduce(function (a, s) { return a + s.lon; }, 0) / hits.length;
+    var lat = hits.reduce(function (a, s) { return a + s.lat; }, 0) / hits.length;
+    fitBox(lon - 0.008, lat - 0.005, lon + 0.008, lat + 0.005, 15.5);
+    el.badge.hidden = false;
+    el.badge.textContent = (gap ? 'The ' + gap + '-minute gap' : 'The gap') +
+      ' at ' + cleanName(at) + (t ? ', from ' + t : '') +
+      '. The ring marks the stop; press play to watch it build.';
+    return true;
   }
 
   /* ---- a day arrives ----------------------------------------------------- */
@@ -251,11 +327,16 @@
         getRadius: 15, radiusMinPixels: 2, radiusMaxPixels: 5, pickable: true,
       }),
     ];
-    if (prevRoute !== payload.route || prevSource !== opts.source) fitTo(payload);
+
+    el.badge.hidden = true;
+    var marked = markStop(payload, opts.at, opts.gap, opts.t);
+    if (!marked && (prevRoute !== payload.route || prevSource !== opts.source)) fitTo(payload);
 
     el.title.textContent = 'Route ' + payload.route + ' \u00b7 ' +
       fmtDay(payload.date, { year: 'numeric' });
-    document.title = '[LAB] Bus replay: route ' + payload.route + ', ' + payload.date;
+    document.title = 'Route ' + payload.route + ', ' + fmtDay(payload.date, { year: 'numeric' }) +
+      ': bus replay \u2014 Neil Garratt';
+    setBack(payload.route);
     if (!Array.prototype.some.call(el.route.options, function (o) { return o.value === payload.route; })) {
       var o = document.createElement('option');
       o.value = payload.route; o.textContent = payload.route + ' (your file)';
@@ -267,8 +348,6 @@
       el.badge.hidden = false;
       el.badge.textContent = 'From your file \u00b7 made ' +
         (payload.generated ? fmtDay(payload.generated.slice(0, 10), { year: 'numeric' }) : 'earlier');
-    } else {
-      el.badge.hidden = true;
     }
 
     simT = defaultStart();
@@ -282,9 +361,10 @@
     }
     drawTimelineBase();
     renderDays();
-    updateURL();
+    updateURL(marked ? opts : null);
     say('');
     render();
+    if (opts.source === 'server') prefetchAround(payload.route, payload.date);
   }
 
   // Start where the day gets going: the first minute with half the day's
@@ -296,34 +376,124 @@
     return 0;
   }
 
-  /* ---- loading ------------------------------------------------------------ */
-
-  function routeEntries(key) {
-    return (index && index.routes && index.routes[key]) || null;
+  function setBack(route) {
+    if (route && PAGES[route.toUpperCase()]) {
+      el.back.href = '/bus/' + route.toLowerCase() + '/';
+      el.back.textContent = '\u2190 Route ' + route + ' performance';
+    } else {
+      el.back.href = '/bus/';
+      el.back.textContent = '\u2190 All bus routes';
+    }
   }
+
+  /* ---- what the server holds ---------------------------------------------- */
+
   function resolveRoute(r) {
     return routeKey[String(r || '').trim().toUpperCase()] || null;
+  }
+
+  async function getJSON(path) {
+    var res = await fetch(DATA_ROOT + path, { cache: 'no-cache' });
+    if (!res.ok) { var e = new Error(path + ': HTTP ' + res.status); e.status = res.status; throw e; }
+    return res.json();
+  }
+
+  // The full index, once, for a Worker that does not serve the small files.
+  async function loadFullIndex() {
+    if (!fullIndex) {
+      fullIndex = await getJSON('index.json');
+      Object.keys(fullIndex.routes || {}).forEach(function (k) { routeDays[k] = fullIndex.routes[k]; });
+    }
+    return fullIndex;
+  }
+
+  async function loadCatalogue() {
+    try {
+      catalogue = await getJSON('routes.json');
+    } catch (e) {
+      if (e.status !== 404) throw e;
+      var full = await loadFullIndex();
+      var routes = {};
+      Object.keys(full.routes).forEach(function (k) {
+        var isos = Object.keys(full.routes[k]).sort();
+        routes[k] = [isos[0], isos[isos.length - 1], isos.length];
+      });
+      catalogue = { routes: routes, missing: full.missing || [] };
+    }
+    Object.keys(catalogue.routes || {}).forEach(function (k) {
+      routeKey[k.toUpperCase()] = k;
+      var o = document.createElement('option');
+      o.value = k; o.textContent = k;
+      el.route.appendChild(o);
+    });
+  }
+
+  async function ensureRoute(key) {
+    if (routeDays[key]) return routeDays[key];
+    try {
+      routeDays[key] = (await getJSON('i/' + encodeURIComponent(key) + '.json')).days || {};
+    } catch (e) {
+      if (e.status !== 404) throw e;
+      await loadFullIndex();
+      routeDays[key] = routeDays[key] || {};
+    }
+    return routeDays[key];
+  }
+
+  function availableDates(key) {
+    var e = routeDays[key];
+    return e ? Object.keys(e).sort() : [];
+  }
+
+  /* ---- day files, with the neighbours fetched ahead ------------------------ */
+
+  var dayCache = new Map();   // url -> Promise<ArrayBuffer>, newest last
+
+  function dayURL(key, iso) {
+    return DATA_ROOT + 'd/' + encodeURIComponent(key) + '/' + iso + '.json.gz';
+  }
+
+  function getDayBytes(url) {
+    if (dayCache.has(url)) {
+      var p = dayCache.get(url);
+      dayCache.delete(url); dayCache.set(url, p);       // most recently used
+      return p;
+    }
+    var q = fetch(url).then(function (res) {
+      if (!res.ok) { var e = new Error('HTTP ' + res.status); e.status = res.status; throw e; }
+      return res.arrayBuffer();
+    });
+    q.catch(function () { dayCache.delete(url); });     // never cache a failure
+    dayCache.set(url, q);
+    while (dayCache.size > PREFETCH_KEEP) dayCache.delete(dayCache.keys().next().value);
+    return q;
+  }
+
+  // The days either side, so the arrows and the day strip feel instant. Not
+  // on a connection that has asked to save data.
+  function prefetchAround(key, iso) {
+    if (navigator.connection && navigator.connection.saveData) return;
+    var dates = availableDates(key), i = dates.indexOf(iso);
+    [i - 1, i + 1].forEach(function (j) {
+      if (j >= 0 && j < dates.length) getDayBytes(dayURL(key, dates[j])).catch(function () {});
+    });
   }
 
   var loadToken = 0;
   async function loadServerDay(key, iso, opts) {
     var token = ++loadToken;
     say('Loading route ' + key + ', ' + fmtDay(iso) + '\u2026');
-    var url = DATA_ROOT + 'd/' + encodeURIComponent(key) + '/' + iso + '.json.gz';
-    var res;
+    var bytes;
     try {
-      res = await fetch(url);
+      bytes = await getDayBytes(dayURL(key, iso));
     } catch (e) {
-      if (token === loadToken) say('Could not reach the server. Check your connection and try again.');
+      if (token !== loadToken) return;
+      if (e.status) notOnServer(key, iso);
+      else say('Could not reach the server. Check your connection and try again.');
       return;
     }
     if (token !== loadToken) return;
-    if (!res.ok) {
-      notOnServer(key, iso);
-      return;
-    }
     try {
-      var bytes = await res.arrayBuffer();
       var payload = await R.parse(bytes);
       if (token !== loadToken) return;
       start(payload, Object.assign({ bytes: bytes, source: 'server' }, opts || {}));
@@ -353,30 +523,29 @@
     }
   }
 
-  function updateURL() {
+  // The address bar follows the route and day. A "watch it happen" link keeps
+  // its stop and gap while the reader stays on that day; anything else drops them.
+  function updateURL(keep) {
     var u = new URL(location.href);
+    ['route', 'date', 't', 'at', 'gap'].forEach(function (k) { u.searchParams.delete(k); });
     if (cur && cur.source === 'server') {
       u.searchParams.set('route', cur.payload.route);
       u.searchParams.set('date', cur.payload.date);
-    } else {
-      u.searchParams.delete('route');
-      u.searchParams.delete('date');
+      if (keep && keep.at) {
+        u.searchParams.set('at', keep.at);
+        if (keep.gap) u.searchParams.set('gap', keep.gap);
+        if (keep.t) u.searchParams.set('t', keep.t);
+      }
     }
-    u.searchParams.delete('t');
     history.replaceState(null, '', u.pathname + (u.search || ''));
   }
 
   /* ---- the day strip ------------------------------------------------------ */
 
   function gapFor(iso) {
-    var g = (index && index.missing) || [];
+    var g = (catalogue && catalogue.missing) || [];
     for (var i = 0; i < g.length; i++) if (g[i].start <= iso && iso <= g[i].end) return g[i];
     return null;
-  }
-
-  function availableDates(key) {
-    var e = routeEntries(key);
-    return e ? Object.keys(e).sort() : [];
   }
 
   function describe(iso, rec) {
@@ -386,7 +555,7 @@
                 rec.cut_short + ' of ' + rec.journeys + ' journeys' +
                 (rec.dirs === 1 ? ', one direction measured' : '') + ')');
     } else {
-      bits.push('No cut-short figure for this day');
+      bits.push('No cut-short figure for this day yet');
     }
     if (rec.ewt_min != null) bits.push('excess wait ' + rec.ewt_min.toFixed(1) + ' min');
     if (rec.holes_min) bits.push('no data for ' + rec.holes_min + ' min');
@@ -404,7 +573,7 @@
     el.prev.disabled = !inList || dates.indexOf(curIso) === 0;
     el.next.disabled = !inList || dates.indexOf(curIso) === dates.length - 1;
     if (!dates.length) return;
-    var entries = routeEntries(key);
+    var entries = routeDays[key];
     for (var iso = dates[0]; iso <= dates[dates.length - 1]; iso = addDays(iso, 1)) {
       var b = document.createElement('button');
       b.className = 'day';
@@ -532,7 +701,7 @@
     if (!cur) return;
     var p = cur.payload, E = cur.E;
     var buses = R.positionsAt(E, p.blinds, simT);
-    deckgl.setProps({ layers: staticLayers.concat([
+    deckgl.setProps({ layers: staticLayers.concat(markLayers, [
       new deck.TripsLayer({
         id: 'trails', data: trips,
         getPath: function (d) { return d.path; },
@@ -651,11 +820,19 @@
   el.timeline.addEventListener('pointerup', function () { scrubbing = false; });
   el.prev.onclick = function () { stepDay(-1); };
   el.next.onclick = function () { stepDay(1); };
-  el.route.addEventListener('change', function () {
+  el.route.addEventListener('change', async function () {
     var key = resolveRoute(el.route.value);
     el.route.blur();
     if (!key) { say('No replays on the server for route ' + el.route.value + '.'); return; }
+    say('Loading route ' + key + '\u2026');
+    try {
+      await ensureRoute(key);
+    } catch (e) {
+      say('Could not load the days for route ' + key + '. Check your connection and try again.');
+      return;
+    }
     var dates = availableDates(key);
+    if (!dates.length) { say('No replays on the server for route ' + key + '.'); return; }
     var keep = cur && dates.indexOf(cur.payload.date) !== -1 ? cur.payload.date : dates[dates.length - 1];
     loadServerDay(key, keep);
   });
@@ -733,9 +910,13 @@
       clock: el.clock.textContent, simT: simT, playing: playing,
       points: cur.E.points, vehicles: cur.E.vehicles.length,
       banner: el.banner.hidden ? null : el.banner.textContent,
+      badge: el.badge.hidden ? null : el.badge.textContent,
+      marked: markLayers.length > 0, back: el.back.getAttribute('href'),
       msg: el.msg.textContent, days: el.days.children.length,
-      url: location.search,
-    } : { msg: el.msg.textContent, days: el.days.children.length };
+      url: location.search, cached: Array.from(dayCache.keys()),
+      fullIndex: !!fullIndex,
+    } : { msg: el.msg.textContent, days: el.days.children.length,
+          routes: el.route.options.length, fullIndex: !!fullIndex };
   };
 
   /* ---- go ----------------------------------------------------------------- */
@@ -743,38 +924,41 @@
   applyBright();
   mountBasemap();
   requestAnimationFrame(tick);
+  setBack(null);
 
   (async function init() {
     var q = new URLSearchParams(location.search);
     var sp = +q.get('speed');
     if ([10, 30, 60, 120, 300, 600].indexOf(sp) !== -1) { speed = sp; el.speed.value = String(sp); }
     try {
-      var res = await fetch(DATA_ROOT + 'index.json', { cache: 'no-cache' });
-      if (!res.ok) throw new Error(res.status);
-      index = await res.json();
+      await loadCatalogue();
     } catch (e) {
       say('Could not load the list of replays. You can still open a saved day.',
           { label: 'Open a saved day\u2026', run: function () { el.file.click(); } });
       return;
     }
-    Object.keys(index.routes || {}).forEach(function (k) {
-      routeKey[k.toUpperCase()] = k;
-      var o = document.createElement('option');
-      o.value = k; o.textContent = k;
-      el.route.appendChild(o);
-    });
     var want = q.get('route');
-    var key = resolveRoute(want || DEFAULT_ROUTE) || Object.keys(routeKey).map(function (k) { return routeKey[k]; })[0];
-    if (want && !resolveRoute(want)) {
+    if (!want) {
+      say('Choose a route to watch a day of its buses.');
+      return;
+    }
+    var key = resolveRoute(want);
+    if (!key) {
       say('No replays on the server for route ' + want.toUpperCase() + '.');
       return;
     }
-    if (!key) { say('No replays on the server yet.'); return; }
+    el.route.value = key;
+    setBack(key);
+    try {
+      await ensureRoute(key);
+    } catch (e) {
+      say('Could not load the days for route ' + key + '. Check your connection and try again.');
+      return;
+    }
     var dates = availableDates(key);
     var date = q.get('date');
     if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) date = null;
     if (date && dates.indexOf(date) === -1) {
-      el.route.value = key;
       renderDays();
       var g = gapFor(date);
       if (g) say(fmtDay(date, { year: 'numeric' }) + ': ' +
@@ -782,6 +966,11 @@
       else notOnServer(key, date);
       return;
     }
-    loadServerDay(key, date || dates[dates.length - 1], { t: q.get('t') });
+    if (!dates.length) { say('No replays on the server for route ' + key + '.'); return; }
+    var gap = q.get('gap');
+    loadServerDay(key, date || dates[dates.length - 1], {
+      t: q.get('t'), at: q.get('at'),
+      gap: gap && /^\d{1,4}$/.test(gap) ? gap : null,
+    });
   })();
 })();

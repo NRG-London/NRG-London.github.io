@@ -1,0 +1,133 @@
+{{- /*
+  /bus/replay/ — every bus on one route, one day, replayed on a map.
+
+  A standalone page, not baseof: it is a full-screen dark map with a control
+  panel, so it carries none of the site's chrome or main.css. It keeps the
+  things every page needs from head.html (analytics, icon, share card, the
+  noindex switch) and nothing else.
+
+  The data is NOT in the site. NRG-1 writes it daily to an R2 bucket and a
+  Cloudflare Worker serves it (params.busReplayData in hugo.toml); the page
+  fetches a few KB of index and the one day being watched. The route pages
+  are the front door: they link here with ?route=, and the worst gap with
+  &date=&t=&at=&gap= ("watch it happen").
+
+  Code: static/js/ngbus-replay.js (the page), ngbus-replay-data.js (reading
+  a day file). Data format and links: scripts/BUS-DATA-CONTRACT.md, "Bus replay".
+*/ -}}
+<!doctype html>
+<html lang="en-GB">
+<head>
+{{ with .Site.Params.goatcounterURL }}<script data-goatcounter="{{ . }}" async src="//gc.zgo.at/count.js"></script>{{ end }}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bus replay — Neil Garratt</title>
+<meta name="description" content="{{ .Params.summary }}">
+{{ if .Params.noindex }}<meta name="robots" content="noindex, nofollow">{{ end }}
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+{{- $og := absURL (default "/images/og-default.png" .Params.image) }}
+<meta property="og:title" content="{{ .Title }} — {{ .Site.Params.author }}">
+<meta property="og:description" content="{{ .Params.summary }}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ .Permalink }}">
+<meta property="og:site_name" content="{{ .Site.Title }}">
+<meta property="og:locale" content="en_GB">
+<meta property="og:image" content="{{ $og }}">
+<meta name="twitter:card" content="summary_large_image">
+{{- with .Site.Params.social.twitter }}
+{{- $handle := printf "@%s" (path.Base .) }}
+<meta name="twitter:site" content="{{ $handle }}">
+{{- end }}
+<link rel="stylesheet" href="/css/ngbus-replay.css?v=1">
+</head>
+<body data-replay-root="{{ .Site.Params.busReplayData }}">
+<div id="basemap"></div>
+<div id="map"></div>
+<div id="banner" hidden></div>
+<div id="drop" hidden>Drop a saved bus replay file to open it</div>
+
+<aside id="hud">
+  <a id="back" href="/bus/">&larr; All bus routes</a>
+  <header>
+    <h1 id="title">Bus replay</h1>
+    <button id="collapse" aria-expanded="true" title="Hide or show the controls">&#9662;</button>
+  </header>
+  <div id="badge" hidden></div>
+
+  <div class="more">
+    <div class="row">
+      <label class="lbl" for="route">Route</label>
+      <select id="route" aria-label="Route"><option value="" disabled selected>Choose&hellip;</option></select>
+      <button id="prev" class="btn" title="Previous day" aria-label="Previous day">&lsaquo;</button>
+      <span id="daylabel"></span>
+      <button id="next" class="btn" title="Next day" aria-label="Next day">&rsaquo;</button>
+    </div>
+    <div id="days"></div>
+    <div class="daykey">few <i></i> many journeys cut short &middot; dashed = no figure yet</div>
+  </div>
+
+  <div id="clock">--:--:--</div>
+  <div id="meta"></div>
+  <div id="timeline" title="Buses seen through the day. Click or drag to jump."><canvas id="tl"></canvas></div>
+  <input id="slider" type="range" min="0" max="1000" value="0" aria-label="Time of day">
+  <div class="row">
+    <button id="play">Pause</button>
+    <span class="lbl">speed</span>
+    <select id="speed" aria-label="Playback speed">
+      <option value="10">10&times;</option>
+      <option value="30">30&times;</option>
+      <option value="60" selected>60&times;</option>
+      <option value="120">120&times;</option>
+      <option value="300">300&times;</option>
+      <option value="600">600&times;</option>
+    </select>
+    <button id="copylink" class="btn" title="Copy a link that opens this route, day and moment">Copy link</button>
+  </div>
+
+  <div class="more">
+    <div class="row">
+      <button id="save" class="btn" disabled title="Keep this day on your computer, so you can open it here after it has left the server">Save this day</button>
+      <button id="open" class="btn" title="Open a replay file you saved earlier (or drop it on the map)">Open a saved day&hellip;</button>
+      <input id="file" type="file" accept=".gz,.json,application/gzip,application/json" hidden>
+    </div>
+    <div class="row">
+      <span class="lbl">map</span>
+      <select id="mapstyle" aria-label="Map style">
+        <option value="dark" selected>Dark</option>
+        <option value="street">Streets</option>
+      </select>
+      <span class="lbl">bright</span>
+      <input id="mapbright" type="range" min="15" max="150" value="100" style="flex:1" aria-label="Map brightness">
+    </div>
+  </div>
+  <div id="msg" role="status" aria-live="polite"></div>
+  <div class="more">
+    <div id="legend">Trail = last 15 min &middot; grey dot = not in service (depot blind) &middot;
+      hover a bus for its registration and destination &middot; space = play/pause, &larr;&rarr; = a minute (shift: ten).
+      The last 35 days are kept; use &ldquo;Save this day&rdquo; to keep one for longer.</div>
+    <div id="attrib">
+      <details>
+        <summary>Data: Bus Open Data Service &middot; Powered by TfL Open Data &middot; &copy; OpenStreetMap &copy; CARTO</summary>
+        <p>Bus positions: Bus Open Data Service, Department for Transport.</p>
+        <p>Route lines and stops: Powered by TfL Open Data. Contains OS data &copy; Crown copyright and
+          database rights 2016. Geomni UK Map data &copy; and database rights [2019].</p>
+        <p>Map: &copy; <a href="https://www.openstreetmap.org/copyright" style="color:inherit">OpenStreetMap</a>
+          contributors &copy; <a href="https://carto.com/attributions" style="color:inherit">CARTO</a>.</p>
+      </details>
+    </div>
+  </div>
+</aside>
+
+{{- /* Routes with a performance page, so "back" can go to the route's own
+       page rather than the A-Z (the replay also has school and other routes
+       the bus pages do not cover). */ -}}
+{{- $pages := slice -}}
+{{- range hugo.Data.bus.weekly.routes }}{{ $pages = $pages | append .route }}{{ end }}
+<script type="application/json" id="ngbus-replay-pages">{{ $pages | jsonify | safeJS }}</script>
+<script src="/js/deck.min.js"></script>
+<script src="/js/maplibre-gl.js"></script>
+<script src="/js/ngbus-replay-data.js?v=1"></script>
+<script src="/js/ngbus-replay.js?v=1"></script>
+</body>
+</html>
