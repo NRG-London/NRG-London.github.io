@@ -756,7 +756,8 @@
     Figures are computed from observed bus positions, {{ $window }}.
     <a href="/bus/how-this-is-measured/">How this is measured</a>.
     {{- if $w.sample }} <strong>These are sample figures, not measurements.</strong>{{ end }}
-    Not affiliated with Transport for London; not for planning a journey.
+    {{ partial "bus-sources.html" . }}
+    Not for planning a journey.
   </p>
 
   {{- /* Everything the chart needs and nothing more: one series per direction in

@@ -1,0 +1,31 @@
+{{- /*
+  bus-sources — the credits and disclaimers every bus page owes its sources,
+  in one place so the wording is reviewed once and cannot drift between the
+  route pages, the A-Z, and the replay.
+
+  What each source requires (checked 15 Oct 2026):
+  - TfL (route lines, stops, termini, TfL's quarterly figures): "Powered by
+    TfL Open Data" plus the OS and Geomni statements, word for word, and
+    nothing implying TfL endorses the site. tfl.gov.uk/corporate/terms-and-
+    conditions/transport-data-service
+  - BODS, the DfT (every bus position): attribute the data to BODS; state that
+    using it is no endorsement by the DfT or the operators; and state that the
+    DfT cannot warrant its accuracy or quality ("Data consumers will be
+    prevented from further using the service if they do not state this").
+    gov.uk Bus open data implementation guide, "Attribution of data sources".
+  - The Open Government Licence line comes with the data file's own
+    attribution string ($w.attribution), printed alongside this.
+
+  WORDING IS A DRAFT for Neil (15 Oct 2026); the required phrases are the
+  quoted ones above and must survive any rewrite.
+
+  Usage: {{ partial "bus-sources.html" . }}
+*/ -}}
+<span class="ngbus-sources">
+  Bus positions from the Department for Transport&rsquo;s Bus Open Data Service (BODS); the Department
+  for Transport cannot warrant the accuracy or quality of the data published there.
+  Route lines and stops: Powered by TfL Open Data. Contains OS data &copy; Crown copyright and database
+  rights 2016. Geomni UK Map data &copy; and database rights [2019].
+  These pages and the bus replay are built independently from open data: Transport for London, the
+  Department for Transport and the bus operators had no part in making them, and none of them endorses them.
+</span>

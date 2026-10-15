@@ -27,7 +27,8 @@
   </div>
 
   <p class="ngbus-attr">{{ $w.attribution }}
-    {{ if $w.sample }}<strong>These are sample figures, not measurements.</strong>{{ end }}</p>
+    {{ if $w.sample }}<strong>These are sample figures, not measurements.</strong>{{ end }}
+    {{ partial "bus-sources.html" . }}</p>
 </div>
 
 {{- /* Every page that uses an ngbus- class must pull the stylesheet in. This
