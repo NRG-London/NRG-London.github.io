@@ -1,0 +1,343 @@
+# ==============================================================================
+#  THE WORDING OF THE BUS ROUTE PAGES  (/bus/38/, /bus/60/ ...)
+# ==============================================================================
+#
+#  Every sentence a reader sees on a route page lives here, in page order.
+#  Edit the words freely; the page template (layouts/bus/single.html) and the
+#  chart (static/js/ngbus-chart.js) only fill them in.
+#
+#  HOW TO EDIT
+#  - Change anything between the quotes. Keep the quotes.
+#  - {curly} words are slots the page fills in: {route} becomes "38",
+#    {week} becomes "10 October 2026", and so on. Each section's notes say
+#    which slots it has. You can move a slot anywhere in its sentence or leave
+#    it out; a slot that is not listed for that line will stop the build with
+#    a message naming the line.
+#  - **double stars** make words bold.
+#  - "" (empty quotes) removes a sentence altogether.
+#  - A " (double quote) inside the text needs a backslash: \"like this\".
+#
+#  HOW TO CHECK
+#  Start the preview in the site manager and open a route page, say
+#  /bus/38/ (a frequent route with lots cut short) and /bus/127/ (quieter).
+#  Some lines appear only for some routes; the notes say when. Timetabled
+#  routes (the "On time" pages) and night routes are rarer: /bus/110/,
+#  /bus/N109/.
+#
+#  Not here: the credits at the foot of every bus page are in `sources` at
+#  the end (they carry phrases TfL and BODS require); the replay page's own
+#  text is still in its layout.
+# ==============================================================================
+
+
+# ---- the top of the page -----------------------------------------------------
+
+page:
+  back: "← All bus routes"
+  tag: "Transport"
+
+# The caption under the bus picture, and the big figure beside it.
+# Slots: {article} is "a" or "an", {model} the usual bus type,
+# {route}, {window} (the hours measured), {week} (the week ending),
+# {pct} / {min} the figure, {median} the London-wide middle figure,
+# {early} / {late} the on-time allowances in minutes.
+hero:
+  usually: "Usually {article} {model}."
+  night_caption: "Night route."
+  school_caption: "School service."
+
+  # Night routes
+  night_figure: "Night route"
+  night_note: "night buses run outside the hours these pages measure ({window}). They will be measured separately, on their own hours."
+
+  # A route that has never produced a figure
+  none_figure: "No figures yet"
+  none_note: "route {route} has not produced a publishable figure in any week we have watched. This is a gap in what we can observe, not a verdict on the route."
+
+  # Frequent routes (the usual case): excess wait
+  ewt_figure: "{min} min"
+  ewt_note: "excess wait in the week ending {week}. Half of London's frequent routes kept it to {median} min or less."
+  ewt_nodata_figure: "No data"
+  ewt_nodata_note: "too little of this week was captured on route {route} to publish a figure. This is a gap in the observation, not a verdict on the route."
+
+  # Timetabled routes: on time
+  ontime_figure: "{pct} on time"
+  ontime_note: "of departures in the week ending {week}{allowance}."
+  ontime_allowance: ", leaving no more than {early} minutes early or {late} minutes late"
+  ontime_median: "Half of London's timetabled routes managed {median} or better."
+  ontime_nodata_figure: "No data"
+  ontime_nodata_note: "too few of route {route}'s departures were captured this week to publish a figure. This is a gap in the observation, not a verdict on the route."
+
+
+# ---- the chart -----------------------------------------------------------------
+
+# The heading, subheading and buttons above the chart, as the page first draws
+# it. The chart then keeps them up to date from `chart_live` below as the
+# reader presses buttons, so change the matching line there too.
+chart:
+  title_days: "The last week, day by day"
+  title_weeks: "Week by week"
+  subtitle_frequent: "Share of waiting time spent inside a gap longer than ten minutes."
+  subtitle_timetabled: "Share of departures leaving on time."
+  measures_label: "Which measure to plot"     # read aloud by screen readers
+  spans_label: "Time span"                    # read aloud by screen readers
+  button_ontime: "On time"
+  button_wait10: "Wait > 10 min"
+  button_ewt: "Excess wait"
+  button_cut: "Cut short"
+  button_cutwait: "Cut-short wait"
+  button_week: "Last week"
+  button_month: "Last month"
+  button_3m: "Last 3 months"
+  button_12m: "Last 12 months"
+  button_all: "All data"
+
+# What the chart writes as the reader uses it. Slots: {route}, {date},
+# {pct}, {place}, {span} ("day" or "week").
+chart_live:
+  title_week: "The last week, day by day"
+  title_month: "The last month, day by day"
+  title_3m: "The last three months, week by week"
+  title_12m: "The last twelve months, week by week"
+  title_all: "Week by week"
+  subtitle_ewt: "Excess wait time in each direction, in minutes."
+  subtitle_ot: "Share of departures leaving on time."
+  subtitle_p: "Share of waiting time spent inside a gap longer than ten minutes."
+  subtitle_cur: "Share of journeys turned back before the end of the line."
+  subtitle_tsw: "Wait added by buses cut short, at each day’s hardest-hit stop, in minutes."
+  # Read aloud by screen readers, as "Daily excess wait time for route 38. ..."
+  spoken_daily: "Daily"
+  spoken_weekly: "Weekly"
+  spoken_ewt: "excess wait time"
+  spoken_ot: "share of departures on time"
+  spoken_p: "share of waits over ten minutes"
+  spoken_cur: "share of journeys cut short"
+  spoken_tsw: "wait added by buses cut short at the hardest-hit stop"
+  spoken_end: "for route {route}. The same figures are listed in the table below."
+  # A button that has nothing to show for the chosen span (hover text)
+  button_off_days: "Not measured day by day — try a longer span"
+  button_off_period: "Nothing to draw for this route in this period"
+  # An empty chart
+  empty_all: "No week in the record has enough data for this route to plot."
+  empty_period: "Nothing was recorded for this route in this period."
+  no_data: "no data"
+  # The key under the chart
+  key_timetable: "dashed: the same figure if every bus ran to the timetable"
+  key_gap: "no data this {span}"
+  key_thin: "thinner {span} (data for under {pct}% of it)"
+  # The box that appears on hovering a point
+  tip_week: "Week ending {date}"
+  tip_timetable: "(timetable {pct}%)"
+  tip_at: "at {place}"
+  tip_coverage: "Data collected for {pct}% of the {span}"
+  tip_replay: "Click to watch this day ▶"
+
+# The line under the chart that opens the replay.
+replay:
+  link: "Watch a day of route {route}’s buses"
+  after: ": every bus, replayed on the map."
+  chart_hint: "Or click a day on the chart."      # only when the chart is showing days
+
+
+# ---- the weekly table (collapsed under the chart) -------------------------------
+
+weeks:
+  summary: "The weekly figures"
+  hint_frequent: "Excess wait, then the share of waiting spent in a gap longer than ten minutes."
+  hint_timetabled: "The share of departures that left on time."
+  column_week: "Week ending"
+  thin: "thin"
+  thin_hover: "Bus data was collected for only {pct} of this week, across the whole of London"
+
+# Used wherever a figure is missing.
+common:
+  no_data: "no data"
+  no_data_hover: "Too little data this week"
+
+
+# ---- the sentence in passenger's words ------------------------------------------
+
+# Frequent routes, from the worse direction this week. {direction} is
+# "towards Victoria Bus Station". The sentence is lead + one of the three
+# "how often" endings, then optionally one of the three timetable endings.
+# {n} is a number in words ("four"); {pct} a percentage.
+strap:
+  frequent_lead: "Waiting for a bus {direction}, more than ten minutes goes by on {how}."
+  how_rare: "fewer than one trip in fifty"
+  how_one_in: "about one trip in {n}"
+  how_share: "about {pct} of trips"
+  timetable_never: "Running exactly to the timetable it would almost never happen."
+  timetable_one_in: "Running exactly to the timetable it would be one trip in {n}."
+  timetable_share: "Running exactly to the timetable it would be {pct} of trips."
+
+  # Timetabled routes, from the worse stop. {place} is the terminus,
+  # {n} a number in words, {departures} "departure" or "departures".
+  ontime_all: "A passenger going by the timetable at {place} could count on almost every departure leaving on time."
+  ontime_none: "A passenger going by the timetable at {place} would find almost no departure leaving on time."
+  ontime_some: "A passenger going by the timetable at {place} would find about {n} {departures} in ten leaving more than {early} minutes early or {late} minutes late."
+  departure: "departure"
+  departures: "departures"
+
+  # Night routes whose daytime twin is measured. {link} is "route 155", linked.
+  night: "The daytime route {day} is measured: see {link}."
+  night_link: "route {day}"
+
+
+# ---- the direction cards ----------------------------------------------------------
+
+# One card per direction (or per terminus, for timetabled routes).
+# Slots: {min}, {pct}, {band} (10, 20 or 30), {n} and {total} journeys.
+cards:
+  ontime: "On time"
+  ewt: "Excess wait"
+  ewt_hover: "How much longer people waited, on average, than they would have if every bus had run exactly to the timetable. Nought means the buses came as evenly as planned. This is the measure TfL itself uses for frequent routes."
+  ewt_value: "{min} min"
+  ewt_cut_part: "{min} min of it from buses turned short"
+  ewt_cut_part_hover: "Part of the excess wait above, caused by buses turned back before the end of the line"
+  wait_band: "Wait > {band} min"
+  timetable_alone: "timetable alone: {pct}"
+  p95: "1 in 20 wait over"
+  p95_hover: "Nineteen people in twenty get a bus sooner than this. A fairer picture of a bad-but-ordinary wait than the single longest gap, which can be a one-off."
+  p95_value: "{min} min"
+  cut: "Cut short"
+  cut_hover: "Journeys turned back before the end of the line this week. Anyone still on board is put off, and anyone waiting further along is left for the next bus."
+  cut_count: "{n} of {total} journeys"
+
+
+# ---- the worst gap ------------------------------------------------------------------
+
+# Built as: sentence, where {where} is the place part and {when} the time part.
+# Slots: {minutes}, {place}, {direction}, {day} / {day2} ("Thursday 8 October"),
+# {from} / {to} ("14:04").
+worst_gap:
+  sentence: "**{minutes} minutes** was the longest gap between buses this week{where}{when}."
+  where_place: ", at {place}"
+  where_direction: " {direction}"
+  when_same_day: ", on {day} from {from} to {to}"
+  when_two_days: ", from {from} on {day} to {to} on {day2}"
+  when_start_only: ", on {day}, starting at {from}"
+  caveat: "This excludes any gaps caused by holes in our own data."
+  watch: "Watch it happen →"        # opens the replay at that moment
+
+
+# ---- When it goes wrong (frequent routes) -----------------------------------------------
+
+bands:
+  title: "When it goes wrong"
+  lead: "The share of waiting time spent inside a gap longer than twenty minutes, by time of day, averaged over the most recent weeks of data. The mark on each bar is what the timetable alone would give."
+  timetable_hover: "The timetable alone would give {pct}"
+  ewt: "{min} min excess wait"
+
+
+# ---- Journeys cut short -------------------------------------------------------------------
+
+# Slots: {pct}, {week}, {min}, {place}, {direction}, {awt} / {awt_without}
+# (average waits), {route}, {count}, {n} (in words), {rate}, {total}, {km}.
+cut:
+  title: "Journeys cut short"
+  last_week: "**Last week:** **{pct}** of journeys were turned back before the end of the line in the week ending {week}{ewt_part}."
+  last_week_ewt_part: ", and that accounts for **{min} minutes** of the excess wait above"
+  consequence: "Anyone still on board is put off, and anyone waiting further along the route is left for the next bus: a cancellation that only the far end of the route ever sees."
+  worst_stop: "**Hardest-hit stop:** at {place}, {direction}, buses cut short added **{min} minutes** to the average wait last week: {awt} minutes instead of {awt_without}."
+  worst_stop_first: "It is where the route starts back, so a bus turned round before reaching it never sets off from there at all."
+  worst_stop_small: "**Hardest-hit stop:** buses cut short added no more than {min} minutes to the average wait at any stop last week."
+
+  # The older four-week count, shown on a few routes while the data still has it.
+  older_label_one: "Last week"
+  older_label_many: "Last {n} weeks"
+  older: "**{label}:** **{count}** journeys on route {route} were turned back before the end of the line over {n} {weeks} of watching{span} — **{rate}**."
+  older_week: "week"
+  older_weeks: "weeks"
+  older_span: ", {from} to {to}"
+  older_rate_low: "fewer than one a day"
+  older_rate: "about {n} a day"
+  hours_label: "Journeys cut short by hour of day on route {route}"     # read aloud
+  hours_note: "Where those journeys fall across the day. Each bar is the number cut short in that hour on an average day, so the bars together come to the daily figure above; hover a bar for its hour. Hours the route was not watched enough to say are shaded rather than drawn as nought."
+  turn_title: "Where they turn round"
+  turn_rest: "The {n} places used most often. The other {rest} turned round somewhere else along the route."
+
+  # Each direction's own lines
+  direction_none: "Last week, none of {total} journeys was turned short."
+  direction_some: "Last week, **{n}** of {total} journeys ({pct}) were turned short."
+  stops_label: "Average wait at each stop in route order, with the part added by buses cut short"   # read aloud
+  stops_note: "Each bar is the average wait at one stop, in route order. The darker top is what buses cut short added; the pale part is the wait without them; the tick is what the timetable alone would give. Hover a bar for the stop."
+  stops_small: "Buses cut short added no more than {min} minutes to the wait at any stop in this direction."
+  turn_elsewhere: "Elsewhere along the route"
+  turn_short_km: "{km} km short of the end"
+  turn_note: "Each place is the last stop the bus was timed at before it turned round, with the typical distance it fell short of the end of the line. The five busiest are named; the rest are counted together."
+
+
+# ---- Compared with TfL's own figures --------------------------------------------------------
+
+# Slots: {v} a figure in minutes, {pct}.
+tfl:
+  title: "Compared with TfL's own figures"
+  column_quarter: "Quarter"
+  column_tfl: "TfL"
+  column_ours: "Ours"
+  ewt_value: "{v} min"
+  ontime_value: "{pct} on time"
+  no_figure: "no figure"
+  no_figure_hover: "Not enough of that quarter was collected"
+  note: "TfL's figures come from its own tracking equipment and its own timetable; ours are computed from the buses' public position feed. They are the same calculation on independent data, so they should broadly agree and move together rather than match exactly."
+  why_higher: "**Why ours is usually a little higher.** When a bus is turned back before the end of the line, everyone waiting further along has to wait for the next one. Our figure counts that waiting; TfL's published figure appears not to. Take it out and the two come close: across London in April to June 2026, our average excess wait falls from 1.39 to 1.23 minutes against TfL's 1.08, and on the routes where the two differed most it lands almost exactly on TfL's number."
+
+
+# ---- About this data (collapsed) --------------------------------------------------------------
+
+# Slots: {week}, {pct}, {threshold}, {n} (in words where it is days or hours),
+# {days} ("day"/"days"), {list} (directions not measured), {window},
+# {early} / {late}.
+about:
+  summary: "About this data"
+  coverage_term: "Data collected, week ending {week}"
+  coverage: "**{pct}** of the week. This is the share of the week for which we hold bus location data at all, across the whole of London rather than for this route. A week under {threshold} is not published; under 90% it is marked as thin."
+  journeys_term: "Journeys observed"
+  departures_term: "Departures observed"
+  journeys: "{n} journeys tracked"
+  journeys_days: "across {n} {days}"
+  day: "day"
+  days: "days"
+  departures: "{n} departures seen"
+  none_recorded: "none recorded"
+  evidence_note: "A guide to how much evidence sits behind this week's figures, not a measure of the service."
+  not_measured_term: "Not measured"
+  not_measured: "No figure has been produced for {list}."
+  list_or: " or "             # the last join in {list}: "towards A, towards B or towards C"
+  how_term: "How it is measured"
+  how_window: "{window}."
+  how_directions: "Waits are measured along the route at TfL's timing points, in each direction, against the timetable — not at the ends of the route, where a bus turned back early counts as if it had run."
+  how_ontime: "On time means leaving no more than {early} minutes early or {late} minutes late."
+  how_min_hours: "A day with less than {n} hours of data collected shows no daily figure."
+  how_link: "How these figures are made"     # links to the bus performance hub
+
+# The list of gaps in our own record, inside About this data. {n} is a count.
+holes:
+  summary: "Gaps in the record for this period ({n})"
+  hint: "Most recent first. Hover a week on the chart and it will name the gap behind it. Most are a few missing hours on an otherwise ordinary day."
+
+
+# ---- the foot of the page ----------------------------------------------------------------------
+
+footer:
+  tfl_line: "For latest timetable and route information, see {link}."
+  tfl_link: "TfL's official page"
+  tfl_link_spoken: "Transport for London's official page for route {route}"     # read aloud
+  computed: "Figures are computed from observed bus positions, {window}."
+  how_link: "How these figures are made"
+  sample: "**These are sample figures, not measurements.**"     # only while data is marked sample
+  not_for_journeys: "Not for planning a journey."
+
+# The credits on every bus page (route pages, the A-Z and the replay).
+# Agreed 16 Oct 2026. TfL and BODS each REQUIRE certain words, kept below
+# exactly; reword around them, never through them:
+#   TfL:  "Powered by TfL Open Data", the OS line and the Geomni line, and
+#         nothing suggesting TfL endorses the site.
+#   BODS: credit BODS; say the DfT cannot warrant the data's accuracy or
+#         quality; say using it is no endorsement by the DfT or operators.
+# {open_innovations} is the words "Open Innovations", linked to them.
+sources:
+  bods: "Bus positions from the Department for Transport’s Bus Open Data Service (BODS); the Department for Transport cannot warrant the accuracy or quality of the data published there."
+  archive: "Positions before September 2026 come from the Bus Open Data archive generously built and kept by {open_innovations}, with thanks."
+  tfl: "Route lines and stops: Powered by TfL Open Data. Contains OS data © Crown copyright and database rights 2016. Geomni UK Map data © and database rights [2019]."
+  independent: "These pages and the bus replay are built independently from open data: Transport for London, the Department for Transport and the bus operators had no part in making them, and none of them endorses them."

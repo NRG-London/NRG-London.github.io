@@ -1,0 +1,43 @@
+{{- /*
+  bus-say — one line of bus-page wording from data/buswords.yaml, filled in.
+
+  The route pages' prose is Neil's to edit, and it used to be threaded
+  through 850 lines of template logic. Now the templates hold only the logic:
+  every sentence lives in data/buswords.yaml, in page order, and this fills
+  its {slots} with the values the page computed.
+
+    {{ partial "bus-say.html" (dict "k" "hero.ewt_note"
+         "v" (dict "week" "10 October 2026" "median" "1.5")) }}
+
+  - `k` is the line's dotted path in the file. A missing line stops the
+    build, naming it; an empty one ("") prints nothing, so a sentence can be
+    removed from the file without touching the template.
+  - `v` holds the slot values. Plain values are HTML-escaped (stop names
+    carry apostrophes and the odd ampersand); a value already made safe with
+    safeHTML (a link, or another bus-say line) goes in as it is.
+  - **double stars** in the file become <strong>.
+  - A slot left unfilled stops the build with the line and the text, so a
+    typo in a slot name cannot ship as "{rout}" on 665 pages.
+
+  A RETURNING partial: it hands back safe HTML for the caller to print.
+*/ -}}
+{{- $k := .k -}}
+{{- $t := hugo.Data.buswords -}}
+{{- range split $k "." -}}
+  {{- if reflect.IsMap $t }}{{ $t = index $t . }}{{ else }}{{ $t = nil }}{{ end -}}
+{{- end -}}
+{{- if eq $t nil -}}
+  {{- errorf "data/buswords.yaml: no line called %q" $k -}}
+{{- end -}}
+{{- $s := htmlEscape (string $t) -}}
+{{- $s = replaceRE `\*\*(.+?)\*\*` "<strong>$1</strong>" $s -}}
+{{- range $name, $val := .v -}}
+  {{- $rep := "" -}}
+  {{- if eq (printf "%T" $val) "template.HTML" }}{{ $rep = string $val }}
+  {{- else }}{{ $rep = htmlEscape (string $val) }}{{ end -}}
+  {{- $s = replace $s (printf "{%s}" $name) $rep -}}
+{{- end -}}
+{{- with findRE `\{[A-Za-z_0-9]+\}` $s -}}
+  {{- errorf "data/buswords.yaml: %q has a slot this line does not fill: %s (text: %s)" $k (delimit . ", ") $s -}}
+{{- end -}}
+{{- return ($s | safeHTML) -}}

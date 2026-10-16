@@ -20,18 +20,18 @@
   - The Open Government Licence line comes with the data file's own
     attribution string ($w.attribution), printed alongside this.
 
-  Wording agreed with Neil, 16 Oct 2026. The required phrases are the quoted
-  ones above and must survive any rewrite.
+  Wording agreed with Neil, 16 Oct 2026, and kept in data/buswords.yaml
+  (`sources`). The required phrases are the quoted ones above and must
+  survive any rewrite.
 
   Usage: {{ partial "bus-sources.html" . }}
 */ -}}
+{{- /* The words live in data/buswords.yaml, `sources`, with the phrases TfL
+       and BODS require marked there. */ -}}
+{{- $oi := `<a href="https://open-innovations.org/projects/">Open Innovations</a>` | safeHTML -}}
 <span class="ngbus-sources">
-  Bus positions from the Department for Transport&rsquo;s Bus Open Data Service (BODS); the Department
-  for Transport cannot warrant the accuracy or quality of the data published there. Positions before
-  September 2026 come from the Bus Open Data archive generously built and kept by
-  <a href="https://open-innovations.org/projects/">Open Innovations</a>, with thanks.
-  Route lines and stops: Powered by TfL Open Data. Contains OS data &copy; Crown copyright and database
-  rights 2016. Geomni UK Map data &copy; and database rights [2019].
-  These pages and the bus replay are built independently from open data: Transport for London, the
-  Department for Transport and the bus operators had no part in making them, and none of them endorses them.
+  {{ partial "bus-say.html" (dict "k" "sources.bods") }}
+  {{ partial "bus-say.html" (dict "k" "sources.archive" "v" (dict "open_innovations" $oi)) }}
+  {{ partial "bus-say.html" (dict "k" "sources.tfl") }}
+  {{ partial "bus-say.html" (dict "k" "sources.independent") }}
 </span>

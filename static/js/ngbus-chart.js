@@ -114,11 +114,45 @@
   var legend = document.getElementById('ngbus-chart-legend');
   var sub = document.getElementById('ngbus-chart-sub');
   var title = document.getElementById('ngbus-chart-title');
+  /* Every word the chart writes comes from data/buswords.yaml (`chart_live`),
+     which the page passes in with the data so Neil can reword it without
+     touching this file. These are only the fallbacks, should a line be missing. */
+  var WORDS = Object.assign({
+    title_week: 'The last week, day by day', title_month: 'The last month, day by day',
+    title_3m: 'The last three months, week by week',
+    title_12m: 'The last twelve months, week by week', title_all: 'Week by week',
+    subtitle_ewt: 'Excess wait time in each direction, in minutes.',
+    subtitle_ot: 'Share of departures leaving on time.',
+    subtitle_p: 'Share of waiting time spent inside a gap longer than ten minutes.',
+    subtitle_cur: 'Share of journeys turned back before the end of the line.',
+    subtitle_tsw: 'Wait added by buses cut short, at each day\u2019s hardest-hit stop, in minutes.',
+    spoken_daily: 'Daily', spoken_weekly: 'Weekly',
+    spoken_ewt: 'excess wait time', spoken_ot: 'share of departures on time',
+    spoken_p: 'share of waits over ten minutes', spoken_cur: 'share of journeys cut short',
+    spoken_tsw: 'wait added by buses cut short at the hardest-hit stop',
+    spoken_end: 'for route {route}. The same figures are listed in the table below.',
+    button_off_days: 'Not measured day by day \u2014 try a longer span',
+    button_off_period: 'Nothing to draw for this route in this period',
+    empty_all: 'No week in the record has enough data for this route to plot.',
+    empty_period: 'Nothing was recorded for this route in this period.',
+    no_data: 'no data',
+    key_timetable: 'dashed: the same figure if every bus ran to the timetable',
+    key_gap: 'no data this {span}',
+    key_thin: 'thinner {span} (data for under {pct}% of it)',
+    tip_week: 'Week ending {date}', tip_timetable: '(timetable {pct}%)', tip_at: 'at {place}',
+    tip_coverage: 'Data collected for {pct}% of the {span}',
+    tip_replay: 'Click to watch this day \u25b6'
+  }, spec.words || {});
+  function say(k, v) {
+    var t = WORDS[k] == null ? '' : String(WORDS[k]);
+    for (var n in (v || {})) t = t.split('{' + n + '}').join(v[n]);
+    return t;
+  }
+
   /* The heading says what span is on show, because the chart now opens on the
      last week, and "Week by week" over seven daily points would be wrong. */
-  var SPAN_TITLES = { week: 'The last week, day by day', month: 'The last month, day by day',
-                      '3m': 'The last three months, week by week',
-                      '12m': 'The last twelve months, week by week', all: 'Week by week' };
+  var SPAN_TITLES = { week: WORDS.title_week, month: WORDS.title_month,
+                      '3m': WORDS.title_3m, '12m': WORDS.title_12m, all: WORDS.title_all };
 
   var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -140,7 +174,7 @@
      most routes would read a flat 0% and the chart would look broken rather
      than good. */
   function fmt(v) {
-    if (v == null) return 'no data';
+    if (v == null) return WORDS.no_data;
     if (metric === 'ewt' || metric === 'tsw') return v.toFixed(1) + ' min';
     /* Two decimals only while the figure is under 1%: a weekly route-wide rate
        of 0.34% needs them, a day on the 38 at 45.50% does not. */
@@ -154,20 +188,10 @@
     return Math.round(v * 100) + '%';
   }
 
-  var TITLES = {
-    ewt: 'Excess wait time in each direction, in minutes.',
-    ot: 'Share of departures leaving on time.',
-    p: 'Share of waiting time spent inside a gap longer than ten minutes.',
-    cur: 'Share of journeys turned back before the end of the line.',
-    tsw: 'Wait added by buses cut short, at each day\u2019s hardest-hit stop, in minutes.'
-  };
-  var ARIA = {
-    ewt: 'excess wait time',
-    ot: 'share of departures on time',
-    p: 'share of waits over ten minutes',
-    cur: 'share of journeys cut short',
-    tsw: 'wait added by buses cut short at the hardest-hit stop'
-  };
+  var TITLES = { ewt: WORDS.subtitle_ewt, ot: WORDS.subtitle_ot, p: WORDS.subtitle_p,
+                 cur: WORDS.subtitle_cur, tsw: WORDS.subtitle_tsw };
+  var ARIA = { ewt: WORDS.spoken_ewt, ot: WORDS.spoken_ot, p: WORDS.spoken_p,
+               cur: WORDS.spoken_cur, tsw: WORDS.spoken_tsw };
 
   /* ---- the view: weeks or days ------------------------------------------- */
 
@@ -342,16 +366,14 @@
       var ok = hasMetric(V, m);
       b.disabled = !ok;
       b.setAttribute('aria-pressed', String(ok && m === metric));
-      if (!ok) b.title = V.mode === 'day'
-        ? 'Not measured day by day — try a longer span'
-        : 'Nothing to draw for this route in this period';
+      if (!ok) b.title = V.mode === 'day' ? WORDS.button_off_days : WORDS.button_off_period;
       else b.removeAttribute('title');
     });
 
     current = V;
     if (title) title.textContent = V.mode === 'day' ? SPAN_TITLES[range]
                                  : (SPAN_TITLES[range] && range !== 'week' && range !== 'month'
-                                    ? SPAN_TITLES[range] : 'Week by week');
+                                    ? SPAN_TITLES[range] : WORDS.title_all);
     plot.textContent = '';
     if (legend) legend.textContent = '';
     if (!V.idx.length) return;
@@ -364,9 +386,7 @@
     if (!dom) {
       var p = document.createElement('p');
       p.className = 'ngbus-empty';
-      p.textContent = range === 'all'
-        ? 'No week in the record has enough data for this route to plot.'
-        : 'Nothing was recorded for this route in this period.';
+      p.textContent = range === 'all' ? WORDS.empty_all : WORDS.empty_period;
       plot.appendChild(p);
       return;
     }
@@ -379,8 +399,8 @@
       viewBox: '0 0 ' + G.W + ' ' + G.H,
       preserveAspectRatio: 'xMidYMid meet',
       role: 'img',
-      'aria-label': (V.mode === 'day' ? 'Daily ' : 'Weekly ') + (ARIA[metric] || metric) +
-                    ' for route ' + spec.route + '. The same figures are listed in the table below.'
+      'aria-label': (V.mode === 'day' ? WORDS.spoken_daily : WORDS.spoken_weekly) + ' ' +
+                    (ARIA[metric] || metric) + ' ' + say('spoken_end', { route: spec.route })
     });
 
     /* Points with nothing publishable, behind everything: those in the record
@@ -404,7 +424,7 @@
         var t = el('text', {
           'class': 'ngbus-hole__label', x: (r[0] + r[1]) / 2, y: G.t + 14, 'text-anchor': 'middle'
         });
-        t.textContent = 'no data';
+        t.textContent = WORDS.no_data;
         svg.appendChild(t);
       }
     });
@@ -484,12 +504,12 @@
         var tSw = document.createElement('span');
         tSw.className = 'ngbus-legend__swatch ngbus-legend__swatch--tt';
         tItem.appendChild(tSw);
-        tItem.appendChild(document.createTextNode('dashed: the same figure if every bus ran to the timetable'));
+        tItem.appendChild(document.createTextNode(WORDS.key_timetable));
         legend.appendChild(tItem);
       }
-      [[anyHole, 'ngbus-hole', V.mode === 'day' ? 'no data this day' : 'no data this week'],
-       [anyThin, 'ngbus-thin', 'thinner ' + (V.mode === 'day' ? 'day' : 'week') +
-                               ' (data for under ' + Math.round(FULL * 100) + '% of it)']
+      var span = V.mode === 'day' ? 'day' : 'week';
+      [[anyHole, 'ngbus-hole', say('key_gap', { span: span })],
+       [anyThin, 'ngbus-thin', say('key_thin', { span: span, pct: Math.round(FULL * 100) })]
       ].forEach(function (k) {
         if (!k[0]) return;
         var item = document.createElement('span');
@@ -631,18 +651,18 @@
     var iso = V.labels[i];
     var head = V.mode === 'day'
       ? DAYS[new Date(V.times[i]).getUTCDay()] + ' ' + shortDate(iso) + ' ' + iso.slice(0, 4)
-      : 'Week ending ' + shortDate(iso) + ' ' + iso.slice(0, 4);
+      : say('tip_week', { date: shortDate(iso) + ' ' + iso.slice(0, 4) });
     var lines = ['<strong>' + head + '</strong>'];
     V.series.forEach(function (s) {
       var row = esc(s.name) + ': ' + fmt((s[metric] || [])[i]);
       if (metric === 'p') {
         var t = (s.tt || [])[i];
-        if (t != null) row += ' <span class="ngl2-tt">(timetable ' + Math.round(t * 100) + '%)</span>';
+        if (t != null) row += ' <span class="ngl2-tt">' + esc(say('tip_timetable', { pct: Math.round(t * 100) })) + '</span>';
       }
       /* Which stop it was — the figure is the day's worst stop, not the route. */
       if (metric === 'tsw') {
         var pl = (s.tswp || [])[i];
-        if (pl && (s.tsw || [])[i] != null) row += ' <span class="ngl2-tt">at ' + esc(pl) + '</span>';
+        if (pl && (s.tsw || [])[i] != null) row += ' <span class="ngl2-tt">' + esc(say('tip_at', { place: pl })) + '</span>';
       }
       lines.push(row);
     });
@@ -652,14 +672,14 @@
        network-wide number, so it is labelled as that. */
     var c = V.cov(i);
     if (c != null) {
-      lines.push('<span class="ngl2-cov">Data collected for ' + Math.round(c * 100) +
-                 '% of the ' + (V.mode === 'day' ? 'day' : 'week') + '</span>');
+      lines.push('<span class="ngl2-cov">' + esc(say('tip_coverage',
+                 { pct: Math.round(c * 100), span: V.mode === 'day' ? 'day' : 'week' })) + '</span>');
     }
     holesFor(V, i).forEach(function (h) {
       lines.push('<span class="ngl2-gap"><strong>' + esc(holeLabel(h)) + '</strong> ' +
                  esc(h.reason) + '</span>');
     });
-    if (replayURL(V, i)) lines.push('<span class="ngl2-tt">Click to watch this day &#9654;</span>');
+    if (replayURL(V, i)) lines.push('<span class="ngl2-tt">' + esc(WORDS.tip_replay) + '</span>');
     tip.innerHTML = lines.join('<br>');
     tip.hidden = false;
 
