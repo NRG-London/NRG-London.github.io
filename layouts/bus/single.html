@@ -474,8 +474,16 @@
       {{- if ge .added_wait_min 0.5 }}
       {{- $wsPlace := .place }}{{ $isFirst := false -}}
       {{- range $h.directions }}{{ range .turned_short_by_stop }}{{ if and .first (eq .place $wsPlace) }}{{ $isFirst = true }}{{ end }}{{ end }}{{ end }}
+    {{- /* The start of a direction is often the stop hit hardest: a bus turned back
+           before it got there never sets off from there. That case can have a
+           sentence of its own, `cut.worst_stop_start`, used instead of
+           worst_stop + worst_stop_first whenever the file has it. */ -}}
+    {{- if and $isFirst (index (hugo.Data.buswords.cut | default dict) "worst_stop_start") }}
+    <p class="ngbus-curtblock__lead">{{ partial "bus-say.html" (dict "k" "cut.worst_stop_start" "v" (dict "place" (partial "bus-place.html" .place) "direction" (partial "bus-place.html" .direction) "min" (lang.FormatNumber 1 .added_wait_min) "awt" (lang.FormatNumber 1 .awt_min) "awt_without" (lang.FormatNumber 1 .awt_if_not_turned_min))) }}</p>
+    {{- else }}
     <p class="ngbus-curtblock__lead">{{ partial "bus-say.html" (dict "k" "cut.worst_stop" "v" (dict "place" (partial "bus-place.html" .place) "direction" (partial "bus-place.html" .direction) "min" (lang.FormatNumber 1 .added_wait_min) "awt" (lang.FormatNumber 1 .awt_min) "awt_without" (lang.FormatNumber 1 .awt_if_not_turned_min))) }}
       {{- if $isFirst }} {{ partial "bus-say.html" (dict "k" "cut.worst_stop_first") }}{{ end }}</p>
+    {{- end }}
       {{- else }}
     <p class="ngbus-curtblock__lead">{{ partial "bus-say.html" (dict "k" "cut.worst_stop_small" "v" (dict "min" (lang.FormatNumber 1 .added_wait_min))) }}</p>
       {{- end }}
