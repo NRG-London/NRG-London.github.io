@@ -716,7 +716,7 @@
         {{ $otLate | default "5" }} minutes late.{{ end }}
         {{- with $h.daily }}{{ with .min_hours }} A day with less than {{ partial "bus-words.html" . }}
         hours of data collected shows no daily figure.{{ end }}{{ end }}
-        <a href="/bus/how-this-is-measured/">How this is measured</a>.</dd>
+        <a href="/campaigns/bus-performance/">How these figures are made</a>.</dd>
     </dl>
 
     {{- /* Newest first: a reader is looking at recent performance, so the gap
@@ -754,7 +754,7 @@
   <p class="ngbus-attr">
     {{ $w.attribution }}
     Figures are computed from observed bus positions, {{ $window }}.
-    <a href="/bus/how-this-is-measured/">How this is measured</a>.
+    <a href="/campaigns/bus-performance/">How these figures are made</a>.
     {{- if $w.sample }} <strong>These are sample figures, not measurements.</strong>{{ end }}
     {{ partial "bus-sources.html" . }}
     Not for planning a journey.

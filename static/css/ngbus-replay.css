@@ -108,3 +108,4 @@
   #attrib details { margin-top: 2px; }
   #attrib summary { cursor: pointer; color: var(--faint); }
   #attrib p { margin: 4px 0 0; }
+  #attrib a { color: inherit; }
