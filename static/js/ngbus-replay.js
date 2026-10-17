@@ -155,7 +155,7 @@
     getTooltip: function (info) {
       var o = info.object;
       if (!o) return null;
-      if (o.reg) return { text: o.reg + '\n' + (o.dead ? 'not in service: ' : 'to ') + cleanName(o.blind) };
+      if (o.reg) return { text: R.plate(o.reg) + '\n' + (o.dead ? 'not in service: ' : 'to ') + cleanName(o.blind) };
       if (o.name) return { text: cleanName(o.name) };
       return null;
     },
@@ -721,7 +721,7 @@
       new deck.TextLayer({
         id: 'labels', data: buses,
         getPosition: function (d) { return d.position; },
-        getText: function (d) { return d.reg; },
+        getText: function (d) { return R.plate(d.reg); },
         getColor: [255, 255, 255, 200], getSize: 11,
         getPixelOffset: [0, -16], fontFamily: 'DM Sans, system-ui, sans-serif',
         updateTriggers: { getPosition: simT },

@@ -220,6 +220,28 @@
     return counts;
   }
 
+  /* A registration as the plate shows it. BODS sends 'LY26ABC'; the plate
+     reads 'LY26 ABC', and a route's buses are often registered as a block,
+     so the letters after the space are what tell them apart. Current
+     (LY26 ABC), prefix (E17 HCT), suffix (ABC 123D) and dateless (LTZ 1342,
+     WLT 676, 593 CLT) formats; anything else is shown as sent. */
+  var PLATES = [
+    /^([A-Z]{2}\d{2})([A-Z]{3})$/,
+    /^([A-Z]\d{1,3})([A-Z]{3})$/,
+    /^([A-Z]{3})(\d{1,3}[A-Z])$/,
+    /^([A-Z]{1,3})(\d{1,4})$/,
+    /^(\d{1,4})([A-Z]{1,3})$/,
+  ];
+
+  function plate(reg) {
+    var s = String(reg || '');
+    for (var i = 0; i < PLATES.length; i++) {
+      var m = PLATES[i].exec(s);
+      if (m) return m[1] + ' ' + m[2];
+    }
+    return s;
+  }
+
   function filename(route, iso) {
     return 'london-bus-replay_route-' + route + '_' + iso + '.json.gz';
   }
@@ -228,7 +250,7 @@
     FORMAT: FORMAT, VERSION: VERSION,
     parse: parse, validate: validate, expand: expand,
     positionsAt: positionsAt, inServiceByMinute: inServiceByMinute,
-    filename: filename, isGzip: isGzip,
+    filename: filename, isGzip: isGzip, plate: plate,
   };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.ReplayData = api;
