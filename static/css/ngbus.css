@@ -1016,7 +1016,7 @@
 .ngn-head { font-weight: 600; }
 .ngn-text { white-space: pre-line; line-height: 1.45; }
 .ngn-meta { margin-top: 0.2rem; font-size: 0.85rem; color: var(--mid-grey, #6b746f); }
-.ngn-item--unplanned .ngn-meta::before { content: "CF A0"; color: var(--amber, #E0A24E); }
+.ngn-item--unplanned .ngn-meta::before { content: "\25CF\00A0"; color: var(--amber, #E0A24E); }
 .ngn-source { margin: 0.6rem 0 0; font-size: 0.8rem; color: var(--mid-grey, #6b746f); }
 
 /* the chart's day view: a day with a TfL notice in force */

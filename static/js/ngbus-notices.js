@@ -273,6 +273,7 @@
   }
 
   function kindText(words, item) {
+    if (item.names && item.names.length > 1) return say(words, 'kind_closures');
     if (item.atco != null) return say(words, 'kind_closure');
     return say(words, { PlannedWork: 'kind_planned', RealTime: 'kind_unplanned',
                         Information: 'kind_information' }[item.category] || 'kind_information');
@@ -282,9 +283,9 @@
   // "Coming up"), a start read from the text replaces TfL's dates, which run
   // from the day the notice went up.
   function itemHTML(words, item, t0, t1, opts) {
-    var head = item.atco != null
-      ? say(words, 'closure_head', { stop: item.name })
-      : '';
+    var head = item.names && item.names.length > 1
+      ? say(words, 'closures_head', { stops: item.names.join(', ') })
+      : item.atco != null ? say(words, 'closure_head', { stop: item.name }) : '';
     var wf = opts && opts.ahead ? worksFrom(item) : null;
     var dates = wf ? say(words, 'starts', { from: when(wf) }) : datesText(words, item);
     var shown = shownText(words, item, t0, t1);
@@ -295,12 +296,36 @@
       '<div class="ngn-meta">' + meta + '</div></li>';
   }
 
+  // Closed stops that say the same thing, over the same dates, shown over the
+  // same windows, as one item: a diversion shuts a run of stops at once, each
+  // stop is two (a code per direction), and TfL sends each as its own row.
+  // Its `names` lists each stop once, A to Z; everything else is the first
+  // row's, which by the key is every row's. Notices pass through as they are,
+  // and the order is kept (a merged item stands where its first row stood).
+  function rollUp(words, items, t0, t1) {
+    var out = [], at = {};
+    items.forEach(function (it) {
+      if (it.atco == null) { out.push(it); return; }
+      var key = (it.text || '') + '|' + datesText(words, it) + '|' + shownText(words, it, t0, t1);
+      var g = at[key];
+      if (!g) {
+        g = at[key] = Object.assign({}, it, { names: [] });
+        out.push(g);
+      }
+      if (g.names.indexOf(it.name) === -1) g.names.push(it.name);
+    });
+    out.forEach(function (g) {
+      if (g.names) g.names.sort(function (a, b) { return String(a).localeCompare(String(b)); });
+    });
+    return out;
+  }
+
   var api = {
     ARCHIVE_FROM: ARCHIVE_FROM,
     dated: dated, windows: windows, inForce: inForce, showing: showing, startsLater: startsLater,
     worksFrom: worksFrom, ahead: ahead, inEffect: inEffect,
     serviceDay: serviceDay, londonISO: londonISO, iso: iso, addDays: addDays,
-    load: load, say: say, html: html, esc: esc, itemHTML: itemHTML,
+    load: load, say: say, html: html, esc: esc, itemHTML: itemHTML, rollUp: rollUp,
     datesText: datesText, shownText: shownText, hm: hm, dayLabel: dayLabel,
   };
   if (typeof module === 'object' && module.exports) module.exports = api;

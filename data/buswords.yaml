@@ -67,6 +67,11 @@ hero:
   ontime_median: "Half of London's timetabled routes managed {median} or better."
   ontime_nodata_figure: "No data"
   ontime_nodata_note: "too few of route {route}'s departures were captured this week to publish a figure. This is a gap in the observation, not a verdict on the route."
+  # a timetabled route whose on-time figure is withheld in every week (the
+  # timetable's times at its ends do not line up with when buses leave): the
+  # page shows its waits instead
+  ontime_withheld_figure: "No on-time figure"
+  ontime_withheld_note: "the timetable's times at the ends of route {route} don't line up with when its buses leave, so an on-time figure would mislead. Below is how long people waited, against what the timetable alone would give."
 
 
 # ---- the chart -----------------------------------------------------------------
@@ -145,6 +150,7 @@ weeks:
   summary: "The weekly figures"
   hint_frequent: "Excess wait, then the chance of waiting more than ten minutes if you turn up at random."
   hint_timetabled: "The share of departures that left on time."
+  hint_waits: "The chance of waiting more than ten minutes if you turn up at random."
   column_week: "Week ending"
   thin: "thin"
   thin_hover: "Bus data was collected for only {pct} of this week, across the whole of London"
@@ -308,6 +314,7 @@ about:
   how_window: "{window}."
   how_directions: "Waits are measured along the route at TfL's timing points, in each direction, against the timetable — not at the ends of the route, where a bus turned back early counts as if it had run."
   how_ontime: "On time means leaving no more than {early} minutes early or {late} minutes late."
+  how_waits: "This route runs to a timetable, but the timetable's times at its ends don't line up with when its buses leave, so it is measured by how long people waited, as a frequent route is."
   how_min_hours: "A day with less than {n} hours of data collected shows no daily figure."
   how_link: "How these figures are made"     # links to the bus performance hub
 
@@ -368,7 +375,10 @@ notices:
   kind_unplanned: "Unplanned"
   kind_information: "Information"
   kind_closure: "Stop closed"
+  kind_closures: "Stops closed"
   closure_head: "{stop}"
+  # closed stops with the same TfL text, dates and times shown, as one item
+  closures_head: "These stops are closed: {stops}"
   # an item's dates (times are London's)
   dates: "{from} to {to}"
   dates_open: "from {from}, until further notice"

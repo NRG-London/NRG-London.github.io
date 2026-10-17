@@ -42,7 +42,18 @@
 {{- end -}}
 {{- $ttByDirection := false -}}
 {{- range $dirs }}{{ range .series }}{{ if ne .punctuality nil }}{{ $ttByDirection = true }}{{ end }}{{ end }}{{ end -}}
-{{- $useDirs := and (gt (len $dirs) 0) (or (ne $class "timetabled") $ttByDirection) -}}
+{{- /* A timetabled route whose on-time figure the sweep has withheld in every
+       week it has watched (it nulls punctuality where the timetable's times at
+       the ends evidently do not mean "departs here") would otherwise have no
+       measure at all: no chart, no cards, "No figures yet", over a week of
+       measured waits (route 386, 17 Oct). Such a route is shown by its waits,
+       against what its timetable alone would give, as a frequent route is.
+       $show is the measure the page shows; $class stays what the route is. */ -}}
+{{- $ttTermini := false -}}
+{{- range $h.termini }}{{ range .series }}{{ if ne .on_time_pct nil }}{{ $ttTermini = true }}{{ end }}{{ end }}{{ end -}}
+{{- $waits := and (eq $class "timetabled") (gt (len $dirs) 0) (not $ttByDirection) (not $ttTermini) -}}
+{{- $show := cond $waits "frequent" $class -}}
+{{- $useDirs := and (gt (len $dirs) 0) (or (ne $class "timetabled") $ttByDirection $waits) -}}
 
 {{- /* The units the page is built from: measured directions, or — for a
        timetabled route, until its punctuality is measured by direction — the
@@ -74,7 +85,7 @@
        chart opens on all the weekly data instead, rather than on an empty box. */ -}}
 {{- $dailyOk := false -}}
 {{- with $h.daily }}{{ with .series -}}
-  {{- $key := cond (eq $class "timetabled") "on_time_pct" "p_wait_gt10" -}}
+  {{- $key := cond (eq $show "timetabled") "on_time_pct" "p_wait_gt10" -}}
   {{- range . }}{{ with index . $key }}{{ range last 7 . }}{{ if ne . nil }}{{ $dailyOk = true }}{{ end }}{{ end }}{{ end }}{{ end -}}
 {{- end }}{{ end -}}
 
@@ -121,6 +132,8 @@
     <p class="ngbus-hero__stat">{{ partial "bus-say.html" (dict "k" "hero.night_figure") }}<small>{{ partial "bus-say.html" (dict "k" "hero.night_note" "v" (dict "window" $window)) }}</small></p>
     {{- else if eq (len $units) 0 }}
     <p class="ngbus-hero__stat">{{ partial "bus-say.html" (dict "k" "hero.none_figure") }}<small>{{ partial "bus-say.html" (dict "k" "hero.none_note" "v" (dict "route" $route)) }}</small></p>
+    {{- else if $waits }}
+    <p class="ngbus-hero__stat">{{ partial "bus-say.html" (dict "k" "hero.ontime_withheld_figure") }}<small>{{ partial "bus-say.html" (dict "k" "hero.ontime_withheld_note" "v" (dict "route" $route)) }}</small></p>
     {{- else if eq $class "timetabled" }}
       {{- if ne $row.on_time_pct nil }}
       {{- $ots := sort (where $w.routes "on_time_pct" "!=" nil) "on_time_pct" }}
@@ -141,7 +154,7 @@
     {{- end }}
   </div>
 
-  {{- /* TfL NOTICES (spec: E:\Road Data\docs\superpowers\specs6-10-17-tfl-notices-design.md).
+  {{- /* TfL NOTICES (spec: E:\Road Data\docs\superpowers\specs\2026-10-17-tfl-notices-design.md).
          Probably the first answer to the reader's first question, and the
          context for whatever the charts show, so it sits straight under the
          headline. Filled in the browser from the replay bucket's n/<ROUTE>.json
@@ -165,15 +178,17 @@
   <div class="ngbus-chart" id="ngbus-chart">
     <div class="ngbus-chart__title" id="ngbus-chart-title">{{ if $dailyOk }}{{ partial "bus-say.html" (dict "k" "chart.title_days") }}{{ else }}{{ partial "bus-say.html" (dict "k" "chart.title_weeks") }}{{ end }}</div>
     <div class="ngbus-chart__subtitle" id="ngbus-chart-sub">
-      {{- if eq $class "timetabled" }}{{ partial "bus-say.html" (dict "k" "chart.subtitle_timetabled") }}
+      {{- if eq $show "timetabled" }}{{ partial "bus-say.html" (dict "k" "chart.subtitle_timetabled") }}
       {{- else }}{{ partial "bus-say.html" (dict "k" "chart.subtitle_frequent") }}{{ end }}</div>
     <div class="ngbus-controls">
       <div class="ngbus-chips" role="group" aria-label="{{ partial "bus-say.html" (dict "k" "chart.measures_label") }}">
-        {{- if eq $class "timetabled" }}
+        {{- if eq $show "timetabled" }}
         <button type="button" class="ngbus-chip" data-metric="ot" aria-pressed="true">{{ partial "bus-say.html" (dict "k" "chart.button_ontime") }}</button>
         {{- else }}
         <button type="button" class="ngbus-chip" data-metric="p" aria-pressed="true">{{ partial "bus-say.html" (dict "k" "chart.button_wait10") }}</button>
+        {{- if not $waits }}
         <button type="button" class="ngbus-chip" data-metric="ewt" aria-pressed="false">{{ partial "bus-say.html" (dict "k" "chart.button_ewt") }}</button>
+        {{- end }}
         {{- end }}
         {{- if $anyCur }}
         <button type="button" class="ngbus-chip" data-metric="cur" aria-pressed="false">{{ partial "bus-say.html" (dict "k" "chart.button_cut") }}</button>
@@ -182,7 +197,7 @@
                the chip on the longer spans. */ -}}
         {{- $anyTsw := false -}}
         {{- with $h.daily }}{{ range .series }}{{ range .turned_short_worst_added_min }}{{ if ne . nil }}{{ $anyTsw = true }}{{ end }}{{ end }}{{ end }}{{ end -}}
-        {{- if and $anyTsw (ne $class "timetabled") }}
+        {{- if and $anyTsw (ne $show "timetabled") }}
         <button type="button" class="ngbus-chip" data-metric="tsw" aria-pressed="false">{{ partial "bus-say.html" (dict "k" "chart.button_cutwait") }}</button>
         {{- end }}
       </div>
@@ -214,7 +229,8 @@
   <details class="ngbus-weeks">
     <summary>{{ partial "bus-say.html" (dict "k" "weeks.summary") }}</summary>
     <p class="ngbus-weeks__hint">
-      {{- if eq $class "timetabled" }}{{ partial "bus-say.html" (dict "k" "weeks.hint_timetabled") }}
+      {{- if eq $show "timetabled" }}{{ partial "bus-say.html" (dict "k" "weeks.hint_timetabled") }}
+      {{- else if $waits }}{{ partial "bus-say.html" (dict "k" "weeks.hint_waits") }}
       {{- else }}{{ partial "bus-say.html" (dict "k" "weeks.hint_frequent") }}{{ end }}</p>
     <div class="ngbus-tablewrap">
       <table class="ngbus-table">
@@ -232,12 +248,13 @@
             <td>{{ dateFormat "2 Jan 2006" $week }}</td>
             {{- range $units }}
               {{- $c := index .series $i }}
-              {{- $v := cond (eq $class "timetabled") $c.on_time_pct $c.ewt_min }}
+              {{- $v := cond (eq $show "timetabled") $c.on_time_pct $c.ewt_min }}
+              {{- if $waits }}{{ with $c.wait_bands }}{{ with index . "10" }}{{ $v = .actual }}{{ end }}{{ end }}{{ end }}
               {{- if and (ne $v nil) (ge $c.coverage $thr) }}
             {{- /* A week can publish on less than a full week's collection. The
                    chart shades those; this is the same fact for a reader with no
                    JavaScript, who has only this table. */ -}}
-            <td>{{ if eq $class "timetabled" }}{{ lang.FormatPercent 0 (mul $v 100) }}
+            <td>{{ if or (eq $show "timetabled") $waits }}{{ lang.FormatPercent 0 (mul $v 100) }}
               {{- else }}{{ lang.FormatNumber 1 $v }} min
                 {{- with $c.wait_bands }}{{ $b := index . "10" }}{{ if ne $b.actual nil }} · {{ lang.FormatPercent 0 (mul $b.actual 100) }}{{ end }}{{ end }}{{ end }}
               {{- if lt $c.coverage 0.9 }} <span class="ngbus-thinmark" title="{{ partial "bus-say.html" (dict "k" "weeks.thin_hover" "v" (dict "pct" (lang.FormatPercent 0 (mul $c.coverage 100)))) }}">{{ partial "bus-say.html" (dict "k" "weeks.thin") }}</span>{{ end }}</td>
@@ -256,7 +273,7 @@
   {{- /* The strapline is the same fact in the language a passenger uses, from
          the worse of the two directions: a rider waits for a bus going one way,
          not for an average of both. */ -}}
-  {{- if and (eq $class "frequent") (ge $ci 0) }}
+  {{- if and (eq $show "frequent") (ge $ci 0) }}
     {{- $worst := 0.0 }}{{ $worstName := "" }}{{ $worstTt := 0.0 -}}
     {{- range $units }}
       {{- $c := index .series $ci }}
@@ -282,7 +299,7 @@
       {{- else if lt $worstTt 0.5 }} {{ partial "bus-say.html" (dict "k" "strap.timetable_one_in" "v" (dict "n" (partial "bus-words.html" (math.Round (div 1.0 $worstTt))))) }}
       {{- else }} {{ partial "bus-say.html" (dict "k" "strap.timetable_share" "v" (dict "pct" (lang.FormatPercent 0 (mul $worstTt 100)))) }}{{ end }}{{ end }}</p>
     {{- end }}
-  {{- else if and (eq $class "timetabled") (ge $ci 0) $otEarly }}
+  {{- else if and (eq $show "timetabled") (ge $ci 0) $otEarly }}
     {{- /* A timetabled rider reads the timetable and arrives for a bus, so the
            question is not how long they wait but whether the bus they came for
            went when it said. Said in tenths, because "about four in ten" is a
@@ -315,16 +332,18 @@
     <div class="ngbus-terminus">
       <div class="ngbus-terminus__name">{{ .name }}</div>
       <dl>
-        {{- if eq $class "timetabled" }}
+        {{- if eq $show "timetabled" }}
         <dt>{{ partial "bus-say.html" (dict "k" "cards.ontime") }}</dt>
         <dd>{{ if and $ok (ne $c.on_time_pct nil) }}{{ lang.FormatPercent 0 (mul $c.on_time_pct 100) }}{{ else }}<span class="ngbus-nd" title="{{ partial "bus-say.html" (dict "k" "common.no_data_hover") }}">{{ partial "bus-say.html" (dict "k" "common.no_data") }}</span>{{ end }}</dd>
         {{- else }}
+        {{- if not $waits }}
         <dt><span class="ngbus-help" title="{{ partial "bus-say.html" (dict "k" "cards.ewt_hover") }}">{{ partial "bus-say.html" (dict "k" "cards.ewt") }}</span></dt>
         <dd>{{ if and $ok (ne $c.ewt_min nil) }}{{ partial "bus-say.html" (dict "k" "cards.ewt_value" "v" (dict "min" (lang.FormatNumber 1 $c.ewt_min))) }}
           {{- /* Only when it rounds to something: "0.0 min of it from buses turned
                  short" reads as a figure when it is really an absence of one. */ -}}
           {{- if and (ne $c.ewt_turned_short_min nil) (ge $c.ewt_turned_short_min 0.05) }}<span class="ngbus-terminus__sub" title="{{ partial "bus-say.html" (dict "k" "cards.ewt_cut_part_hover") }}">{{ partial "bus-say.html" (dict "k" "cards.ewt_cut_part" "v" (dict "min" (lang.FormatNumber 1 $c.ewt_turned_short_min))) }}</span>{{ end }}
           {{- else }}<span class="ngbus-nd" title="{{ partial "bus-say.html" (dict "k" "common.no_data_hover") }}">{{ partial "bus-say.html" (dict "k" "common.no_data") }}</span>{{ end }}</dd>
+        {{- end }}
         {{- /* Each band beside what the timetable alone would give. Over ten
                minutes mostly reflects how often the route is timetabled; over
                thirty, on a frequent route, is almost always something going
@@ -421,7 +440,7 @@
   {{- /* WHEN IT GOES WRONG. The same route is a different service at 8am and on
          a Sunday evening, and the timetable figure beside each band is what
          stops a thin Sunday timetable reading as a bad Sunday service. */ -}}
-  {{- if and (eq $class "frequent") $h.wait_by_band }}
+  {{- if and (eq $show "frequent") $h.wait_by_band }}
   {{- $bands := where $h.wait_by_band "p_wait_gt20" "!=" nil }}
   {{- if $bands }}
   {{- $bmax := 0.0 }}{{ range $bands }}{{ if gt .p_wait_gt20 $bmax }}{{ $bmax = .p_wait_gt20 }}{{ end }}{{ end }}
@@ -682,7 +701,8 @@
       <dt>{{ partial "bus-say.html" (dict "k" "about.how_term") }}</dt>
       <dd>{{ partial "bus-say.html" (dict "k" "about.how_window" "v" (dict "window" (strings.FirstUpper $window))) }}
         {{- if $useDirs }} {{ partial "bus-say.html" (dict "k" "about.how_directions") }}{{ end }}
-        {{- if eq $class "timetabled" }} {{ partial "bus-say.html" (dict "k" "about.how_ontime" "v" (dict "early" ($otEarly | default "2.5") "late" ($otLate | default "5"))) }}{{ end }}
+        {{- if $waits }} {{ partial "bus-say.html" (dict "k" "about.how_waits") }}{{ end }}
+        {{- if eq $show "timetabled" }} {{ partial "bus-say.html" (dict "k" "about.how_ontime" "v" (dict "early" ($otEarly | default "2.5") "late" ($otLate | default "5"))) }}{{ end }}
         {{- with $h.daily }}{{ with .min_hours }} {{ partial "bus-say.html" (dict "k" "about.how_min_hours" "v" (dict "n" (partial "bus-words.html" .))) }}{{ end }}{{ end }}
         <a href="/campaigns/bus-performance/">{{ partial "bus-say.html" (dict "k" "about.how_link") }}</a>.</dd>
     </dl>
@@ -736,7 +756,7 @@
     {{- $ewt := slice }}{{ $p := slice }}{{ $tt := slice }}{{ $ot := slice }}{{ $cov := slice }}{{ $cur := slice -}}
     {{- range .series -}}
       {{- $in := ge .coverage $thr -}}
-      {{- if eq $class "timetabled" -}}
+      {{- if eq $show "timetabled" -}}
         {{- $ot = $ot | append (cond (and $in (ne .on_time_pct nil)) .on_time_pct nil) -}}
       {{- else -}}
         {{- $ewt = $ewt | append (cond (and $in (ne .ewt_min nil)) .ewt_min nil) -}}
@@ -757,7 +777,7 @@
       {{- $cov = $cov | append .coverage -}}
     {{- end -}}
     {{- $s := dict "name" .name "cur" $cur "coverage" $cov -}}
-    {{- if eq $class "timetabled" }}{{ $s = merge $s (dict "ot" $ot) }}
+    {{- if eq $show "timetabled" }}{{ $s = merge $s (dict "ot" $ot) }}
     {{- else }}{{ $s = merge $s (dict "ewt" $ewt "p" $p "tt" $tt) }}{{ end -}}
     {{- $series = $series | append (slice $s) -}}
   {{- end -}}
@@ -817,8 +837,8 @@
 </div>
 
 {{ partial "bus-assets.html" . }}
-<script src="/js/ngbus-notices.js?v=2" defer></script>
-<script src="/js/ngbus-notices-box.js?v=2" defer></script>
+<script src="/js/ngbus-notices.js?v=3" defer></script>
+<script src="/js/ngbus-notices-box.js?v=3" defer></script>
 {{- if gt (len $units) 0 }}
 <script src="/js/ngbus-chart.js?v=13" defer></script>
 {{- end }}

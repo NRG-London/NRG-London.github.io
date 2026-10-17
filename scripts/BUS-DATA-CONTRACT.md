@@ -54,7 +54,12 @@ lands, then drop it and tell the front end.
 **Three things the pages cannot show yet**, all expected:
 
 1. `punctuality` is null everywhere, so timetabled routes keep the old on-time
-   figure and their cards still read as termini.
+   figure and their cards still read as termini. Where the sweep has withheld that figure in
+   every week (`ot_valid`: the timetable's times at the ends do not mean
+   "departs here"; 25 routes on the week ending 10 Oct, the 386 among them),
+   the page shows the route by its direction waits against the timetable, as
+   a frequent route, with "No on-time figure" in the headline (17 Oct). Before
+   that, those pages had no chart, cards or table at all.
 2. `tfl_quarterly.our_ewt_min` is null on 174 of 538 routes — those rows print
    "no figure" against TfL's, which is honest but thin. Worth filling if the
    quarters can be recomputed on the new measure.
@@ -814,7 +819,7 @@ for good. Readers can keep any day themselves with "Save this day".
 - `worst_gap.start` must carry seconds and an offset (`2026-10-08T14:04:08+01:00`,
   as since 28 Sep). Without them the page prints the gap but offers no replay link.
 
-**TfL notices** (added 17 Oct 2026; spec `E:\Road Data\docs\superpowers\specs6-10-17-tfl-notices-design.md`).
+**TfL notices** (added 17 Oct 2026; spec `E:\Road Data\docs\superpowers\specs\2026-10-17-tfl-notices-design.md`).
 NRG-1 writes `n/<ROUTE>.json` beside the replay files every hour (`notices.py`, `bus-notices.timer`):
 `{format: "ng-bus-notices-route", version: 1, route, notices: [{id, text, category, created, validity: [[from, to]],
 seen: [[first, last|null]], stops_named}], closures: [{atco, name, lon, lat, from, to, type, text, seen}]}`, and

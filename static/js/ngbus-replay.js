@@ -419,7 +419,7 @@
       var parts = [];
       if (notes.length || closed.length) {
         parts.push('<div class="nt-title">' + NN.say(NWORDS, 'replay_title') + '</div>');
-        parts.push('<ul class="nt-list">' + notes.concat(closed).map(function (it) {
+        parts.push('<ul class="nt-list">' + NN.rollUp(NWORDS, notes.concat(closed), w[0], w[1]).map(function (it) {
           return NN.itemHTML(NWORDS, it, w[0], w[1]);
         }).join('') + '</ul>');
       }

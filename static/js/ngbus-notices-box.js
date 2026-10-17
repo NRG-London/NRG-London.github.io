@@ -45,7 +45,28 @@
   function group(heading, items, extraClass, opts) {
     if (!items.length) return '';
     return '<h3 class="ngn-group' + (extraClass || '') + '">' + heading + '</h3><ul class="ngn-list">' +
-      items.map(function (it) { return N.itemHTML(words, it, null, null, opts); }).join('') + '</ul>';
+      N.rollUp(words, items).map(function (it) { return N.itemHTML(words, it, null, null, opts); }).join('') + '</ul>';
+  }
+
+  // TfL revises by replacing: an edited notice is a new notice, a closure
+  // whose end moves is a new row. The one replaced has stopped showing, so it
+  // would sit in a past group beside its replacement in "In force now" (the
+  // 386, 15 Oct: the same diversion and the same eleven stops, twice). A past
+  // item is left out when a current one is its revision: a closure at the same
+  // stop from the same time, or a notice headed with the same place in TfL's
+  // "DURSLEY ROAD, SE3:" style (a street in capitals, a comma, the area).
+  var PLACE_RE = /^([A-Z0-9][A-Z0-9 '&.\/()-]+,[^:]{2,40}):/;
+  function revisedBy(current) {
+    var stops = {}, places = {};
+    current.forEach(function (it) {
+      if (it.atco != null) stops[it.atco + '|' + it.from] = true;
+      else { var m = PLACE_RE.exec(it.text || ''); if (m) places[m[1]] = true; }
+    });
+    return function (it) {
+      if (it.atco != null) return !!stops[it.atco + '|' + it.from];
+      var m = PLACE_RE.exec(it.text || '');
+      return !!(m && places[m[1]]);
+    };
   }
 
   // When an item's works start, for "Coming up" (soonest first).
@@ -74,6 +95,9 @@
       else if (N.inEffect(it, weekFrom, weekTo)) week.push(it);
       else if (N.inEffect(it, weekTo, now)) since.push(it);
     });
+    var revised = revisedBy(current.concat(later));
+    since = since.filter(function (it) { return !revised(it); });
+    week = week.filter(function (it) { return !revised(it); });
     current.sort(newest); since.sort(newest); week.sort(newest);
     later.sort(function (a, b) { return starts(a) < starts(b) ? -1 : starts(a) > starts(b) ? 1 : 0; });
 
