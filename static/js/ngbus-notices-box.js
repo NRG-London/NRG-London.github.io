@@ -6,11 +6,18 @@
  * to show, or if the file cannot be had, the box stays hidden: an empty box
  * would read as "TfL says all is well", which is not ours to say.
  *
- * Three groups, in the order a reader needs them:
+ * Four groups, in the order a reader needs them:
  *   In force now        what TfL is showing now (in force, not starting later)
+ *   Since the week      in force after the week the figures cover, but not
+ *                       now. The page is rebuilt weekly: without this, a
+ *                       notice that came and went on a Wednesday would vanish
+ *                       until the next rebuild put it in the week (Neil, 17 Oct)
  *   During the week     in force during the week the page's figures cover, but
  *                       not now: the likely explanation for those figures
- *   Coming up           shown now, but every one of TfL's dates starts later
+ *   Coming up           shown now, but the works start later: every one of
+ *                       TfL's dates does, or its text says so (TfL dates
+ *                       planned works from the day the notice goes up)
+ * The past groups count a notice only once its works had started.
  *
  * It also tells the chart which days had a notice in force, so its day view
  * can mark them (ngbus-chart.js listens for "ngbus:notice-days").
@@ -35,10 +42,15 @@
       { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
   }
 
-  function group(heading, items, extraClass) {
+  function group(heading, items, extraClass, opts) {
     if (!items.length) return '';
     return '<h3 class="ngn-group' + (extraClass || '') + '">' + heading + '</h3><ul class="ngn-list">' +
-      items.map(function (it) { return N.itemHTML(words, it); }).join('') + '</ul>';
+      items.map(function (it) { return N.itemHTML(words, it, null, null, opts); }).join('') + '</ul>';
+  }
+
+  // When an item's works start, for "Coming up" (soonest first).
+  function starts(it) {
+    return N.worksFrom(it) || (N.dated(it).map(function (w) { return w[0]; }).sort()[0]) || it.created || '';
   }
 
   // Newest first within a group: the notice a reader came about is usually the latest.
@@ -51,16 +63,19 @@
     if (!f) return;
     var items = f.notices.concat(f.closures);
     var now = N.iso(Date.now());
-    var weekFrom = N.londonISO(N.addDays(weekEnding, -6), 0);
-    var weekTo = N.londonISO(N.addDays(weekEnding, 1), 0);
+    // a route with no figures yet has no week: only "now" and "Coming up"
+    var weekFrom = weekEnding ? N.londonISO(N.addDays(weekEnding, -6), 0) : null;
+    var weekTo = weekEnding ? N.londonISO(N.addDays(weekEnding, 1), 0) : null;
 
-    var current = [], later = [], week = [];
+    var current = [], since = [], week = [], later = [];
     items.forEach(function (it) {
-      if (N.inForce(it, now, now)) (N.startsLater(it, now) ? later : current).push(it);
-      else if (weekEnding && N.inForce(it, weekFrom, weekTo)) week.push(it);
+      if (N.inForce(it, now, now)) (N.ahead(it, now) ? later : current).push(it);
+      else if (!weekEnding) return;
+      else if (N.inEffect(it, weekFrom, weekTo)) week.push(it);
+      else if (N.inEffect(it, weekTo, now)) since.push(it);
     });
-    current.sort(newest); week.sort(newest);
-    later.sort(function (a, b) { return -newest(a, b); });     // soonest first
+    current.sort(newest); since.sort(newest); week.sort(newest);
+    later.sort(function (a, b) { return starts(a) < starts(b) ? -1 : starts(a) > starts(b) ? 1 : 0; });
 
     // The chart's day marks: every day of its daily span with a NOTICE in
     // force. Not closed stops: one stop shut for a month would mark every day
@@ -68,17 +83,18 @@
     var marked = {};
     chartDays.forEach(function (d) {
       var w = N.serviceDay(d);
-      if (f.notices.some(function (it) { return N.inForce(it, w[0], w[1]) && !N.startsLater(it, w[1]); })) marked[d] = true;
+      if (f.notices.some(function (it) { return N.inEffect(it, w[0], w[1]); })) marked[d] = true;
     });
     window.ngbusNoticeDays = marked;
     document.dispatchEvent(new CustomEvent('ngbus:notice-days', { detail: marked }));
 
-    if (!current.length && !week.length && !later.length) return;
+    if (!current.length && !since.length && !week.length && !later.length) return;
     box.innerHTML =
       '<h2 class="ngn-title">' + N.say(words, 'title') + '</h2>' +
       group(N.say(words, 'now'), current) +
-      group(N.say(words, 'this_week', { week: weekLabel(weekEnding) }), week) +
-      group(N.say(words, 'coming_up'), later, ' ngn-group--later') +
+      (since.length ? group(N.say(words, 'since_week', { from: weekLabel(N.addDays(weekEnding, 1)) }), since) : '') +
+      (week.length ? group(N.say(words, 'this_week', { week: weekLabel(weekEnding) }), week) : '') +
+      group(N.say(words, 'coming_up'), later, ' ngn-group--later', { ahead: true }) +
       '<p class="ngn-source">' + N.say(words, 'source') + '</p>';
     box.hidden = false;
   }).catch(function () { /* no box: the page stands without it */ });

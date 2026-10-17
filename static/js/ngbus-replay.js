@@ -395,8 +395,9 @@
   // Notices in force on the service day, closed stops on the map, and the
   // marks in the date strip. Loaded once per route; a route with no file has
   // nothing to show, and a failed fetch shows nothing rather than an error.
-  // Works announced ahead (every TfL date starts after the day) do not count
-  // for a day: they are the route page's "Coming up", not that day's notice.
+  // Works announced ahead (every TfL date starts after the day, or the text's
+  // start does) do not count for a day: they are the route page's "Coming
+  // up", not that day's notice; nor do the days a notice was up before them.
   function applyNotices(payload) {
     if (!NN) return;
     var route = payload.route, day = payload.date;
@@ -404,9 +405,7 @@
       if (!cur || cur.payload !== payload) return;           // moved on meanwhile
       var items = f ? f.notices.concat(f.closures) : [];
       var w = NN.serviceDay(day);
-      var live = items.filter(function (it) {
-        return NN.inForce(it, w[0], w[1]) && !NN.startsLater(it, w[1]);
-      });
+      var live = items.filter(function (it) { return NN.inEffect(it, w[0], w[1]); });
       var closed = live.filter(function (it) { return it.atco != null && it.lon != null; });
       closedLayers = closed.length ? [new deck.ScatterplotLayer({
         id: 'closed-' + route + day,
@@ -437,7 +436,7 @@
       var notices = f ? f.notices : [];
       availableDates(route).forEach(function (d) {
         var dw = NN.serviceDay(d);
-        if (notices.some(function (it) { return NN.inForce(it, dw[0], dw[1]) && !NN.startsLater(it, dw[1]); })) marks[d] = true;
+        if (notices.some(function (it) { return NN.inEffect(it, dw[0], dw[1]); })) marks[d] = true;
       });
       noticeMarks = { route: route, days: marks };
       renderDays();

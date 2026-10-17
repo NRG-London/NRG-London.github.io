@@ -359,6 +359,7 @@ sources:
 notices:
   title: "TfL notices for this route"
   now: "In force now"
+  since_week: "Also in force since {from}, now ended"
   this_week: "Also in force during the week ending {week}"
   coming_up: "Coming up"
   source: "TfL's own notices, archived every 2 minutes. They say what TfL planned or announced; the figures below show what the buses did."
@@ -371,6 +372,9 @@ notices:
   # an item's dates (times are London's)
   dates: "{from} to {to}"
   dates_open: "from {from}, until further notice"
+  # under "Coming up", when the start is read from TfL's text (TfL's own
+  # dates run from the day the notice went up)
+  starts: "starts {from}"
   # when TfL had it up
   shown_since: "on TfL's site since {from}"
   shown_span: "on TfL's site {from} to {to}"

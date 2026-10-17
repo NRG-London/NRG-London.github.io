@@ -72,6 +72,102 @@
     return d.length > 0 && d.every(function (w) { return w[0] && w[0] > now; });
   }
 
+  /* ---- works announced ahead ------------------------------------------------ */
+
+  // TfL books planned works' validity from the day it publishes the notice,
+  // not the day the works start: route 100's Saturday-and-Sunday road closure
+  // on 21-22 Nov is valid from 14 Sep. Its text says when ("from 21 Nov
+  // 08:00", "From 0001 Saturday 24 October", "From 25/10 20:00"), so the
+  // works' start is read from the first date in the text, when the words
+  // before it make it a start (from, between, on...; not until, to). A date
+  // counts only if it falls after the notice's first validity start and by its
+  // last end, which also settles a year the text leaves out. Anything else is
+  // null, and the notice reads as TfL's dates say.
+  var MONTH = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
+  var WDAY = { sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6 };
+  var WD = '(?:mon|tue|wed|thu|fri|sat|sun)[a-z]*';
+  var MON = '(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)';
+  var CLOCK = '(?:\\d{1,2}[:.]\\d{2}|\\d{4}|\\d{1,2}\\s*[ap]m)';
+  // "(Friday) 23 / Saturday 24 October" (a night: the first), "5 August
+  // (2026)", "25/10"; the weekday before the day is captured to check the year
+  var DATE_SRC = '\\b(?:(' + WD + ')[,\\s]+)?(\\d{1,2})(?:st|nd|rd|th)?' +
+    '(?:\\s*\\/\\s*(?:' + WD + '\\s+)?\\d{1,2}(?:st|nd|rd|th)?)?\\s+' + MON + '\\b(?:,?\\s+(\\d{4}))?' +
+    '|\\b(\\d{1,2})\\/(\\d{1,2})\\b(?!\\/)';
+  // what may stand between the keyword and the date: a time ("07:00 on")
+  var LEAD_RE = new RegExp('(?:(' + CLOCK + ')\\s*,?\\s*(?:(?:on|at)\\s+)?)?(?:the\\s+)?$', 'i');
+  var KEY_RE = /(from|between|starting|commencing|of|on|until|till|to|by|and|-|–|—)\s*$/i;
+  var START_KEYS = { from: 1, between: 1, starting: 1, commencing: 1, of: 1, on: 1 };
+  var AFTER_RE = new RegExp('^\\s*,?\\s*(?:at\\s+)?(' + CLOCK + ')', 'i');
+
+  function clock(s) {
+    if (!s) return [0, 0];
+    var m = /^(\d{1,2})\s*([ap])m$/i.exec(s.trim());
+    if (m) return [(+m[1] % 12) + (m[2].toLowerCase() === 'p' ? 12 : 0), 0];
+    var d = s.replace(/[:.]/, '');
+    return [+d.slice(0, d.length - 2), +d.slice(-2)];
+  }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+
+  // When the works start, by the notice's text: ISO UTC, or null. The first
+  // date with a keyword before it decides: a start, or (until, to) none. A
+  // date with no keyword ("route 4 may be diverted") is passed over.
+  function worksFrom(item) {
+    if (item.atco != null || !item.text) return null;
+    if (item._worksFrom !== undefined) return item._worksFrom;
+    var out = null, text = String(item.text), re = new RegExp(DATE_SRC, 'gi'), m;
+    var periods = (item.validity || []).filter(function (w) { return w[0]; });
+    while (periods.length && (m = re.exec(text))) {
+      var before = text.slice(Math.max(0, m.index - 60), m.index);
+      var lead = LEAD_RE.exec(before);
+      var key = KEY_RE.exec(before.slice(0, lead.index));
+      if (!key) continue;
+      if (START_KEYS[key[1].toLowerCase()]) out = fromMatch(m, lead[1], text, periods);
+      break;
+    }
+    item._worksFrom = out;
+    return out;
+  }
+
+  // The match as a time inside the notice's validity (after its first start,
+  // by its last end), trying the years from the first start's on; or null.
+  function fromMatch(m, leadClock, text, periods) {
+    var wd = m[1] ? WDAY[m[1].slice(0, 3).toLowerCase()] : null;
+    var day = +(m[2] || m[5]), month = m[3] ? MONTH[m[3].slice(0, 3).toLowerCase()] : +m[6];
+    if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+    var after = AFTER_RE.exec(text.slice(m.index + m[0].length));
+    var hm = clock(leadClock || (after && after[1]));
+    if (hm[0] > 24 || hm[1] > 59) return null;
+    var first = periods.map(function (w) { return w[0]; }).sort()[0];
+    var last = periods.some(function (w) { return w[1] == null; }) ? null
+      : periods.map(function (w) { return w[1]; }).sort().slice(-1)[0];
+    var y0 = +first.slice(0, 4), years = m[4] ? [+m[4]] : [y0, y0 + 1];
+    for (var i = 0; i < years.length; i++) {
+      var d = years[i] + '-' + pad(month) + '-' + pad(day), noon = new Date(d + 'T12:00:00Z');
+      if (noon.getUTCDate() !== day) continue;                     // 31 September
+      if (wd != null && noon.getUTCDay() !== wd) continue;
+      var t = londonISO(d, hm[0], hm[1]);
+      if (t > first && (last == null || t <= last)) return t;
+    }
+    return null;
+  }
+
+  // Announced ahead of t: every one of TfL's dates starts after t, or the
+  // text's works start does. The route page lists these as "Coming up".
+  function ahead(item, t) {
+    if (startsLater(item, t)) return true;
+    var wf = worksFrom(item);
+    return wf != null && wf > t;
+  }
+
+  // In force over [t0, t1) once the works had started: in force, but not
+  // counting the time a notice was up ahead of its works. For the page's week,
+  // the chart's and the replay's day marks, and the replay's panel.
+  function inEffect(item, t0, t1) {
+    if (ahead(item, t1)) return false;
+    var wf = worksFrom(item);
+    return inForce(item, wf != null && wf > t0 ? wf : t0, t1);
+  }
+
   function iso(ms) { return new Date(ms).toISOString().replace(/\.\d{3}Z$/, 'Z'); }
 
   // [03:00 on the day, 05:00 the next morning), London: the replay's service day.
@@ -83,9 +179,9 @@
     d.setUTCDate(d.getUTCDate() + n);
     return d.toISOString().slice(0, 10);
   }
-  // day at hour h, London time, as an ISO UTC string
-  function londonISO(day, h) {
-    var guess = Date.UTC(+day.slice(0, 4), +day.slice(5, 7) - 1, +day.slice(8, 10), h);
+  // day at h:min, London time, as an ISO UTC string
+  function londonISO(day, h, min) {
+    var guess = Date.UTC(+day.slice(0, 4), +day.slice(5, 7) - 1, +day.slice(8, 10), h, min || 0);
     return iso(guess - londonOffsetMs(guess));
   }
   function londonOffsetMs(ms) {
@@ -182,12 +278,16 @@
                         Information: 'kind_information' }[item.category] || 'kind_information');
   }
 
-  // One notice or closure as a list item.
-  function itemHTML(words, item, t0, t1) {
+  // One notice or closure as a list item. With opts.ahead (the route page's
+  // "Coming up"), a start read from the text replaces TfL's dates, which run
+  // from the day the notice went up.
+  function itemHTML(words, item, t0, t1, opts) {
     var head = item.atco != null
       ? say(words, 'closure_head', { stop: item.name })
       : '';
-    var dates = datesText(words, item), shown = shownText(words, item, t0, t1);
+    var wf = opts && opts.ahead ? worksFrom(item) : null;
+    var dates = wf ? say(words, 'starts', { from: when(wf) }) : datesText(words, item);
+    var shown = shownText(words, item, t0, t1);
     var meta = [kindText(words, item), dates, shown].filter(Boolean).join(' \u00b7 ');
     return '<li class="ngn-item' + (item.category === 'RealTime' ? ' ngn-item--unplanned' : '') + '">' +
       (head ? '<div class="ngn-head">' + head + '</div>' : '') +
@@ -198,6 +298,7 @@
   var api = {
     ARCHIVE_FROM: ARCHIVE_FROM,
     dated: dated, windows: windows, inForce: inForce, showing: showing, startsLater: startsLater,
+    worksFrom: worksFrom, ahead: ahead, inEffect: inEffect,
     serviceDay: serviceDay, londonISO: londonISO, iso: iso, addDays: addDays,
     load: load, say: say, html: html, esc: esc, itemHTML: itemHTML,
     datesText: datesText, shownText: shownText, hm: hm, dayLabel: dayLabel,
