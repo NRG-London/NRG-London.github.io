@@ -47,3 +47,26 @@
       )
   ) -}}
 {{- end -}}
+
+{{- /* Holding pages: routes TfL runs that the sweep cannot measure yet, and so
+       has no page for (data/bus/holding.yaml; layouts/bus/holding.html). One
+       that already has a page (W14) keeps it, with the holding words in its
+       headline. These stay out of search and the sitemap even once the route
+       pages go public: they are placeholders, there to be found from the A-Z
+       and by anyone typing the address, not to be indexed. */ -}}
+{{- $known := slice -}}
+{{- range $d.routes }}{{ $known = $known | append .route }}{{ end -}}
+{{- range hugo.Data.bus.holding.routes -}}
+  {{- if not (in $known .route) -}}
+  {{- $.AddPage (dict
+      "path" (lower .route)
+      "kind" "page"
+      "layout" "holding"
+      "title" (printf "Bus route %s" .route)
+      "description" (printf "London bus route %s: introduced or changed since TfL's 2024 stop list, so not measured yet." .route)
+      "build" (dict "list" "never" "render" "always")
+      "sitemap" (dict "disable" true)
+      "params" (dict "route" .route "noindex" true "holding" true)
+  ) -}}
+  {{- end -}}
+{{- end -}}

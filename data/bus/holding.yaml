@@ -1,0 +1,36 @@
+# Routes TfL runs that we cannot measure yet, and say so (Neil, 17 Oct 2026).
+#
+# Every route is measured against TfL's published list of each route's stops,
+# and TfL last published that list in August 2024. Routes introduced or changed
+# since are missing from it (the first twelve: no page at all until now) or
+# match it too poorly to measure (W14: its 2024 entry is a different route, and
+# only 21% of today's stops still match). The back end's check of all 677
+# routes in TfL's current list, 17 Oct, found these thirteen.
+#
+# Each gets a holding page at /bus/<route>/ (layouts/bus/holding.html), or,
+# where it already has a page, the holding words in place of "No figures yet",
+# and a greyed entry in the A-Z at /bus/. A route that starts producing figures
+# shows them whatever this file says, so an entry left here does no harm.
+# Clear the list once the back end measures against TfL's current route data
+# (the route register, V2, after 18 Oct).
+#
+# Ends and deck: TfL's current route data and the fleet seen on the route
+# (E:\Road Data: data/routes register, buses.duckdb route_fleet), 17 Oct. Deck
+# is left out where no fleet has been seen; the page then draws no bus rather
+# than guess one.
+#
+# class: day | night | school
+routes:
+  - { route: "SL4",  class: day,    from: "West India Avenue",              to: "Grove Park Bus Station",                 deck: double }
+  - { route: "SL11", class: day,    from: "North Greenwich Station",        to: "Gayton Road / Abbey Wood Station",       deck: double }
+  - { route: "SL12", class: day,    from: "Parham Drive",                   to: "Lamson Road / Rainham Station Southside" }
+  - { route: "SCS",  class: day,    from: "Millennium Way",                 to: "Seagull Lane",                           deck: single }
+  - { route: "BL1",  class: day,    from: "Lewisham Centre",                to: "Waterloo Station / Waterloo Road",       deck: double }
+  - { route: "310",  class: day,    from: "Rookwood Road",                  to: "Golders Green Station",                  deck: single }
+  - { route: "380",  class: day,    from: "Belmarsh Prison / Woolwich Crown Court", to: "Molesworth Street",              deck: single }
+  - { route: "N118", class: night,  from: "Ruislip Station",                to: "Whitehall / Trafalgar Square",           deck: double }
+  - { route: "N263", class: night,  from: "North Finchley Bus Station",     to: "Finsbury Square",                        deck: double }
+  - { route: "N472", class: night,  from: "North Greenwich Station",        to: "Gayton Road / Abbey Wood Station",       deck: double }
+  - { route: "695",  class: school, from: "Cherry Lane School",             to: "Swakeleys Drive" }
+  - { route: "618",  class: school, from: "Easedale House",                 to: "Bolder Academy" }
+  - { route: "W14",  class: day,    from: "Whipps Cross Bus Stand",         to: "Loughton Station",                       deck: single }

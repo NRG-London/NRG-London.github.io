@@ -9,21 +9,31 @@
   {{ .Content }}
 
   {{- /* Every route, in the order a Londoner reads them: 9 before 18, then the
-         letter-prefixed and night routes. weekly.json is written in that order
-         already, so this ranges rather than sorts — Hugo's `sort` is
-         lexicographic and would put 100 before 2. */ -}}
+         letter-prefixed and night routes (bus-routekey.html). weekly.json used
+         to arrive in that order; it no longer does (17 Oct: 7, 19, 366...), so
+         this sorts. The routes we cannot measure yet (data/bus/holding.yaml)
+         are listed too, greyed, so the A-Z has every route TfL runs. */ -}}
+  {{- $hold := hugo.Data.bus.holding.routes | default slice -}}
+  {{- $holdIds := slice }}{{ range $hold }}{{ $holdIds = $holdIds | append .route }}{{ end -}}
+  {{- $known := slice }}{{ range $w.routes }}{{ $known = $known | append .route }}{{ end -}}
+  {{- $all := slice -}}
+  {{- range $w.routes }}{{ $all = $all | append (dict "key" (partial "bus-routekey.html" .route) "row" .) }}{{ end -}}
+  {{- range $hold }}{{ if not (in $known .route) }}{{ $all = $all | append (dict "key" (partial "bus-routekey.html" .route) "row" (dict "route" .route)) }}{{ end }}{{ end -}}
   <div class="ngbus-az">
-    {{- range $w.routes }}
+    {{- range sort $all "key" }}{{ with .row }}
     {{- /* Titled by each route's own measure, and tested against nil: a route
            running exactly to its timetable has an excess wait of 0.0, which
            `if not` would have greyed out as "no data". */ -}}
     {{- $title := "No data published this week" }}{{ $nodata := true -}}
     {{- if eq .service_class "night" }}{{ $title = "Night route: measured separately, later" }}
     {{- else if eq .frequency_type "timetabled" }}
-      {{- if ne .on_time_pct nil }}{{ $title = printf "%s of departures on time" (lang.FormatPercent 0 (mul .on_time_pct 100)) }}{{ $nodata = false }}{{ end }}
+      {{- if ne .on_time_pct nil }}{{ $title = printf "%s of departures on time" (lang.FormatPercent 0 (mul .on_time_pct 100)) }}{{ $nodata = false }}
+      {{- /* on-time withheld: the page shows its waits instead (single.html) */ -}}
+      {{- else if ne .p_wait_gt10 nil }}{{ $title = printf "%s chance of waiting over 10 min" (lang.FormatPercent 0 (mul .p_wait_gt10 100)) }}{{ $nodata = false }}{{ end }}
     {{- else if ne .ewt_min nil }}{{ $title = printf "%s min excess wait" (lang.FormatNumber 1 .ewt_min) }}{{ $nodata = false }}{{ end }}
+    {{- if and $nodata (in $holdIds .route) }}{{ $title = partial "bus-say.html" (dict "k" "holding.az_hover") }}{{ end }}
     <a href="/bus/{{ lower .route }}/"{{ if $nodata }} data-nodata="1"{{ end }} title="{{ $title }}">{{ .route }}</a>
-    {{- end }}
+    {{- end }}{{ end }}
   </div>
 
   <p class="ngbus-attr">{{ $w.attribution }}

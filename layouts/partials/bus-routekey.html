@@ -1,0 +1,11 @@
+{{- /*
+  bus-routekey — a sort key that puts routes in the order a Londoner reads
+  them: the numbered routes by number (9 before 18), then the lettered ones by
+  prefix and number (B11 before BL1, N9 before N118, SL4 before SL11).
+  Hugo's `sort` is lexicographic and would put 100 before 2. A RETURNING
+  partial: {{ $k := partial "bus-routekey.html" "N118" }}.
+*/ -}}
+{{- $prefix := replaceRE `[0-9].*$` "" . -}}
+{{- $n := 0 -}}
+{{- with findRE `[0-9]+` . 1 }}{{ $n = int (strings.TrimLeft "0" (index . 0) | default "0") }}{{ end -}}
+{{- return printf "%s|%-4s|%05d|%s" (cond (eq $prefix "") "0" "1") $prefix $n . -}}

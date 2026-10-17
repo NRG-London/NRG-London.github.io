@@ -131,7 +131,13 @@
     {{- if eq $class "night" }}
     <p class="ngbus-hero__stat">{{ partial "bus-say.html" (dict "k" "hero.night_figure") }}<small>{{ partial "bus-say.html" (dict "k" "hero.night_note" "v" (dict "window" $window)) }}</small></p>
     {{- else if eq (len $units) 0 }}
+      {{- /* A route TfL changed since its 2024 stop list, so badly that it cannot
+             be measured (W14, data/bus/holding.yaml): say that, not "no figures". */ -}}
+      {{- if where (hugo.Data.bus.holding.routes | default slice) "route" $route }}
+    <p class="ngbus-hero__stat">{{ partial "bus-say.html" (dict "k" "holding.figure") }}<small>{{ partial "bus-say.html" (dict "k" "holding.note" "v" (dict "route" $route)) }}</small></p>
+      {{- else }}
     <p class="ngbus-hero__stat">{{ partial "bus-say.html" (dict "k" "hero.none_figure") }}<small>{{ partial "bus-say.html" (dict "k" "hero.none_note" "v" (dict "route" $route)) }}</small></p>
+      {{- end }}
     {{- else if $waits }}
     <p class="ngbus-hero__stat">{{ partial "bus-say.html" (dict "k" "hero.ontime_withheld_figure") }}<small>{{ partial "bus-say.html" (dict "k" "hero.ontime_withheld_note" "v" (dict "route" $route)) }}</small></p>
     {{- else if eq $class "timetabled" }}
@@ -166,6 +172,13 @@
            data-week-ending="{{ $w.week_ending }}"
            data-days="{{ with $h.daily }}{{ .days | jsonify }}{{ else }}[]{{ end }}"></section>
   <script type="application/json" id="ngbus-notices-words">{{ hugo.Data.buswords.notices | jsonify | safeJS }}</script>
+
+  {{- /* A route we cannot measure yet still has its replay (drawn on TfL's
+         current route data), and with no chart this is its only way in. */ -}}
+  {{- if and (eq (len $units) 0) (where (hugo.Data.bus.holding.routes | default slice) "route" $route) }}
+  <p class="ngbus-replaylink"><a href="/bus/replay/?route={{ $route | urlquery }}">{{ partial "bus-say.html" (dict "k" "replay.link" "v" (dict "route" $route)) }}</a>
+    {{- partial "bus-say.html" (dict "k" "replay.after") }}</p>
+  {{- end }}
 
   {{- if gt (len $units) 0 }}
   {{- /* First thing under the headline figure: the chart opens on the last

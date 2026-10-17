@@ -137,6 +137,14 @@ chart_live:
   tip_coverage: "Data collected for {pct}% of the {span}"
   tip_replay: "Click to watch this day ▶"
 
+# Routes we cannot measure yet (data/bus/holding.yaml): their holding pages,
+# W14's headline, and the A-Z's hover.
+holding:
+  figure: "Not measured yet"
+  note: "route {route} was introduced or changed since TfL last published its list of every route's stops, in August 2024, and that list is what we match each bus against. We know it runs: we're moving to TfL's current route data, and its figures will follow."
+  between: "Between {from} and {to}."
+  az_hover: "Not measured yet: introduced or changed since TfL's 2024 stop list"
+
 # The line under the chart that opens the replay.
 replay:
   link: "Watch a day of route {route}’s buses"

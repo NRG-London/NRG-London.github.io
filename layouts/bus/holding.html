@@ -1,0 +1,57 @@
+{{ define "main" }}
+{{- /*
+  A holding page: a route TfL runs that we cannot measure yet, because it was
+  introduced or changed since TfL last published its stop list (2024), which
+  every measurement is matched against. The list, and why, is
+  data/bus/holding.yaml; the pages come from content/bus/_content.gotmpl.
+
+  It says plainly that we know the route exists, and gives what we do have:
+  TfL's notices for it and the replay (both read TfL's current route data, so
+  neither depends on the 2024 list). Wording: data/buswords.yaml, `holding`.
+*/ -}}
+{{- $route := .Params.route -}}
+{{- $hold := dict -}}
+{{- with where hugo.Data.bus.holding.routes "route" $route }}{{ $hold = index . 0 }}{{ end -}}
+
+<div class="page-header">
+  <a href="/bus/" class="back-link">{{ partial "bus-say.html" (dict "k" "page.back") }}</a>
+  <h1>{{ .Title }}</h1>
+  <div class="page-meta"><span class="tag">{{ partial "bus-say.html" (dict "k" "page.tag") }}</span></div>
+</div>
+
+<div class="page-content ngbus">
+  <div class="ngbus-hero">
+    {{- with $hold.deck }}
+    <figure class="ngbus-hero__figure">
+      {{ partial "bus-stage.html" (dict "deck" . "route" $route "id" $route) }}
+      {{- if in (slice "night" "school") $hold.class }}
+      <figcaption class="ngbus-hero__caption">
+        {{- if eq $hold.class "night" }}{{ partial "bus-say.html" (dict "k" "hero.night_caption") }}{{ end }}
+        {{- if eq $hold.class "school" }}{{ partial "bus-say.html" (dict "k" "hero.school_caption") }}{{ end }}
+      </figcaption>
+      {{- end }}
+    </figure>
+    {{- end }}
+    <p class="ngbus-hero__stat">{{ partial "bus-say.html" (dict "k" "holding.figure") }}<small>{{ partial "bus-say.html" (dict "k" "holding.note" "v" (dict "route" $route)) }}</small></p>
+  </div>
+
+  {{- with $hold.from }}
+  <p class="ngbus-strap">{{ partial "bus-say.html" (dict "k" "holding.between" "v" (dict "from" (partial "bus-place.html" $hold.from) "to" (partial "bus-place.html" $hold.to))) }}</p>
+  {{- end }}
+
+  {{- /* TfL's notices, as on every route page; no week, so no past groups. */ -}}
+  <section class="ngbus-notices" id="ngbus-notices" hidden aria-live="polite"
+           data-root="{{ site.Params.busReplayData }}" data-route="{{ $route }}"
+           data-week-ending="" data-days="[]"></section>
+  <script type="application/json" id="ngbus-notices-words">{{ hugo.Data.buswords.notices | jsonify | safeJS }}</script>
+
+  <p class="ngbus-replaylink"><a href="/bus/replay/?route={{ $route | urlquery }}">{{ partial "bus-say.html" (dict "k" "replay.link" "v" (dict "route" $route)) }}</a>
+    {{- partial "bus-say.html" (dict "k" "replay.after") }}</p>
+
+  <p class="ngbus-attr">{{ hugo.Data.bus.weekly.attribution }} {{ partial "bus-sources.html" . }}</p>
+</div>
+
+{{ partial "bus-assets.html" . }}
+<script src="/js/ngbus-notices.js?v=3" defer></script>
+<script src="/js/ngbus-notices-box.js?v=3" defer></script>
+{{ end }}
