@@ -814,6 +814,23 @@ for good. Readers can keep any day themselves with "Save this day".
 - `worst_gap.start` must carry seconds and an offset (`2026-10-08T14:04:08+01:00`,
   as since 28 Sep). Without them the page prints the gap but offers no replay link.
 
+**TfL notices** (added 17 Oct 2026; spec `E:\Road Data\docs\superpowers\specs6-10-17-tfl-notices-design.md`).
+NRG-1 writes `n/<ROUTE>.json` beside the replay files every hour (`notices.py`, `bus-notices.timer`):
+`{format: "ng-bus-notices-route", version: 1, route, notices: [{id, text, category, created, validity: [[from, to]],
+seen: [[first, last|null]], stops_named}], closures: [{atco, name, lon, lat, from, to, type, text, seen}]}`, and
+`n/meta.json` (`generated`, the archive's span per feed). A route with nothing in force or to come has no file:
+a 404 means no notices. Read by `static/js/ngbus-notices.js`, whose "in force" is `notices.in_force()` exactly
+(tested against it on every real item: Road Data `tests/test_notices_js.py`).
+
+- **Route pages:** a box under the headline, filled in the browser, so a notice reaches the page within the hour
+  without a rebuild: "In force now", "Also in force during the week ending …" (the page's figures), and "Coming up"
+  (in force, but every TfL date starts later). Hidden when empty or the fetch fails. The chart's day view marks days
+  with a NOTICE in force (not closed stops: a month-long closure would mark every day).
+- **Replay:** a panel for the service day, closed stops drawn hollow (matched by position: day files carry no stop
+  codes), date-strip marks for days with a notice, and a footnote before 15 Oct 2026, when the archive starts.
+- **Wording:** `data/buswords.yaml`, `notices`. TfL's text is shown exactly as sent, escaped and nothing more.
+- **Never "buses were diverted"** on the strength of a notice: it says what TfL planned or announced.
+
 **Day strip shading** on the replay page uses `daily.series[]`'s `journeys` and
 `journeys_turned_short`, read on NRG-1 from its clone of this repo. A day the
 weekly run has not reached yet is unshaded ("no figure yet"), never shaded as good.

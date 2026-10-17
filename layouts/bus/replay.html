@@ -39,7 +39,7 @@
 {{- $handle := printf "@%s" (path.Base .) }}
 <meta name="twitter:site" content="{{ $handle }}">
 {{- end }}
-<link rel="stylesheet" href="/css/ngbus-replay.css?v=2">
+<link rel="stylesheet" href="/css/ngbus-replay.css?v=3">
 </head>
 <body data-replay-root="{{ .Site.Params.busReplayData }}">
 <div id="basemap"></div>
@@ -54,6 +54,7 @@
     <button id="collapse" aria-expanded="true" title="Hide or show the controls">&#9662;</button>
   </header>
   <div id="badge" hidden></div>
+  <div id="notices" hidden aria-live="polite"></div>
 
   <div class="more">
     <div class="row">
@@ -126,7 +127,9 @@
 <script type="application/json" id="ngbus-replay-pages">{{ $pages | jsonify | safeJS }}</script>
 <script src="/js/deck.min.js"></script>
 <script src="/js/maplibre-gl.js"></script>
+<script type="application/json" id="ngbus-notices-words">{{ hugo.Data.buswords.notices | jsonify | safeJS }}</script>
+<script src="/js/ngbus-notices.js?v=1"></script>
 <script src="/js/ngbus-replay-data.js?v=2"></script>
-<script src="/js/ngbus-replay.js?v=2"></script>
+<script src="/js/ngbus-replay.js?v=3"></script>
 </body>
 </html>

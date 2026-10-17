@@ -342,6 +342,18 @@
 
   var cursor = null;
   var current = null;
+
+  /* Days with a TfL notice in force, from the notices box on the same page
+     (ngbus-notices-box.js), which fetches them after the page has loaded and
+     says so with an event. Marked in the day view only: a week is too coarse
+     for "this dip, this notice". */
+  var noticeDays = window.ngbusNoticeDays || {};
+  var NW = {};
+  try { NW = JSON.parse((document.getElementById('ngbus-notices-words') || {}).textContent || '{}'); } catch (e) {}
+  document.addEventListener('ngbus:notice-days', function (e) {
+    noticeDays = e.detail || {};
+    if (current && current.mode === 'day') draw();
+  });
   var axisStep = 1;        // tick spacing, so axis labels carry only the decimals they need      // the view being drawn, for the hover readout
 
   function draw() {
@@ -497,7 +509,32 @@
       }
     });
 
+    /* A small amber mark at the top of each day with a TfL notice in force. */
+    var anyNotice = false;
+    if (V.mode === 'day') {
+      V.idx.forEach(function (i) {
+        if (!noticeDays[V.labels[i]]) return;
+        anyNotice = true;
+        var x = xt(V.times[i]);
+        var m = el('polygon', { 'class': 'ngbus-noticemark',
+          points: (x - 5) + ',' + (G.t - 1) + ' ' + (x + 5) + ',' + (G.t - 1) + ' ' + x + ',' + (G.t + 7) });
+        var tt = el('title', {});
+        tt.textContent = NW.chart_mark || 'TfL notice in force';
+        m.appendChild(tt);
+        svg.appendChild(m);
+      });
+    }
+
     if (legend) {
+      if (anyNotice) {
+        var nItem = document.createElement('span');
+        nItem.className = 'ngbus-legend__item';
+        var nSw = document.createElement('span');
+        nSw.className = 'ngbus-legend__notice';
+        nItem.appendChild(nSw);
+        nItem.appendChild(document.createTextNode(NW.chart_key || 'TfL notice in force that day'));
+        legend.appendChild(nItem);
+      }
       if (anyTt) {
         var tItem = document.createElement('span');
         tItem.className = 'ngbus-legend__item';
@@ -679,6 +716,9 @@
       lines.push('<span class="ngl2-gap"><strong>' + esc(holeLabel(h)) + '</strong> ' +
                  esc(h.reason) + '</span>');
     });
+    if (V.mode === 'day' && noticeDays[iso]) {
+      lines.push('<span class="ngl2-gap"><strong>' + esc(NW.chart_mark || 'TfL notice in force') + '</strong></span>');
+    }
     if (replayURL(V, i)) lines.push('<span class="ngl2-tt">' + esc(WORDS.tip_replay) + '</span>');
     tip.innerHTML = lines.join('<br>');
     tip.hidden = false;

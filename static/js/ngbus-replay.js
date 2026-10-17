@@ -44,8 +44,18 @@
     tl: $('tl'), slider: $('slider'), play: $('play'), speed: $('speed'),
     copylink: $('copylink'), save: $('save'), open: $('open'), file: $('file'),
     mapstyle: $('mapstyle'), mapbright: $('mapbright'), msg: $('msg'),
-    banner: $('banner'), drop: $('drop'), collapse: $('collapse'),
+    banner: $('banner'), drop: $('drop'), collapse: $('collapse'), notices: $('notices'),
   };
+
+  // TfL notices for the route (ngbus-notices.js; spec: E:\Road Data\docs\
+  // superpowers\specs\2026-10-17-tfl-notices-design.md, section 3). The
+  // panel lists those in force on the day being watched, closed stops are
+  // drawn hollow, and the date strip marks days with one.
+  var NN = window.NgbusNotices;
+  var NWORDS = {};
+  try { NWORDS = JSON.parse(($('ngbus-notices-words') || {}).textContent || '{}'); } catch (e) {}
+  var closedLayers = [];
+  var noticeMarks = { route: null, days: {} };
 
   // Routes that have a performance page, so "back" can go there (others
   // fall back to the A-Z). Written into the page by the layout.
@@ -156,6 +166,7 @@
       var o = info.object;
       if (!o) return null;
       if (o.reg) return { text: R.plate(o.reg) + '\n' + (o.dead ? 'not in service: ' : 'to ') + cleanName(o.blind) };
+      if (o.closed) return { text: cleanName(o.name) + ' \u2014 ' + (NWORDS.replay_closed || 'closed (TfL)') };
       if (o.name) return { text: cleanName(o.name) };
       return null;
     },
@@ -360,7 +371,10 @@
       }
     }
     drawTimelineBase();
+    closedLayers = [];
+    if (el.notices) { el.notices.hidden = true; el.notices.innerHTML = ''; }
     renderDays();
+    applyNotices(payload);
     updateURL(marked ? opts : null);
     say('');
     render();
@@ -374,6 +388,61 @@
     for (i = 0; i < counts.length; i++) if (counts[i] > peak) peak = counts[i];
     for (i = 0; i < counts.length; i++) if (counts[i] >= peak / 2) return i * 60;
     return 0;
+  }
+
+  /* ---- TfL notices --------------------------------------------------------- */
+
+  // Notices in force on the service day, closed stops on the map, and the
+  // marks in the date strip. Loaded once per route; a route with no file has
+  // nothing to show, and a failed fetch shows nothing rather than an error.
+  // Works announced ahead (every TfL date starts after the day) do not count
+  // for a day: they are the route page's "Coming up", not that day's notice.
+  function applyNotices(payload) {
+    if (!NN) return;
+    var route = payload.route, day = payload.date;
+    NN.load(DATA_ROOT, route).then(function (f) {
+      if (!cur || cur.payload !== payload) return;           // moved on meanwhile
+      var items = f ? f.notices.concat(f.closures) : [];
+      var w = NN.serviceDay(day);
+      var live = items.filter(function (it) {
+        return NN.inForce(it, w[0], w[1]) && !NN.startsLater(it, w[1]);
+      });
+      var closed = live.filter(function (it) { return it.atco != null && it.lon != null; });
+      closedLayers = closed.length ? [new deck.ScatterplotLayer({
+        id: 'closed-' + route + day,
+        data: closed.map(function (c) { return { name: c.name, lon: c.lon, lat: c.lat, closed: true }; }),
+        getPosition: function (d) { return [d.lon, d.lat]; },
+        stroked: true, filled: true, getFillColor: [17, 17, 17, 255],
+        getLineColor: [150, 150, 150, 255], lineWidthUnits: 'pixels', getLineWidth: 2,
+        getRadius: 18, radiusMinPixels: 4, radiusMaxPixels: 8, pickable: true,
+      })] : [];
+      var notes = live.filter(function (it) { return it.atco == null; });
+      var parts = [];
+      if (notes.length || closed.length) {
+        parts.push('<div class="nt-title">' + NN.say(NWORDS, 'replay_title') + '</div>');
+        parts.push('<ul class="nt-list">' + notes.concat(closed).map(function (it) {
+          return NN.itemHTML(NWORDS, it, w[0], w[1]);
+        }).join('') + '</ul>');
+      }
+      if (day < NN.ARCHIVE_FROM) {
+        parts.push('<div class="nt-foot">' + NN.say(NWORDS, 'replay_before_archive') + '</div>');
+      }
+      if (el.notices) {
+        el.notices.innerHTML = parts.join('');
+        el.notices.hidden = !parts.length;
+      }
+      // the date strip: every day with a NOTICE in force (closed stops are
+      // drawn on the map instead; a long closure would mark every day)
+      var marks = {};
+      var notices = f ? f.notices : [];
+      availableDates(route).forEach(function (d) {
+        var dw = NN.serviceDay(d);
+        if (notices.some(function (it) { return NN.inForce(it, dw[0], dw[1]) && !NN.startsLater(it, dw[1]); })) marks[d] = true;
+      });
+      noticeMarks = { route: route, days: marks };
+      renderDays();
+      render();
+    }).catch(function () { /* no panel: the replay stands without it */ });
   }
 
   function setBack(route) {
@@ -594,6 +663,10 @@
         }
         if (rec.pinned) b.insertAdjacentHTML('beforeend', '<span class="pin" aria-hidden="true">\u25cf</span>');
         b.title = describe(iso, rec);
+        if (noticeMarks.route === key && noticeMarks.days[iso]) {
+          b.insertAdjacentHTML('beforeend', '<span class="nmark" aria-hidden="true"></span>');
+          b.title += ' \u00b7 ' + (NWORDS.replay_day_mark || 'TfL notice in force');
+        }
         b.onclick = (function (i) { return function () { loadServerDay(key, i); }; })(iso);
         if (iso === curIso && cur.source === 'server') b.classList.add('cur');
       } else {
@@ -701,7 +774,7 @@
     if (!cur) return;
     var p = cur.payload, E = cur.E;
     var buses = R.positionsAt(E, p.blinds, simT);
-    deckgl.setProps({ layers: staticLayers.concat(markLayers, [
+    deckgl.setProps({ layers: staticLayers.concat(closedLayers, markLayers, [
       new deck.TripsLayer({
         id: 'trails', data: trips,
         getPath: function (d) { return d.path; },

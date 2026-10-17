@@ -341,3 +341,48 @@ sources:
   archive: "Positions before September 2026 come from the Bus Open Data archive generously built and kept by {open_innovations}, with thanks."
   tfl: "Route lines and stops: Powered by TfL Open Data. Contains OS data © Crown copyright and database rights 2016. Geomni UK Map data © and database rights [2019]."
   independent: "These pages and the bus replay are built independently from open data: Transport for London, the Department for Transport and the bus operators had no part in making them, and none of them endorses them."
+
+
+# ---- TfL notices (route pages and the replay) ----------------------------------------------
+
+# TfL's own notices about each route: diversions, closed stops, road works,
+# planned or unplanned. NRG-1 archives TfL's feeds every 2 minutes and
+# rebuilds the list hourly, so these appear without the page being rebuilt.
+# TfL's notice text is shown exactly as TfL sent it; only these lines around
+# it are ours. Never say buses WERE diverted: a notice says what TfL planned
+# or announced, not what the buses did ("in force", not "happened").
+#
+# On a route page: a box under the headline figure, shown only when there is
+# something to show. On the replay: a panel for the day being watched,
+# closed stops drawn hollow, and a mark on each day in the date strip.
+# Slots: {week}, {from} / {to} (times or dates), {stop}, {day}, {n}.
+notices:
+  title: "TfL notices for this route"
+  now: "In force now"
+  this_week: "Also in force during the week ending {week}"
+  coming_up: "Coming up"
+  source: "TfL's own notices, archived every 2 minutes. They say what TfL planned or announced; the figures below show what the buses did."
+  # the label beside each item
+  kind_planned: "Planned works"
+  kind_unplanned: "Unplanned"
+  kind_information: "Information"
+  kind_closure: "Stop closed"
+  closure_head: "{stop}"
+  # an item's dates (times are London's)
+  dates: "{from} to {to}"
+  dates_open: "from {from}, until further notice"
+  # when TfL had it up
+  shown_since: "on TfL's site since {from}"
+  shown_span: "on TfL's site {from} to {to}"
+  shown_day: "on TfL's site {from}–{to}"
+  shown_from: "on TfL's site from {from}"
+  shown_until: "on TfL's site until {to}"
+  shown_all_day: "on TfL's site all day"
+  # the chart (day by day): a mark on each day a notice was in force
+  chart_mark: "TfL notice in force"
+  chart_key: "TfL notice in force that day"
+  # the replay
+  replay_title: "TfL notices that day"
+  replay_closed: "closed (TfL)"
+  replay_day_mark: "TfL notice in force"
+  replay_before_archive: "TfL notices are archived from 15 October 2026; earlier days show only notices still in force then."

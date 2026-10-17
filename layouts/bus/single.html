@@ -141,6 +141,19 @@
     {{- end }}
   </div>
 
+  {{- /* TfL NOTICES (spec: E:\Road Data\docs\superpowers\specs6-10-17-tfl-notices-design.md).
+         Probably the first answer to the reader's first question, and the
+         context for whatever the charts show, so it sits straight under the
+         headline. Filled in the browser from the replay bucket's n/<ROUTE>.json
+         (rebuilt hourly on NRG-1) by ngbus-notices-box.js; hidden unless there
+         is something to show. data-days are the chart's daily dates, for its
+         day marks. Wording: data/buswords.yaml, `notices`. */ -}}
+  <section class="ngbus-notices" id="ngbus-notices" hidden aria-live="polite"
+           data-root="{{ site.Params.busReplayData }}" data-route="{{ $route }}"
+           data-week-ending="{{ $w.week_ending }}"
+           data-days="{{ with $h.daily }}{{ .days | jsonify }}{{ else }}[]{{ end }}"></section>
+  <script type="application/json" id="ngbus-notices-words">{{ hugo.Data.buswords.notices | jsonify | safeJS }}</script>
+
   {{- if gt (len $units) 0 }}
   {{- /* First thing under the headline figure: the chart opens on the last
          week, day by day, and "what happened this week?" is what most people
@@ -804,7 +817,9 @@
 </div>
 
 {{ partial "bus-assets.html" . }}
+<script src="/js/ngbus-notices.js?v=1" defer></script>
+<script src="/js/ngbus-notices-box.js?v=1" defer></script>
 {{- if gt (len $units) 0 }}
-<script src="/js/ngbus-chart.js?v=12" defer></script>
+<script src="/js/ngbus-chart.js?v=13" defer></script>
 {{- end }}
 {{ end }}

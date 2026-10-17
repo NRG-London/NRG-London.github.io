@@ -994,3 +994,35 @@
   font-family: var(--sans, 'DM Sans', system-ui, sans-serif);
 }
 .ngbus-stopcost__col:hover .ngbus-stopcost__base { opacity: 0.45; }
+
+/* ---- TfL notices (ngbus-notices-box.js; the replay has its own panel) ----
+   Outlined in amber: amber is the colour kept for the one thing that matters,
+   and a diversion is usually why the reader came. TfL's text is shown exactly
+   as sent, so it gets the plain reading face, not the page's display one. */
+.ngbus-notices {
+  margin: 1.4rem 0 1.8rem;
+  padding: 1rem 1.2rem 0.8rem;
+  border: 2px solid var(--amber, #E0A24E);
+  border-radius: 8px;
+  background: #fffaf2;
+}
+.ngbus-notices[hidden] { display: none; }
+.ngn-title { margin: 0 0 0.4rem; font-size: 1.15rem; }
+.ngn-group { margin: 0.8rem 0 0.3rem; font-size: 0.95rem; text-transform: none; }
+.ngn-group--later { color: var(--mid-grey, #8a9490); }
+.ngn-list { list-style: none; margin: 0; padding: 0; }
+.ngn-item { padding: 0.5rem 0; border-top: 1px solid #f1e2c6; }
+.ngn-item:first-child { border-top: 0; }
+.ngn-head { font-weight: 600; }
+.ngn-text { white-space: pre-line; line-height: 1.45; }
+.ngn-meta { margin-top: 0.2rem; font-size: 0.85rem; color: var(--mid-grey, #6b746f); }
+.ngn-item--unplanned .ngn-meta::before { content: "CF A0"; color: var(--amber, #E0A24E); }
+.ngn-source { margin: 0.6rem 0 0; font-size: 0.8rem; color: var(--mid-grey, #6b746f); }
+
+/* the chart's day view: a day with a TfL notice in force */
+.ngbus-noticemark { fill: var(--amber, #E0A24E); }
+.ngbus-legend__notice {
+  display: inline-block; width: 0; height: 0; margin-right: 6px; vertical-align: middle;
+  border-left: 5px solid transparent; border-right: 5px solid transparent;
+  border-top: 8px solid var(--amber, #E0A24E);
+}

@@ -109,3 +109,18 @@
   #attrib summary { cursor: pointer; color: var(--faint); }
   #attrib p { margin: 4px 0 0; }
   #attrib a { color: inherit; }
+
+  /* TfL notices for the day being watched (ngbus-notices.js), outlined in
+     amber like the route page's box. TfL's text is shown as sent. */
+  #notices { margin-top: 8px; padding: 8px 10px; border: 1.5px solid #E0A24E; border-radius: 6px;
+             background: rgba(224,162,78,.08); max-height: 32vh; overflow-y: auto; font-size: 12.5px; }
+  .nt-title { font-weight: 600; color: #f0c27a; margin-bottom: 2px; }
+  .nt-list { list-style: none; margin: 0; padding: 0; }
+  .nt-list .ngn-item { padding: 6px 0; border-top: 1px solid rgba(224,162,78,.25); }
+  .nt-list .ngn-item:first-child { border-top: 0; }
+  .nt-list .ngn-head { font-weight: 600; }
+  .nt-list .ngn-text { white-space: pre-line; line-height: 1.4; }
+  .nt-list .ngn-meta { margin-top: 2px; font-size: 11px; color: var(--muted); }
+  .nt-foot { margin-top: 6px; font-size: 11px; color: var(--muted); }
+  .day .nmark { position: absolute; bottom: 2px; left: 50%; margin-left: -3px; width: 6px; height: 6px;
+                border-radius: 50%; background: #E0A24E; box-shadow: 0 0 0 1px #111; }
