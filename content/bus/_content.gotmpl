@@ -14,11 +14,13 @@
   history into page params would hold all 616 of them in memory at once for no
   gain.
 
-  All three unlisting switches are set here, exactly as the rail page sets them
-  in front matter: `build.list: never` keeps these out of site.Pages so they
-  cannot leak into /campaigns/, the homepage or related-campaigns.html;
-  `sitemap.disable` keeps them out of sitemap.xml; `noindex` is honoured by
-  layouts/partials/head.html. Drop all three when the pages go public.
+  Public since the soft launch (Neil, 18 Oct 2026): the three unlisting
+  switches (`build.list: never`, `sitemap.disable`, `noindex`) are gone. The
+  site's listings are all section-scoped (campaigns, library, campaign terms),
+  so in site.Pages these pages leak nowhere: a build with and without the
+  switches differs only in /bus/ and sitemap.xml. `priority -1` leaves the
+  sitemap's priority out, as for every other page (an added page would
+  otherwise say 0).
 */ -}}
 
 {{- $d := hugo.Data.bus.weekly -}}
@@ -37,13 +39,11 @@
       "kind" "page"
       "title" (printf "Bus route %s" .route)
       "description" (printf "Excess wait time and reliability for London bus route %s, week by week." .route)
-      "build" (dict "list" "never" "render" "always")
-      "sitemap" (dict "disable" true)
+      "sitemap" (dict "priority" -1)
       "params" (dict
         "route" .route
         "deck" .deck
         "vehicle_model" .vehicle_model
-        "noindex" true
       )
   ) -}}
 {{- end -}}
