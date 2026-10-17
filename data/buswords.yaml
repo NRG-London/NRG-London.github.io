@@ -43,11 +43,11 @@ page:
 # {early} / {late} the on-time allowances in minutes.
 hero:
   usually: "Usually {article} {model}."
-  night_caption: "Night route."
+  night_caption: "Night bus."
   school_caption: "School service."
 
   # Night routes
-  night_figure: "Night route"
+  night_figure: "Night bus"
   night_note: "night buses run outside the hours these pages measure ({window}). They will be measured separately, on their own hours."
 
   # A route that has never produced a figure
@@ -58,7 +58,7 @@ hero:
   ewt_figure: "{min} min"
   ewt_note: "excess wait in the week ending {week}. Half of London's frequent routes kept it to {median} min or less."
   ewt_nodata_figure: "No data"
-  ewt_nodata_note: "too little of this week was captured on route {route} to publish a figure. This is a gap in the observation, not a verdict on the route."
+  ewt_nodata_note: "too little of this week was captured on route {route} to publish a figure. This is a gap in my data collection, not a verdict on the route."
 
   # Timetabled routes: on time
   ontime_figure: "{pct} on time"
@@ -77,7 +77,7 @@ hero:
 chart:
   title_days: "The last week, day by day"
   title_weeks: "Week by week"
-  subtitle_frequent: "Share of waiting time spent inside a gap longer than ten minutes."
+  subtitle_frequent: "Chance of waiting more than ten minutes if you turn up at random."
   subtitle_timetabled: "Share of departures leaving on time."
   measures_label: "Which measure to plot"     # read aloud by screen readers
   spans_label: "Time span"                    # read aloud by screen readers
@@ -102,9 +102,9 @@ chart_live:
   title_all: "Week by week"
   subtitle_ewt: "Excess wait time in each direction, in minutes."
   subtitle_ot: "Share of departures leaving on time."
-  subtitle_p: "Share of waiting time spent inside a gap longer than ten minutes."
+  subtitle_p: "Chance of waiting more than ten minutes if you turn up at random."
   subtitle_cur: "Share of journeys turned back before the end of the line."
-  subtitle_tsw: "Wait added by buses cut short, at each day’s hardest-hit stop, in minutes."
+  subtitle_tsw: "Wait added by buses cut short elsewhere on the route, at the stop where it was felt most each day, in minutes."
   # Read aloud by screen readers, as "Daily excess wait time for route 38. ..."
   spoken_daily: "Daily"
   spoken_weekly: "Weekly"
@@ -112,7 +112,7 @@ chart_live:
   spoken_ot: "share of departures on time"
   spoken_p: "share of waits over ten minutes"
   spoken_cur: "share of journeys cut short"
-  spoken_tsw: "wait added by buses cut short at the hardest-hit stop"
+  spoken_tsw: "wait added by buses cut short, at the stop where it was felt most"
   spoken_end: "for route {route}. The same figures are listed in the table below."
   # A button that has nothing to show for the chosen span (hover text)
   button_off_days: "Not measured day by day — try a longer span"
@@ -143,7 +143,7 @@ replay:
 
 weeks:
   summary: "The weekly figures"
-  hint_frequent: "Excess wait, then the share of waiting spent in a gap longer than ten minutes."
+  hint_frequent: "Excess wait, then the chance of waiting more than ten minutes if you turn up at random."
   hint_timetabled: "The share of departures that left on time."
   column_week: "Week ending"
   thin: "thin"
@@ -190,14 +190,14 @@ strap:
 cards:
   ontime: "On time"
   ewt: "Excess wait"
-  ewt_hover: "How much longer people waited, on average, than they would have if every bus had run exactly to the timetable. Nought means the buses came as evenly as planned. This is the measure TfL itself uses for frequent routes."
+  ewt_hover: "How much longer people waited, on average, than they would have if every bus had run exactly to the timetable. Nought means the buses came as evenly as planned. This is TfL's main target for frequent routes."
   ewt_value: "{min} min"
   ewt_cut_part: "{min} min of it from buses turned short"
   ewt_cut_part_hover: "Part of the excess wait above, caused by buses turned back before the end of the line"
   wait_band: "Wait > {band} min"
   timetable_alone: "timetable alone: {pct}"
   p95: "1 in 20 wait over"
-  p95_hover: "Nineteen people in twenty get a bus sooner than this. A fairer picture of a bad-but-ordinary wait than the single longest gap, which can be a one-off."
+  p95_hover: "One person in 20 waits longer than this (P95). A better estimate of a bad-but-ordinary wait than the longest gap which can be a one-off."
   p95_value: "{min} min"
   cut: "Cut short"
   cut_hover: "Journeys turned back before the end of the line this week. Anyone still on board is put off, and anyone waiting further along is left for the next bus."
@@ -224,10 +224,9 @@ worst_gap:
 
 bands:
   title: "When it goes wrong"
-  lead: "The share of waiting time spent inside a gap longer than twenty minutes, by time of day, averaged over the most recent weeks of data. The mark on each bar is what the timetable alone would give."
-  timetable_hover: "The timetable alone would give {pct}"
+  lead: "Chance of waiting more than twenty minutes if you turn up at random, by time of day, averaged over the most recent weeks of data. The mark on each bar is the chance if everything ran to timetable."
+  timetable_hover: "Chance if everything ran to timetable {pct}"
   ewt: "{min} min excess wait"
-
 
 # ---- Journeys cut short -------------------------------------------------------------------
 
@@ -237,10 +236,11 @@ cut:
   title: "Journeys cut short"
   last_week: "**Last week:** **{pct}** of journeys were turned back before the end of the line in the week ending {week}{ewt_part}."
   last_week_ewt_part: ", and that accounts for **{min} minutes** of the excess wait above"
-  consequence: "Anyone still on board is put off, and anyone waiting further along the route is left for the next bus: a cancellation that only the far end of the route ever sees."
-  worst_stop: "**Hardest-hit stop:** at {place}, {direction}, buses cut short added **{min} minutes** to the average wait last week: {awt} minutes instead of {awt_without}."
-  worst_stop_first: "It is where the route starts back, so a bus turned round before reaching it never sets off from there at all."
-  worst_stop_small: "**Hardest-hit stop:** buses cut short added no more than {min} minutes to the average wait at any stop last week."
+  consequence: "Everyone on board has to get off; for anyone waiting further along the route it's effectively a cancellation."
+  worst_stop_small: "**Where it's felt most:** nowhere much. Buses cut short added no more than {min} minutes to the average wait at any stop last week."
+  worst_stop: "**Where it's felt most:** buses cut short elsewhere on the route added **{min} minutes** to the average wait at {place}, {direction}, last week: {awt} minutes instead of the {awt_without} if they had all run the full route."
+  worst_stop_start: "**Where it's felt most: {place}**, the start of the route {direction}. Every bus turned back before it got there means the departure from {place} never happens. Last week that added **{min} minutes** to the average wait there: {awt} minutes instead of {awt_without}."
+
 
   # The older four-week count, shown on a few routes while the data still has it.
   older_label_one: "Last week"
@@ -279,8 +279,8 @@ tfl:
   ontime_value: "{pct} on time"
   no_figure: "no figure"
   no_figure_hover: "Not enough of that quarter was collected"
-  note: "TfL's figures come from its own tracking equipment and its own timetable; ours are computed from the buses' public position feed. They are the same calculation on independent data, so they should broadly agree and move together rather than match exactly."
-  why_higher: "**Why ours is usually a little higher.** When a bus is turned back before the end of the line, everyone waiting further along has to wait for the next one. Our figure counts that waiting; TfL's published figure appears not to. Take it out and the two come close: across London in April to June 2026, our average excess wait falls from 1.39 to 1.23 minutes against TfL's 1.08, and on the routes where the two differed most it lands almost exactly on TfL's number."
+  note: "TfL's figures come from its own tracking equipment and its own timetable; mine are computed from the buses' public position feed. They are the same calculation on independent data, so they should broadly agree and move together rather than match exactly."
+  why_higher: "**Why mine is usually a little higher.** When a bus is turned back before the end of the line, everyone waiting further along has to wait for the next one. My figure counts that waiting; TfL's published figure appears not to. Take it out and the two come close: across London in April to June 2026, my average excess wait falls from 1.39 to 1.23 minutes against TfL's 1.08, and on the routes where the two differed most it lands almost exactly on TfL's number."
 
 
 # ---- About this data (collapsed) --------------------------------------------------------------
