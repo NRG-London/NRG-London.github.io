@@ -1,0 +1,125 @@
+{{- /*
+  /labs/licensing/ — London's cumulative impact zones, the first strand of the
+  London Licensing project (unlisted lab).
+
+  A standalone page, not baseof: a one-screen map app (reading panel left, map
+  right; stacked on phones), so it carries none of the site's chrome or
+  main.css. Like /bus/replay/ it keeps what every page needs from head.html:
+  analytics, icon, share card and the noindex switch.
+
+  The page body (content/labs/licensing.md) is the "About this project" text,
+  so it can be edited in the CMS. Everything else is here or in the data.
+
+  Data: generated in E:\London Licensing by site/export_lab.py from the Cowork
+  CIZ build — static/labs/licensing/data/ (zones, borough outlines, Thames,
+  downloads) and data/licensing/authorities.json (read below). Bump DATA_V
+  when the data changes. Code: static/js/licensing-map.js, css/licensing.css.
+*/ -}}
+{{- $dataV := "1" -}}
+<!doctype html>
+<html lang="en-GB">
+<head>
+{{ with .Site.Params.goatcounterURL }}<script data-goatcounter="{{ . }}" async src="//gc.zgo.at/count.js"></script>{{ end }}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ .Title }} — Neil Garratt</title>
+<meta name="description" content="{{ .Params.summary }}">
+{{ if .Params.noindex }}<meta name="robots" content="noindex, nofollow">{{ end }}
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+{{- $og := absURL (default "/images/og-default.png" .Params.image) }}
+<meta property="og:title" content="{{ .Title }} — {{ .Site.Params.author }}">
+<meta property="og:description" content="{{ .Params.summary }}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ .Permalink }}">
+<meta property="og:site_name" content="{{ .Site.Title }}">
+<meta property="og:locale" content="en_GB">
+<meta property="og:image" content="{{ $og }}">
+<meta name="twitter:card" content="summary_large_image">
+{{- with .Site.Params.social.twitter }}
+{{- $handle := printf "@%s" (path.Base .) }}
+<meta name="twitter:site" content="{{ $handle }}">
+{{- end }}
+<link rel="stylesheet" href="/css/licensing.css?v=1">
+</head>
+<body data-data-root="/labs/licensing/data/" data-data-v="{{ $dataV }}">
+<div class="app">
+  <aside class="panel" id="panel">
+    <div class="head">
+      <header>
+        <a class="back" href="/">&larr; neilgarratt.com</a>
+        <div class="eyebrow">Licensing Act 2003 &middot; position at 16 October 2026</div>
+        <h1>London&rsquo;s cumulative impact zones</h1>
+        <p class="standfirst">Every area where a London licensing authority presumes against new or extended licences because of the combined impact of the premises already there. Compiled from the published licensing policies of all 35 licensing authorities.</p>
+      </header>
+      <div class="stats" id="stats"></div>
+    </div>
+    <div class="rest">
+
+      <section aria-labelledby="h-show">
+        <h2 id="h-show">What each zone restricts</h2>
+        <div class="filters" id="scopeFilters"></div>
+        <div class="subhead">Type of designation</div>
+        <div class="filters" id="kindFilters"></div>
+      </section>
+
+      <section aria-live="polite">
+        <div class="notice" id="notice"><p class="empty">Select a zone on the map, or a licensing authority below, to see what the policy says and where the boundary comes from.</p></div>
+      </section>
+
+      <section aria-labelledby="h-auth">
+        <h2 id="h-auth">By licensing authority</h2>
+        <div class="legendrow"><span>Authority</span><span>Zones &middot; Home Office</span></div>
+        <div class="authlist" id="authlist"></div>
+      </section>
+
+      <section class="about" aria-labelledby="h-about">
+        <h2 id="h-about">About this map</h2>
+        <p>Each zone was taken from the authority&rsquo;s statement of licensing policy and cumulative impact assessment in force on 16 October 2026, and checked against the Home Office&rsquo;s count of cumulative impact areas at 31 March 2026 (shown beside each authority). Differences are explained in the authority notes.</p>
+        <p>Boundaries come from the councils&rsquo; own maps and descriptions. Each one carries a precision label:</p>
+        <div class="precdef">
+          <span class="prec">exact</span><span>the council&rsquo;s own GIS boundary, whole wards, or the whole borough</span>
+          <span class="prec">matched to council map</span><span>the council&rsquo;s PDF map aligned to Ordnance Survey data and the zone traced from it; typically within a few metres</span>
+          <span class="prec">traced from description</span><span>built street by street from the policy&rsquo;s written boundary</span>
+          <span class="prec">approximate</span><span>the policy names or hatches streets without exact limits, so the frontages either side are drawn; or only a small-scale map exists</span>
+        </div>
+        <p>Every boundary was then compared with the council&rsquo;s own map or description in a separate check, and corrected where they differed.</p>
+        <p><b>Unofficial and indicative.</b> This is an independent compilation, not a legal record. Policies change, and a council&rsquo;s own policy document is the authority on where a zone runs. Check it before relying on a boundary.</p>
+        <p id="notmapped"></p>
+        <p><b>Download the data:</b>
+          <a href="/labs/licensing/data/downloads/london-cumulative-impact-zones.geojson" download>zones (GeoJSON)</a> &middot;
+          <a href="/labs/licensing/data/downloads/london-cumulative-impact-zones-register.csv" download>full register, including lapsed and undrawn zones (CSV)</a> &middot;
+          <a href="/labs/licensing/data/downloads/london-licensing-authorities.csv" download>licensing authorities (CSV)</a></p>
+        <p>Contains OS data &copy; Crown copyright and database right 2026. Contains ONS data &copy; Crown copyright 2026. Boundaries derived from council licensing policies, reused under the Open Government Licence where published as such. Street map &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>.</p>
+      </section>
+
+      <section class="project" aria-labelledby="h-project">
+        <h2 id="h-project">About this project</h2>
+        {{ .Content }}
+      </section>
+    </div>
+  </aside>
+
+  <div class="mapwrap">
+    <div id="map" role="region" aria-label="Map of cumulative impact zones in London"></div>
+    <div class="mapbar">
+      <div class="seg" role="group" aria-label="Base map">
+        <button type="button" data-mode="street" aria-pressed="true">Streets</button>
+        <button type="button" data-mode="boroughs" aria-pressed="false">Boroughs</button>
+      </div>
+      <div class="seg zoom" role="group" aria-label="Zoom">
+        <button type="button" id="zoomIn" aria-label="Zoom in">+</button>
+        <button type="button" id="zoomOut" aria-label="Zoom out">&minus;</button>
+      </div>
+    </div>
+    <div class="readout" id="readout" aria-hidden="true"></div>
+    <div class="maptag" id="maptag"></div>
+    <div class="attrib" id="attrib"></div>
+  </div>
+</div>
+
+<script type="application/json" id="auth">{{ hugo.Data.licensing.authorities | jsonify | safeJS }}</script>
+<script src="/js/maplibre-gl.js"></script>
+<script src="/js/licensing-map.js?v=1"></script>
+</body>
+</html>

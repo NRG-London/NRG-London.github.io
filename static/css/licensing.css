@@ -1,0 +1,157 @@
+/* /labs/licensing/ — London's cumulative impact zones.
+   A one-screen app: reading panel left, map right; on phones the map sits
+   between the header and the rest of the panel. Ported from the Cowork page
+   (E:\London Licensing\ciz\scripts\page_template.html), re-tokened to the site:
+   self-hosted DM Sans / Libre Baskerville, site ink and blues. Light only, like
+   the rest of the site. maplibre-gl.css is not shipped: the two rules it needs
+   are at the bottom. */
+
+@font-face { font-family: 'Libre Baskerville'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/libre-baskerville.woff2') format('woff2'); }
+@font-face { font-family: 'Libre Baskerville'; font-style: normal; font-weight: 700; font-display: swap; src: url('/fonts/libre-baskerville.woff2') format('woff2'); }
+@font-face { font-family: 'DM Sans'; font-style: normal; font-weight: 300 700; font-display: swap; src: url('/fonts/dm-sans.woff2') format('woff2'); }
+
+:root {
+  --ground: #f3f6f4;        /* site --paper */
+  --panel: #ffffff;
+  --ink: #1a2332;           /* site --ink */
+  --ink-soft: #55606c;
+  --rule: #dde3df;          /* site --warm-grey */
+  --notice: #E2EEF7;        /* site --blue-light: the pale blue of a licensing notice */
+  --notice-edge: #9fc1e3;
+  --accent: #0070BA;        /* site --blue */
+  --all: #b3123a;           /* zone covers pubs, bars, clubs and shops */
+  --off: #0b7a83;           /* off-licences only */
+  --lnr: #c27a00;           /* late-night food only */
+  --former: #3b3b3b;
+  --serif: 'Libre Baskerville', Georgia, serif;
+  --sans: 'DM Sans', system-ui, sans-serif;
+  --mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--ground); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.5; }
+a { color: var(--accent); }
+a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.app { display: grid; grid-template-columns: minmax(340px, 430px) 1fr; height: 100%; }
+.panel { overflow-y: auto; background: var(--panel); border-right: 1px solid var(--rule);
+  padding-block: 18px 40px; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: 20px; min-width: 0; }
+.head, .rest { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+.rest { margin-top: 22px; }
+.mapwrap { position: relative; min-width: 0; background: #e8ecea; }
+#map { position: absolute; inset: 0; }
+
+.back { display: inline-block; font-size: 13px; text-decoration: none; margin-bottom: 14px; }
+.back:hover { text-decoration: underline; }
+.eyebrow { font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); font-weight: 600; }
+h1 { font-family: var(--serif); font-weight: 700; font-size: 28px; line-height: 1.15; margin: 6px 0 10px; text-wrap: balance; }
+.standfirst { margin: 0; color: var(--ink-soft); max-width: 62ch; }
+h2 { font-family: var(--serif); font-weight: 700; font-size: 16px; margin: 0 0 10px; }
+
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+.stat { background: var(--panel); padding: 10px 10px 9px; }
+.stat b { display: block; font-size: 30px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.stat b small { font-size: 16px; font-weight: 600; }
+.stat span { display: block; font-size: 12.5px; color: var(--ink-soft); margin-top: 4px; line-height: 1.3; }
+
+.filters { display: flex; flex-direction: column; gap: 6px; }
+.filter { position: relative; display: grid; grid-template-columns: 22px 1fr auto; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid var(--rule); background: var(--panel); cursor: pointer; font-size: 14px; }
+.filter input { position: absolute; opacity: 0; pointer-events: none; }
+.filter .sw { width: 18px; height: 14px; border: 2px solid currentColor; }
+.filter[data-on="false"] { opacity: .45; }
+.filter .n { font-family: var(--mono); font-size: 12.5px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.filter .hint { font-size: 12px; color: var(--ink-soft); }
+.filter:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sw.all { color: var(--all); background: color-mix(in srgb, var(--all) 35%, transparent); }
+.sw.off { color: var(--off); background: color-mix(in srgb, var(--off) 35%, transparent); }
+.sw.lnr { color: var(--lnr); background: color-mix(in srgb, var(--lnr) 35%, transparent); }
+.sw.cia { color: var(--ink); background: color-mix(in srgb, var(--ink) 30%, transparent); }
+.sw.softer { color: var(--ink); border-style: dashed; background: color-mix(in srgb, var(--ink) 8%, transparent); }
+.sw.proposed { color: var(--ink); border-style: dotted; background: transparent; }
+.sw.former { color: var(--former); border-style: dashed; background: transparent; }
+.subhead { font-size: 12.5px; color: var(--ink-soft); margin: 10px 0 4px; }
+
+/* The selected-zone card is styled after the pale blue notice an applicant must post outside premises. */
+.notice { background: var(--notice); border: 1px solid var(--notice-edge); padding: 14px 14px 12px; position: relative; }
+.notice .kicker { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); font-weight: 600; padding-right: 22px; }
+.notice h3 { font-family: var(--serif); font-size: 20px; font-weight: 700; line-height: 1.15; margin: 4px 0 2px; text-wrap: balance; }
+.notice .where { font-size: 13.5px; color: var(--ink-soft); margin-bottom: 8px; }
+.notice dl { display: grid; grid-template-columns: 7.2em 1fr; gap: 5px 10px; margin: 0; font-size: 13.5px; }
+.notice dt { color: var(--ink-soft); }
+.notice dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.notice .empty { color: var(--ink-soft); font-size: 14px; margin: 0; }
+.chip { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 0 6px; border: 1px solid currentColor; border-radius: 2px; margin-right: 4px; white-space: nowrap; }
+.chip.all { color: var(--all); } .chip.off { color: var(--off); } .chip.lnr { color: var(--lnr); }
+.prec { font-family: var(--mono); font-size: 12px; }
+.close { position: absolute; top: 6px; right: 6px; border: 0; background: transparent; color: var(--ink-soft); font-size: 22px; line-height: 1; cursor: pointer; padding: 4px 6px; }
+
+.authlist { display: flex; flex-direction: column; border-top: 1px solid var(--rule); }
+.auth { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 8px 2px; border: 0; border-bottom: 1px solid var(--rule); cursor: pointer; background: transparent; text-align: left; color: inherit; font: inherit; }
+.auth:hover { background: color-mix(in srgb, var(--notice) 55%, transparent); }
+.auth .nm { font-weight: 600; font-size: 14px; }
+.auth .ct { font-family: var(--mono); font-size: 12.5px; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.auth .nt { grid-column: 1 / -1; font-size: 12.5px; color: var(--ink-soft); line-height: 1.4; }
+.auth.none .nm { font-weight: 500; color: var(--ink-soft); }
+.legendrow { display: flex; justify-content: space-between; font-size: 11px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; padding: 0 2px 4px; }
+
+.about, .project { font-size: 13.5px; color: var(--ink-soft); }
+.about p, .project p { margin: 0 0 8px; max-width: 64ch; }
+.project ol, .project ul { margin: 0 0 8px; padding-left: 20px; }
+.project li { margin-bottom: 6px; }
+.about h2, .project h2 { color: var(--ink); }
+.about b, .project strong { color: var(--ink); }
+.precdef { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; margin: 6px 0 10px; }
+.precdef .prec { color: var(--ink); }
+
+/* ---- map furniture ---- */
+.mapbar { position: absolute; z-index: 2; top: 12px; right: calc(12px + env(safe-area-inset-right, 0px)); display: flex; gap: 8px; }
+.seg { display: flex; background: var(--panel); border: 1px solid var(--rule); }
+.seg button { font: inherit; font-size: 13px; padding: 5px 10px; border: 0; background: transparent; color: var(--ink); cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--rule); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+.seg button:hover:not([aria-pressed="true"]) { background: var(--notice); }
+.seg.zoom button { width: 32px; padding: 3px 0; font-size: 18px; line-height: 1.2; }
+
+/* Hovered zone's name: a fixed strip, not a tooltip, so it never covers the map. */
+.readout { position: absolute; z-index: 2; top: 12px; left: calc(12px + env(safe-area-inset-left, 0px)); max-width: calc(100% - 260px);
+  background: var(--panel); border: 1px solid var(--rule); padding: 5px 9px; font-size: 13px; line-height: 1.3; pointer-events: none; }
+.readout:empty { display: none; }
+.readout .b { color: var(--ink-soft); }
+
+.blabel { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #6b7570; white-space: nowrap; pointer-events: none;
+  text-shadow: 0 0 2px #fff, 0 0 2px #fff, 0 0 3px #fff; }
+
+.maptag { position: absolute; z-index: 2; left: calc(12px + env(safe-area-inset-left, 0px)); bottom: calc(26px + env(safe-area-inset-bottom, 0px));
+  background: var(--panel); border: 1px solid var(--rule); padding: 6px 9px; font-size: 12px; color: var(--ink-soft); max-width: 330px; line-height: 1.35; }
+.maptag b { color: var(--ink); }
+.attrib { position: absolute; z-index: 2; right: 0; bottom: 0; background: color-mix(in srgb, var(--panel) 85%, transparent);
+  color: var(--ink-soft); font-size: 10.5px; padding: 1px 6px; }
+.attrib a { color: var(--accent); text-decoration: none; }
+
+@media (max-width: 860px) {
+  html, body { height: auto; }
+  .app { display: flex; flex-direction: column; height: auto; background: var(--panel); }
+  .panel { display: contents; }
+  .head, .rest { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .head { order: 1; padding-block: 16px 16px; }
+  .mapwrap { order: 2; height: 62vh; min-height: 340px; border-block: 1px solid var(--rule); }
+  .rest { order: 3; margin-top: 0; padding-block: 18px 40px; }
+  h1 { font-size: 25px; }
+  .maptag { display: none; }
+  .readout { max-width: calc(100% - 24px); top: auto; bottom: 26px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* The maplibre-gl.css rules this page needs (the rest style controls never mounted).
+   Unlike the deck.gl pages, this map is interactive, so it also needs the
+   touch-action rules (or a phone scrolls the page instead of panning) and the
+   marker rule (borough labels). */
+.maplibregl-map { position: relative; overflow: hidden; }
+.maplibregl-canvas { position: absolute; top: 0; left: 0; }
+.maplibregl-canvas-container.maplibregl-interactive { cursor: grab; user-select: none; }
+.maplibregl-canvas-container.maplibregl-interactive:active { cursor: grabbing; }
+.maplibregl-canvas-container.maplibregl-touch-drag-pan,
+.maplibregl-canvas-container.maplibregl-touch-zoom-rotate { touch-action: pan-x pan-y; }
+.maplibregl-canvas-container.maplibregl-touch-drag-pan.maplibregl-touch-zoom-rotate { touch-action: none; }
+.maplibregl-marker { position: absolute; top: 0; left: 0; will-change: transform; }
