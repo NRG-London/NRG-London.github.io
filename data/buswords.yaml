@@ -59,6 +59,13 @@ hero:
   ewt_note: "excess wait in the week ending {week}. Half of London's frequent routes kept it to {median} min or less."
   ewt_nodata_figure: "No data"
   ewt_nodata_note: "too little of this week was captured on route {route} to publish a figure. This is a gap in my data collection, not a verdict on the route."
+  # no excess wait because TfL's timetable doesn't match the buses that ran
+  mismatch_figure: "No excess-wait figure"
+  mismatch_note: "TfL's timetable for route {route} doesn't match the buses that ran this week. An excess wait measured against it wouldn't be fair, so there's no figure. This is not a verdict on the route."
+  mismatch_note_more: "TfL's timetable for route {route} doesn't match the buses that ran this week: about {n}% more ran than it lists. An excess wait measured against it wouldn't be fair, so there's no figure. This is not a verdict on the route."
+  mismatch_note_fewer: "TfL's timetable for route {route} doesn't match the buses that ran this week: about {n}% fewer ran than it lists. An excess wait measured against it wouldn't be fair, so there's no figure. This is not a verdict on the route."
+  # no excess wait because too few of the route's buses could be timed
+  not_traced_note: "too few of route {route}'s buses could be timed this week to publish a figure. This is a limit of my measurement, not a verdict on the route."
 
   # Timetabled routes: on time
   ontime_figure: "{pct} on time"
@@ -167,6 +174,13 @@ weeks:
 common:
   no_data: "no data"
   no_data_hover: "Too little data this week"
+  # an excess wait left out because TfL's timetable doesn't match the buses
+  # that ran (the sweep's ewt_null_reason); {n} is how many more (or fewer), in %
+  mismatch_label: "timetable mismatch"
+  mismatch: "TfL's timetable for route {route} doesn't match the buses that ran, so there's no excess-wait figure"
+  mismatch_more: "TfL's timetable for route {route} doesn't match the buses that ran: about {n}% more ran than it lists, so there's no excess-wait figure"
+  mismatch_fewer: "TfL's timetable for route {route} doesn't match the buses that ran: about {n}% fewer ran than it lists, so there's no excess-wait figure"
+  not_traced_hover: "Too few of this route's buses could be timed to publish a figure: a limit of my measurement, not a gap in collection"
 
 
 # ---- the sentence in passenger's words ------------------------------------------

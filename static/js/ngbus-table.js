@@ -254,6 +254,22 @@
     return '<span class="ngbus-nd" title="' + esc(title) + '">no data</span>';
   };
 
+  // Why a frequent route has no excess wait, when the sweep says
+  // (ewt_null_reason: nr "m", a timetable that doesn't match the buses that
+  // ran, with sv = seen_vs_timetable; "t", too few buses timed). Otherwise,
+  // too little collected.
+  function whyNone(r) {
+    if (r.nr === 'm') {
+      var n = r.sv != null ? Math.round((r.sv - 1) * 100) : 0;
+      return "TfL's timetable doesn't match the buses that ran" +
+        (n >= 1 ? ': about ' + n + '% more ran than it lists'
+         : n <= -1 ? ': about ' + (-n) + '% fewer ran than it lists' : '') +
+        ", so there's no excess-wait figure";
+    }
+    if (r.nr === 't') return 'Too few of its buses could be timed this week to publish a figure';
+    return 'Too little data this week to publish a figure';
+  }
+
   function leadCell(r) {
     if (state.kind === 't') {
       var o = r[R.OT];
@@ -263,7 +279,7 @@
              '<span class="ngbus-metric__val">' + Math.round(o * 100) + '%</span></td>';
     }
     var ewt = r[R.EWT];
-    if (ewt == null) return '<td class="ngbus-metric">' + nd('Too little data this week to publish a figure') + '</td>';
+    if (ewt == null) return '<td class="ngbus-metric">' + nd(whyNone(r)) + '</td>';
     var w = Math.round((ewt / spec.max) * BAR_MAX);
     return '<td class="ngbus-metric ngbus-metric--lead">' +
            '<span class="ngbus-metric__bar" style="width:' + w + 'px"></span>' +

@@ -1,0 +1,14 @@
+{{- /*
+  bus-mismatch — the sentence for an excess wait left out because TfL's
+  timetable doesn't match the buses that ran (`ewt_null_reason:
+  "timetable_mismatch"`, E:\Road Data\docs\contract-v1-fields.md). With "about
+  N% more" (or fewer) when `seen_vs_timetable` says so; n = round((seen - 1) x
+  100). dict: k (wording key base: "hero.mismatch_note" or "common.mismatch"),
+  route, seen. A RETURNING partial.
+*/ -}}
+{{- $n := 0 -}}
+{{- with .seen }}{{ $n = int (math.Round (mul (sub (float .) 1.0) 100)) }}{{ end -}}
+{{- $k := .k }}{{ $v := dict "route" .route -}}
+{{- if ge $n 1 }}{{ $k = printf "%s_more" .k }}{{ $v = merge $v (dict "n" $n) }}
+{{- else if le $n -1 }}{{ $k = printf "%s_fewer" .k }}{{ $v = merge $v (dict "n" (mul $n -1)) }}{{ end -}}
+{{- return partial "bus-say.html" (dict "k" $k "v" $v) -}}

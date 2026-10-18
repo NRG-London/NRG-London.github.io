@@ -1,0 +1,12 @@
+{{- /*
+  bus-ndwhy — the hover on a "no data" excess wait, saying why when the sweep
+  says why (`ewt_null_reason`, E:\Road Data\docs\contract-v1-fields.md): a
+  timetable that doesn't match the buses that ran, buses too few of which could
+  be timed, or (the default) too little collected. dict: c (a weekly cell or a
+  league row), route. A RETURNING partial.
+*/ -}}
+{{- $why := .c.ewt_null_reason | default "" -}}
+{{- $out := partial "bus-say.html" (dict "k" "common.no_data_hover") -}}
+{{- if eq $why "timetable_mismatch" }}{{ $out = partial "bus-mismatch.html" (dict "k" "common.mismatch" "route" .route "seen" .c.seen_vs_timetable) }}
+{{- else if eq $why "not_traced" }}{{ $out = partial "bus-say.html" (dict "k" "common.not_traced_hover") }}{{ end -}}
+{{- return $out -}}

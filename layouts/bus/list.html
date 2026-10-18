@@ -25,6 +25,8 @@
            running exactly to its timetable has an excess wait of 0.0, which
            `if not` would have greyed out as "no data". */ -}}
     {{- $title := "No data published this week" }}{{ $nodata := true -}}
+    {{- if eq .ewt_null_reason "timetable_mismatch" }}{{ $title = "No excess-wait figure: TfL's timetable doesn't match the buses that ran" }}
+    {{- else if eq .ewt_null_reason "not_traced" }}{{ $title = "No excess-wait figure: too few of its buses could be timed" }}{{ end -}}
     {{- if eq .service_class "night" }}{{ $title = "Night route: measured separately, later" }}
     {{- else if eq .frequency_type "timetabled" }}
       {{- if ne .on_time_pct nil }}{{ $title = printf "%s of departures on time" (lang.FormatPercent 0 (mul .on_time_pct 100)) }}{{ $nodata = false }}

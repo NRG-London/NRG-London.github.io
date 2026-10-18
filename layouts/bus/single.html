@@ -155,6 +155,14 @@
       {{- end }}
     {{- else if ne $row.ewt_min nil }}
     <p class="ngbus-hero__stat">{{ partial "bus-say.html" (dict "k" "hero.ewt_figure" "v" (dict "min" (partial "bus-min1.html" $row.ewt_min))) }}<small>{{ partial "bus-say.html" (dict "k" "hero.ewt_note" "v" (dict "week" (dateFormat "2 January 2006" $w.week_ending) "median" (lang.FormatNumber 1 $w.summary.median_ewt_min))) }}</small></p>
+    {{- /* No excess wait this week, and the sweep says why (ewt_null_reason,
+           contract-v1-fields.md): a timetable that doesn't match the buses
+           that ran, or buses too few of which could be timed, are not gaps in
+           collection and must not be described as one (the 427, 18 Oct). */ -}}
+    {{- else if eq $row.ewt_null_reason "timetable_mismatch" }}
+    <p class="ngbus-hero__stat">{{ partial "bus-say.html" (dict "k" "hero.mismatch_figure") }}<small>{{ partial "bus-mismatch.html" (dict "k" "hero.mismatch_note" "route" $route "seen" $row.seen_vs_timetable) }}</small></p>
+    {{- else if eq $row.ewt_null_reason "not_traced" }}
+    <p class="ngbus-hero__stat">{{ partial "bus-say.html" (dict "k" "hero.ewt_nodata_figure") }}<small>{{ partial "bus-say.html" (dict "k" "hero.not_traced_note" "v" (dict "route" $route)) }}</small></p>
     {{- else }}
     <p class="ngbus-hero__stat">{{ partial "bus-say.html" (dict "k" "hero.ewt_nodata_figure") }}<small>{{ partial "bus-say.html" (dict "k" "hero.ewt_nodata_note" "v" (dict "route" $route)) }}</small></p>
     {{- end }}
@@ -272,7 +280,8 @@
                 {{- with $c.wait_bands }}{{ $b := index . "10" }}{{ if ne $b.actual nil }} · {{ lang.FormatPercent 0 (mul $b.actual 100) }}{{ end }}{{ end }}{{ end }}
               {{- if lt $c.coverage 0.9 }} <span class="ngbus-thinmark" title="{{ partial "bus-say.html" (dict "k" "weeks.thin_hover" "v" (dict "pct" (lang.FormatPercent 0 (mul $c.coverage 100)))) }}">{{ partial "bus-say.html" (dict "k" "weeks.thin") }}</span>{{ end }}</td>
               {{- else }}
-            <td><span class="ngbus-nd" title="{{ partial "bus-say.html" (dict "k" "common.no_data_hover") }}">{{ partial "bus-say.html" (dict "k" "common.no_data") }}</span></td>
+            <td><span class="ngbus-nd" title="{{ if eq $show "frequent" }}{{ partial "bus-ndwhy.html" (dict "c" $c "route" $route) }}{{ else }}{{ partial "bus-say.html" (dict "k" "common.no_data_hover") }}{{ end }}">
+              {{- if and (eq $show "frequent") (eq $c.ewt_null_reason "timetable_mismatch") }}{{ partial "bus-say.html" (dict "k" "common.mismatch_label") }}{{ else }}{{ partial "bus-say.html" (dict "k" "common.no_data") }}{{ end }}</span></td>
               {{- end }}
             {{- end }}
           </tr>
@@ -355,7 +364,7 @@
           {{- /* Only when it rounds to something: "0.0 min of it from buses turned
                  short" reads as a figure when it is really an absence of one. */ -}}
           {{- if and (ne $c.ewt_turned_short_min nil) (ge $c.ewt_turned_short_min 0.05) }}<span class="ngbus-terminus__sub" title="{{ partial "bus-say.html" (dict "k" "cards.ewt_cut_part_hover") }}">{{ partial "bus-say.html" (dict "k" "cards.ewt_cut_part" "v" (dict "min" (lang.FormatNumber 1 $c.ewt_turned_short_min))) }}</span>{{ end }}
-          {{- else }}<span class="ngbus-nd" title="{{ partial "bus-say.html" (dict "k" "common.no_data_hover") }}">{{ partial "bus-say.html" (dict "k" "common.no_data") }}</span>{{ end }}</dd>
+          {{- else }}<span class="ngbus-nd" title="{{ partial "bus-ndwhy.html" (dict "c" $c "route" $route) }}">{{ if eq $c.ewt_null_reason "timetable_mismatch" }}{{ partial "bus-say.html" (dict "k" "common.mismatch_label") }}{{ else }}{{ partial "bus-say.html" (dict "k" "common.no_data") }}{{ end }}</span>{{ end }}</dd>
         {{- end }}
         {{- /* Each band beside what the timetable alone would give. Over ten
                minutes mostly reflects how often the route is timetabled; over
