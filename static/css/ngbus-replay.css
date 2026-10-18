@@ -61,7 +61,9 @@
          justify-content: center; position: relative; }
   .day .wd { font-size: 9px; color: var(--muted); }
   .day.dark-text, .day.dark-text .wd { color: #111; }
-  .day.nofig { border-style: dashed; }
+  /* a day with no cut-short figure yet (they come with the weekly update):
+     plain grey, never the near-black of a day with few cut short */
+  .day.nofig { border-style: dashed; border-color: #6b7280; background: #3a3f46; }
   .day.cur { outline: 2px solid #fff; outline-offset: 1px; }
   .day.gap, .day.absent { cursor: default; color: var(--faint);
          background: repeating-linear-gradient(135deg, #222 0 3px, #2c2c2c 3px 6px); }
@@ -71,7 +73,7 @@
   .daykey { font-size: 11px; color: var(--faint); margin-top: 2px; }
   .daykey i { display: inline-block; width: 22px; height: 8px; vertical-align: middle;
               border-radius: 2px; margin: 0 3px;
-              background: linear-gradient(90deg, rgba(var(--amber),.08), rgba(var(--amber),.9)); }
+              background: linear-gradient(90deg, rgba(var(--amber),.18), rgba(var(--amber),.9)); }
 
   #clock { font-size: 26px; font-variant-numeric: tabular-nums; margin: 8px 0 0; }
   #meta  { font-size: 12px; color: var(--muted); }

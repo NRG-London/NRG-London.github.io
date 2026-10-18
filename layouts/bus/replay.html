@@ -39,7 +39,7 @@
 {{- $handle := printf "@%s" (path.Base .) }}
 <meta name="twitter:site" content="{{ $handle }}">
 {{- end }}
-<link rel="stylesheet" href="/css/ngbus-replay.css?v=3">
+<link rel="stylesheet" href="/css/ngbus-replay.css?v=4">
 </head>
 <body data-replay-root="{{ .Site.Params.busReplayData }}">
 <div id="basemap"></div>
@@ -65,7 +65,7 @@
       <button id="next" class="btn" title="Next day" aria-label="Next day">&rsaquo;</button>
     </div>
     <div id="days"></div>
-    <div class="daykey">few <i></i> many journeys cut short &middot; dashed = no figure yet</div>
+    <div class="daykey">few <i></i> many journeys cut short &middot; grey = no figure yet (weekly)</div>
   </div>
 
   <div id="clock">--:--:--</div>
@@ -130,6 +130,6 @@
 <script type="application/json" id="ngbus-notices-words">{{ hugo.Data.buswords.notices | jsonify | safeJS }}</script>
 <script src="/js/ngbus-notices.js?v=3"></script>
 <script src="/js/ngbus-replay-data.js?v=2"></script>
-<script src="/js/ngbus-replay.js?v=5"></script>
+<script src="/js/ngbus-replay.js?v=6"></script>
 </body>
 </html>

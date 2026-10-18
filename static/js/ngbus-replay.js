@@ -623,7 +623,7 @@
                 rec.cut_short + ' of ' + rec.journeys + ' journeys' +
                 (rec.dirs === 1 ? ', one direction measured' : '') + ')');
     } else {
-      bits.push('No cut-short figure for this day yet');
+      bits.push('No cut-short figure for this day yet: they come with the weekly update');
     }
     if (rec.ewt_min != null) bits.push('excess wait ' + rec.ewt_min.toFixed(1) + ' min');
     if (rec.holes_min) bits.push('no data for ' + rec.holes_min + ' min');
@@ -655,8 +655,10 @@
         } else {
           // Absolute, not relative to the route: a route that never cuts
           // anything short must not get an invented "worst day". Square root
-          // so 4% vs 15% still reads; 40%+ is full strength.
-          var a = 0.08 + 0.82 * Math.sqrt(Math.min(1, share / 0.4));
+          // so 4% vs 15% still reads; 40%+ is full strength. Even 0% keeps a
+          // tint, so a day with a figure never looks like one without (18 Oct:
+          // the week since the last weekly update read as a flawless week).
+          var a = 0.18 + 0.72 * Math.sqrt(Math.min(1, share / 0.4));
           b.style.background = 'rgba(224,162,78,' + a.toFixed(2) + ')';
           if (a > 0.5) b.classList.add('dark-text');
         }
