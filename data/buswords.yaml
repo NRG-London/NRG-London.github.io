@@ -67,11 +67,11 @@ hero:
   ontime_median: "Half of London's timetabled routes managed {median} or better."
   ontime_nodata_figure: "No data"
   ontime_nodata_note: "too few of route {route}'s departures were captured this week to publish a figure. This is a gap in the observation, not a verdict on the route."
-  # a timetabled route whose on-time figure is withheld in every week (the
-  # timetable's times at its ends do not line up with when buses leave): the
-  # page shows its waits instead
+  # a timetabled route with no on-time figure in any week (the sweep withholds
+  # it where the timetable's times at the ends do not mean "departs here", or
+  # cannot time departures at the ends at all): the page shows its waits instead
   ontime_withheld_figure: "No on-time figure"
-  ontime_withheld_note: "the timetable's times at the ends of route {route} don't line up with when its buses leave, so an on-time figure would mislead. Below is how long people waited, against what the timetable alone would give."
+  ontime_withheld_note: "we can't yet publish a reliable on-time figure for route {route}. Below is how long people waited, against what the timetable alone would give."
 
 
 # ---- the chart -----------------------------------------------------------------
@@ -322,7 +322,7 @@ about:
   how_window: "{window}."
   how_directions: "Waits are measured along the route at TfL's timing points, in each direction, against the timetable — not at the ends of the route, where a bus turned back early counts as if it had run."
   how_ontime: "On time means leaving no more than {early} minutes early or {late} minutes late."
-  how_waits: "This route runs to a timetable, but the timetable's times at its ends don't line up with when its buses leave, so it is measured by how long people waited, as a frequent route is."
+  how_waits: "This route runs to a timetable, but we can't yet publish a reliable on-time figure for it, so it is measured by how long people waited, as a frequent route is."
   how_min_hours: "A day with less than {n} hours of data collected shows no daily figure."
   how_link: "How these figures are made"     # links to the bus performance hub
 

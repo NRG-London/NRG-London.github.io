@@ -267,7 +267,7 @@
     var w = Math.round((ewt / spec.max) * BAR_MAX);
     return '<td class="ngbus-metric ngbus-metric--lead">' +
            '<span class="ngbus-metric__bar" style="width:' + w + 'px"></span>' +
-           '<span class="ngbus-metric__val">' + ewt.toFixed(1) + ' min</span></td>';
+           '<span class="ngbus-metric__val">' + (Math.abs(ewt) < 0.05 ? 0 : ewt).toFixed(1) + ' min</span></td>';
   }
 
   function deltaCell(r) {

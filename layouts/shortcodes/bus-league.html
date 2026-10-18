@@ -236,7 +236,7 @@
           </td>
           <td class="ngbus-metric ngbus-metric--lead">
             <span class="ngbus-metric__bar" style="width:{{ math.Round (mul (div $r.ewt_min $max) 46) }}px"></span>
-            <span class="ngbus-metric__val">{{ lang.FormatNumber 1 $r.ewt_min }} min</span>
+            <span class="ngbus-metric__val">{{ partial "bus-min1.html" $r.ewt_min }} min</span>
           </td>
           {{- /* Beside it, what the timetable alone would give: over ten minutes
                  mostly tracks how often a route is timetabled, so the figure on
@@ -348,4 +348,4 @@
 </div>
 
 {{- partial "bus-assets.html" . }}
-<script src="/js/ngbus-table.js?v=6" defer></script>
+<script src="/js/ngbus-table.js?v=7" defer></script>

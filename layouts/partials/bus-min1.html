@@ -1,0 +1,9 @@
+{{- /*
+  bus-min1 — an excess wait to one decimal place, as the pages print it. The
+  sweep keeps small negatives (down to -0.5: a route that ran as well as its
+  timetable, give or take noise), and one that rounds to nothing printed as
+  "-0.0 min" on the 427's headline (18 Oct). It prints "0.0". A RETURNING
+  partial: {{ partial "bus-min1.html" $row.ewt_min }}.
+*/ -}}
+{{- $s := lang.FormatNumber 1 . -}}
+{{- return cond (eq $s "-0.0") "0.0" $s -}}

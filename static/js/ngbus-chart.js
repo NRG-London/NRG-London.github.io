@@ -173,9 +173,12 @@
      decimal place where the wait figures do not — rounded to whole percent,
      most routes would read a flat 0% and the chart would look broken rather
      than good. */
+  // A small negative wait that rounds to nothing is "0.0", not "-0.0" (the 427).
+  function min1(v) { return (Math.abs(v) < 0.05 ? 0 : v).toFixed(1); }
+
   function fmt(v) {
     if (v == null) return WORDS.no_data;
-    if (metric === 'ewt' || metric === 'tsw') return v.toFixed(1) + ' min';
+    if (metric === 'ewt' || metric === 'tsw') return min1(v) + ' min';
     /* Two decimals only while the figure is under 1%: a weekly route-wide rate
        of 0.34% needs them, a day on the 38 at 45.50% does not. */
     if (metric === 'cur') return (v * 100).toFixed(v < 0.01 ? 2 : 1) + '%';
@@ -183,7 +186,7 @@
   }
 
   function axisLabel(v) {
-    if (metric === 'ewt' || metric === 'tsw') return v.toFixed(1);
+    if (metric === 'ewt' || metric === 'tsw') return min1(v);
     if (metric === 'cur') return (v * 100).toFixed(axisStep < 0.01 ? 1 : 0) + '%';
     return Math.round(v * 100) + '%';
   }

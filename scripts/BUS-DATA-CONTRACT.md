@@ -54,9 +54,10 @@ lands, then drop it and tell the front end.
 **Three things the pages cannot show yet**, all expected:
 
 1. `punctuality` is null everywhere, so timetabled routes keep the old on-time
-   figure and their cards still read as termini. Where the sweep has withheld that figure in
-   every week (`ot_valid`: the timetable's times at the ends do not mean
-   "departs here"; 25 routes on the week ending 10 Oct, the 386 among them),
+   figure and their cards still read as termini. Where the sweep has no such figure in any
+   week (withheld by `ot_valid`, the timetable's times at the ends not meaning
+   "departs here", or no departures timed at the ends at all; 25 routes on
+   the week ending 10 Oct, 28 on the 17th, the 386 and 359 among them),
    the page shows the route by its direction waits against the timetable, as
    a frequent route, with "No on-time figure" in the headline (17 Oct). Before
    that, those pages had no chart, cards or table at all.

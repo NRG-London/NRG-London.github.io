@@ -154,7 +154,7 @@
     <p class="ngbus-hero__stat">{{ partial "bus-say.html" (dict "k" "hero.ontime_nodata_figure") }}<small>{{ partial "bus-say.html" (dict "k" "hero.ontime_nodata_note" "v" (dict "route" $route)) }}</small></p>
       {{- end }}
     {{- else if ne $row.ewt_min nil }}
-    <p class="ngbus-hero__stat">{{ partial "bus-say.html" (dict "k" "hero.ewt_figure" "v" (dict "min" (lang.FormatNumber 1 $row.ewt_min))) }}<small>{{ partial "bus-say.html" (dict "k" "hero.ewt_note" "v" (dict "week" (dateFormat "2 January 2006" $w.week_ending) "median" (lang.FormatNumber 1 $w.summary.median_ewt_min))) }}</small></p>
+    <p class="ngbus-hero__stat">{{ partial "bus-say.html" (dict "k" "hero.ewt_figure" "v" (dict "min" (partial "bus-min1.html" $row.ewt_min))) }}<small>{{ partial "bus-say.html" (dict "k" "hero.ewt_note" "v" (dict "week" (dateFormat "2 January 2006" $w.week_ending) "median" (lang.FormatNumber 1 $w.summary.median_ewt_min))) }}</small></p>
     {{- else }}
     <p class="ngbus-hero__stat">{{ partial "bus-say.html" (dict "k" "hero.ewt_nodata_figure") }}<small>{{ partial "bus-say.html" (dict "k" "hero.ewt_nodata_note" "v" (dict "route" $route)) }}</small></p>
     {{- end }}
@@ -268,7 +268,7 @@
                    chart shades those; this is the same fact for a reader with no
                    JavaScript, who has only this table. */ -}}
             <td>{{ if or (eq $show "timetabled") $waits }}{{ lang.FormatPercent 0 (mul $v 100) }}
-              {{- else }}{{ lang.FormatNumber 1 $v }} min
+              {{- else }}{{ partial "bus-min1.html" $v }} min
                 {{- with $c.wait_bands }}{{ $b := index . "10" }}{{ if ne $b.actual nil }} · {{ lang.FormatPercent 0 (mul $b.actual 100) }}{{ end }}{{ end }}{{ end }}
               {{- if lt $c.coverage 0.9 }} <span class="ngbus-thinmark" title="{{ partial "bus-say.html" (dict "k" "weeks.thin_hover" "v" (dict "pct" (lang.FormatPercent 0 (mul $c.coverage 100)))) }}">{{ partial "bus-say.html" (dict "k" "weeks.thin") }}</span>{{ end }}</td>
               {{- else }}
@@ -351,7 +351,7 @@
         {{- else }}
         {{- if not $waits }}
         <dt><span class="ngbus-help" title="{{ partial "bus-say.html" (dict "k" "cards.ewt_hover") }}">{{ partial "bus-say.html" (dict "k" "cards.ewt") }}</span></dt>
-        <dd>{{ if and $ok (ne $c.ewt_min nil) }}{{ partial "bus-say.html" (dict "k" "cards.ewt_value" "v" (dict "min" (lang.FormatNumber 1 $c.ewt_min))) }}
+        <dd>{{ if and $ok (ne $c.ewt_min nil) }}{{ partial "bus-say.html" (dict "k" "cards.ewt_value" "v" (dict "min" (partial "bus-min1.html" $c.ewt_min))) }}
           {{- /* Only when it rounds to something: "0.0 min of it from buses turned
                  short" reads as a figure when it is really an absence of one. */ -}}
           {{- if and (ne $c.ewt_turned_short_min nil) (ge $c.ewt_turned_short_min 0.05) }}<span class="ngbus-terminus__sub" title="{{ partial "bus-say.html" (dict "k" "cards.ewt_cut_part_hover") }}">{{ partial "bus-say.html" (dict "k" "cards.ewt_cut_part" "v" (dict "min" (lang.FormatNumber 1 $c.ewt_turned_short_min))) }}</span>{{ end }}
@@ -473,7 +473,7 @@
           {{- end }}
         </span>
         <span class="ngbus-bandlist__val">{{ lang.FormatPercent 1 (mul .p_wait_gt20 100) }}</span>
-        <span class="ngbus-bandlist__ewt">{{ if ne .ewt_min nil }}{{ partial "bus-say.html" (dict "k" "bands.ewt" "v" (dict "min" (lang.FormatNumber 1 .ewt_min))) }}{{ end }}</span>
+        <span class="ngbus-bandlist__ewt">{{ if ne .ewt_min nil }}{{ partial "bus-say.html" (dict "k" "bands.ewt" "v" (dict "min" (partial "bus-min1.html" .ewt_min))) }}{{ end }}</span>
       </li>
       {{- end }}
     </ul>
@@ -853,6 +853,6 @@
 <script src="/js/ngbus-notices.js?v=3" defer></script>
 <script src="/js/ngbus-notices-box.js?v=3" defer></script>
 {{- if gt (len $units) 0 }}
-<script src="/js/ngbus-chart.js?v=13" defer></script>
+<script src="/js/ngbus-chart.js?v=14" defer></script>
 {{- end }}
 {{ end }}
