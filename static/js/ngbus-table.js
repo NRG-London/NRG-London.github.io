@@ -256,8 +256,8 @@
 
   // Why a frequent route has no excess wait, when the sweep says
   // (ewt_null_reason: nr "m", a timetable that doesn't match the buses that
-  // ran, with sv = seen_vs_timetable; "t", too few buses timed). Otherwise,
-  // too little collected.
+  // ran, with sv = seen_vs_timetable; "t", too few buses timed; "g", a gap in
+  // our copy of the timetable). Otherwise, too little collected.
   function whyNone(r) {
     if (r.nr === 'm') {
       var n = r.sv != null ? Math.round((r.sv - 1) * 100) : 0;
@@ -267,6 +267,7 @@
         ", so there's no excess-wait figure";
     }
     if (r.nr === 't') return 'Too few of its buses could be timed this week to publish a figure';
+    if (r.nr === 'g') return "My copy of TfL's timetable was missing this route for most of the week, so there's nothing to measure its waits against";
     return 'Too little data this week to publish a figure';
   }
 

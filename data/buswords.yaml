@@ -66,6 +66,10 @@ hero:
   mismatch_note_fewer: "TfL's timetable for route {route} doesn't match the buses that ran this week: about {n}% fewer ran than it lists. An excess wait measured against it wouldn't be fair, so there's no figure. This is not a verdict on the route."
   # no excess wait because too few of the route's buses could be timed
   not_traced_note: "too few of route {route}'s buses could be timed this week to publish a figure. This is a limit of my measurement, not a verdict on the route."
+  # no excess wait because our copy of TfL's timetable had a gap (the back end's no_timetable)
+  no_timetable_note: "my copy of TfL's timetable was missing route {route} for most of this week, so there's nothing to measure its waits against. This is a gap in my data, not a verdict on the route."
+  # no excess wait because there was nothing to measure against (no_data)
+  nothing_note: "there was nothing to measure route {route}'s waits against this week. This is a gap in what I can measure, not a verdict on the route."
 
   # Timetabled routes: on time
   ontime_figure: "{pct} on time"
@@ -181,6 +185,8 @@ common:
   mismatch_more: "TfL's timetable for route {route} doesn't match the buses that ran: about {n}% more ran than it lists, so there's no excess-wait figure"
   mismatch_fewer: "TfL's timetable for route {route} doesn't match the buses that ran: about {n}% fewer ran than it lists, so there's no excess-wait figure"
   not_traced_hover: "Too few of this route's buses could be timed to publish a figure: a limit of my measurement, not a gap in collection"
+  no_timetable_hover: "My copy of TfL's timetable was missing this route for most of the week, so there's nothing to measure its waits against"
+  nothing_hover: "There was nothing to measure this route's waits against this week"
 
 
 # ---- the sentence in passenger's words ------------------------------------------

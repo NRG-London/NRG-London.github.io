@@ -329,7 +329,8 @@
       {{- else }}{{ $row = merge $row (dict "e" .ewt_min "p" .p_wait_gt10) }}
         {{- /* why there is no excess wait, when the sweep says (contract-v1-fields.md) */ -}}
         {{- if eq .ewt_null_reason "timetable_mismatch" }}{{ $row = merge $row (dict "nr" "m" "sv" .seen_vs_timetable) }}
-        {{- else if eq .ewt_null_reason "not_traced" }}{{ $row = merge $row (dict "nr" "t") }}{{ end }}{{ end -}}
+        {{- else if eq .ewt_null_reason "not_traced" }}{{ $row = merge $row (dict "nr" "t") }}
+        {{- else if eq .ewt_null_reason "no_timetable" }}{{ $row = merge $row (dict "nr" "g") }}{{ end }}{{ end -}}
       {{- if $hasCurt }}
         {{- $row = merge $row (dict
             "cu" .curtailment_rate "cn" .curtailments
@@ -351,4 +352,4 @@
 </div>
 
 {{- partial "bus-assets.html" . }}
-<script src="/js/ngbus-table.js?v=8" defer></script>
+<script src="/js/ngbus-table.js?v=9" defer></script>

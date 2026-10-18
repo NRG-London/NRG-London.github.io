@@ -163,6 +163,10 @@
     <p class="ngbus-hero__stat">{{ partial "bus-say.html" (dict "k" "hero.mismatch_figure") }}<small>{{ partial "bus-mismatch.html" (dict "k" "hero.mismatch_note" "route" $route "seen" $row.seen_vs_timetable) }}</small></p>
     {{- else if eq $row.ewt_null_reason "not_traced" }}
     <p class="ngbus-hero__stat">{{ partial "bus-say.html" (dict "k" "hero.ewt_nodata_figure") }}<small>{{ partial "bus-say.html" (dict "k" "hero.not_traced_note" "v" (dict "route" $route)) }}</small></p>
+    {{- else if eq $row.ewt_null_reason "no_timetable" }}
+    <p class="ngbus-hero__stat">{{ partial "bus-say.html" (dict "k" "hero.ewt_nodata_figure") }}<small>{{ partial "bus-say.html" (dict "k" "hero.no_timetable_note" "v" (dict "route" $route)) }}</small></p>
+    {{- else if eq $row.ewt_null_reason "no_data" }}
+    <p class="ngbus-hero__stat">{{ partial "bus-say.html" (dict "k" "hero.ewt_nodata_figure") }}<small>{{ partial "bus-say.html" (dict "k" "hero.nothing_note" "v" (dict "route" $route)) }}</small></p>
     {{- else }}
     <p class="ngbus-hero__stat">{{ partial "bus-say.html" (dict "k" "hero.ewt_nodata_figure") }}<small>{{ partial "bus-say.html" (dict "k" "hero.ewt_nodata_note" "v" (dict "route" $route)) }}</small></p>
     {{- end }}
