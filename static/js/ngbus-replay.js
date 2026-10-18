@@ -45,7 +45,51 @@
     copylink: $('copylink'), save: $('save'), open: $('open'), file: $('file'),
     mapstyle: $('mapstyle'), mapbright: $('mapbright'), msg: $('msg'),
     banner: $('banner'), drop: $('drop'), collapse: $('collapse'), notices: $('notices'),
+    busstyle: $('busstyle'),
   };
+
+  // The buses: coloured dots, or little buses (ngbus-buses.js; Claude Design,
+  // 19 Oct): the route's usual deck, a purple triple decker on a night route,
+  // facing the way it is going, its windows in its trail's colour, grey when
+  // not in service. The choice is remembered on this device.
+  var NB = window.NgbusBuses;
+  var DECKS = {};                                   // route -> double | single | night
+  (($('ngbus-decks') || {}).textContent || '').split(',').forEach(function (kv) {
+    var i = kv.indexOf(':');
+    if (i > 0) DECKS[kv.slice(0, i).trim()] = kv.slice(i + 1).trim();
+  });
+  var busStyle = 'dots';
+  try { busStyle = localStorage.getItem('ngbus.replay.buses') || 'dots'; } catch (e) {}
+  if (!NB) busStyle = 'dots';
+  var ICON_W = 30;                                  // a bus is this many pixels long
+  var facing = {}, lastX = {}, lastT = null, iconCache = {};
+
+  function busKind(route) {
+    var k = DECKS[String(route).toUpperCase()];
+    return k === 'night' ? 'triple' : k === 'single' ? 'single' : 'double';
+  }
+
+  // Which way each bus faces: the way it last moved east or west, playing
+  // forwards or back. A jump of more than two minutes (a click on the
+  // timeline) says nothing about direction, so it keeps the old one.
+  function updateFacing(buses) {
+    var dt = lastT == null ? 0 : simT - lastT;
+    buses.forEach(function (b) {
+      var x = b.position[0], px = lastX[b.vi];
+      if (px != null && dt !== 0 && Math.abs(dt) <= 120) {
+        var dx = (x - px) * (dt > 0 ? 1 : -1);
+        if (Math.abs(dx) > 2e-6) facing[b.vi] = dx < 0 ? -1 : 1;
+      }
+      lastX[b.vi] = x;
+    });
+    lastT = simT;
+  }
+
+  function busIcon(kind, d) {
+    var west = facing[d.vi] < 0;
+    var key = kind + (west ? 'w' : 'e') + (d.dead ? 'x' : d.vi);
+    return iconCache[key] || (iconCache[key] = NB.icon(kind, { flip: west, dead: d.dead, windows: colors[d.vi] }));
+  }
 
   // TfL notices for the route (ngbus-notices.js; spec: E:\Road Data\docs\
   // superpowers\specs\2026-10-17-tfl-notices-design.md, section 3). The
@@ -320,6 +364,7 @@
     var span = payload.t1 - payload.t0;
     counts = R.inServiceByMinute(E, span);
     colors = E.vehicles.map(function (v, i) { return hsl2rgb((i * 137.5) % 360, 0.75, 0.6); });
+    facing = {}; lastX = {}; lastT = null; iconCache = {};
     trips = E.segs.map(function (s) {
       var path = new Array(s.lon.length);
       for (var i = 0; i < path.length; i++) path[i] = [s.lon[i], s.lat[i]];
@@ -775,6 +820,8 @@
     if (!cur) return;
     var p = cur.payload, E = cur.E;
     var buses = R.positionsAt(E, p.blinds, simT);
+    var icons = busStyle === 'buses', kind = busKind(p.route);
+    if (icons) updateFacing(buses);
     deckgl.setProps({ layers: staticLayers.concat(closedLayers, markLayers, [
       new deck.TripsLayer({
         id: 'trails', data: trips,
@@ -784,7 +831,13 @@
         currentTime: simT, trailLength: TRAIL_S,
         widthMinPixels: 3, opacity: 0.6, fadeTrail: true,
       }),
-      new deck.ScatterplotLayer({
+      icons ? new deck.IconLayer({
+        id: 'bus-icons', data: buses, pickable: true,
+        getPosition: function (d) { return d.position; },
+        getIcon: function (d) { return busIcon(kind, d); },
+        sizeUnits: 'pixels', sizeBasis: 'width', getSize: ICON_W,
+        updateTriggers: { getPosition: simT, getIcon: [simT, kind] },
+      }) : new deck.ScatterplotLayer({
         id: 'buses', data: buses, pickable: true,
         getPosition: function (d) { return d.position; },
         getFillColor: function (d) { return d.dead ? [130, 130, 130, 220] : colors[d.vi].concat(255); },
@@ -797,8 +850,9 @@
         getPosition: function (d) { return d.position; },
         getText: function (d) { return R.plate(d.reg); },
         getColor: [255, 255, 255, 200], getSize: 11,
-        getPixelOffset: [0, -16], fontFamily: 'DM Sans, system-ui, sans-serif',
-        updateTriggers: { getPosition: simT },
+        getPixelOffset: icons ? [0, -Math.round(ICON_W * NB.aspect(kind) + 5)] : [0, -16],
+        fontFamily: 'DM Sans, system-ui, sans-serif',
+        updateTriggers: { getPosition: simT, getPixelOffset: [icons, kind] },
       }),
     ]) });
     var now = p.t0 + simT;
@@ -920,6 +974,15 @@
   el.mapbright.oninput = function () {
     BRIGHT[mapMode] = +el.mapbright.value; applyBright();
   };
+  if (el.busstyle) {
+    if (!NB) el.busstyle.disabled = true;
+    el.busstyle.value = busStyle;
+    el.busstyle.onchange = function () {
+      busStyle = el.busstyle.value;
+      try { localStorage.setItem('ngbus.replay.buses', busStyle); } catch (e) {}
+      lastT = null; render(); el.busstyle.blur();
+    };
+  }
   function setCollapsed(c) {
     el.hud.classList.toggle('collapsed', c);
     el.collapse.setAttribute('aria-expanded', String(!c));

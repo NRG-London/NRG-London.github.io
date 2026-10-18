@@ -101,10 +101,17 @@
       <span class="lbl">bright</span>
       <input id="mapbright" type="range" min="15" max="150" value="100" style="flex:1" aria-label="Map brightness">
     </div>
+    <div class="row">
+      <span class="lbl">buses</span>
+      <select id="busstyle" aria-label="How the buses are drawn">
+        <option value="dots" selected>Coloured dots</option>
+        <option value="buses">Little buses</option>
+      </select>
+    </div>
   </div>
   <div id="msg" role="status" aria-live="polite"></div>
   <div class="more">
-    <div id="legend">Trail = last 15 min &middot; grey dot = not in service (depot blind) &middot;
+    <div id="legend">Trail = last 15 min &middot; grey = not in service (depot blind) &middot;
       hover a bus for its registration and destination &middot; space = play/pause, &larr;&rarr; = a minute (shift: ten).
       The last 35 days are kept; use &ldquo;Save this day&rdquo; to keep one for longer.</div>
     <div id="attrib">
@@ -130,6 +137,20 @@
 <script type="application/json" id="ngbus-notices-words">{{ hugo.Data.buswords.notices | jsonify | safeJS }}</script>
 <script src="/js/ngbus-notices.js?v=3"></script>
 <script src="/js/ngbus-replay-data.js?v=2"></script>
-<script src="/js/ngbus-replay.js?v=6"></script>
+{{- /* Each route's usual deck for the little buses, "night" for a night route
+       (a purple triple decker): from the sweep's fleet data and the holding
+       list. ROUTE:kind pairs, read by ngbus-replay.js. */ -}}
+{{- $decks := slice -}}
+{{- range hugo.Data.bus.weekly.routes -}}
+  {{- $k := cond (eq .service_class "night") "night" (.deck | default "") -}}
+  {{- if $k }}{{ $decks = $decks | append (printf "%s:%s" .route $k) }}{{ end -}}
+{{- end -}}
+{{- range hugo.Data.bus.holding.routes -}}
+  {{- $k := cond (eq .class "night") "night" (.deck | default "") -}}
+  {{- if $k }}{{ $decks = $decks | append (printf "%s:%s" .route $k) }}{{ end -}}
+{{- end }}
+<script type="text/plain" id="ngbus-decks">{{ delimit $decks "," }}</script>
+<script src="/js/ngbus-buses.js?v=1"></script>
+<script src="/js/ngbus-replay.js?v=7"></script>
 </body>
 </html>
