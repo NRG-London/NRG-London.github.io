@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generated": "2026-10-18T06:58:07Z",
+ "generated": "2026-10-18T16:05:31Z",
  "week_ending": "2026-10-17",
  "weeks": [
   "2025-06-21",
@@ -295,13 +295,13 @@
  "window": "every day, 05:00-23:59",
  "summary": {
   "routes": 665,
-  "reporting": 497,
+  "reporting": 496,
   "curtailments_week": 27166,
   "median_ewt_min": 1.42,
   "worst_route": "74",
   "worst_ewt_min": 6.13,
-  "best_route": "427",
-  "best_ewt_min": -0.01
+  "best_route": "255",
+  "best_ewt_min": 0.28
  },
  "routes": [
   {
@@ -393,7 +393,9 @@
     "awt_if_not_turned_min": 7.35
    },
    "journeys_turned_short_pct": 0.083,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "7",
@@ -479,7 +481,9 @@
     "awt_if_not_turned_min": 7.15
    },
    "journeys_turned_short_pct": 0.267,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "26",
@@ -571,7 +575,9 @@
     "awt_if_not_turned_min": 9.29
    },
    "journeys_turned_short_pct": 0.303,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "38",
@@ -672,7 +678,9 @@
     "awt_if_not_turned_min": 5.16
    },
    "journeys_turned_short_pct": 0.195,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "23",
@@ -763,7 +771,9 @@
     "awt_if_not_turned_min": 8.82
    },
    "journeys_turned_short_pct": 0.18,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.91
   },
   {
    "route": "202",
@@ -855,7 +865,9 @@
     "awt_if_not_turned_min": 7.91
    },
    "journeys_turned_short_pct": 0.191,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.91
   },
   {
    "route": "55",
@@ -947,7 +959,9 @@
     "awt_if_not_turned_min": 7.79
    },
    "journeys_turned_short_pct": 0.193,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.91
   },
   {
    "route": "205",
@@ -1038,7 +1052,9 @@
     "awt_if_not_turned_min": 8.55
    },
    "journeys_turned_short_pct": 0.061,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.89
   },
   {
    "route": "194",
@@ -1129,7 +1145,9 @@
     "awt_if_not_turned_min": 10.27
    },
    "journeys_turned_short_pct": 0.154,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.87
   },
   {
    "route": "289",
@@ -1221,7 +1239,9 @@
     "awt_if_not_turned_min": 8.96
    },
    "journeys_turned_short_pct": 0.221,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "P4",
@@ -1313,7 +1333,9 @@
     "awt_if_not_turned_min": 9.27
    },
    "journeys_turned_short_pct": 0.097,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "388",
@@ -1405,7 +1427,9 @@
     "awt_if_not_turned_min": 8.21
    },
    "journeys_turned_short_pct": 0.131,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.91
   },
   {
    "route": "226",
@@ -1507,7 +1531,9 @@
     "awt_if_not_turned_min": 10.07
    },
    "journeys_turned_short_pct": 0.043,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.9
   },
   {
    "route": "2",
@@ -1598,7 +1624,9 @@
     "awt_if_not_turned_min": 6.03
    },
    "journeys_turned_short_pct": 0.05,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "276",
@@ -1690,7 +1718,9 @@
     "awt_if_not_turned_min": 9.21
    },
    "journeys_turned_short_pct": 0.106,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.82
   },
   {
    "route": "47",
@@ -1792,7 +1822,9 @@
     "awt_if_not_turned_min": 9.96
    },
    "journeys_turned_short_pct": 0.127,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "R11",
@@ -1883,7 +1915,9 @@
     "awt_if_not_turned_min": 10.89
    },
    "journeys_turned_short_pct": 0.015,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.86
   },
   {
    "route": "76",
@@ -1975,7 +2009,9 @@
     "awt_if_not_turned_min": 8.58
    },
    "journeys_turned_short_pct": 0.262,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "19",
@@ -2066,7 +2102,9 @@
     "awt_if_not_turned_min": 7.07
    },
    "journeys_turned_short_pct": 0.187,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "176",
@@ -2158,7 +2196,9 @@
     "awt_if_not_turned_min": 7.34
    },
    "journeys_turned_short_pct": 0.268,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "341",
@@ -2250,7 +2290,9 @@
     "awt_if_not_turned_min": 9.71
    },
    "journeys_turned_short_pct": 0.299,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "15",
@@ -2342,7 +2384,9 @@
     "awt_if_not_turned_min": 7.96
    },
    "journeys_turned_short_pct": 0.243,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.9
   },
   {
    "route": "259",
@@ -2433,7 +2477,9 @@
     "awt_if_not_turned_min": 7.3
    },
    "journeys_turned_short_pct": 0.124,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "159",
@@ -2534,7 +2580,9 @@
     "awt_if_not_turned_min": 6.5
    },
    "journeys_turned_short_pct": 0.067,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "279",
@@ -2636,7 +2684,9 @@
     "awt_if_not_turned_min": 7.8
    },
    "journeys_turned_short_pct": 0.269,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "206",
@@ -2728,7 +2778,9 @@
     "awt_if_not_turned_min": 9.5
    },
    "journeys_turned_short_pct": 0.195,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.9
   },
   {
    "route": "144",
@@ -2820,7 +2872,9 @@
     "awt_if_not_turned_min": 6.92
    },
    "journeys_turned_short_pct": 0.079,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.89
   },
   {
    "route": "6",
@@ -2911,7 +2965,9 @@
     "awt_if_not_turned_min": 6.27
    },
    "journeys_turned_short_pct": 0.053,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "53",
@@ -3002,7 +3058,9 @@
     "awt_if_not_turned_min": 5.93
    },
    "journeys_turned_short_pct": 0.091,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "410",
@@ -3094,7 +3152,9 @@
     "awt_if_not_turned_min": 9.36
    },
    "journeys_turned_short_pct": 0.077,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "236",
@@ -3186,7 +3246,9 @@
     "awt_if_not_turned_min": 9.22
    },
    "journeys_turned_short_pct": 0.071,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.88
   },
   {
    "route": "W19",
@@ -3288,7 +3350,9 @@
     "awt_if_not_turned_min": 10.5
    },
    "journeys_turned_short_pct": 0.067,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.84
   },
   {
    "route": "22",
@@ -3375,7 +3439,9 @@
     "awt_if_not_turned_min": 7.28
    },
    "journeys_turned_short_pct": 0.156,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "W3",
@@ -3467,7 +3533,9 @@
     "awt_if_not_turned_min": 6.44
    },
    "journeys_turned_short_pct": 0.16,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.91
   },
   {
    "route": "141",
@@ -3559,7 +3627,9 @@
     "awt_if_not_turned_min": 7.68
    },
    "journeys_turned_short_pct": 0.108,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "12",
@@ -3651,7 +3721,9 @@
     "awt_if_not_turned_min": 7.71
    },
    "journeys_turned_short_pct": 0.106,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.93
   },
   {
    "route": "188",
@@ -3763,7 +3835,9 @@
     "awt_if_not_turned_min": 8.3
    },
    "journeys_turned_short_pct": 0.163,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "56",
@@ -3855,7 +3929,9 @@
     "awt_if_not_turned_min": 7.09
    },
    "journeys_turned_short_pct": 0.089,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.89
   },
   {
    "route": "122",
@@ -3957,7 +4033,9 @@
     "awt_if_not_turned_min": 10.65
    },
    "journeys_turned_short_pct": 0.089,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "59",
@@ -4048,7 +4126,9 @@
     "awt_if_not_turned_min": 6.1
    },
    "journeys_turned_short_pct": 0.179,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "197",
@@ -4139,7 +4219,9 @@
     "awt_if_not_turned_min": 9.54
    },
    "journeys_turned_short_pct": 0.084,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "SL3",
@@ -4231,7 +4313,9 @@
     "awt_if_not_turned_min": 9.27
    },
    "journeys_turned_short_pct": 0.16,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.85
   },
   {
    "route": "102",
@@ -4328,7 +4412,9 @@
     "awt_if_not_turned_min": 5.95
    },
    "journeys_turned_short_pct": 0.113,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.93
   },
   {
    "route": "260",
@@ -4420,7 +4506,9 @@
     "awt_if_not_turned_min": 8.62
    },
    "journeys_turned_short_pct": 0.202,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.93
   },
   {
    "route": "40",
@@ -4512,7 +4600,9 @@
     "awt_if_not_turned_min": 8.34
    },
    "journeys_turned_short_pct": 0.183,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.85
   },
   {
    "route": "EL1",
@@ -4603,7 +4693,9 @@
     "awt_if_not_turned_min": 5.91
    },
    "journeys_turned_short_pct": 0.173,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.88
   },
   {
    "route": "120",
@@ -4696,7 +4788,9 @@
     "awt_if_not_turned_min": 6.67
    },
    "journeys_turned_short_pct": 0.124,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.9
   },
   {
    "route": "343",
@@ -4787,7 +4881,9 @@
     "awt_if_not_turned_min": 7.28
    },
    "journeys_turned_short_pct": 0.166,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.88
   },
   {
    "route": "308",
@@ -4879,7 +4975,9 @@
     "awt_if_not_turned_min": 9.97
    },
    "journeys_turned_short_pct": 0.071,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.85
   },
   {
    "route": "43",
@@ -4971,7 +5069,9 @@
     "awt_if_not_turned_min": 7.18
    },
    "journeys_turned_short_pct": 0.104,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "179",
@@ -5062,7 +5162,9 @@
     "awt_if_not_turned_min": 10.07
    },
    "journeys_turned_short_pct": 0.033,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "172",
@@ -5154,7 +5256,9 @@
     "awt_if_not_turned_min": 7.69
    },
    "journeys_turned_short_pct": 0.23,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "148",
@@ -5246,7 +5350,9 @@
     "awt_if_not_turned_min": 8.88
    },
    "journeys_turned_short_pct": 0.234,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "171",
@@ -5338,7 +5444,9 @@
     "awt_if_not_turned_min": 8.32
    },
    "journeys_turned_short_pct": 0.101,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "C1",
@@ -5429,7 +5537,9 @@
     "awt_if_not_turned_min": 7.74
    },
    "journeys_turned_short_pct": 0.256,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "307",
@@ -5522,7 +5632,9 @@
     "awt_if_not_turned_min": 9.29
    },
    "journeys_turned_short_pct": 0.095,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.93
   },
   {
    "route": "321",
@@ -5624,7 +5736,9 @@
     "awt_if_not_turned_min": 7.37
    },
    "journeys_turned_short_pct": 0.071,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "30",
@@ -5716,7 +5830,9 @@
     "awt_if_not_turned_min": 7.39
    },
    "journeys_turned_short_pct": 0.067,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.91
   },
   {
    "route": "393",
@@ -5808,7 +5924,9 @@
     "awt_if_not_turned_min": 8.47
    },
    "journeys_turned_short_pct": 0.059,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "60",
@@ -5910,7 +6028,9 @@
     "awt_if_not_turned_min": 8.01
    },
    "journeys_turned_short_pct": 0.129,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "335",
@@ -6001,7 +6121,9 @@
     "awt_if_not_turned_min": 8.47
    },
    "journeys_turned_short_pct": 0.065,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.89
   },
   {
    "route": "355",
@@ -6093,7 +6215,9 @@
     "awt_if_not_turned_min": 8.37
    },
    "journeys_turned_short_pct": 0.063,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "318",
@@ -6184,7 +6308,9 @@
     "awt_if_not_turned_min": 10.47
    },
    "journeys_turned_short_pct": 0.048,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.88
   },
   {
    "route": "96",
@@ -6286,7 +6412,9 @@
     "awt_if_not_turned_min": 6.47
    },
    "journeys_turned_short_pct": 0.13,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "9",
@@ -6377,7 +6505,9 @@
     "awt_if_not_turned_min": 7.15
    },
    "journeys_turned_short_pct": 0.172,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "36",
@@ -6469,7 +6599,9 @@
     "awt_if_not_turned_min": 5.97
    },
    "journeys_turned_short_pct": 0.105,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "139",
@@ -6560,7 +6692,9 @@
     "awt_if_not_turned_min": 7.47
    },
    "journeys_turned_short_pct": 0.05,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "95",
@@ -6651,7 +6785,9 @@
     "awt_if_not_turned_min": 9.93
    },
    "journeys_turned_short_pct": 0.067,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "180",
@@ -6743,7 +6879,9 @@
     "awt_if_not_turned_min": 8.32
    },
    "journeys_turned_short_pct": 0.123,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "232",
@@ -6834,7 +6972,9 @@
     "awt_if_not_turned_min": 8.5
    },
    "journeys_turned_short_pct": 0.042,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "130",
@@ -6935,7 +7075,9 @@
     "awt_if_not_turned_min": 9.48
    },
    "journeys_turned_short_pct": 0.039,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.89
   },
   {
    "route": "114",
@@ -7026,7 +7168,9 @@
     "awt_if_not_turned_min": 6.69
    },
    "journeys_turned_short_pct": 0.102,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "254",
@@ -7118,7 +7262,9 @@
     "awt_if_not_turned_min": 6.24
    },
    "journeys_turned_short_pct": 0.182,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "129",
@@ -7209,7 +7355,9 @@
     "awt_if_not_turned_min": 6.9
    },
    "journeys_turned_short_pct": 0.067,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "185",
@@ -7301,7 +7449,9 @@
     "awt_if_not_turned_min": 7.02
    },
    "journeys_turned_short_pct": 0.145,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.93
   },
   {
    "route": "58",
@@ -7392,7 +7542,9 @@
     "awt_if_not_turned_min": 8.25
    },
    "journeys_turned_short_pct": 0.025,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.9
   },
   {
    "route": "149",
@@ -7484,7 +7636,9 @@
     "awt_if_not_turned_min": 6.61
    },
    "journeys_turned_short_pct": 0.193,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "476",
@@ -7576,7 +7730,9 @@
     "awt_if_not_turned_min": 7.15
    },
    "journeys_turned_short_pct": 0.179,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.88
   },
   {
    "route": "91",
@@ -7668,7 +7824,9 @@
     "awt_if_not_turned_min": 7.15
    },
    "journeys_turned_short_pct": 0.075,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "191",
@@ -7769,7 +7927,9 @@
     "awt_if_not_turned_min": 7.89
    },
    "journeys_turned_short_pct": 0.161,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "123",
@@ -7870,7 +8030,9 @@
     "awt_if_not_turned_min": 7.89
    },
    "journeys_turned_short_pct": 0.07,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "1",
@@ -7962,7 +8124,9 @@
     "awt_if_not_turned_min": 7.13
    },
    "journeys_turned_short_pct": 0.089,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "SL2",
@@ -8054,7 +8218,9 @@
     "awt_if_not_turned_min": 7.68
    },
    "journeys_turned_short_pct": 0.078,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "244",
@@ -8072,7 +8238,7 @@
    "coverage": 1.0,
    "curtailments": 20,
    "curtailment_rate": 0.0157,
-   "delta": 0.79,
+   "delta": 0.71,
    "delta_from": "2026-09-19",
    "delta_weeks": 4,
    "spark": [
@@ -8083,7 +8249,7 @@
     null,
     1.5,
     1.54,
-    1.12,
+    1.2,
     1.2,
     1.44,
     1.55,
@@ -8145,7 +8311,9 @@
     "awt_if_not_turned_min": 7.56
    },
    "journeys_turned_short_pct": 0.021,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.87
   },
   {
    "route": "450",
@@ -8238,7 +8406,9 @@
     "awt_if_not_turned_min": 7.69
    },
    "journeys_turned_short_pct": 0.209,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "18",
@@ -8330,7 +8500,9 @@
     "awt_if_not_turned_min": 5.46
    },
    "journeys_turned_short_pct": 0.203,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "24",
@@ -8421,7 +8593,9 @@
     "awt_if_not_turned_min": 7.85
    },
    "journeys_turned_short_pct": 0.039,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "106",
@@ -8512,7 +8686,9 @@
     "awt_if_not_turned_min": 7.36
    },
    "journeys_turned_short_pct": 0.066,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "199",
@@ -8604,7 +8780,9 @@
     "awt_if_not_turned_min": 8.34
    },
    "journeys_turned_short_pct": 0.049,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "257",
@@ -8715,7 +8893,9 @@
     "awt_if_not_turned_min": 6.41
    },
    "journeys_turned_short_pct": 0.061,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "487",
@@ -8806,7 +8986,9 @@
     "awt_if_not_turned_min": 9.31
    },
    "journeys_turned_short_pct": 0.088,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.89
   },
   {
    "route": "H17",
@@ -8897,7 +9079,9 @@
     "awt_if_not_turned_min": 10.97
    },
    "journeys_turned_short_pct": 0.028,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.93
   },
   {
    "route": "135",
@@ -8989,7 +9173,9 @@
     "awt_if_not_turned_min": 7.71
    },
    "journeys_turned_short_pct": 0.055,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.9
   },
   {
    "route": "328",
@@ -9091,7 +9277,9 @@
     "awt_if_not_turned_min": 7.09
    },
    "journeys_turned_short_pct": 0.085,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "242",
@@ -9182,7 +9370,9 @@
     "awt_if_not_turned_min": 6.77
    },
    "journeys_turned_short_pct": 0.049,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.93
   },
   {
    "route": "314",
@@ -9273,7 +9463,9 @@
     "awt_if_not_turned_min": 10.19
    },
    "journeys_turned_short_pct": 0.032,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "274",
@@ -9374,7 +9566,9 @@
     "awt_if_not_turned_min": 9.17
    },
    "journeys_turned_short_pct": 0.031,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.86
   },
   {
    "route": "229",
@@ -9485,7 +9679,9 @@
     "awt_if_not_turned_min": 8.69
    },
    "journeys_turned_short_pct": 0.146,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "243",
@@ -9577,7 +9773,9 @@
     "awt_if_not_turned_min": 6.76
    },
    "journeys_turned_short_pct": 0.165,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "474",
@@ -9679,7 +9877,9 @@
     "awt_if_not_turned_min": 8.42
    },
    "journeys_turned_short_pct": 0.182,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "W11",
@@ -9770,7 +9970,9 @@
     "awt_if_not_turned_min": 8.77
    },
    "journeys_turned_short_pct": 0.034,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.83
   },
   {
    "route": "253",
@@ -9861,7 +10063,9 @@
     "awt_if_not_turned_min": 6.49
    },
    "journeys_turned_short_pct": 0.037,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "21",
@@ -9949,7 +10153,9 @@
     "awt_if_not_turned_min": 6.95
    },
    "journeys_turned_short_pct": 0.138,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "214",
@@ -10041,7 +10247,9 @@
     "awt_if_not_turned_min": 7.12
    },
    "journeys_turned_short_pct": 0.133,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "286",
@@ -10132,7 +10340,9 @@
     "awt_if_not_turned_min": 11.89
    },
    "journeys_turned_short_pct": 0.046,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.89
   },
   {
    "route": "444",
@@ -10224,7 +10434,9 @@
     "awt_if_not_turned_min": 9.58
    },
    "journeys_turned_short_pct": 0.05,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "295",
@@ -10310,7 +10522,9 @@
     "awt_if_not_turned_min": 6.59
    },
    "journeys_turned_short_pct": 0.182,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "39",
@@ -10401,7 +10615,9 @@
     "awt_if_not_turned_min": 6.62
    },
    "journeys_turned_short_pct": 0.077,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.91
   },
   {
    "route": "282",
@@ -10500,7 +10716,9 @@
     "awt_if_not_turned_min": 8.18
    },
    "journeys_turned_short_pct": 0.133,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "97",
@@ -10591,7 +10809,9 @@
     "awt_if_not_turned_min": 7.34
    },
    "journeys_turned_short_pct": 0.056,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.93
   },
   {
    "route": "92",
@@ -10682,7 +10902,9 @@
     "awt_if_not_turned_min": 7.48
    },
    "journeys_turned_short_pct": 0.143,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "101",
@@ -10773,7 +10995,9 @@
     "awt_if_not_turned_min": 7.95
    },
    "journeys_turned_short_pct": 0.099,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "312",
@@ -10864,7 +11088,9 @@
     "awt_if_not_turned_min": 8.14
    },
    "journeys_turned_short_pct": 0.124,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "29",
@@ -10953,7 +11179,9 @@
     "awt_if_not_turned_min": 4.28
    },
    "journeys_turned_short_pct": 0.056,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "SL7",
@@ -11044,7 +11272,9 @@
     "awt_if_not_turned_min": 8.54
    },
    "journeys_turned_short_pct": 0.057,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "28",
@@ -11133,7 +11363,9 @@
     "awt_if_not_turned_min": 7.71
    },
    "journeys_turned_short_pct": 0.05,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "113",
@@ -11222,7 +11454,9 @@
     "awt_if_not_turned_min": 6.21
    },
    "journeys_turned_short_pct": 0.09,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "145",
@@ -11311,7 +11545,9 @@
     "awt_if_not_turned_min": 8.66
    },
    "journeys_turned_short_pct": 0.065,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "452",
@@ -11402,7 +11638,9 @@
     "awt_if_not_turned_min": 7.76
    },
    "journeys_turned_short_pct": 0.036,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "181",
@@ -11491,7 +11729,9 @@
     "awt_if_not_turned_min": 8.36
    },
    "journeys_turned_short_pct": 0.031,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "64",
@@ -11580,7 +11820,9 @@
     "awt_if_not_turned_min": 8.35
    },
    "journeys_turned_short_pct": 0.007,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.93
   },
   {
    "route": "147",
@@ -11669,7 +11911,9 @@
     "awt_if_not_turned_min": 6.55
    },
    "journeys_turned_short_pct": 0.081,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.91
   },
   {
    "route": "249",
@@ -11760,7 +12004,9 @@
     "awt_if_not_turned_min": 6.56
    },
    "journeys_turned_short_pct": 0.113,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "46",
@@ -11849,7 +12095,9 @@
     "awt_if_not_turned_min": 9.31
    },
    "journeys_turned_short_pct": 0.006,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "155",
@@ -11938,7 +12186,9 @@
     "awt_if_not_turned_min": 6.38
    },
    "journeys_turned_short_pct": 0.148,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "4",
@@ -12027,7 +12277,9 @@
     "awt_if_not_turned_min": 7.92
    },
    "journeys_turned_short_pct": 0.042,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "100",
@@ -12116,7 +12368,9 @@
     "awt_if_not_turned_min": 8.49
    },
    "journeys_turned_short_pct": 0.02,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "35",
@@ -12207,7 +12461,9 @@
     "awt_if_not_turned_min": 6.61
    },
    "journeys_turned_short_pct": 0.159,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "66",
@@ -12296,7 +12552,9 @@
     "awt_if_not_turned_min": 9.28
    },
    "journeys_turned_short_pct": 0.041,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "192",
@@ -12387,7 +12645,9 @@
     "awt_if_not_turned_min": 6.71
    },
    "journeys_turned_short_pct": 0.064,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "136",
@@ -12476,7 +12736,9 @@
     "awt_if_not_turned_min": 6.88
    },
    "journeys_turned_short_pct": 0.059,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "436",
@@ -12567,7 +12829,9 @@
     "awt_if_not_turned_min": 7.52
    },
    "journeys_turned_short_pct": 0.098,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "170",
@@ -12656,7 +12920,9 @@
     "awt_if_not_turned_min": 6.37
    },
    "journeys_turned_short_pct": 0.041,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "75",
@@ -12755,7 +13021,9 @@
     "awt_if_not_turned_min": 7.69
    },
    "journeys_turned_short_pct": 0.03,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "316",
@@ -12847,7 +13115,9 @@
     "awt_if_not_turned_min": 6.36
    },
    "journeys_turned_short_pct": 0.144,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.93
   },
   {
    "route": "73",
@@ -12933,7 +13203,9 @@
     "awt_if_not_turned_min": 5.22
    },
    "journeys_turned_short_pct": 0.118,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "158",
@@ -13034,7 +13306,9 @@
     "awt_if_not_turned_min": 5.38
    },
    "journeys_turned_short_pct": 0.062,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "121",
@@ -13125,7 +13399,9 @@
     "awt_if_not_turned_min": 7.32
    },
    "journeys_turned_short_pct": 0.069,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "422",
@@ -13216,7 +13492,9 @@
     "awt_if_not_turned_min": 7.01
    },
    "journeys_turned_short_pct": 0.069,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "221",
@@ -13307,7 +13585,9 @@
     "awt_if_not_turned_min": 5.91
    },
    "journeys_turned_short_pct": 0.111,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 1.0
   },
   {
    "route": "241",
@@ -13396,7 +13676,9 @@
     "awt_if_not_turned_min": 8.35
    },
    "journeys_turned_short_pct": 0.027,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "390",
@@ -13485,7 +13767,9 @@
     "awt_if_not_turned_min": 7.72
    },
    "journeys_turned_short_pct": 0.032,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "W15",
@@ -13570,7 +13854,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.049,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.83
   },
   {
    "route": "SL9",
@@ -13597,8 +13883,8 @@
     null,
     null,
     null,
-    -0.34,
-    0.57,
+    null,
+    1.25,
     1.44,
     1.2,
     1.46,
@@ -13659,7 +13945,9 @@
     "awt_if_not_turned_min": 6.37
    },
    "journeys_turned_short_pct": 0.072,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "358",
@@ -13748,7 +14036,9 @@
     "awt_if_not_turned_min": 8.96
    },
    "journeys_turned_short_pct": 0.042,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.89
   },
   {
    "route": "297",
@@ -13839,7 +14129,9 @@
     "awt_if_not_turned_min": 7.6
    },
    "journeys_turned_short_pct": 0.192,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "366",
@@ -13931,7 +14223,9 @@
     "awt_if_not_turned_min": 8.52
    },
    "journeys_turned_short_pct": 0.087,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "86",
@@ -14030,7 +14324,9 @@
     "awt_if_not_turned_min": 4.54
    },
    "journeys_turned_short_pct": 0.056,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "360",
@@ -14121,7 +14417,9 @@
     "awt_if_not_turned_min": 9.52
    },
    "journeys_turned_short_pct": 0.022,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "154",
@@ -14213,7 +14511,9 @@
     "awt_if_not_turned_min": 7.58
    },
    "journeys_turned_short_pct": 0.085,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "79",
@@ -14302,7 +14602,9 @@
     "awt_if_not_turned_min": 7.6
    },
    "journeys_turned_short_pct": 0.053,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "81",
@@ -14391,7 +14693,9 @@
     "awt_if_not_turned_min": 8.18
    },
    "journeys_turned_short_pct": 0.039,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "473",
@@ -14480,7 +14784,9 @@
     "awt_if_not_turned_min": 7.27
    },
    "journeys_turned_short_pct": 0.093,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "SL1",
@@ -14569,7 +14875,9 @@
     "awt_if_not_turned_min": 8.14
    },
    "journeys_turned_short_pct": 0.03,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "83",
@@ -14660,7 +14968,9 @@
     "awt_if_not_turned_min": 5.92
    },
    "journeys_turned_short_pct": 0.146,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "291",
@@ -14749,7 +15059,9 @@
     "awt_if_not_turned_min": 7.7
    },
    "journeys_turned_short_pct": 0.014,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.89
   },
   {
    "route": "320",
@@ -14841,7 +15153,9 @@
     "awt_if_not_turned_min": 8.5
    },
    "journeys_turned_short_pct": 0.057,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "78",
@@ -14932,7 +15246,9 @@
     "awt_if_not_turned_min": 6.81
    },
    "journeys_turned_short_pct": 0.058,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "H14",
@@ -15018,7 +15334,9 @@
     "awt_if_not_turned_min": 7.31
    },
    "journeys_turned_short_pct": 0.14,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "453",
@@ -15120,7 +15438,9 @@
     "awt_if_not_turned_min": 5.29
    },
    "journeys_turned_short_pct": 0.105,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "E5",
@@ -15211,7 +15531,9 @@
     "awt_if_not_turned_min": 8.19
    },
    "journeys_turned_short_pct": 0.088,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "108",
@@ -15320,7 +15642,9 @@
     "awt_if_not_turned_min": 8.48
    },
    "journeys_turned_short_pct": 0.03,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 1.01
   },
   {
    "route": "309",
@@ -15411,7 +15735,9 @@
     "awt_if_not_turned_min": 8.42
    },
    "journeys_turned_short_pct": 0.038,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "99",
@@ -15512,7 +15838,9 @@
     "awt_if_not_turned_min": 8.06
    },
    "journeys_turned_short_pct": 0.023,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "W6",
@@ -15601,7 +15929,9 @@
     "awt_if_not_turned_min": 7.23
    },
    "journeys_turned_short_pct": 0.048,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "27",
@@ -15690,7 +16020,9 @@
     "awt_if_not_turned_min": 7.01
    },
    "journeys_turned_short_pct": 0.07,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.93
   },
   {
    "route": "277",
@@ -15789,7 +16121,9 @@
     "awt_if_not_turned_min": 7.48
    },
    "journeys_turned_short_pct": 0.016,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "C10",
@@ -15880,7 +16214,9 @@
     "awt_if_not_turned_min": 5.51
    },
    "journeys_turned_short_pct": 0.136,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "157",
@@ -15972,7 +16308,9 @@
     "awt_if_not_turned_min": 8.61
    },
    "journeys_turned_short_pct": 0.1,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "284",
@@ -16061,7 +16399,9 @@
     "awt_if_not_turned_min": 7.78
    },
    "journeys_turned_short_pct": 0.03,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "112",
@@ -16162,7 +16502,9 @@
     "awt_if_not_turned_min": 7.22
    },
    "journeys_turned_short_pct": 0.019,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "460",
@@ -16251,108 +16593,9 @@
     "awt_if_not_turned_min": 7.68
    },
    "journeys_turned_short_pct": 0.03,
-   "measured": true
-  },
-  {
-   "route": "EL3",
-   "deck": "double",
-   "deck_known": true,
-   "vehicle_model": "Wrightbus Nrm",
-   "vehicle_share": 1.0,
-   "service_class": "regular",
-   "frequency_type": "headway",
-   "scheduled_headway_min": 9.5,
-   "on_time_pct": null,
-   "on_time_window": null,
-   "ewt_min": 1.45,
-   "p_wait_gt10": 0.348,
-   "coverage": 1.0,
-   "curtailments": 167,
-   "curtailment_rate": 0.0977,
-   "delta": 0.29,
-   "delta_from": "2026-09-19",
-   "delta_weeks": 4,
-   "spark": [
-    null,
-    null,
-    null,
-    null,
-    null,
-    1.75,
-    1.16,
-    1.16,
-    1.37,
-    2.1,
-    1.54,
-    1.45
-   ],
-   "termini": [
-    {
-     "name": "Chadwell Heath Lane",
-     "ewt_min": 1.08,
-     "p_wait_gt10": 0.226,
-     "on_time_pct": null,
-     "worst_gap_min": 37,
-     "departures": 402,
-     "scheduled": 443,
-     "coverage": 1.0
-    },
-    {
-     "name": "Rivergate Centre",
-     "ewt_min": 2.3,
-     "p_wait_gt10": 0.304,
-     "on_time_pct": null,
-     "worst_gap_min": 45,
-     "departures": 346,
-     "scheduled": 506,
-     "coverage": 1.0
-    },
-    {
-     "name": "Northgate Road",
-     "ewt_min": null,
-     "p_wait_gt10": null,
-     "on_time_pct": null,
-     "worst_gap_min": null,
-     "departures": 346,
-     "scheduled": 13,
-     "coverage": 1.0
-    }
-   ],
-   "flags": [
-    "curtailments"
-   ],
-   "ewt_turned_short_min": 0.13,
-   "wait_bands": {
-    "10": {
-     "actual": 0.348,
-     "timetable": 0.231
-    },
-    "20": {
-     "actual": 0.079,
-     "timetable": 0.026
-    },
-    "30": {
-     "actual": 0.015,
-     "timetable": 0.001
-    }
-   },
-   "wait_p95_min": 22.73,
-   "worst_gap": {
-    "min": 78,
-    "start": "2026-10-17T07:15:04+01:00",
-    "place": "Shearwater Close",
-    "direction": "towards Northgate Road"
-   },
-   "punctuality": null,
-   "turned_short_worst_stop": {
-    "place": "Shearwater Close",
-    "direction": "towards Northgate Road",
-    "added_wait_min": 1.71,
-    "awt_min": 11.03,
-    "awt_if_not_turned_min": 9.33
-   },
-   "journeys_turned_short_pct": 0.056,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.91
   },
   {
    "route": "D6",
@@ -16441,7 +16684,9 @@
     "awt_if_not_turned_min": 7.53
    },
    "journeys_turned_short_pct": 0.037,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "88",
@@ -16469,7 +16714,7 @@
     null,
     null,
     0.96,
-    0.83,
+    0.88,
     1.18,
     1.16,
     1.14,
@@ -16550,7 +16795,9 @@
     "awt_if_not_turned_min": 7.4
    },
    "journeys_turned_short_pct": 0.083,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "264",
@@ -16641,7 +16888,9 @@
     "awt_if_not_turned_min": 7.7
    },
    "journeys_turned_short_pct": 0.065,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "11",
@@ -16732,7 +16981,9 @@
     "awt_if_not_turned_min": 6.46
    },
    "journeys_turned_short_pct": 0.136,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "177",
@@ -16821,7 +17072,9 @@
     "awt_if_not_turned_min": 7.25
    },
    "journeys_turned_short_pct": 0.169,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "234",
@@ -16910,7 +17163,9 @@
     "awt_if_not_turned_min": 8.47
    },
    "journeys_turned_short_pct": 0.054,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "210",
@@ -16999,7 +17254,9 @@
     "awt_if_not_turned_min": 7.47
    },
    "journeys_turned_short_pct": 0.034,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "H98",
@@ -17090,7 +17347,9 @@
     "awt_if_not_turned_min": 6.3
    },
    "journeys_turned_short_pct": 0.055,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "262",
@@ -17120,7 +17379,7 @@
     0.58,
     0.94,
     0.59,
-    0.46,
+    0.6,
     2.93,
     1.61,
     1.42
@@ -17179,7 +17438,9 @@
     "awt_if_not_turned_min": 7.48
    },
    "journeys_turned_short_pct": 0.053,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "213",
@@ -17280,7 +17541,9 @@
     "awt_if_not_turned_min": 6.99
    },
    "journeys_turned_short_pct": 0.045,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "41",
@@ -17371,7 +17634,9 @@
     "awt_if_not_turned_min": 4.31
    },
    "journeys_turned_short_pct": 0.058,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "8",
@@ -17460,7 +17725,112 @@
     "awt_if_not_turned_min": 6.1
    },
    "journeys_turned_short_pct": 0.024,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
+  },
+  {
+   "route": "EL3",
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus Nrm",
+   "vehicle_share": 1.0,
+   "service_class": "regular",
+   "frequency_type": "headway",
+   "scheduled_headway_min": 9.5,
+   "on_time_pct": null,
+   "on_time_window": null,
+   "ewt_min": 1.41,
+   "p_wait_gt10": 0.348,
+   "coverage": 1.0,
+   "curtailments": 167,
+   "curtailment_rate": 0.0977,
+   "delta": 0.28,
+   "delta_from": "2026-09-19",
+   "delta_weeks": 4,
+   "spark": [
+    null,
+    null,
+    null,
+    null,
+    null,
+    1.72,
+    1.14,
+    1.13,
+    1.35,
+    2.07,
+    1.51,
+    1.41
+   ],
+   "termini": [
+    {
+     "name": "Chadwell Heath Lane",
+     "ewt_min": 1.08,
+     "p_wait_gt10": 0.226,
+     "on_time_pct": null,
+     "worst_gap_min": 37,
+     "departures": 402,
+     "scheduled": 443,
+     "coverage": 1.0
+    },
+    {
+     "name": "Rivergate Centre",
+     "ewt_min": 2.3,
+     "p_wait_gt10": 0.304,
+     "on_time_pct": null,
+     "worst_gap_min": 45,
+     "departures": 346,
+     "scheduled": 506,
+     "coverage": 1.0
+    },
+    {
+     "name": "Northgate Road",
+     "ewt_min": null,
+     "p_wait_gt10": null,
+     "on_time_pct": null,
+     "worst_gap_min": null,
+     "departures": 346,
+     "scheduled": 13,
+     "coverage": 1.0
+    }
+   ],
+   "flags": [
+    "curtailments"
+   ],
+   "ewt_turned_short_min": 0.11,
+   "wait_bands": {
+    "10": {
+     "actual": 0.348,
+     "timetable": 0.232
+    },
+    "20": {
+     "actual": 0.078,
+     "timetable": 0.026
+    },
+    "30": {
+     "actual": 0.014,
+     "timetable": 0.001
+    }
+   },
+   "wait_p95_min": 22.64,
+   "worst_gap": {
+    "min": 78,
+    "start": "2026-10-17T07:15:04+01:00",
+    "place": "Shearwater Close",
+    "direction": "towards Northgate Road"
+   },
+   "punctuality": null,
+   "turned_short_worst_stop": {
+    "place": "Shearwater Close",
+    "direction": "towards Northgate Road",
+    "added_wait_min": 1.71,
+    "awt_min": 11.03,
+    "awt_if_not_turned_min": 9.33
+   },
+   "journeys_turned_short_pct": 0.056,
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "SL10",
@@ -17549,7 +17919,9 @@
     "awt_if_not_turned_min": 7.85
    },
    "journeys_turned_short_pct": 0.016,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.91
   },
   {
    "route": "275",
@@ -17640,7 +18012,9 @@
     "awt_if_not_turned_min": 10.86
    },
    "journeys_turned_short_pct": 0.014,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "376",
@@ -17731,7 +18105,9 @@
     "awt_if_not_turned_min": 9.7
    },
    "journeys_turned_short_pct": 0.024,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "89",
@@ -17822,7 +18198,9 @@
     "awt_if_not_turned_min": 9.41
    },
    "journeys_turned_short_pct": 0.065,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "105",
@@ -17914,7 +18292,9 @@
     "awt_if_not_turned_min": 7.28
    },
    "journeys_turned_short_pct": 0.076,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 1.01
   },
   {
    "route": "H22",
@@ -18003,7 +18383,9 @@
     "awt_if_not_turned_min": 8.13
    },
    "journeys_turned_short_pct": 0.097,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "483",
@@ -18094,7 +18476,9 @@
     "awt_if_not_turned_min": 6.55
    },
    "journeys_turned_short_pct": 0.133,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "W4",
@@ -18185,7 +18569,9 @@
     "awt_if_not_turned_min": 7.41
    },
    "journeys_turned_short_pct": 0.06,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "173",
@@ -18274,7 +18660,9 @@
     "awt_if_not_turned_min": 7.32
    },
    "journeys_turned_short_pct": 0.036,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "152",
@@ -18363,7 +18751,9 @@
     "awt_if_not_turned_min": 8.22
    },
    "journeys_turned_short_pct": 0.026,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "52",
@@ -18393,7 +18783,7 @@
     18.06,
     1.16,
     1.12,
-    1.52,
+    1.76,
     1.26,
     1.3,
     1.36
@@ -18452,7 +18842,9 @@
     "awt_if_not_turned_min": 5.57
    },
    "journeys_turned_short_pct": 0.043,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "57",
@@ -18551,7 +18943,9 @@
     "awt_if_not_turned_min": 8.53
    },
    "journeys_turned_short_pct": 0.029,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "69",
@@ -18650,7 +19044,9 @@
     "awt_if_not_turned_min": 7.68
    },
    "journeys_turned_short_pct": 0.034,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "189",
@@ -18739,7 +19135,9 @@
     "awt_if_not_turned_min": 7.78
    },
    "journeys_turned_short_pct": 0.023,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "150",
@@ -18838,7 +19236,9 @@
     "awt_if_not_turned_min": 9.67
    },
    "journeys_turned_short_pct": 0.054,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "14",
@@ -18929,7 +19329,9 @@
     "awt_if_not_turned_min": 6.26
    },
    "journeys_turned_short_pct": 0.087,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "344",
@@ -19018,7 +19420,9 @@
     "awt_if_not_turned_min": 5.87
    },
    "journeys_turned_short_pct": 0.063,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "90",
@@ -19045,7 +19449,7 @@
     null,
     null,
     null,
-    1.16,
+    1.21,
     2.0,
     1.65,
     1.17,
@@ -19109,7 +19513,9 @@
     "awt_if_not_turned_min": 7.52
    },
    "journeys_turned_short_pct": 0.031,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "25",
@@ -19208,7 +19614,9 @@
     "awt_if_not_turned_min": 4.95
    },
    "journeys_turned_short_pct": 0.066,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "C3",
@@ -19297,7 +19705,9 @@
     "awt_if_not_turned_min": 7.91
    },
    "journeys_turned_short_pct": 0.053,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "85",
@@ -19388,7 +19798,9 @@
     "awt_if_not_turned_min": 6.8
    },
    "journeys_turned_short_pct": 0.075,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "183",
@@ -19477,7 +19889,9 @@
     "awt_if_not_turned_min": 6.56
    },
    "journeys_turned_short_pct": 0.047,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "425",
@@ -19568,7 +19982,9 @@
     "awt_if_not_turned_min": 6.62
    },
    "journeys_turned_short_pct": 0.064,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "C11",
@@ -19657,7 +20073,9 @@
     "awt_if_not_turned_min": 8.21
    },
    "journeys_turned_short_pct": 0.024,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "32",
@@ -19746,7 +20164,9 @@
     "awt_if_not_turned_min": 6.04
    },
    "journeys_turned_short_pct": 0.019,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "115",
@@ -19838,7 +20258,9 @@
     "awt_if_not_turned_min": 5.84
    },
    "journeys_turned_short_pct": 0.112,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "250",
@@ -19927,7 +20349,9 @@
     "awt_if_not_turned_min": 6.6
    },
    "journeys_turned_short_pct": 0.012,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "16",
@@ -20016,7 +20440,9 @@
     "awt_if_not_turned_min": 6.46
    },
    "journeys_turned_short_pct": 0.018,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "219",
@@ -20105,7 +20531,9 @@
     "awt_if_not_turned_min": 8.21
    },
    "journeys_turned_short_pct": 0.031,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "51",
@@ -20194,7 +20622,9 @@
     "awt_if_not_turned_min": 7.22
    },
    "journeys_turned_short_pct": 0.018,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "77",
@@ -20283,7 +20713,9 @@
     "awt_if_not_turned_min": 6.41
    },
    "journeys_turned_short_pct": 0.083,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "302",
@@ -20374,7 +20806,9 @@
     "awt_if_not_turned_min": 6.19
    },
    "journeys_turned_short_pct": 0.034,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "119",
@@ -20465,7 +20899,9 @@
     "awt_if_not_turned_min": 7.93
    },
    "journeys_turned_short_pct": 0.011,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "D7",
@@ -20554,7 +20990,9 @@
     "awt_if_not_turned_min": 8.03
    },
    "journeys_turned_short_pct": 0.016,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "365",
@@ -20643,7 +21081,9 @@
     "awt_if_not_turned_min": 10.8
    },
    "journeys_turned_short_pct": 0.017,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.93
   },
   {
    "route": "SL8",
@@ -20734,7 +21174,9 @@
     "awt_if_not_turned_min": 5.34
    },
    "journeys_turned_short_pct": 0.137,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "222",
@@ -20823,7 +21265,9 @@
     "awt_if_not_turned_min": 6.18
    },
    "journeys_turned_short_pct": 0.038,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "65",
@@ -20912,7 +21356,9 @@
     "awt_if_not_turned_min": 6.6
    },
    "journeys_turned_short_pct": 0.026,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "301",
@@ -21001,7 +21447,9 @@
     "awt_if_not_turned_min": 7.5
    },
    "journeys_turned_short_pct": 0.011,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "63",
@@ -21100,7 +21548,9 @@
     "awt_if_not_turned_min": 5.15
    },
    "journeys_turned_short_pct": 0.092,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "87",
@@ -21209,7 +21659,9 @@
     "awt_if_not_turned_min": 5.99
    },
    "journeys_turned_short_pct": 0.066,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "62",
@@ -21298,7 +21750,9 @@
     "awt_if_not_turned_min": 9.16
    },
    "journeys_turned_short_pct": 0.023,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "266",
@@ -21389,7 +21843,9 @@
     "awt_if_not_turned_min": 6.26
    },
    "journeys_turned_short_pct": 0.013,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.89
   },
   {
    "route": "E3",
@@ -21480,7 +21936,9 @@
     "awt_if_not_turned_min": 5.66
    },
    "journeys_turned_short_pct": 0.027,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "128",
@@ -21569,7 +22027,9 @@
     "awt_if_not_turned_min": 8.65
    },
    "journeys_turned_short_pct": 0.022,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "H32",
@@ -21660,7 +22120,9 @@
     "awt_if_not_turned_min": 8.73
    },
    "journeys_turned_short_pct": 0.01,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "220",
@@ -21749,7 +22211,9 @@
     "awt_if_not_turned_min": 6.15
    },
    "journeys_turned_short_pct": 0.014,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "37",
@@ -21840,7 +22304,9 @@
     "awt_if_not_turned_min": 7.66
    },
    "journeys_turned_short_pct": 0.086,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 1.0
   },
   {
    "route": "44",
@@ -21929,7 +22395,9 @@
     "awt_if_not_turned_min": 6.8
    },
    "journeys_turned_short_pct": 0.038,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "31",
@@ -22020,7 +22488,9 @@
     "awt_if_not_turned_min": 6.36
    },
    "journeys_turned_short_pct": 0.116,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "143",
@@ -22111,7 +22581,9 @@
     "awt_if_not_turned_min": 8.83
    },
    "journeys_turned_short_pct": 0.039,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "K1",
@@ -22212,7 +22684,9 @@
     "awt_if_not_turned_min": 7.14
    },
    "journeys_turned_short_pct": 0.061,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "137",
@@ -22303,7 +22777,9 @@
     "awt_if_not_turned_min": 4.75
    },
    "journeys_turned_short_pct": 0.063,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "17",
@@ -22392,7 +22868,9 @@
     "awt_if_not_turned_min": 7.63
    },
    "journeys_turned_short_pct": 0.008,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "125",
@@ -22481,7 +22959,9 @@
     "awt_if_not_turned_min": 7.21
    },
    "journeys_turned_short_pct": 0.004,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "E9",
@@ -22572,7 +23052,9 @@
     "awt_if_not_turned_min": 8.28
    },
    "journeys_turned_short_pct": 0.045,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "104",
@@ -22661,7 +23143,9 @@
     "awt_if_not_turned_min": 6.54
    },
    "journeys_turned_short_pct": 0.012,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "363",
@@ -22752,7 +23236,9 @@
     "awt_if_not_turned_min": 7.89
    },
    "journeys_turned_short_pct": 0.088,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "184",
@@ -22861,7 +23347,9 @@
     "awt_if_not_turned_min": 6.62
    },
    "journeys_turned_short_pct": 0.024,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "468",
@@ -22950,7 +23438,9 @@
     "awt_if_not_turned_min": 6.12
    },
    "journeys_turned_short_pct": 0.018,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "H12",
@@ -23049,7 +23539,9 @@
     "awt_if_not_turned_min": 6.98
    },
    "journeys_turned_short_pct": 0.007,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "K2",
@@ -23138,7 +23630,9 @@
     "awt_if_not_turned_min": 8.73
    },
    "journeys_turned_short_pct": 0.009,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "13",
@@ -23227,7 +23721,9 @@
     "awt_if_not_turned_min": 7.25
    },
    "journeys_turned_short_pct": 0.025,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "54",
@@ -23316,7 +23812,9 @@
     "awt_if_not_turned_min": 7.18
    },
    "journeys_turned_short_pct": 0.029,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "319",
@@ -23405,7 +23903,9 @@
     "awt_if_not_turned_min": 6.9
    },
    "journeys_turned_short_pct": 0.018,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "325",
@@ -23496,7 +23996,9 @@
     "awt_if_not_turned_min": 8.76
    },
    "journeys_turned_short_pct": 0.037,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "H10",
@@ -23575,7 +24077,9 @@
     "awt_if_not_turned_min": 7.47
    },
    "journeys_turned_short_pct": 0.011,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "140",
@@ -23664,7 +24168,9 @@
     "awt_if_not_turned_min": 6.58
    },
    "journeys_turned_short_pct": 0.047,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "208",
@@ -23753,7 +24259,9 @@
     "awt_if_not_turned_min": 7.35
    },
    "journeys_turned_short_pct": 0.026,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "261",
@@ -23842,7 +24350,9 @@
     "awt_if_not_turned_min": 7.88
    },
    "journeys_turned_short_pct": 0.023,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.91
   },
   {
    "route": "304",
@@ -23931,7 +24441,9 @@
     "awt_if_not_turned_min": 8.77
    },
    "journeys_turned_short_pct": 0.004,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "174",
@@ -24032,7 +24544,9 @@
     "awt_if_not_turned_min": 5.13
    },
    "journeys_turned_short_pct": 0.011,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "227",
@@ -24121,7 +24635,9 @@
     "awt_if_not_turned_min": 6.4
    },
    "journeys_turned_short_pct": 0.013,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "93",
@@ -24222,7 +24738,9 @@
     "awt_if_not_turned_min": 4.93
    },
    "journeys_turned_short_pct": 0.049,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 1.0
   },
   {
    "route": "200",
@@ -24311,7 +24829,9 @@
     "awt_if_not_turned_min": 6.1
    },
    "journeys_turned_short_pct": 0.012,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "235",
@@ -24402,7 +24922,9 @@
     "awt_if_not_turned_min": 5.55
    },
    "journeys_turned_short_pct": 0.05,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "288",
@@ -24491,7 +25013,9 @@
     "awt_if_not_turned_min": 7.52
    },
    "journeys_turned_short_pct": 0.071,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "5",
@@ -24580,7 +25104,9 @@
     "awt_if_not_turned_min": 4.52
    },
    "journeys_turned_short_pct": 0.027,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "163",
@@ -24669,7 +25195,9 @@
     "awt_if_not_turned_min": 7.28
    },
    "journeys_turned_short_pct": 0.007,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "126",
@@ -24758,7 +25286,9 @@
     "awt_if_not_turned_min": 8.27
    },
    "journeys_turned_short_pct": 0.044,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "218",
@@ -24849,7 +25379,9 @@
     "awt_if_not_turned_min": 8.52
    },
    "journeys_turned_short_pct": 0.023,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "196",
@@ -24938,7 +25470,9 @@
     "awt_if_not_turned_min": 7.9
    },
    "journeys_turned_short_pct": 0.018,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "217",
@@ -25027,7 +25561,9 @@
     "awt_if_not_turned_min": 8.27
    },
    "journeys_turned_short_pct": 0.036,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "333",
@@ -25116,7 +25652,9 @@
     "awt_if_not_turned_min": 7.19
    },
    "journeys_turned_short_pct": 0.02,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "329",
@@ -25215,7 +25753,9 @@
     "awt_if_not_turned_min": 5.16
    },
    "journeys_turned_short_pct": 0.02,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 1.0
   },
   {
    "route": "432",
@@ -25314,7 +25854,9 @@
     "awt_if_not_turned_min": 7.21
    },
    "journeys_turned_short_pct": 0.012,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.93
   },
   {
    "route": "294",
@@ -25344,8 +25886,8 @@
     0.66,
     1.06,
     0.81,
-    0.65,
-    0.44,
+    0.88,
+    0.66,
     0.95,
     1.03
    ],
@@ -25403,7 +25945,9 @@
     "awt_if_not_turned_min": 9.54
    },
    "journeys_turned_short_pct": 0.013,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "132",
@@ -25492,7 +26036,9 @@
     "awt_if_not_turned_min": 7.05
    },
    "journeys_turned_short_pct": 0.023,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "182",
@@ -25581,7 +26127,9 @@
     "awt_if_not_turned_min": 6.23
    },
    "journeys_turned_short_pct": 0.047,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "131",
@@ -25680,7 +26228,9 @@
     "awt_if_not_turned_min": 5.71
    },
    "journeys_turned_short_pct": 0.042,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 1.01
   },
   {
    "route": "142",
@@ -25769,7 +26319,9 @@
     "awt_if_not_turned_min": 8.37
    },
    "journeys_turned_short_pct": 0.062,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "50",
@@ -25858,7 +26410,9 @@
     "awt_if_not_turned_min": 7.57
    },
    "journeys_turned_short_pct": 0.023,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "156",
@@ -25957,7 +26511,9 @@
     "awt_if_not_turned_min": 6.66
    },
    "journeys_turned_short_pct": 0.051,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "H20",
@@ -26046,7 +26602,9 @@
     "awt_if_not_turned_min": 9.35
    },
    "journeys_turned_short_pct": 0.006,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "280",
@@ -26138,7 +26696,9 @@
     "awt_if_not_turned_min": 6.95
    },
    "journeys_turned_short_pct": 0.07,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "161",
@@ -26227,7 +26787,9 @@
     "awt_if_not_turned_min": 6.82
    },
    "journeys_turned_short_pct": 0.011,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "103",
@@ -26316,7 +26878,9 @@
     "awt_if_not_turned_min": 6.8
    },
    "journeys_turned_short_pct": 0.008,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "364",
@@ -26405,7 +26969,9 @@
     "awt_if_not_turned_min": 7.39
    },
    "journeys_turned_short_pct": 0.134,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "71",
@@ -26497,7 +27063,9 @@
     "awt_if_not_turned_min": 5.62
    },
    "journeys_turned_short_pct": 0.078,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "124",
@@ -26586,7 +27154,100 @@
     "awt_if_not_turned_min": 7.8
    },
    "journeys_turned_short_pct": 0.023,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
+  },
+  {
+   "route": "133",
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.98,
+   "service_class": "regular",
+   "frequency_type": "headway",
+   "scheduled_headway_min": 8.7,
+   "on_time_pct": null,
+   "on_time_window": null,
+   "ewt_min": 1.0,
+   "p_wait_gt10": 0.178,
+   "coverage": 1.0,
+   "curtailments": 30,
+   "curtailment_rate": 0.0166,
+   "delta": 0.35,
+   "delta_from": "2026-09-19",
+   "delta_weeks": 4,
+   "spark": [
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    0.92,
+    0.65,
+    0.85,
+    2.24,
+    0.88,
+    1.0
+   ],
+   "termini": [
+    {
+     "name": "Streatham Station #",
+     "ewt_min": null,
+     "p_wait_gt10": 0.069,
+     "on_time_pct": null,
+     "worst_gap_min": 21,
+     "departures": 513,
+     "scheduled": 500,
+     "coverage": 1.0
+    },
+    {
+     "name": "Procter Street",
+     "ewt_min": 0.63,
+     "p_wait_gt10": 0.125,
+     "on_time_pct": null,
+     "worst_gap_min": 39,
+     "departures": 486,
+     "scheduled": 499,
+     "coverage": 1.0
+    }
+   ],
+   "flags": [],
+   "ewt_turned_short_min": 0.05,
+   "wait_bands": {
+    "10": {
+     "actual": 0.178,
+     "timetable": 0.076
+    },
+    "20": {
+     "actual": 0.012,
+     "timetable": 0.0
+    },
+    "30": {
+     "actual": 0.001,
+     "timetable": 0.0
+    }
+   },
+   "wait_p95_min": 14.39,
+   "worst_gap": {
+    "min": 41,
+    "start": "2026-10-14T19:24:01+01:00",
+    "place": "King Edward Street",
+    "direction": "towards Streatham Station #"
+   },
+   "punctuality": null,
+   "turned_short_worst_stop": {
+    "place": "Holborn Circus / Fetter Lane",
+    "direction": "towards Streatham Station #",
+    "added_wait_min": 0.21,
+    "awt_min": 6.1,
+    "awt_if_not_turned_min": 5.89
+   },
+   "journeys_turned_short_pct": 0.021,
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "330",
@@ -26675,96 +27336,9 @@
     "awt_if_not_turned_min": 8.65
    },
    "journeys_turned_short_pct": 0.027,
-   "measured": true
-  },
-  {
-   "route": "133",
-   "deck": "double",
-   "deck_known": true,
-   "vehicle_model": "Wrightbus",
-   "vehicle_share": 0.98,
-   "service_class": "regular",
-   "frequency_type": "headway",
-   "scheduled_headway_min": 8.7,
-   "on_time_pct": null,
-   "on_time_window": null,
-   "ewt_min": 1.0,
-   "p_wait_gt10": 0.178,
-   "coverage": 1.0,
-   "curtailments": 30,
-   "curtailment_rate": 0.0166,
-   "delta": 0.35,
-   "delta_from": "2026-09-19",
-   "delta_weeks": 4,
-   "spark": [
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    0.92,
-    0.65,
-    0.85,
-    2.24,
-    0.88,
-    1.0
-   ],
-   "termini": [
-    {
-     "name": "Streatham Station #",
-     "ewt_min": -0.03,
-     "p_wait_gt10": 0.069,
-     "on_time_pct": null,
-     "worst_gap_min": 21,
-     "departures": 513,
-     "scheduled": 500,
-     "coverage": 1.0
-    },
-    {
-     "name": "Procter Street",
-     "ewt_min": 0.63,
-     "p_wait_gt10": 0.125,
-     "on_time_pct": null,
-     "worst_gap_min": 39,
-     "departures": 486,
-     "scheduled": 499,
-     "coverage": 1.0
-    }
-   ],
-   "flags": [],
-   "ewt_turned_short_min": 0.05,
-   "wait_bands": {
-    "10": {
-     "actual": 0.178,
-     "timetable": 0.076
-    },
-    "20": {
-     "actual": 0.012,
-     "timetable": 0.0
-    },
-    "30": {
-     "actual": 0.001,
-     "timetable": 0.0
-    }
-   },
-   "wait_p95_min": 14.39,
-   "worst_gap": {
-    "min": 41,
-    "start": "2026-10-14T19:24:01+01:00",
-    "place": "King Edward Street",
-    "direction": "towards Streatham Station #"
-   },
-   "punctuality": null,
-   "turned_short_worst_stop": {
-    "place": "Holborn Circus / Fetter Lane",
-    "direction": "towards Streatham Station #",
-    "added_wait_min": 0.21,
-    "awt_min": 6.1,
-    "awt_if_not_turned_min": 5.89
-   },
-   "journeys_turned_short_pct": 0.021,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "W7",
@@ -26853,7 +27427,9 @@
     "awt_if_not_turned_min": 4.41
    },
    "journeys_turned_short_pct": 0.028,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.89
   },
   {
    "route": "195",
@@ -26942,7 +27518,9 @@
     "awt_if_not_turned_min": 9.12
    },
    "journeys_turned_short_pct": 0.083,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 1.0
   },
   {
    "route": "211",
@@ -27031,7 +27609,9 @@
     "awt_if_not_turned_min": 7.14
    },
    "journeys_turned_short_pct": 0.013,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "U3",
@@ -27120,7 +27700,9 @@
     "awt_if_not_turned_min": 8.28
    },
    "journeys_turned_short_pct": 0.004,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "430",
@@ -27209,7 +27791,9 @@
     "awt_if_not_turned_min": 6.87
    },
    "journeys_turned_short_pct": 0.022,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "SL5",
@@ -27298,7 +27882,9 @@
     "awt_if_not_turned_min": 7.72
    },
    "journeys_turned_short_pct": 0.018,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "E6",
@@ -27390,7 +27976,9 @@
     "awt_if_not_turned_min": 8.91
    },
    "journeys_turned_short_pct": 0.021,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "381",
@@ -27481,7 +28069,9 @@
     "awt_if_not_turned_min": 8.55
    },
    "journeys_turned_short_pct": 0.028,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "72",
@@ -27572,7 +28162,9 @@
     "awt_if_not_turned_min": 7.28
    },
    "journeys_turned_short_pct": 0.006,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "417",
@@ -27671,7 +28263,9 @@
     "awt_if_not_turned_min": 7.19
    },
    "journeys_turned_short_pct": 0.01,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "267",
@@ -27760,7 +28354,9 @@
     "awt_if_not_turned_min": 7.3
    },
    "journeys_turned_short_pct": 0.056,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "326",
@@ -27849,7 +28445,9 @@
     "awt_if_not_turned_min": 8.04
    },
    "journeys_turned_short_pct": 0.019,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "175",
@@ -27938,7 +28536,9 @@
     "awt_if_not_turned_min": 8.2
    },
    "journeys_turned_short_pct": 0.013,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "80",
@@ -28027,7 +28627,9 @@
     "awt_if_not_turned_min": 6.65
    },
    "journeys_turned_short_pct": 0.013,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "H25",
@@ -28116,7 +28718,9 @@
     "awt_if_not_turned_min": 8.06
    },
    "journeys_turned_short_pct": 0.012,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "238",
@@ -28205,7 +28809,9 @@
     "awt_if_not_turned_min": 7.1
    },
    "journeys_turned_short_pct": 0.009,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "98",
@@ -28296,7 +28902,9 @@
     "awt_if_not_turned_min": 5.09
    },
    "journeys_turned_short_pct": 0.003,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "198",
@@ -28387,7 +28995,9 @@
     "awt_if_not_turned_min": 9.92
    },
    "journeys_turned_short_pct": 0.017,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "67",
@@ -28476,7 +29086,9 @@
     "awt_if_not_turned_min": 7.22
    },
    "journeys_turned_short_pct": 0.023,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 1.0
   },
   {
    "route": "237",
@@ -28597,7 +29209,9 @@
     "awt_if_not_turned_min": 7.33
    },
    "journeys_turned_short_pct": 0.087,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "H91",
@@ -28686,7 +29300,9 @@
     "awt_if_not_turned_min": 9.01
    },
    "journeys_turned_short_pct": 0.022,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "169",
@@ -28775,7 +29391,9 @@
     "awt_if_not_turned_min": 7.98
    },
    "journeys_turned_short_pct": 0.014,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "U2",
@@ -28864,7 +29482,9 @@
     "awt_if_not_turned_min": 7.72
    },
    "journeys_turned_short_pct": 0.002,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "493",
@@ -28955,7 +29575,9 @@
     "awt_if_not_turned_min": 9.33
    },
    "journeys_turned_short_pct": 0.041,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "68",
@@ -29046,7 +29668,9 @@
     "awt_if_not_turned_min": 6.85
    },
    "journeys_turned_short_pct": 0.113,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "U4",
@@ -29135,7 +29759,9 @@
     "awt_if_not_turned_min": 7.43
    },
    "journeys_turned_short_pct": 0.008,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "247",
@@ -29224,7 +29850,9 @@
     "awt_if_not_turned_min": 7.64
    },
    "journeys_turned_short_pct": 0.012,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "W16",
@@ -29313,7 +29941,9 @@
     "awt_if_not_turned_min": 8.6
    },
    "journeys_turned_short_pct": 0.004,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "270",
@@ -29404,7 +30034,9 @@
     "awt_if_not_turned_min": 6.29
    },
    "journeys_turned_short_pct": 0.074,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "151",
@@ -29495,7 +30127,9 @@
     "awt_if_not_turned_min": 8.19
    },
    "journeys_turned_short_pct": 0.034,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "E2",
@@ -29586,7 +30220,9 @@
     "awt_if_not_turned_min": 5.63
    },
    "journeys_turned_short_pct": 0.029,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "281",
@@ -29697,7 +30333,9 @@
     "awt_if_not_turned_min": 6.15
    },
    "journeys_turned_short_pct": 0.033,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "H9",
@@ -29776,7 +30414,9 @@
     "awt_if_not_turned_min": 8.29
    },
    "journeys_turned_short_pct": 0.01,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.93
   },
   {
    "route": "368",
@@ -29865,7 +30505,9 @@
     "awt_if_not_turned_min": 8.35
    },
    "journeys_turned_short_pct": 0.041,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "127",
@@ -29954,7 +30596,9 @@
     "awt_if_not_turned_min": 6.87
    },
    "journeys_turned_short_pct": 0.038,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 1.0
   },
   {
    "route": "415",
@@ -30046,7 +30690,9 @@
     "awt_if_not_turned_min": 9.07
    },
    "journeys_turned_short_pct": 0.075,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "U5",
@@ -30137,7 +30783,9 @@
     "awt_if_not_turned_min": 8.88
    },
    "journeys_turned_short_pct": 0.063,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "204",
@@ -30226,7 +30874,9 @@
     "awt_if_not_turned_min": 6.59
    },
    "journeys_turned_short_pct": 0.046,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "207",
@@ -30317,7 +30967,9 @@
     "awt_if_not_turned_min": 4.96
    },
    "journeys_turned_short_pct": 0.148,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "165",
@@ -30408,7 +31060,9 @@
     "awt_if_not_turned_min": 7.56
    },
    "journeys_turned_short_pct": 0.027,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "251",
@@ -30497,7 +31151,9 @@
     "awt_if_not_turned_min": 8.41
    },
    "journeys_turned_short_pct": 0.015,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "486",
@@ -30588,7 +31244,9 @@
     "awt_if_not_turned_min": 7.21
    },
    "journeys_turned_short_pct": 0.008,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "252",
@@ -30687,7 +31345,9 @@
     "awt_if_not_turned_min": 7.54
    },
    "journeys_turned_short_pct": 0.007,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "306",
@@ -30776,7 +31436,9 @@
     "awt_if_not_turned_min": 9.51
    },
    "journeys_turned_short_pct": 0.03,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "490",
@@ -30868,7 +31530,9 @@
     "awt_if_not_turned_min": 7.43
    },
    "journeys_turned_short_pct": 0.111,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "256",
@@ -30959,7 +31623,9 @@
     "awt_if_not_turned_min": 7.43
    },
    "journeys_turned_short_pct": 0.01,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "164",
@@ -31050,7 +31716,9 @@
     "awt_if_not_turned_min": 6.79
    },
    "journeys_turned_short_pct": 0.014,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "E1",
@@ -31139,7 +31807,9 @@
     "awt_if_not_turned_min": 6.44
    },
    "journeys_turned_short_pct": 0.012,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "371",
@@ -31238,7 +31908,9 @@
     "awt_if_not_turned_min": 7.65
    },
    "journeys_turned_short_pct": 0.011,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "248",
@@ -31329,7 +32001,9 @@
     "awt_if_not_turned_min": 6.4
    },
    "journeys_turned_short_pct": 0.007,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "403",
@@ -31418,7 +32092,9 @@
     "awt_if_not_turned_min": 7.7
    },
    "journeys_turned_short_pct": 0.023,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "345",
@@ -31507,7 +32183,9 @@
     "awt_if_not_turned_min": 6.51
    },
    "journeys_turned_short_pct": 0.03,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "134",
@@ -31596,7 +32274,9 @@
     "awt_if_not_turned_min": 5.44
    },
    "journeys_turned_short_pct": 0.012,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "433",
@@ -31685,7 +32365,9 @@
     "awt_if_not_turned_min": 7.89
    },
    "journeys_turned_short_pct": 0.022,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "265",
@@ -31774,7 +32456,9 @@
     "awt_if_not_turned_min": 8.03
    },
    "journeys_turned_short_pct": 0.021,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "186",
@@ -31865,7 +32549,9 @@
     "awt_if_not_turned_min": 8.06
    },
    "journeys_turned_short_pct": 0.069,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "419",
@@ -31954,7 +32640,100 @@
     "awt_if_not_turned_min": 7.55
    },
    "journeys_turned_short_pct": 0.014,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
+  },
+  {
+   "route": "E7",
+   "deck": "single",
+   "deck_known": true,
+   "vehicle_model": "Wrightbus",
+   "vehicle_share": 0.86,
+   "service_class": "regular",
+   "frequency_type": "headway",
+   "scheduled_headway_min": 13.6,
+   "on_time_pct": null,
+   "on_time_window": null,
+   "ewt_min": 0.72,
+   "p_wait_gt10": 0.39,
+   "coverage": 1.0,
+   "curtailments": 11,
+   "curtailment_rate": 0.0107,
+   "delta": -0.03,
+   "delta_from": "2026-09-19",
+   "delta_weeks": 4,
+   "spark": [
+    null,
+    null,
+    null,
+    null,
+    null,
+    0.43,
+    0.59,
+    0.75,
+    1.02,
+    1.16,
+    1.17,
+    0.72
+   ],
+   "termini": [
+    {
+     "name": "Ruislip Station <>",
+     "ewt_min": null,
+     "p_wait_gt10": null,
+     "on_time_pct": 0.345,
+     "worst_gap_min": 44,
+     "departures": 515,
+     "scheduled": 330,
+     "coverage": 1.0
+    },
+    {
+     "name": "Ealing Broadway Station <> #",
+     "ewt_min": null,
+     "p_wait_gt10": null,
+     "on_time_pct": 0.675,
+     "worst_gap_min": 27,
+     "departures": 321,
+     "scheduled": 333,
+     "coverage": 1.0
+    }
+   ],
+   "flags": [],
+   "ewt_turned_short_min": 0.23,
+   "wait_bands": {
+    "10": {
+     "actual": 0.39,
+     "timetable": 0.37
+    },
+    "20": {
+     "actual": 0.061,
+     "timetable": 0.028
+    },
+    "30": {
+     "actual": 0.01,
+     "timetable": 0.001
+    }
+   },
+   "wait_p95_min": 20.97,
+   "worst_gap": {
+    "min": 73,
+    "start": "2026-10-16T19:28:15+01:00",
+    "place": "Yeading Lane",
+    "direction": "towards Ruislip Station <>"
+   },
+   "punctuality": null,
+   "turned_short_worst_stop": {
+    "place": "Ruislip Gardens Station <>",
+    "direction": "towards Ruislip Station <>",
+    "added_wait_min": 1.1,
+    "awt_min": 10.3,
+    "awt_if_not_turned_min": 9.2
+   },
+   "journeys_turned_short_pct": 0.063,
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 1.0
   },
   {
    "route": "W8",
@@ -32043,96 +32822,9 @@
     "awt_if_not_turned_min": 6.06
    },
    "journeys_turned_short_pct": 0.015,
-   "measured": true
-  },
-  {
-   "route": "E7",
-   "deck": "single",
-   "deck_known": true,
-   "vehicle_model": "Wrightbus",
-   "vehicle_share": 0.86,
-   "service_class": "regular",
-   "frequency_type": "headway",
-   "scheduled_headway_min": 13.6,
-   "on_time_pct": null,
-   "on_time_window": null,
-   "ewt_min": 0.71,
-   "p_wait_gt10": 0.388,
-   "coverage": 1.0,
-   "curtailments": 11,
-   "curtailment_rate": 0.0107,
-   "delta": -0.06,
-   "delta_from": "2026-09-19",
-   "delta_weeks": 4,
-   "spark": [
-    null,
-    null,
-    null,
-    null,
-    null,
-    0.42,
-    0.6,
-    0.77,
-    1.09,
-    1.13,
-    1.21,
-    0.71
-   ],
-   "termini": [
-    {
-     "name": "Ruislip Station <>",
-     "ewt_min": null,
-     "p_wait_gt10": null,
-     "on_time_pct": 0.345,
-     "worst_gap_min": 44,
-     "departures": 515,
-     "scheduled": 330,
-     "coverage": 1.0
-    },
-    {
-     "name": "Ealing Broadway Station <> #",
-     "ewt_min": null,
-     "p_wait_gt10": null,
-     "on_time_pct": 0.675,
-     "worst_gap_min": 27,
-     "departures": 321,
-     "scheduled": 333,
-     "coverage": 1.0
-    }
-   ],
-   "flags": [],
-   "ewt_turned_short_min": 0.23,
-   "wait_bands": {
-    "10": {
-     "actual": 0.388,
-     "timetable": 0.368
-    },
-    "20": {
-     "actual": 0.06,
-     "timetable": 0.028
-    },
-    "30": {
-     "actual": 0.009,
-     "timetable": 0.001
-    }
-   },
-   "wait_p95_min": 20.89,
-   "worst_gap": {
-    "min": 73,
-    "start": "2026-10-16T19:28:15+01:00",
-    "place": "Yeading Lane",
-    "direction": "towards Ruislip Station <>"
-   },
-   "punctuality": null,
-   "turned_short_worst_stop": {
-    "place": "Ruislip Gardens Station <>",
-    "direction": "towards Ruislip Station <>",
-    "added_wait_min": 1.1,
-    "awt_min": 10.3,
-    "awt_if_not_turned_min": 9.2
-   },
-   "journeys_turned_short_pct": 0.063,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "269",
@@ -32223,7 +32915,9 @@
     "awt_if_not_turned_min": 8.4
    },
    "journeys_turned_short_pct": 0.002,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "109",
@@ -32312,7 +33006,9 @@
     "awt_if_not_turned_min": 5.19
    },
    "journeys_turned_short_pct": 0.018,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "193",
@@ -32401,7 +33097,9 @@
     "awt_if_not_turned_min": 7.8
    },
    "journeys_turned_short_pct": 0.02,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "H37",
@@ -32500,7 +33198,9 @@
     "awt_if_not_turned_min": 5.23
    },
    "journeys_turned_short_pct": 0.02,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "33",
@@ -32589,7 +33289,9 @@
     "awt_if_not_turned_min": 5.65
    },
    "journeys_turned_short_pct": 0.011,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "E8",
@@ -32680,7 +33382,9 @@
     "awt_if_not_turned_min": 5.66
    },
    "journeys_turned_short_pct": 0.02,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 1.0
   },
   {
    "route": "340",
@@ -32771,7 +33475,9 @@
     "awt_if_not_turned_min": 7.51
    },
    "journeys_turned_short_pct": 0.011,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "3",
@@ -32860,7 +33566,9 @@
     "awt_if_not_turned_min": 6.84
    },
    "journeys_turned_short_pct": 0.017,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "45",
@@ -32946,7 +33654,9 @@
     "awt_if_not_turned_min": 8.04
    },
    "journeys_turned_short_pct": 0.001,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 1.0
   },
   {
    "route": "EL2",
@@ -33035,7 +33745,9 @@
     "awt_if_not_turned_min": 6.55
    },
    "journeys_turned_short_pct": 0.007,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "263",
@@ -33124,7 +33836,9 @@
     "awt_if_not_turned_min": 6.56
    },
    "journeys_turned_short_pct": 0.027,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "285",
@@ -33215,7 +33929,9 @@
     "awt_if_not_turned_min": 6.97
    },
    "journeys_turned_short_pct": 0.041,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 1.0
   },
   {
    "route": "111",
@@ -33314,7 +34030,9 @@
     "awt_if_not_turned_min": 6.0
    },
    "journeys_turned_short_pct": 0.02,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "H2",
@@ -33388,7 +34106,9 @@
     "awt_if_not_turned_min": 9.02
    },
    "journeys_turned_short_pct": 0.0,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "R70",
@@ -33489,7 +34209,9 @@
     "awt_if_not_turned_min": 7.43
    },
    "journeys_turned_short_pct": 0.008,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "116",
@@ -33547,7 +34269,7 @@
     }
    ],
    "flags": [],
-   "ewt_turned_short_min": -0.0,
+   "ewt_turned_short_min": null,
    "wait_bands": {
     "10": {
      "actual": 0.316,
@@ -33578,7 +34300,9 @@
     "awt_if_not_turned_min": 7.76
    },
    "journeys_turned_short_pct": 0.001,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 1.01
   },
   {
    "route": "255",
@@ -33591,12 +34315,12 @@
    "scheduled_headway_min": 11.6,
    "on_time_pct": null,
    "on_time_window": null,
-   "ewt_min": 0.1,
-   "p_wait_gt10": 0.285,
+   "ewt_min": 0.28,
+   "p_wait_gt10": 0.298,
    "coverage": 1.0,
    "curtailments": 10,
    "curtailment_rate": 0.0081,
-   "delta": -0.24,
+   "delta": -0.16,
    "delta_from": "2026-09-19",
    "delta_weeks": 4,
    "spark": [
@@ -33605,13 +34329,13 @@
     null,
     null,
     null,
-    0.3,
-    0.45,
-    0.34,
-    0.46,
-    1.06,
-    0.57,
-    0.1
+    0.31,
+    0.77,
+    0.44,
+    0.65,
+    1.23,
+    1.19,
+    0.28
    ],
    "termini": [
     {
@@ -33636,22 +34360,22 @@
     }
    ],
    "flags": [],
-   "ewt_turned_short_min": 0.02,
+   "ewt_turned_short_min": 0.03,
    "wait_bands": {
     "10": {
-     "actual": 0.285,
+     "actual": 0.298,
      "timetable": 0.311
     },
     "20": {
-     "actual": 0.017,
+     "actual": 0.021,
      "timetable": 0.0
     },
     "30": {
-     "actual": 0.001,
+     "actual": 0.002,
      "timetable": 0.0
     }
    },
-   "wait_p95_min": 16.42,
+   "wait_p95_min": 16.87,
    "worst_gap": {
     "min": 40,
     "start": "2026-10-16T18:31:59+01:00",
@@ -33660,105 +34384,16 @@
    },
    "punctuality": null,
    "turned_short_worst_stop": {
-    "place": "South Lodge Avenue / Yorkshire Road",
-    "direction": "towards Balham Station <># / Balham Station Road",
-    "added_wait_min": 0.08,
-    "awt_min": 8.21,
-    "awt_if_not_turned_min": 8.13
+    "place": "Balham Station <># / Balham Station Road",
+    "direction": "towards South Lodge Avenue / Yorkshire Road",
+    "added_wait_min": 0.14,
+    "awt_min": 8.24,
+    "awt_if_not_turned_min": 8.1
    },
-   "journeys_turned_short_pct": 0.006,
-   "measured": true
-  },
-  {
-   "route": "427",
-   "deck": "double",
-   "deck_known": true,
-   "vehicle_model": "Alexander Dennis Adl Enviro 400H Mmc",
-   "vehicle_share": 0.7,
-   "service_class": "regular",
-   "frequency_type": "headway",
-   "scheduled_headway_min": 8.4,
-   "on_time_pct": null,
-   "on_time_window": null,
-   "ewt_min": -0.01,
-   "p_wait_gt10": 0.137,
-   "coverage": 1.0,
-   "curtailments": 6,
-   "curtailment_rate": 0.0067,
-   "delta": -1.06,
-   "delta_from": "2026-09-19",
-   "delta_weeks": 4,
-   "spark": [
-    null,
-    null,
-    null,
-    null,
-    null,
-    1.22,
-    1.03,
-    1.05,
-    1.07,
-    0.16,
-    0.12,
-    -0.01
-   ],
-   "termini": [
-    {
-     "name": "York Road",
-     "ewt_min": 0.39,
-     "p_wait_gt10": 0.051,
-     "on_time_pct": null,
-     "worst_gap_min": 23,
-     "departures": 557,
-     "scheduled": 556,
-     "coverage": 1.0
-    },
-    {
-     "name": "The Green",
-     "ewt_min": null,
-     "p_wait_gt10": null,
-     "on_time_pct": null,
-     "worst_gap_min": null,
-     "departures": 15,
-     "scheduled": 572,
-     "coverage": 1.0
-    }
-   ],
-   "flags": [
-    "improving"
-   ],
-   "ewt_turned_short_min": 0.01,
-   "wait_bands": {
-    "10": {
-     "actual": 0.137,
-     "timetable": 0.089
-    },
-    "20": {
-     "actual": 0.004,
-     "timetable": 0.0
-    },
-    "30": {
-     "actual": 0.0,
-     "timetable": 0.0
-    }
-   },
-   "wait_p95_min": 12.96,
-   "worst_gap": {
-    "min": 41,
-    "start": "2026-10-12T05:14:25+01:00",
-    "place": "Hayes By-Pass",
-    "direction": "towards York Road"
-   },
-   "punctuality": null,
-   "turned_short_worst_stop": {
-    "place": "York Road",
-    "direction": "towards Bridge Road",
-    "added_wait_min": 0.05,
-    "awt_min": 5.28,
-    "awt_if_not_turned_min": 5.23
-   },
-   "journeys_turned_short_pct": 0.013,
-   "measured": true
+   "journeys_turned_short_pct": 0.007,
+   "measured": true,
+   "ewt_null_reason": null,
+   "seen_vs_timetable": 1.1
   },
   {
    "route": "49",
@@ -33825,7 +34460,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.104,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "no_timetable",
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "212",
@@ -33890,7 +34527,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.072,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "not_traced",
+   "seen_vs_timetable": 0.83
   },
   {
    "route": "94",
@@ -33955,7 +34594,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.008,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "no_timetable",
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "E10",
@@ -34038,7 +34679,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.012,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "34",
@@ -34103,7 +34746,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "no_data",
+   "seen_vs_timetable": null
   },
   {
    "route": "70",
@@ -34168,7 +34813,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.046,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "no_timetable",
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "370",
@@ -34243,7 +34890,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "not_traced",
+   "seen_vs_timetable": 0.56
   },
   {
    "route": "631",
@@ -34308,7 +34957,76 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
+  },
+  {
+   "route": "427",
+   "deck": "double",
+   "deck_known": true,
+   "vehicle_model": "Alexander Dennis Adl Enviro 400H Mmc",
+   "vehicle_share": 0.7,
+   "service_class": "regular",
+   "frequency_type": "headway",
+   "scheduled_headway_min": 8.4,
+   "on_time_pct": null,
+   "on_time_window": null,
+   "ewt_min": null,
+   "p_wait_gt10": null,
+   "coverage": 1.0,
+   "curtailments": 6,
+   "curtailment_rate": 0.0067,
+   "delta": null,
+   "delta_from": null,
+   "delta_weeks": 0,
+   "spark": [
+    null,
+    null,
+    null,
+    null,
+    null,
+    1.22,
+    1.03,
+    1.05,
+    1.07,
+    null,
+    null,
+    null
+   ],
+   "termini": [
+    {
+     "name": "York Road",
+     "ewt_min": 0.39,
+     "p_wait_gt10": 0.051,
+     "on_time_pct": null,
+     "worst_gap_min": 23,
+     "departures": 557,
+     "scheduled": 556,
+     "coverage": 1.0
+    },
+    {
+     "name": "The Green",
+     "ewt_min": null,
+     "p_wait_gt10": null,
+     "on_time_pct": null,
+     "worst_gap_min": null,
+     "departures": 15,
+     "scheduled": 572,
+     "coverage": 1.0
+    }
+   ],
+   "flags": [],
+   "ewt_turned_short_min": null,
+   "wait_bands": null,
+   "wait_p95_min": null,
+   "worst_gap": null,
+   "punctuality": null,
+   "turned_short_worst_stop": null,
+   "journeys_turned_short_pct": null,
+   "measured": false,
+   "ewt_null_reason": "timetable_mismatch",
+   "seen_vs_timetable": 1.15
   },
   {
    "route": "107",
@@ -34391,7 +35109,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.057,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "110",
@@ -34474,7 +35194,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.03,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "117",
@@ -34539,7 +35261,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.47
   },
   {
    "route": "138",
@@ -34622,7 +35346,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.0,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "146",
@@ -34705,7 +35431,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.023,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "153",
@@ -34788,7 +35516,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.07,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "160",
@@ -34871,7 +35601,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.014,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.91
   },
   {
    "route": "162",
@@ -34954,7 +35686,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.016,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "166",
@@ -35057,7 +35791,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.006,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "167",
@@ -35150,7 +35886,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.02,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "178",
@@ -35233,7 +35971,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.006,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.91
   },
   {
    "route": "187",
@@ -35316,7 +36056,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.212,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "190",
@@ -35399,7 +36141,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.024,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "20",
@@ -35482,7 +36226,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.04,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "201",
@@ -35565,7 +36311,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.023,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.91
   },
   {
    "route": "203",
@@ -35648,7 +36396,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.021,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "209",
@@ -35715,7 +36465,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.0
   },
   {
    "route": "215",
@@ -35798,7 +36550,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.033,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.89
   },
   {
    "route": "216",
@@ -35873,7 +36627,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.34
   },
   {
    "route": "223",
@@ -35956,7 +36712,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.02,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "224",
@@ -36041,7 +36799,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.068,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "225",
@@ -36126,7 +36886,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.049,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "228",
@@ -36211,7 +36973,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.074,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "230",
@@ -36294,7 +37058,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.017,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.9
   },
   {
    "route": "231",
@@ -36377,7 +37143,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.015,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "233",
@@ -36391,7 +37159,7 @@
    "on_time_pct": 0.807,
    "on_time_window": "-2.5 to +5 min",
    "ewt_min": null,
-   "p_wait_gt10": 0.584,
+   "p_wait_gt10": 0.588,
    "coverage": 1.0,
    "curtailments": 62,
    "curtailment_rate": 0.0909,
@@ -36440,29 +37208,31 @@
    "ewt_turned_short_min": null,
    "wait_bands": {
     "10": {
-     "actual": 0.584,
-     "timetable": 0.648
+     "actual": 0.588,
+     "timetable": 0.618
     },
     "20": {
-     "actual": 0.209,
-     "timetable": 0.316
+     "actual": 0.199,
+     "timetable": 0.257
     },
     "30": {
-     "actual": 0.06,
-     "timetable": 0.224
+     "actual": 0.055,
+     "timetable": 0.172
     }
    },
-   "wait_p95_min": 32.2,
+   "wait_p95_min": 31.03,
    "worst_gap": {
-    "min": 92,
-    "start": "2026-10-13T19:52:42+01:00",
+    "min": 62,
+    "start": "2026-10-16T22:58:11+01:00",
     "place": "Birchwood Corner",
-    "direction": "towards Eltham Bus Station #"
+    "direction": "towards Beechenlea Lane"
    },
    "punctuality": null,
    "turned_short_worst_stop": null,
-   "journeys_turned_short_pct": 0.044,
-   "measured": true
+   "journeys_turned_short_pct": 0.108,
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 1.14
   },
   {
    "route": "240",
@@ -36545,7 +37315,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.054,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "245",
@@ -36610,7 +37382,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.024,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "not_traced",
+   "seen_vs_timetable": 0.8
   },
   {
    "route": "246",
@@ -36685,7 +37459,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": null
   },
   {
    "route": "258",
@@ -36699,7 +37475,7 @@
    "on_time_pct": 0.825,
    "on_time_window": "-2.5 to +5 min",
    "ewt_min": null,
-   "p_wait_gt10": 0.488,
+   "p_wait_gt10": 0.476,
    "coverage": 1.0,
    "curtailments": 22,
    "curtailment_rate": 0.0266,
@@ -36746,19 +37522,19 @@
    "ewt_turned_short_min": null,
    "wait_bands": {
     "10": {
-     "actual": 0.488,
-     "timetable": 0.461
+     "actual": 0.476,
+     "timetable": 0.429
     },
     "20": {
-     "actual": 0.162,
-     "timetable": 0.124
+     "actual": 0.158,
+     "timetable": 0.093
     },
     "30": {
-     "actual": 0.06,
+     "actual": 0.064,
      "timetable": 0.007
     }
    },
-   "wait_p95_min": 32.04,
+   "wait_p95_min": 33.09,
    "worst_gap": {
     "min": 122,
     "start": "2026-10-15T21:15:14+01:00",
@@ -36768,7 +37544,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.039,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "268",
@@ -36851,7 +37629,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.002,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "272",
@@ -36936,7 +37716,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.049,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.93
   },
   {
    "route": "273",
@@ -37019,7 +37801,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.019,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.91
   },
   {
    "route": "278",
@@ -37102,7 +37886,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.006,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "287",
@@ -37185,7 +37971,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.012,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "290",
@@ -37250,7 +38038,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.023,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.48
   },
   {
    "route": "292",
@@ -37333,7 +38123,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.026,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.91
   },
   {
    "route": "293",
@@ -37400,7 +38192,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.44
   },
   {
    "route": "296",
@@ -37483,7 +38277,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.001,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "298",
@@ -37566,7 +38362,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.01,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "299",
@@ -37649,7 +38447,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.076,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.9
   },
   {
    "route": "300",
@@ -37732,7 +38532,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.055,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.87
   },
   {
    "route": "303",
@@ -37815,7 +38617,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.01,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "313",
@@ -37918,7 +38722,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.031,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "315",
@@ -38001,7 +38807,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.003,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "317",
@@ -38084,7 +38892,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.02,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "322",
@@ -38098,7 +38908,7 @@
    "on_time_pct": 0.592,
    "on_time_window": "-2.5 to +5 min",
    "ewt_min": null,
-   "p_wait_gt10": 0.387,
+   "p_wait_gt10": 0.38,
    "coverage": 1.0,
    "curtailments": 9,
    "curtailment_rate": 0.009,
@@ -38145,19 +38955,19 @@
    "ewt_turned_short_min": null,
    "wait_bands": {
     "10": {
-     "actual": 0.387,
-     "timetable": 0.379
+     "actual": 0.38,
+     "timetable": 0.358
     },
     "20": {
      "actual": 0.038,
-     "timetable": 0.018
+     "timetable": 0.008
     },
     "30": {
-     "actual": 0.003,
-     "timetable": 0.001
+     "actual": 0.004,
+     "timetable": 0.0
     }
    },
-   "wait_p95_min": 19.03,
+   "wait_p95_min": 18.96,
    "worst_gap": {
     "min": 45,
     "start": "2026-10-16T15:18:02+01:00",
@@ -38166,8 +38976,10 @@
    },
    "punctuality": null,
    "turned_short_worst_stop": null,
-   "journeys_turned_short_pct": 0.009,
-   "measured": true
+   "journeys_turned_short_pct": 0.011,
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "323",
@@ -38250,7 +39062,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.011,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "324",
@@ -38333,7 +39147,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.055,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.91
   },
   {
    "route": "327",
@@ -38416,7 +39232,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.03,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.89
   },
   {
    "route": "331",
@@ -38499,7 +39317,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.015,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "336",
@@ -38582,7 +39402,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.006,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "337",
@@ -38657,7 +39479,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.01,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "no_timetable",
+   "seen_vs_timetable": 0.91
   },
   {
    "route": "339",
@@ -38740,7 +39564,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.002,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "346",
@@ -38823,7 +39649,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.015,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "349",
@@ -38888,7 +39716,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "no_data",
+   "seen_vs_timetable": null
   },
   {
    "route": "350",
@@ -38971,7 +39801,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.005,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "352",
@@ -39054,7 +39886,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.005,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "353",
@@ -39119,7 +39953,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.014,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.88
   },
   {
    "route": "354",
@@ -39202,7 +40038,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.008,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.9
   },
   {
    "route": "356",
@@ -39287,7 +40125,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.203,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.85
   },
   {
    "route": "357",
@@ -39380,7 +40220,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.007,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "359",
@@ -39463,7 +40305,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.057,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.83
   },
   {
    "route": "362",
@@ -39546,7 +40390,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.034,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.84
   },
   {
    "route": "367",
@@ -39649,7 +40495,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.007,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "372",
@@ -39732,7 +40580,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.012,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "375",
@@ -39797,7 +40647,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.67
   },
   {
    "route": "377",
@@ -39880,7 +40732,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.094,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "378",
@@ -39963,7 +40817,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.031,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "379",
@@ -40028,7 +40884,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": null
   },
   {
    "route": "382",
@@ -40111,7 +40969,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.055,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "383",
@@ -40194,7 +41054,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.005,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.9
   },
   {
    "route": "384",
@@ -40289,7 +41151,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.059,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "385",
@@ -40354,7 +41218,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.0,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.83
   },
   {
    "route": "386",
@@ -40437,7 +41303,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.009,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.88
   },
   {
    "route": "389",
@@ -40502,7 +41370,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.0,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.6
   },
   {
    "route": "394",
@@ -40585,7 +41455,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.074,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "395",
@@ -40668,7 +41540,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.02,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "396",
@@ -40751,7 +41625,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.017,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "397",
@@ -40765,7 +41641,7 @@
    "on_time_pct": 0.886,
    "on_time_window": "-2.5 to +5 min",
    "ewt_min": null,
-   "p_wait_gt10": 0.655,
+   "p_wait_gt10": 0.672,
    "coverage": 1.0,
    "curtailments": 4,
    "curtailment_rate": 0.0032,
@@ -40832,19 +41708,19 @@
    "ewt_turned_short_min": null,
    "wait_bands": {
     "10": {
-     "actual": 0.655,
-     "timetable": 0.671
+     "actual": 0.672,
+     "timetable": 0.67
     },
     "20": {
-     "actual": 0.326,
-     "timetable": 0.343
+     "actual": 0.355,
+     "timetable": 0.339
     },
     "30": {
-     "actual": 0.072,
-     "timetable": 0.025
+     "actual": 0.101,
+     "timetable": 0.02
     }
    },
-   "wait_p95_min": 32.02,
+   "wait_p95_min": 37.99,
    "worst_gap": {
     "min": 135,
     "start": "2026-10-14T12:58:58+01:00",
@@ -40853,8 +41729,10 @@
    },
    "punctuality": null,
    "turned_short_worst_stop": null,
-   "journeys_turned_short_pct": 0.013,
-   "measured": true
+   "journeys_turned_short_pct": 0.021,
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 1.08
   },
   {
    "route": "398",
@@ -40937,7 +41815,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.006,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "399",
@@ -41002,7 +41882,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.0,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.8
   },
   {
    "route": "401",
@@ -41087,7 +41969,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.207,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "404",
@@ -41170,7 +42054,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.015,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "405",
@@ -41253,7 +42139,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.009,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "406",
@@ -41346,7 +42234,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.013,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 1.0
   },
   {
    "route": "407",
@@ -41411,7 +42301,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "not_traced",
+   "seen_vs_timetable": 0.12
   },
   {
    "route": "411",
@@ -41476,7 +42368,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.0,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.52
   },
   {
    "route": "412",
@@ -41559,7 +42453,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.007,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "413",
@@ -41642,7 +42538,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.019,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "418",
@@ -41707,7 +42605,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.0,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.49
   },
   {
    "route": "42",
@@ -41792,7 +42692,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.104,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.91
   },
   {
    "route": "423",
@@ -41875,7 +42777,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.009,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "424",
@@ -41958,7 +42862,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.0,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.79
   },
   {
    "route": "428",
@@ -42051,7 +42957,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.085,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "434",
@@ -42134,7 +43042,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.032,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "439",
@@ -42219,7 +43129,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.094,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "440",
@@ -42304,7 +43216,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.075,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.93
   },
   {
    "route": "456",
@@ -42369,7 +43283,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.012,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.81
   },
   {
    "route": "462",
@@ -42452,7 +43368,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.012,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "463",
@@ -42537,7 +43455,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.066,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "464",
@@ -42632,7 +43552,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.026,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.9
   },
   {
    "route": "465",
@@ -42705,7 +43627,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.0,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.85
   },
   {
    "route": "466",
@@ -42782,7 +43706,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "not_traced",
+   "seen_vs_timetable": 0.7
   },
   {
    "route": "467",
@@ -42885,7 +43811,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.0,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.93
   },
   {
    "route": "469",
@@ -42970,7 +43898,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.081,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "470",
@@ -43053,7 +43983,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.004,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.93
   },
   {
    "route": "481",
@@ -43146,7 +44078,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.01,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "482",
@@ -43229,7 +44163,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.048,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.88
   },
   {
    "route": "484",
@@ -43314,7 +44250,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.038,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.9
   },
   {
    "route": "485",
@@ -43392,7 +44330,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.002,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.93
   },
   {
    "route": "488",
@@ -43457,7 +44397,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.017,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.79
   },
   {
    "route": "491",
@@ -43542,7 +44484,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.085,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "492",
@@ -43625,7 +44569,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.009,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "496",
@@ -43708,7 +44654,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.007,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "498",
@@ -43781,7 +44729,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.016,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "499",
@@ -43864,7 +44814,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.01,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "533",
@@ -43929,7 +44881,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": null
   },
   {
    "route": "601",
@@ -44014,7 +44968,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "602",
@@ -44079,7 +45035,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "603",
@@ -44144,7 +45102,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "606",
@@ -44209,7 +45169,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "608",
@@ -44264,7 +45226,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "61",
@@ -44347,7 +45311,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.045,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.86
   },
   {
    "route": "612",
@@ -44412,7 +45378,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "613",
@@ -44477,7 +45445,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "616",
@@ -44542,7 +45512,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "617",
@@ -44607,7 +45579,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "621",
@@ -44672,7 +45646,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "624",
@@ -44737,7 +45713,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "625",
@@ -44802,7 +45780,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "626",
@@ -44867,7 +45847,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "627",
@@ -44932,7 +45914,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "628",
@@ -44987,7 +45971,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "629",
@@ -45052,7 +46038,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "632",
@@ -45127,7 +46115,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "633",
@@ -45192,7 +46182,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "634",
@@ -45257,7 +46249,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "635",
@@ -45322,7 +46316,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "638",
@@ -45417,7 +46413,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "639",
@@ -45482,7 +46480,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "640",
@@ -45547,7 +46547,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "642",
@@ -45632,7 +46634,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "643",
@@ -45697,7 +46701,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "645",
@@ -45762,7 +46768,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "646",
@@ -45827,7 +46835,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "649",
@@ -45892,7 +46902,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "650",
@@ -45957,7 +46969,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "651",
@@ -46022,7 +47036,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "652",
@@ -46087,7 +47103,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "653",
@@ -46152,7 +47170,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "655",
@@ -46217,7 +47237,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "656",
@@ -46282,7 +47304,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "657",
@@ -46347,7 +47371,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "658",
@@ -46422,7 +47448,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "660",
@@ -46487,7 +47515,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "661",
@@ -46552,7 +47582,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "662",
@@ -46617,7 +47649,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "663",
@@ -46682,7 +47716,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "664",
@@ -46747,7 +47783,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "665",
@@ -46812,7 +47850,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "667",
@@ -46877,7 +47917,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "669",
@@ -46952,7 +47994,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "670",
@@ -47017,7 +48061,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "671",
@@ -47082,7 +48128,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "672",
@@ -47147,7 +48195,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "674",
@@ -47212,7 +48262,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "675",
@@ -47277,7 +48329,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "677",
@@ -47342,7 +48396,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "678",
@@ -47417,7 +48473,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "679",
@@ -47502,7 +48560,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "681",
@@ -47567,7 +48627,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "683",
@@ -47632,7 +48694,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "684",
@@ -47697,7 +48761,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "685",
@@ -47752,7 +48818,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "686",
@@ -47817,7 +48885,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "688",
@@ -47882,7 +48952,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "689",
@@ -47947,7 +49019,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "690",
@@ -48012,7 +49086,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "696",
@@ -48077,7 +49153,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "697",
@@ -48142,7 +49220,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "698",
@@ -48207,7 +49287,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "699",
@@ -48284,7 +49366,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "969",
@@ -48349,7 +49433,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "no_data",
+   "seen_vs_timetable": null
   },
   {
    "route": "A10",
@@ -48432,7 +49518,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.004,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "B11",
@@ -48515,7 +49603,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.008,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "B12",
@@ -48529,7 +49619,7 @@
    "on_time_pct": null,
    "on_time_window": "-2.5 to +5 min",
    "ewt_min": null,
-   "p_wait_gt10": 0.551,
+   "p_wait_gt10": 0.553,
    "coverage": 1.0,
    "curtailments": 23,
    "curtailment_rate": 0.0205,
@@ -48586,19 +49676,19 @@
    "ewt_turned_short_min": null,
    "wait_bands": {
     "10": {
-     "actual": 0.551,
-     "timetable": 0.536
+     "actual": 0.553,
+     "timetable": 0.541
     },
     "20": {
-     "actual": 0.18,
-     "timetable": 0.118
+     "actual": 0.182,
+     "timetable": 0.123
     },
     "30": {
-     "actual": 0.028,
+     "actual": 0.027,
      "timetable": 0.001
     }
    },
-   "wait_p95_min": 27.63,
+   "wait_p95_min": 27.6,
    "worst_gap": {
     "min": 65,
     "start": "2026-10-11T12:34:23+01:00",
@@ -48608,7 +49698,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.161,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "B13",
@@ -48691,7 +49783,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.031,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "B14",
@@ -48786,7 +49880,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.02,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.91
   },
   {
    "route": "B15",
@@ -48869,7 +49965,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.022,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "B16",
@@ -48952,7 +50050,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.065,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "D3",
@@ -49035,7 +50135,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.021,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "D8",
@@ -49138,7 +50240,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.041,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "E11",
@@ -49221,7 +50325,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.041,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "G1",
@@ -49304,7 +50410,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.012,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "H11",
@@ -49387,7 +50495,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.012,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.99
   },
   {
    "route": "H13",
@@ -49470,7 +50580,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.007,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "H18",
@@ -49525,7 +50637,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.43
   },
   {
    "route": "H19",
@@ -49598,7 +50712,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.0,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.88
   },
   {
    "route": "H26",
@@ -49681,7 +50797,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.124,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "H28",
@@ -49766,7 +50884,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.017,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "H3",
@@ -49849,7 +50969,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.018,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.86
   },
   {
    "route": "K3",
@@ -49924,7 +51046,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.063,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.48
   },
   {
    "route": "K4",
@@ -50009,7 +51133,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.062,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "K5",
@@ -50092,7 +51218,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.0,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "N1",
@@ -50157,7 +51285,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N109",
@@ -50232,7 +51362,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N11",
@@ -50297,7 +51429,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N113",
@@ -50372,7 +51506,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N133",
@@ -50437,7 +51573,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N136",
@@ -50504,7 +51642,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N137",
@@ -50569,7 +51709,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N140",
@@ -50644,7 +51786,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N15",
@@ -50711,7 +51855,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N155",
@@ -50776,7 +51922,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N171",
@@ -50841,7 +51989,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N18",
@@ -50918,7 +52068,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N19",
@@ -50983,7 +52135,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N199",
@@ -51048,7 +52202,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N2",
@@ -51123,7 +52279,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N20",
@@ -51188,7 +52346,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N205",
@@ -51253,7 +52413,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N207",
@@ -51328,7 +52490,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N21",
@@ -51393,7 +52557,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N22",
@@ -51460,7 +52626,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N242",
@@ -51525,7 +52693,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N25",
@@ -51602,7 +52772,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N250",
@@ -51669,7 +52841,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N253",
@@ -51734,7 +52908,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N26",
@@ -51809,7 +52985,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N266",
@@ -51874,7 +53052,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N27",
@@ -51939,7 +53119,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N277",
@@ -52004,7 +53186,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N279",
@@ -52089,7 +53273,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N28",
@@ -52154,7 +53340,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N29",
@@ -52239,7 +53427,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N3",
@@ -52324,7 +53514,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N31",
@@ -52389,7 +53581,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N32",
@@ -52454,7 +53648,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N33",
@@ -52519,7 +53715,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N343",
@@ -52584,7 +53782,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N38",
@@ -52659,7 +53859,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N381",
@@ -52724,7 +53926,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N41",
@@ -52789,7 +53993,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N44",
@@ -52854,7 +54060,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N5",
@@ -52919,7 +54127,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N53",
@@ -52984,7 +54194,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N55",
@@ -53049,7 +54261,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N550",
@@ -53114,7 +54328,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N551",
@@ -53199,7 +54415,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N63",
@@ -53264,7 +54482,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N65",
@@ -53329,7 +54549,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N68",
@@ -53396,7 +54618,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N7",
@@ -53461,7 +54685,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N72",
@@ -53526,7 +54752,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N73",
@@ -53591,7 +54819,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N74",
@@ -53656,7 +54886,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N8",
@@ -53731,7 +54963,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N83",
@@ -53796,7 +55030,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N86",
@@ -53861,7 +55097,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N87",
@@ -53936,7 +55174,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N89",
@@ -54001,7 +55241,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N9",
@@ -54068,7 +55310,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N91",
@@ -54133,7 +55377,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N97",
@@ -54198,7 +55444,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "N98",
@@ -54273,7 +55521,9 @@
    "punctuality": null,
    "journeys_turned_short_pct": null,
    "turned_short_worst_stop": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "parked",
+   "seen_vs_timetable": null
   },
   {
    "route": "P12",
@@ -54358,7 +55608,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.076,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.9
   },
   {
    "route": "P13",
@@ -54443,7 +55695,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.067,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "P5",
@@ -54526,7 +55780,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.026,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "R1",
@@ -54609,7 +55865,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.005,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "R10",
@@ -54674,7 +55932,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.0,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.67
   },
   {
    "route": "R2",
@@ -54757,7 +56017,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.0,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "R3",
@@ -54840,7 +56102,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.036,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.84
   },
   {
    "route": "R4",
@@ -54923,7 +56187,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.005,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "R5",
@@ -54988,7 +56254,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.33
   },
   {
    "route": "R68",
@@ -55071,7 +56339,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.015,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.93
   },
   {
    "route": "R7",
@@ -55154,7 +56424,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.036,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.92
   },
   {
    "route": "R8",
@@ -55219,7 +56491,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.02,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.79
   },
   {
    "route": "R9",
@@ -55302,7 +56576,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.005,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "S1",
@@ -55385,7 +56661,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.014,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "S2",
@@ -55468,7 +56746,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.014,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.98
   },
   {
    "route": "S3",
@@ -55551,7 +56831,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.008,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.94
   },
   {
    "route": "S4",
@@ -55634,7 +56916,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.021,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.96
   },
   {
    "route": "SL6",
@@ -55717,7 +57001,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.0,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.88
   },
   {
    "route": "U1",
@@ -55800,7 +57086,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.01,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "U10",
@@ -55883,7 +57171,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.011,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.89
   },
   {
    "route": "U7",
@@ -55966,7 +57256,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.002,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.97
   },
   {
    "route": "U9",
@@ -56049,7 +57341,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.007,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.95
   },
   {
    "route": "W12",
@@ -56134,7 +57428,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.069,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.84
   },
   {
    "route": "W13",
@@ -56201,7 +57497,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.111,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.79
   },
   {
    "route": "W14",
@@ -56266,7 +57564,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": null,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": null
   },
   {
    "route": "W5",
@@ -56331,7 +57631,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.065,
-   "measured": false
+   "measured": false,
+   "ewt_null_reason": "not_traced",
+   "seen_vs_timetable": 0.75
   },
   {
    "route": "W9",
@@ -56414,7 +57716,9 @@
    "punctuality": null,
    "turned_short_worst_stop": null,
    "journeys_turned_short_pct": 0.016,
-   "measured": true
+   "measured": true,
+   "ewt_null_reason": "timetabled_route",
+   "seen_vs_timetable": 0.97
   }
  ]
 }
