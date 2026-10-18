@@ -7,12 +7,6 @@ image: "/images/bus/bus-double-decker-screenprint-3x.png"
 stat: "1 in 5"
 stat_label: "trips on a typical London bus route mean waiting more than ten minutes"
 summary: "Why TfL's bus performance stats don't tell the whole story, how often buses are cut short before their expected destination, and how to find out what was going on when your bus journey went kaput."
-build:
-  list: "never"
-  render: "always"
-sitemap:
-  disable: true
-noindex: true
 ---
 
 > Performance stats for every route, and my Bus Replay Viewer to watch what really happened on a particular day.
