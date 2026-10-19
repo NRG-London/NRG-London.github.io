@@ -417,6 +417,7 @@
     drawTimelineBase();
     closedLayers = [];
     if (el.notices) { el.notices.hidden = true; el.notices.innerHTML = ''; }
+    el.hud.classList.remove('has-notices');
     renderDays();
     applyNotices(payload);
     updateURL(marked ? opts : null);
@@ -474,6 +475,7 @@
         el.notices.innerHTML = parts.join('');
         el.notices.hidden = !parts.length;
       }
+      el.hud.classList.toggle('has-notices', !!(notes.length || closed.length));
       // the date strip: every day with a NOTICE in force (closed stops are
       // drawn on the map instead; a long closure would mark every day)
       var marks = {};
@@ -973,15 +975,21 @@
   el.mapbright.oninput = function () {
     BRIGHT[mapMode] = +el.mapbright.value; applyBright();
   };
+  // Hiding the controls hides the TfL notices too, so the map is clear; an
+  // amber dot on the button says there are notices to come back to.
   function setCollapsed(c) {
     el.hud.classList.toggle('collapsed', c);
     el.collapse.setAttribute('aria-expanded', String(!c));
-    el.collapse.innerHTML = c ? '&#9656;' : '&#9662;';
+    el.collapse.innerHTML = c ? 'Show controls <span aria-hidden="true">&#9662;</span>'
+                              : 'Hide <span aria-hidden="true">&#9652;</span>';
     drawTimelineBase(); drawTimeline();
   }
   el.collapse.onclick = function () { setCollapsed(!el.hud.classList.contains('collapsed')); };
-  // On a phone the full panel hides half the map: start with just the clock.
-  if (window.innerWidth < 600) setCollapsed(true);
+  // On a phone the full panel hides half the map, so a link to a route and
+  // day (from a route page) starts with just the clock. Without one, the
+  // panel starts open: the route picker is the first thing anyone needs, and
+  // a closed panel hid it (Neil, on his phone, 19 Oct).
+  setCollapsed(window.innerWidth < 600 && !!new URLSearchParams(location.search).get('route'));
 
   // drop a saved file anywhere
   var dragDepth = 0;

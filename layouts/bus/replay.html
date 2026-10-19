@@ -39,7 +39,7 @@
 {{- $handle := printf "@%s" (path.Base .) }}
 <meta name="twitter:site" content="{{ $handle }}">
 {{- end }}
-<link rel="stylesheet" href="/css/ngbus-replay.css?v=4">
+<link rel="stylesheet" href="/css/ngbus-replay.css?v=5">
 </head>
 <body data-replay-root="{{ .Site.Params.busReplayData }}">
 <div id="basemap"></div>
@@ -51,7 +51,7 @@
   <a id="back" href="/bus/">&larr; All bus routes</a>
   <header>
     <h1 id="title">Bus replay</h1>
-    <button id="collapse" aria-expanded="true" title="Hide or show the controls">&#9662;</button>
+    <button id="collapse" aria-expanded="true" title="Hide or show the controls and TfL notices">Hide <span aria-hidden="true">&#9652;</span></button>
   </header>
   <div id="badge" hidden></div>
   <div id="notices" hidden aria-live="polite"></div>
@@ -145,6 +145,6 @@
 {{- end }}
 <script type="text/plain" id="ngbus-decks">{{ delimit $decks "," }}</script>
 <script src="/js/ngbus-buses.js?v=1"></script>
-<script src="/js/ngbus-replay.js?v=8"></script>
+<script src="/js/ngbus-replay.js?v=9"></script>
 </body>
 </html>
