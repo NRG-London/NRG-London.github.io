@@ -101,13 +101,7 @@
       <span class="lbl">bright</span>
       <input id="mapbright" type="range" min="15" max="150" value="100" style="flex:1" aria-label="Map brightness">
     </div>
-    <div class="row">
-      <span class="lbl">buses</span>
-      <select id="busstyle" aria-label="How the buses are drawn">
-        <option value="dots" selected>Coloured dots</option>
-        <option value="buses">Little buses</option>
-      </select>
-    </div>
+
   </div>
   <div id="msg" role="status" aria-live="polite"></div>
   <div class="more">
@@ -151,6 +145,6 @@
 {{- end }}
 <script type="text/plain" id="ngbus-decks">{{ delimit $decks "," }}</script>
 <script src="/js/ngbus-buses.js?v=1"></script>
-<script src="/js/ngbus-replay.js?v=7"></script>
+<script src="/js/ngbus-replay.js?v=8"></script>
 </body>
 </html>

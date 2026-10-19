@@ -45,22 +45,21 @@
     copylink: $('copylink'), save: $('save'), open: $('open'), file: $('file'),
     mapstyle: $('mapstyle'), mapbright: $('mapbright'), msg: $('msg'),
     banner: $('banner'), drop: $('drop'), collapse: $('collapse'), notices: $('notices'),
-    busstyle: $('busstyle'),
   };
 
-  // The buses: coloured dots, or little buses (ngbus-buses.js; Claude Design,
-  // 19 Oct): the route's usual deck, a purple triple decker on a night route,
-  // facing the way it is going, its windows in its trail's colour, grey when
-  // not in service. The choice is remembered on this device.
+  // The buses are little buses (ngbus-buses.js; Claude Design, 19 Oct): the
+  // route's usual deck, a purple triple decker on a night route, facing the
+  // way it is going, its windows in its trail's colour, grey when not in
+  // service. Coloured dots only if the icon script failed to load. No choice
+  // to remember, so nothing is stored in the browser: the site sets no
+  // cookies and keeps no "preferences" (privacy page).
   var NB = window.NgbusBuses;
   var DECKS = {};                                   // route -> double | single | night
   (($('ngbus-decks') || {}).textContent || '').split(',').forEach(function (kv) {
     var i = kv.indexOf(':');
     if (i > 0) DECKS[kv.slice(0, i).trim()] = kv.slice(i + 1).trim();
   });
-  var busStyle = 'dots';
-  try { busStyle = localStorage.getItem('ngbus.replay.buses') || 'dots'; } catch (e) {}
-  if (!NB) busStyle = 'dots';
+  var busStyle = NB ? 'buses' : 'dots';
   var ICON_W = 30;                                  // a bus is this many pixels long
   var facing = {}, lastX = {}, lastT = null, iconCache = {};
 
@@ -974,15 +973,6 @@
   el.mapbright.oninput = function () {
     BRIGHT[mapMode] = +el.mapbright.value; applyBright();
   };
-  if (el.busstyle) {
-    if (!NB) el.busstyle.disabled = true;
-    el.busstyle.value = busStyle;
-    el.busstyle.onchange = function () {
-      busStyle = el.busstyle.value;
-      try { localStorage.setItem('ngbus.replay.buses', busStyle); } catch (e) {}
-      lastT = null; render(); el.busstyle.blur();
-    };
-  }
   function setCollapsed(c) {
     el.hud.classList.toggle('collapsed', c);
     el.collapse.setAttribute('aria-expanded', String(!c));
