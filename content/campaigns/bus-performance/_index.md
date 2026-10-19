@@ -1,6 +1,6 @@
 ---
 title: "How Is Your Bus Route Doing?"
-weight: 4
+weight: 7
 category: "Transport"
 themes: ["Buses", "Transport"]
 image: "/images/bus/bus-double-decker-screenprint-3x.png"
