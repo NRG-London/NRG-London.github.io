@@ -1,0 +1,106 @@
+{{- /*
+  /labs/bakerloo/ — the Bakerloo line, replayed (unlisted lab).
+
+  A standalone page, not baseof, like /labs/licensing/ and /bus/replay/: it keeps
+  what every page needs from head.html (analytics, icon, share card, noindex)
+  and carries none of the site chrome. Dark, in the replay's own palette.
+
+  The page body (content/labs/bakerloo.md) is the "About" text, editable in the CMS.
+
+  Code: static/js/tube-replay/*.js, copied from the LU Tracking repo by
+  `python lu_replay.py export --out static/labs/bakerloo/data --js static/js/tube-replay`
+  (model.js, cliptime.js and draw.js are shared with the offline replay and the
+  video clips; ui.js runs the page; web.js loads the data). Do not edit them
+  here: edit them in LU Tracking (analysis/replay_js/) and export again.
+  Styles: static/css/tube-replay.css.
+
+  Data: index.json, d/<day>.json.gz and w/<day type>.json.gz under
+  static/labs/bakerloo/data/ for the prototype. Later from R2 via a Worker, as
+  the bus replay does: change data-replay-root. Bump DATA_V when the data changes.
+*/ -}}
+{{- $dataV := "1" -}}
+<!doctype html>
+<html lang="en-GB">
+<head>
+{{ with .Site.Params.goatcounterURL }}<script data-goatcounter="{{ . }}" async src="//gc.zgo.at/count.js"></script>{{ end }}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ .Title }} — Neil Garratt</title>
+<meta name="description" content="{{ .Params.summary }}">
+{{ if .Params.noindex }}<meta name="robots" content="noindex, nofollow">{{ end }}
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+{{- $og := absURL (default "/images/og-default.png" .Params.image) }}
+<meta property="og:title" content="{{ .Title }} — {{ .Site.Params.author }}">
+<meta property="og:description" content="{{ .Params.summary }}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ .Permalink }}">
+<meta property="og:site_name" content="{{ .Site.Title }}">
+<meta property="og:locale" content="en_GB">
+<meta property="og:image" content="{{ $og }}">
+<meta name="twitter:card" content="summary_large_image">
+{{- with .Site.Params.social.twitter }}
+{{- $handle := printf "@%s" (path.Base .) }}
+<meta name="twitter:site" content="{{ $handle }}">
+{{- end }}
+<link rel="stylesheet" href="/css/tube-replay.css?v=1">
+</head>
+<body data-replay-root="/labs/bakerloo/data/" data-replay-v="{{ $dataV }}">
+<div class="page">
+  <header class="masthead">
+    <a class="back" href="/">&larr; neilgarratt.com</a>
+    <div class="eyebrow">Bakerloo line &middot; TfL&rsquo;s live train feed, logged since 2 October 2026</div>
+    <h1>{{ .Title }}</h1>
+    <p class="standfirst">Every train, minute by minute, against the timetable it was meant to run. Pick a day, press play, and watch where the gaps open up.</p>
+  </header>
+
+  <div id="stage" class="stage">
+    <canvas id="c" aria-label="Animated map of the Bakerloo line showing trains and timetable" role="img"></canvas>
+    <div id="tip" hidden></div>
+    <div id="menu" class="menu"></div>
+    <p id="loadnote" class="loadnote" aria-live="polite">Loading the replay…</p>
+  </div>
+
+  <div id="bar" class="bar" role="toolbar" aria-label="Replay controls">
+    <button id="play" type="button">▶ Play</button>
+    <span class="label">Speed</span>
+    <span class="speeds">
+      <button type="button" data-speed="1">1×</button><button type="button" data-speed="10">10×</button><button type="button" data-speed="30">30×</button><button type="button" data-speed="60">60×</button><button type="button" data-speed="120">120×</button>
+    </span>
+    <label class="sr" for="day">Day</label>
+    <select id="day"></select>
+    <label class="sr" for="ghost">Timetable shown</label>
+    <select id="ghost">
+      <option value="wtt48">Timetable: WTT 48 (Sep 2023)</option>
+      <option value="today">Timetable: today&rsquo;s (no working timetable published)</option>
+      <option value="off">Timetable: off</option>
+    </select>
+    <button id="est" type="button">Highlight estimated positions</button>
+    <button id="whole" type="button">Whole line</button>
+    <button id="featured" type="button">Featured moments</button>
+    <button id="fs" type="button">Full screen</button>
+    <span id="readout" class="readout" aria-live="polite"></span>
+  </div>
+
+  <section class="key" aria-labelledby="h-key">
+    <h2 id="h-key">How to read it</h2>
+    <ul>
+      <li><span class="sw ran"></span>Trains that ran</li>
+      <li><span class="sw ghost"></span>The timetable&rsquo;s trains</li>
+      <li><span class="sw timer"></span>Time since the last train at each platform: <b>white</b> when longer than the timetable ever allows there, <b class="amber">amber</b> when twice the timetabled interval</li>
+    </ul>
+    <p class="hint">Drag the line to pan, scroll to zoom, click a platform to count its trains, and drag the timeline at the bottom to move through the day. Space plays and pauses; the arrow keys step a minute. The address bar keeps your place, so a link takes others to the same moment.</p>
+  </section>
+
+  <section class="about" aria-labelledby="h-about">
+    <h2 id="h-about">About this replay</h2>
+    {{ .Content }}
+  </section>
+</div>
+<script src="/js/tube-replay/model.js?v={{ $dataV }}"></script>
+<script src="/js/tube-replay/cliptime.js?v={{ $dataV }}"></script>
+<script src="/js/tube-replay/draw.js?v={{ $dataV }}"></script>
+<script src="/js/tube-replay/web.js?v={{ $dataV }}"></script>
+<script src="/js/tube-replay/ui.js?v={{ $dataV }}"></script>
+</body>
+</html>
