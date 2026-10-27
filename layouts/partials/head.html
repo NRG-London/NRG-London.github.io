@@ -21,6 +21,9 @@
      Resolved in the SAME precedence the site already uses on screen, so what a
      link preview shows is what the card on /campaigns/ or /activity/ shows:
 
+       0. `share_image`      a share-only override, for when the on-screen
+                             picture does not suit a link preview (the bus
+                             hub's transparent PNG, which previews on black)
        1. `image`            campaign hubs, and anything that sets one
        2. stub-<slug>.jpg    a committed thumbnail for a library stub, which
                              beats front matter — see partials/page-to-entry.html,
@@ -37,7 +40,8 @@
      Absolute URLs throughout: Open Graph requires them, and a root-relative
      path silently yields no preview at all. */}}
 {{- $og := "" -}}
-{{- with .Params.image }}{{ $og = . }}{{ end -}}
+{{- with .Params.share_image }}{{ $og = . }}{{ end -}}
+{{- if not $og }}{{ with .Params.image }}{{ $og = . }}{{ end }}{{ end -}}
 {{- if not $og -}}
   {{- with .File -}}
     {{- $stub := printf "images/thumbs/stub-%s.jpg" .ContentBaseName -}}

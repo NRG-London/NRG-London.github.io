@@ -4,6 +4,7 @@ weight: 7
 category: "Transport"
 themes: ["Buses", "Transport"]
 image: "/images/bus/bus-double-decker-screenprint-3x.png"
+share_image: "/images/bus/bus-share.png"
 stat: "1 in 5"
 stat_label: "trips on a typical London bus route mean waiting more than ten minutes"
 summary: "Why TfL's bus performance stats don't tell the whole story, how often buses are cut short before their expected destination, and how to find out what was going on when your bus journey went kaput."

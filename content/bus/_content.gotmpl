@@ -9,6 +9,13 @@
   to a route page must agree: templates use `lower`, and ngbus-table.js has a
   slug() doing the same thing.
 
+  The share image (`image`, read by partials/head.html for og:image) is the
+  hub's red bus, flattened onto the page colour at 1200x630: the hub's own
+  PNG is transparent, and link previews composite transparency onto black.
+  `summary` repeats the description because head.html reads the meta and
+  og:description from .Params.summary, and without it every route page
+  previewed with the site's generic strapline.
+
   Each page carries only its identity in params. The weekly series is read from
   hugo.Data.bus.routes.<route> by layouts/bus/single.html — putting a whole
   history into page params would hold all 616 of them in memory at once for no
@@ -44,6 +51,8 @@
         "route" .route
         "deck" .deck
         "vehicle_model" .vehicle_model
+        "image" "/images/bus/bus-share.png"
+        "summary" (printf "Excess wait time and reliability for London bus route %s, week by week." .route)
       )
   ) -}}
 {{- end -}}
@@ -66,7 +75,8 @@
       "description" (printf "London bus route %s: introduced or changed since TfL's 2024 stop list, so not measured yet." .route)
       "build" (dict "list" "never" "render" "always")
       "sitemap" (dict "disable" true)
-      "params" (dict "route" .route "noindex" true "holding" true)
+      "params" (dict "route" .route "noindex" true "holding" true "image" "/images/bus/bus-share.png"
+        "summary" (printf "London bus route %s: introduced or changed since TfL's 2024 stop list, so not measured yet." .route))
   ) -}}
   {{- end -}}
 {{- end -}}
