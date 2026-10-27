@@ -1,0 +1,81 @@
+/* /labs/bakerloo/ — the Bakerloo line, replayed.
+   Dark, in the replay's palette (LU Tracking replay spec; house dark "social"
+   colours from the branding package): navy ground, blue trains, amber for
+   overdue. No red or green. Self-hosted DM Sans / Libre Baskerville. */
+
+@font-face { font-family: 'Libre Baskerville'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/libre-baskerville.woff2') format('woff2'); }
+@font-face { font-family: 'Libre Baskerville'; font-style: normal; font-weight: 700; font-display: swap; src: url('/fonts/libre-baskerville.woff2') format('woff2'); }
+@font-face { font-family: 'DM Sans'; font-style: normal; font-weight: 300 700; font-display: swap; src: url('/fonts/dm-sans.woff2') format('woff2'); }
+
+:root {
+  --bg: #1A2332;          /* navy ink: the replay's background */
+  --panel: #243142;
+  --rule: #3A4656;
+  --text: #F3F6F4;        /* site paper */
+  --sub: #8A9490;         /* site muted */
+  --blue: #4FA3E0;        /* trains that ran */
+  --amber: #E0A24E;       /* overdue */
+  --serif: 'Libre Baskerville', Georgia, serif;
+  --sans: 'DM Sans', system-ui, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); }
+body { font-family: var(--sans); font-size: 16px; line-height: 1.55; }
+a { color: var(--blue); }
+a:focus-visible, button:focus-visible, select:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+.page { max-width: 1600px; margin: 0 auto;
+  padding-block: 18px 60px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+.masthead { max-width: 900px; margin-bottom: 16px; }
+.back { font-size: 14px; color: var(--sub); text-decoration: none; }
+.back:hover { color: var(--text); }
+.eyebrow { margin-top: 14px; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: var(--sub); }
+h1 { font-family: var(--serif); font-weight: 700; font-size: clamp(26px, 4vw, 40px); line-height: 1.15; margin: 6px 0 8px; }
+.standfirst { margin: 0; color: #cfd6d2; font-size: 17px; }
+
+.stage { position: relative; width: 100%; aspect-ratio: 16 / 9; background: var(--bg);
+  border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
+.stage:fullscreen { border: 0; border-radius: 0; }
+#c { width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
+#tip { display: none !important; }      /* the site has no floating tooltips: see #readout */
+
+.loadnote { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); margin: 0;
+  background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 10px 16px; color: var(--sub); }
+.loadnote[hidden] { display: none; }
+
+.menu { position: absolute; inset: 0; display: none; overflow: auto; padding: clamp(16px, 4vw, 40px);
+  background: rgba(14, 21, 32, .95); }
+.menu h2 { font-family: var(--serif); font-weight: 700; margin-top: 0; }
+.menu .item { border: 1px solid var(--rule); border-radius: 8px; padding: 14px 18px; margin: 10px 0; cursor: pointer; max-width: 900px; }
+.menu .item:hover, .menu .item:focus-visible { border-color: var(--amber); }
+.menu .sub { color: var(--sub); font-size: 14px; margin-top: 4px; }
+
+.bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 0; font-size: 14px; color: var(--sub); }
+.bar button, .bar select { background: var(--panel); color: var(--text); border: 1px solid var(--rule); border-radius: 6px;
+  padding: 7px 12px; font: inherit; cursor: pointer; min-height: 36px; }
+.bar button.on { background: var(--blue); color: #0B1520; border-color: var(--blue); }
+.speeds { display: inline-flex; gap: 4px; }
+.readout { margin-left: auto; color: var(--text); min-width: 7em; text-align: right; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.key, .about { max-width: 860px; margin-top: 28px; }
+h2 { font-family: var(--serif); font-weight: 700; font-size: 21px; margin: 0 0 10px; }
+.key ul { list-style: none; padding: 0; margin: 0 0 10px; display: grid; gap: 6px; }
+.key li { display: flex; align-items: center; gap: 10px; }
+.sw { flex: none; display: inline-block; width: 26px; height: 10px; border-radius: 3px; }
+.sw.ran { background: var(--blue); }
+.sw.ghost { border: 2px dashed rgba(243, 246, 244, .55); background: transparent; }
+.sw.timer { background: transparent; border-bottom: 2px solid var(--sub); border-radius: 0; height: 8px; }
+.key .amber { color: var(--amber); }
+.hint { color: var(--sub); font-size: 15px; }
+.about p { color: #d5dbd7; }
+
+@media (max-width: 700px) {
+  .bar { font-size: 13px; }
+  .readout { margin-left: 0; text-align: left; width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { scroll-behavior: auto !important; }
+}
