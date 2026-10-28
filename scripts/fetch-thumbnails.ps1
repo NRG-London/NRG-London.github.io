@@ -56,7 +56,19 @@ $hugoToml = Get-Content (Join-Path $root 'hugo.toml') -Raw
 if ($hugoToml -match '(?m)^\s*substackRSS\s*=\s*"([^"]+)"') {
   $feedUrl = $Matches[1]
   Write-Host "Fetching feed: $feedUrl"
-  [xml]$rss = $client.DownloadString($feedUrl)
+  # Parsed with DTDs and external entities off. The feed is someone else's
+  # XML, and the [xml] cast would resolve any entity it declared, so a hostile
+  # feed could read a local file into a newsletter summary that then goes live.
+  $xmlSettings = New-Object System.Xml.XmlReaderSettings
+  $xmlSettings.DtdProcessing = [System.Xml.DtdProcessing]::Prohibit
+  $xmlSettings.XmlResolver = $null
+  $feedText = $client.DownloadString($feedUrl)
+  $xmlReader = [System.Xml.XmlReader]::Create((New-Object System.IO.StringReader($feedText)), $xmlSettings)
+  try {
+    $rss = New-Object System.Xml.XmlDocument
+    $rss.XmlResolver = $null
+    $rss.Load($xmlReader)
+  } finally { $xmlReader.Dispose() }
   foreach ($item in $rss.rss.channel.item) {
     $link = "$($item.link)".Trim()
     $slug = ($link -split '\?')[0].TrimEnd('/').Split('/')[-1]

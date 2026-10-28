@@ -33,6 +33,15 @@ title = "Neil Garratt"
 [outputs]
   home = ["HTML"]
 
+# The build fetches nothing and runs no external program, so neither is
+# allowed. Hugo's defaults permit both; with this, a template that one day
+# fetched a remote URL or shelled out would fail the build loudly instead.
+[security]
+  [security.exec]
+    allow = ['^$']
+  [security.http]
+    urls = ['^$']
+
 [menu]
   [[menu.main]]
     name = "About"

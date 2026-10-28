@@ -31,7 +31,9 @@
                DNS blackholed); the opt-in Street basemap fetches CARTO tiles
                (basemaps.cartocdn.com), attributed in-page.
   Usage: {{< yorkshire-hotspots >}}
-  NB: ?v=N is a manual cache-buster; bump it whenever the interactive changes.
+  ?v= is the file's content hash (partials/static-version.html), so it busts
+  caches by itself; the caption's years come from data/crimemaps.json, which
+  the generator's publish.py writes. Neither is edited by hand.
 */ -}}
 <style>
   html{overflow-x:hidden;overflow-x:clip}
@@ -49,12 +51,12 @@
 </style>
 <figure class="yorkshire-hotspots" id="yorkshire-hotspots">
   <div class="cs-box">
-    <img src="/images/charts/yorkshire-hotspots/yorkshire-hotspots-hero.png?v=2"
+    <img src="/images/charts/yorkshire-hotspots/yorkshire-hotspots-hero.png?v={{ partialCached "static-version.html" "images/charts/yorkshire-hotspots/yorkshire-hotspots-hero.png" "images/charts/yorkshire-hotspots/yorkshire-hotspots-hero.png" }}"
          alt="3D hex map of shoplifting across Yorkshire and the Humber — the offences pile onto city centres and retail parks, with a tower over Leeds."
          loading="lazy">
   </div>
   <div class="cs-bar">
-    <span>Yorkshire and the Humber crime hotspots &mdash; 2021&ndash;2025, hexes refining from 500&nbsp;m to 70&nbsp;m as you zoom &mdash; drag to rotate and tilt; switch crime type, toggle the Districts/Street basemap, or jump straight to Leeds, Bradford, Sheffield, York or Hull. Full screen and download are in the top right of the map.</span>
+    <span>Yorkshire and the Humber crime hotspots &mdash; {{ site.Data.crimemaps.yorkshire.years }}, hexes refining from 500&nbsp;m to 70&nbsp;m as you zoom &mdash; drag to rotate and tilt; switch crime type, toggle the Districts/Street basemap, or jump straight to Leeds, Bradford, Sheffield, York or Hull. Full screen and download are in the top right of the map.</span>
   </div>
 </figure>
 <script>
@@ -65,7 +67,7 @@
   if(ok){
     var f=document.createElement('iframe');
     f.loading='lazy';                       // ~8.8 MB embed — defer until scrolled to
-    f.src='/interactive/yorkshire-hotspots/?v=4';
+    f.src='/interactive/yorkshire-hotspots/?v={{ partialCached "static-version.html" "interactive/yorkshire-hotspots/index.html" "interactive/yorkshire-hotspots/index.html" }}';
     f.title='Interactive 3D hex map of Yorkshire crime hotspots';
     f.setAttribute('scrolling','no'); f.setAttribute('allow','fullscreen'); f.setAttribute('allowfullscreen','');
     box.insertBefore(f, box.firstChild);

@@ -28,7 +28,9 @@
                under deck.gl's canvas), so they fetch a style JSON, vector tiles, glyph
                PBFs and a sprite from basemaps.cartocdn.com. Attributed in-page.
   Usage: {{< crime-hotspots >}}
-  NB: ?v=N is a manual cache-buster; bump it whenever the interactive changes.
+  ?v= is the file's content hash (partials/static-version.html), so it busts
+  caches by itself; the caption's years come from data/crimemaps.json, which
+  the generator's publish.py writes. Neither is edited by hand.
 */ -}}
 <style>
   html{overflow-x:hidden;overflow-x:clip}
@@ -46,12 +48,12 @@
 </style>
 <figure class="crime-hotspots" id="crime-hotspots">
   <div class="cs-box">
-    <img src="/images/charts/crime-concentration/crime-hotspots-hero.png?v=1"
+    <img src="/images/charts/crime-concentration/crime-hotspots-hero.png?v={{ partialCached "static-version.html" "images/charts/crime-concentration/crime-hotspots-hero.png" "images/charts/crime-concentration/crime-hotspots-hero.png" }}"
          alt="3D hex map of London theft-from-the-person hotspots — crime concentrates on a handful of streets even inside the hottest wards."
          loading="lazy">
   </div>
   <div class="cs-bar">
-    <span>London crime hotspots &mdash; 70&nbsp;m hexes, 2021&ndash;2025 &mdash; drag to rotate and tilt; switch crime type, and toggle the Boroughs/Street basemap, with the buttons. Full screen and download are in the top right of the map.</span>
+    <span>London crime hotspots &mdash; 70&nbsp;m hexes, {{ site.Data.crimemaps.london.years }} &mdash; drag to rotate and tilt; switch crime type, and toggle the Boroughs/Street basemap, with the buttons. Full screen and download are in the top right of the map.</span>
   </div>
 </figure>
 <script>
@@ -62,7 +64,7 @@
   if(ok){
     var f=document.createElement('iframe');
     f.loading='lazy';                       // ~10 MB embed below the fold — defer until scrolled to
-    f.src='/interactive/crime-hotspots/?v=5';
+    f.src='/interactive/crime-hotspots/?v={{ partialCached "static-version.html" "interactive/crime-hotspots/index.html" "interactive/crime-hotspots/index.html" }}';
     f.title='Interactive 3D hex map of London crime hotspots';
     f.setAttribute('scrolling','no'); f.setAttribute('allow','fullscreen'); f.setAttribute('allowfullscreen','');
     box.insertBefore(f, box.firstChild);

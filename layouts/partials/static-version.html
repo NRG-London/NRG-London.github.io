@@ -1,0 +1,9 @@
+{{- /*
+  Cache-buster for a file under static/: the first 10 hex digits of its SHA-256.
+  It changes exactly when the file's bytes do, so a republished interactive busts
+  readers' caches without anyone remembering to bump ?v=N, and an unchanged one
+  never does. The iframe DOCUMENT is what browsers cache, so this is what matters.
+
+  Usage: ?v={{ partialCached "static-version.html" "interactive/crime-skyline/index.html" "interactive/crime-skyline/index.html" }}
+*/ -}}
+{{- return substr (sha256 (readFile (path.Join "static" .))) 0 10 -}}

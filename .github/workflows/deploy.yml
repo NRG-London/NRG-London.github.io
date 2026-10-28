@@ -18,20 +18,27 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      # Each action is pinned to a commit SHA (its release is the comment), so
+      # a moved or hijacked tag cannot change what runs here with the Pages
+      # deploy token. Dependabot (.github/dependabot.yml) opens a PR when a
+      # newer release exists. Hugo is pinned too, so every build is the same
+      # build; bump it on purpose, not by accident.
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false   # nothing after checkout needs the token
 
       - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v3
+        uses: peaceiris/actions-hugo@2752ce1d29631191ea3f27c23495fa06139a5b78 # v3.2.1
         with:
-          hugo-version: 'latest'
+          hugo-version: '0.168.0'
           extended: true
 
       - name: Build
         run: hugo --minify
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v5
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: ./public
 
@@ -44,7 +51,7 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
 
   # A phone notification (ntfy) for every publish, from the PC or from NRG-1,
   # with the commit message; a failed build or deploy is flagged instead.

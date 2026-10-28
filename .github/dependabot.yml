@@ -1,0 +1,15 @@
+# Keeps the SHA-pinned actions in .github/workflows/deploy.yml current: one
+# grouped pull request a week when any of them has a newer release. Merging it
+# on GitHub pushes to main, which deploys as usual. There is nothing else here
+# for Dependabot to watch: the site has no npm or Go dependencies, and the two
+# vendored libraries (static/js/deck.min.js, static/js/maplibre-gl.js) are
+# updated by hand.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      actions:
+        patterns: ["*"]
