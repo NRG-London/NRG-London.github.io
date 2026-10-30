@@ -1,0 +1,18 @@
+{
+ "format": "ng-bus-specials",
+ "version": 1,
+ "about": "Special-occasion buses for the bus replay. 'occasions' says which sprites a day gets, by deck: dd double, sd single, td night (the triple decker). The replay exporter (E:\\Road Data\\platform\\export_replay.py, on NRG-1) stamps them into that day's replay file, so the day keeps its buses for good, saved files included; the viewer (static/js/ngbus-replay.js) draws them, and the ordinary buses whenever anything is missing. 'sprites' gives each sprite's file in this folder, its viewBox, and its anchor: the point that sits on the bus's position (the bottom of the wheels; for a sprite without wheels, the bottom of the drawing). Sprites from Claude Design's 'London bus graphic styles', tried on the map in the sprite workbench. Keep every sprite a stamped day has used: old replay files and saved copies still name them.",
+ "sprites": {
+  "halloween-ghost-dd": { "file": "halloween-ghost-dd.svg", "vb": [0, -1, 64, 41], "anchor": [32, 37], "label": "Ghost in a bedsheet" },
+  "halloween-ghost-sd": { "file": "halloween-ghost-sd.svg", "vb": [0, -1, 64, 31], "anchor": [32, 27], "label": "Ghost in a bedsheet" },
+  "halloween-witch": { "file": "halloween-witch.svg", "vb": [-6, -13, 71, 53], "anchor": [30.25, 34.2], "label": "Witch on a broomstick" }
+ },
+ "occasions": [
+  {
+   "id": "halloween",
+   "name": "Hallowe\u2019en",
+   "dates": ["2026-10-31"],
+   "sprites": { "dd": "halloween-ghost-dd", "sd": "halloween-ghost-sd", "td": "halloween-witch" }
+  }
+ ]
+}

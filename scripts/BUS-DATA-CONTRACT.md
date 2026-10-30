@@ -793,6 +793,17 @@ and only gives browser access (CORS) to neilgarratt.com and the local preview (p
 | `index.json` | every route-day in one file; tools only, the page falls back to it if the two above are missing | 2.3 MB |
 | `d/<ROUTE>/<YYYY-MM-DD>.json.gz` | one service day: `ng-bus-replay` v1, gzipped JSON (format in `export_replay.py`'s docstring; decoded by `static/js/ngbus-replay-data.js`) | ~60 KB, up to ~200 KB |
 
+**Special buses** (added 30 Oct 2026, for Hallowe'en). A day file may carry
+`specials: {occasion, name, sprites: {dd|sd|td: name}}`: the sprites the viewer draws
+that day for double-deck, single-deck and night routes, instead of the ordinary buses.
+The calendar and the sprites are the site's own, in `static/bus/sprites/specials.json`
+(each sprite's file, viewBox and anchor) beside the SVG files. The exporter reads it from
+the site checkout on NRG-1, refreshed from the live site before each run, and stamps the
+day, so a day keeps its buses for good, saved copies included. Any problem (no field, a
+sprite the catalogue doesn't list, a file that won't load) and the viewer draws the
+ordinary buses; buses out of service stay ordinary grey. **Keep every sprite a stamped
+day has named**: old files still ask for it.
+
 **The service day** for date D runs 03:00 D to 05:00 D+1, London, so night routes sit
 whole in the night they belong to. The bus pages' daily window (05:00–23:59) falls
 inside it. The days either side overlap by two hours, on purpose.

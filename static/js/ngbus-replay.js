@@ -86,8 +86,90 @@
 
   function busIcon(kind, d) {
     var west = facing[d.vi] < 0;
+    var sp = specialIcon(kind, d);
+    if (sp) return west ? sp.w : sp.e;
     var key = kind + (west ? 'w' : 'e') + (d.dead ? 'x' : d.vi);
     return iconCache[key] || (iconCache[key] = NB.icon(kind, { flip: west, dead: d.dead, windows: colors[d.vi] }));
+  }
+
+  // Special-occasion buses: Hallowe'en's ghosts, and a witch on the night
+  // routes (Neil, 30 Oct). The day's own file says which sprites it gets
+  // (payload.specials: {occasion, name, sprites: {dd|sd|td: name}}, stamped by
+  // the exporter from static/bus/sprites/specials.json), so a day keeps its
+  // buses for good, saved files included. The sprites are drawn as the
+  // catalogue there describes them. Anything missing, unreadable or slow
+  // to arrive, and the day simply has the ordinary buses. A bus out of service
+  // stays the ordinary grey one: grey means "not in service" on every day.
+  var SPRITES = '/bus/sprites/';
+  var DECK_CODE = { double: 'dd', single: 'sd', triple: 'td' };
+  var specialsCat = null;                  // the catalogue, fetched once
+  var special = null;                      // {name, key, icons: {dd|sd|td: {e, w, size, above}}}
+
+  function specialIcon(kind, d) {
+    return special && !d.dead && special.icons[DECK_CODE[kind]] || null;
+  }
+
+  // One sprite as a pair of icons, as drawn (east) and mirrored (west), each
+  // decoded once before use so a sprite that cannot be drawn is never chosen.
+  function specialSprite(name, s, text) {
+    var doc = new DOMParser().parseFromString(text, 'image/svg+xml');
+    var root = doc.documentElement;
+    if (!root || root.nodeName !== 'svg' || doc.getElementsByTagName('parsererror').length ||
+        doc.querySelector('script, foreignObject')) throw new Error('sprite ' + name + ' is not a plain SVG');
+    var vb = s.vb, an = s.anchor, k = 2;          // drawn at twice size, for sharp edges
+    if (!vb || vb.length !== 4 || !an || an.length !== 2 || !(vb[2] > 0) || !(vb[3] > 0)) throw new Error('sprite ' + name + ' has no geometry');
+    var inner = root.innerHTML;
+    function url(flip) {
+      var g = flip ? '<g transform="translate(' + (2 * vb[0] + vb[2]) + ' 0) scale(-1 1)">' + inner + '</g>' : inner;
+      return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + vb.join(' ') + '" width="' + vb[2] * k +
+        '" height="' + vb[3] * k + '">' + g + '</svg>');
+    }
+    function icon(flip) {
+      var ax = (an[0] - vb[0]) * k;
+      return { id: 'special-' + name + (flip ? '-w' : '-e'), url: url(flip), width: vb[2] * k, height: vb[3] * k,
+               anchorX: flip ? vb[2] * k - ax : ax, anchorY: (an[1] - vb[1]) * k };
+    }
+    var pair = { e: icon(false), w: icon(true), size: vb[2] / 64, above: an[1] - vb[1] };
+    return Promise.all([pair.e, pair.w].map(function (ic) {
+      var img = new Image();
+      img.src = ic.url;
+      return img.decode();
+    })).then(function () { return pair; });
+  }
+
+  function loadSpecials(payload) {
+    special = null;
+    var want = payload && payload.specials;
+    if (!want || typeof want !== 'object' || !want.sprites || typeof want.sprites !== 'object') return;
+    specialsCat = specialsCat || fetch(SPRITES + 'specials.json', { cache: 'no-cache' }).then(function (r) {
+      if (!r.ok) throw new Error('specials.json: HTTP ' + r.status);
+      return r.json();
+    });
+    specialsCat.then(function (cat) {
+      if (!cat || cat.format !== 'ng-bus-specials' || !cat.sprites) throw new Error('specials.json: not a catalogue');
+      var decks = Object.keys(want.sprites).filter(function (dk) { return dk === 'dd' || dk === 'sd' || dk === 'td'; });
+      return Promise.all(decks.map(function (dk) {
+        var name = String(want.sprites[dk]), s = cat.sprites[name];
+        if (!s || !/^[a-z0-9-]+\.svg$/.test(s.file || '')) return null;   // this deck: ordinary buses
+        return fetch(SPRITES + s.file, { cache: 'no-cache' }).then(function (r) {
+          if (!r.ok) throw new Error(s.file + ': HTTP ' + r.status);
+          return r.text();
+        }).then(function (text) { return specialSprite(name, s, text); })
+          .then(function (pair) { pair.dk = dk; return pair; })
+          .catch(function () { return null; });
+      }));
+    }).then(function (pairs) {
+      if (!cur || cur.payload !== payload) return;            // moved on meanwhile
+      var icons = {}, n = 0;
+      pairs.forEach(function (p) { if (p) { icons[p.dk] = p; n++; } });
+      if (!n) return;
+      special = { name: String(want.name || ''), key: String(want.occasion || '') + payload.date, icons: icons };
+      render();
+    }).catch(function () {
+      specialsCat = null;                                      // try again on the next day opened
+      special = null;
+    });
   }
 
   // TfL notices for the route (ngbus-notices.js; spec: E:\Road Data\docs\
@@ -208,7 +290,11 @@
     getTooltip: function (info) {
       var o = info.object;
       if (!o) return null;
-      if (o.reg) return { text: R.plate(o.reg) + '\n' + (o.dead ? 'not in service: ' : 'to ') + cleanName(o.blind) };
+      if (o.reg) {
+        var dressed = cur && special && specialIcon(busKind(cur.payload.route), o);
+        return { text: R.plate(o.reg) + '\n' + (o.dead ? 'not in service: ' : 'to ') + cleanName(o.blind) +
+          (dressed && special.name ? '\n' + special.name + ' bus' : '') };
+      }
       if (o.closed) return { text: cleanName(o.name) + ' \u2014 ' + (NWORDS.replay_closed || 'closed (TfL)') };
       if (o.name) return { text: cleanName(o.name) };
       return null;
@@ -364,6 +450,7 @@
     counts = R.inServiceByMinute(E, span);
     colors = E.vehicles.map(function (v, i) { return hsl2rgb((i * 137.5) % 360, 0.75, 0.6); });
     facing = {}; lastX = {}; lastT = null; iconCache = {};
+    loadSpecials(payload);
     trips = E.segs.map(function (s) {
       var path = new Array(s.lon.length);
       for (var i = 0; i < path.length; i++) path[i] = [s.lon[i], s.lat[i]];
@@ -817,6 +904,8 @@
     return null;
   }
 
+  function specialKey() { return special ? special.key : ''; }
+
   function render() {
     if (!cur) return;
     var p = cur.payload, E = cur.E;
@@ -836,8 +925,9 @@
         id: 'bus-icons', data: buses, pickable: true,
         getPosition: function (d) { return d.position; },
         getIcon: function (d) { return busIcon(kind, d); },
-        sizeUnits: 'pixels', sizeBasis: 'width', getSize: ICON_W,
-        updateTriggers: { getPosition: simT, getIcon: [simT, kind] },
+        sizeUnits: 'pixels', sizeBasis: 'width',
+        getSize: function (d) { var sp = specialIcon(kind, d); return sp ? ICON_W * sp.size : ICON_W; },
+        updateTriggers: { getPosition: simT, getIcon: [simT, kind, specialKey()], getSize: [simT, kind, specialKey()] },
       }) : new deck.ScatterplotLayer({
         id: 'buses', data: buses, pickable: true,
         getPosition: function (d) { return d.position; },
@@ -851,9 +941,12 @@
         getPosition: function (d) { return d.position; },
         getText: function (d) { return R.plate(d.reg); },
         getColor: [255, 255, 255, 200], getSize: 11,
-        getPixelOffset: icons ? [0, -Math.round(ICON_W * NB.aspect(kind) + 5)] : [0, -16],
+        getPixelOffset: !icons ? [0, -16] : function (d) {
+          var sp = specialIcon(kind, d);
+          return [0, -Math.round(sp ? ICON_W * sp.above / 64 + 5 : ICON_W * NB.aspect(kind) + 5)];
+        },
         fontFamily: 'DM Sans, system-ui, sans-serif',
-        updateTriggers: { getPosition: simT, getPixelOffset: [icons, kind] },
+        updateTriggers: { getPosition: simT, getPixelOffset: [simT, icons, kind, specialKey()] },
       }),
     ]) });
     var now = p.t0 + simT;
@@ -1047,6 +1140,7 @@
       banner: el.banner.hidden ? null : el.banner.textContent,
       badge: el.badge.hidden ? null : el.badge.textContent,
       marked: markLayers.length > 0, back: el.back.getAttribute('href'),
+      special: special ? { name: special.name, decks: Object.keys(special.icons) } : null,
       msg: el.msg.textContent, days: el.days.children.length,
       url: location.search, cached: Array.from(dayCache.keys()),
       fullIndex: !!fullIndex,
