@@ -15,10 +15,12 @@
     return ans;
   }
 
-  function trainAt(pts, t) {
+  // edge: how long before its first point and after its last a train is drawn
+  // (EDGE unless the train says otherwise: today's ghosts carry e, 20 s)
+  function trainAt(pts, t, edge) {
     if (!pts.length) return null;
-    const first = pts[0], last = pts[pts.length - 1];
-    if (t < first[1] - EDGE || t > last[2] + EDGE) return null;
+    const first = pts[0], last = pts[pts.length - 1], E = edge == null ? EDGE : edge;
+    if (t < first[1] - E || t > last[2] + E) return null;
     if (t < first[1]) return { x: first[0], dir: first[3], est: !!first[4], standing: true };
     if (t > last[2]) return { x: last[0], dir: last[3], est: !!last[4], standing: true };
     const i = lastIndexAtOrBefore(pts, t, p => p[1]);
@@ -35,7 +37,7 @@
   function trainsAt(trains, t) {
     const out = [];
     for (const tr of trains) {
-      const p = trainAt(tr.pts, t);
+      const p = trainAt(tr.pts, t, tr.e);
       if (p) { if (tr.v !== undefined) p.v = tr.v; out.push(p); }
     }
     return out;
@@ -54,7 +56,8 @@
 
   function ghostsAt(day, ghost, wtt, t) {
     if (ghost === 'wtt48') return wtt ? trainsAt(wtt.trains, t) : [];
-    if (ghost === 'today') return departuresAt(day.today, t);
+    // today's timetable as whole trains (day files from payload 2); one row per departure before
+    if (ghost === 'today') return day.today_trains ? trainsAt(day.today_trains, t) : departuresAt(day.today || [], t);
     return [];
   }
 
