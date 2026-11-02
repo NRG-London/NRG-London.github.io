@@ -5,9 +5,10 @@
  * SVGs and regenerate rather than editing this by hand.
  *
  * icon(kind, {flip, body, windows}) gives deck.gl's IconLayer an icon object
- * for auto-packing: an SVG data URL with the body and windows recoloured (not
- * in service: a grey body; in service: windows in the bus's trail colour) and
- * mirrored for a bus heading west, so it always drives forwards. All three
+ * for auto-packing: an SVG data URL with the body recoloured (not in service:
+ * grey), windows plain unless given a colour (the replay gave each bus its
+ * trail's colour until 2 Nov 2026, and now gives none), and mirrored for a
+ * bus heading west, so it always drives forwards. All three
  * share their width, wheels and ground line, so the anchor is where the
  * wheels meet the road and swapping one for another never moves the bus.
  */

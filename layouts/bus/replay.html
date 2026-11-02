@@ -39,11 +39,12 @@
 {{- $handle := printf "@%s" (path.Base .) }}
 <meta name="twitter:site" content="{{ $handle }}">
 {{- end }}
-<link rel="stylesheet" href="/css/ngbus-replay.css?v=5">
+<link rel="stylesheet" href="/css/ngbus-replay.css?v=6">
 </head>
 <body data-replay-root="{{ .Site.Params.busReplayData }}">
 <div id="basemap"></div>
 <div id="map"></div>
+<div id="card" role="status" aria-live="polite" hidden></div>
 <div id="banner" hidden></div>
 <div id="drop" hidden>Drop a saved bus replay file to open it</div>
 
@@ -106,7 +107,7 @@
   <div id="msg" role="status" aria-live="polite"></div>
   <div class="more">
     <div id="legend">Trail = last 15 min &middot; grey = not in service (depot blind) &middot;
-      hover a bus for its registration and destination &middot; space = play/pause, &larr;&rarr; = a minute (shift: ten).
+      tap or hover over a bus for its registration and destination, or a stop for its name and letter &middot; space = play/pause, &larr;&rarr; = a minute (shift: ten).
       The last 35 days are kept; use &ldquo;Save this day&rdquo; to keep one for longer.</div>
     <div id="attrib">
       <details>
@@ -145,6 +146,6 @@
 {{- end }}
 <script type="text/plain" id="ngbus-decks">{{ delimit $decks "," }}</script>
 <script src="/js/ngbus-buses.js?v=1"></script>
-<script src="/js/ngbus-replay.js?v=10"></script>
+<script src="/js/ngbus-replay.js?v=11"></script>
 </body>
 </html>

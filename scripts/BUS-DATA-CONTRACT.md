@@ -804,6 +804,17 @@ sprite the catalogue doesn't list, a file that won't load) and the viewer draws 
 ordinary buses; buses out of service stay ordinary grey. **Keep every sprite a stamped
 day has named**: old files still ask for it.
 
+**Stops** (letters added 2 Nov 2026). Each entry in a day file's `stops` is
+`{name, lon, lat, dir, id?, letter?}`: `id` is TfL's NaPTAN code for the stop
+(`490003775J`) and `letter` its flag letter (`J`, `A12`), present only where TfL gives a
+real one (its arrows such as `->N` are left out). Both come from the route register
+version the day was drawn with; the 35 days stored on 2 Nov were given theirs from the
+version each records (`export_replay.py --patch-stops`), and every day since is written
+with them. The viewer draws the stops red, with the letter in a disc closer in than
+zoom 15, and a tap or click on a stop shows "name / letter". A file without them (a
+day the register never had the route for, or a copy saved before 2 Nov) shows the
+name alone. The buses' windows are plain: the colour is on the trail only.
+
 **The service day** for date D runs 03:00 D to 05:00 D+1, London, so night routes sit
 whole in the night they belong to. The bus pages' daily window (05:00–23:59) falls
 inside it. The days either side overlap by two hours, on purpose.
@@ -843,8 +854,9 @@ a 404 means no notices. Read by `static/js/ngbus-notices.js`, whose "in force" i
   without a rebuild: "In force now", "Also in force during the week ending …" (the page's figures), and "Coming up"
   (in force, but every TfL date starts later). Hidden when empty or the fetch fails. The chart's day view marks days
   with a NOTICE in force (not closed stops: a month-long closure would mark every day).
-- **Replay:** a panel for the service day, closed stops drawn hollow (matched by position: day files carry no stop
-  codes), date-strip marks for days with a notice, and a footnote before 15 Oct 2026, when the archive starts.
+- **Replay:** a panel for the service day, closed stops drawn hollow over the red ones (placed by the closure's own
+  position; its letter, for the card, found by its `atco` among the day file's stop `id`s), date-strip marks for days
+  with a notice, and a footnote before 15 Oct 2026, when the archive starts.
 - **Wording:** `data/buswords.yaml`, `notices`. TfL's text is shown exactly as sent, escaped and nothing more.
 - **Never "buses were diverted"** on the strength of a notice: it says what TfL planned or announced.
 

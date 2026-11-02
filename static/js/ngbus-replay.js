@@ -45,12 +45,14 @@
     copylink: $('copylink'), save: $('save'), open: $('open'), file: $('file'),
     mapstyle: $('mapstyle'), mapbright: $('mapbright'), msg: $('msg'),
     banner: $('banner'), drop: $('drop'), collapse: $('collapse'), notices: $('notices'),
+    card: $('card'),
   };
 
   // The buses are little buses (ngbus-buses.js; Claude Design, 19 Oct): the
   // route's usual deck, a purple triple decker on a night route, facing the
-  // way it is going, its windows in its trail's colour, grey when not in
-  // service. Coloured dots only if the icon script failed to load. No choice
+  // way it is going, grey when not in service. Ordinary windows: the trail
+  // carries the bus's colour, and the ghosts showed the windows need not
+  // (Neil, 2 Nov). Coloured dots only if the icon script failed to load. No choice
   // to remember, so nothing is stored in the browser: the site sets no
   // cookies and keeps no "preferences" (privacy page).
   var NB = window.NgbusBuses;
@@ -88,8 +90,8 @@
     var west = facing[d.vi] < 0;
     var sp = specialIcon(kind, d);
     if (sp) return west ? sp.w : sp.e;
-    var key = kind + (west ? 'w' : 'e') + (d.dead ? 'x' : d.vi);
-    return iconCache[key] || (iconCache[key] = NB.icon(kind, { flip: west, dead: d.dead, windows: colors[d.vi] }));
+    var key = kind + (west ? 'w' : 'e') + (d.dead ? 'x' : '');
+    return iconCache[key] || (iconCache[key] = NB.icon(kind, { flip: west, dead: d.dead }));
   }
 
   // Special-occasion buses: Hallowe'en's ghosts, and a witch on the night
@@ -179,7 +181,7 @@
   var NN = window.NgbusNotices;
   var NWORDS = {};
   try { NWORDS = JSON.parse(($('ngbus-notices-words') || {}).textContent || '{}'); } catch (e) {}
-  var closedLayers = [];
+  var closedStops = [];      // drawn over the day's own stops, by stopLayers
   var noticeMarks = { route: null, days: {} };
 
   // Routes that have a performance page, so "back" can go there (others
@@ -223,6 +225,101 @@
       .replace(/\s*\/\s*/g, ' / ')
       .replace(/^[\s/]+/, '')
       .replace(/[\s/]+$/, '');
+  }
+
+  /* ---- stops, and the card that says what something is --------------------- */
+
+  // Stops are red, the buses' red, and closer in than STOP_LETTER_ZOOM each
+  // grows into a disc carrying its flag letter, as on the pole (Neil, 2 Nov).
+  // Tap a stop or a bus and a card says what it is: "Wallington Town Centre
+  // / J", or a bus's registration and destination. On a phone there is no
+  // hover, so the card stays put, beside the stop or going with the bus,
+  // until a tap somewhere else; on a computer a click does the same, and
+  // hovering shows the same words as a tooltip. Days exported before stops
+  // carried letters (and files saved from them) give the name alone.
+  var STOP_LETTER_ZOOM = 15;
+  var STOP_RED = [214, 52, 44, 255];       // #D6342C, the buses' red
+  var STOP_EDGE = [243, 246, 244, 255];    // the buses' window white
+  var lettered = [];                       // the day's stops that have a letter
+  var pinned = null;                       // {stop: object} or {reg: registration}
+  var lastBuses = [];                      // the buses as last drawn, to find a pinned one
+  var touched = false;                     // the last pointer was a finger: no hover tooltips
+  var TIP_STYLE = {                        // the hover tooltip, dressed as the card (#card)
+    background: '#1A2332', color: '#F3F6F4', fontFamily: "'DM Sans', system-ui, sans-serif",
+    fontSize: '13px', lineHeight: '1.35', fontWeight: '600', padding: '7px 10px',
+    borderRadius: '6px', boxShadow: '0 2px 10px rgba(0,0,0,.45)',
+  };
+
+  function stopLetter(s) {
+    return s && typeof s.letter === 'string' && /^[A-Z0-9]{1,3}$/.test(s.letter) ? s.letter : '';
+  }
+  function stopName(s) {
+    var l = stopLetter(s);
+    return cleanName(s.name) + (l ? ' / ' + l : '');
+  }
+  function busText(o) {
+    var dressed = cur && special && specialIcon(busKind(cur.payload.route), o);
+    return R.plate(o.reg) + '\n' + (o.dead ? 'not in service: ' : 'to ') + cleanName(o.blind) +
+      (dressed && special.name ? '\n' + special.name + ' bus' : '');
+  }
+  function cardText(o) {
+    if (o.reg) return busText(o);
+    if (o.closed) return stopName(o) + ' \u2014 ' + (NWORDS.replay_closed || 'closed (TfL)');
+    return o.name ? stopName(o) : '';
+  }
+  function isPinned(o) {
+    return !!pinned && (o.reg ? pinned.reg === o.reg : pinned.stop === o);
+  }
+
+  var stopsNear = null;                    // how the stops were last drawn
+  function stopLayers(p) {
+    var near = stopsNear = currentCam().zoom >= STOP_LETTER_ZOOM;
+    var pos = function (d) { return [d.lon, d.lat]; };
+    var out = [new deck.ScatterplotLayer({
+      id: 'stops-' + p.route + p.date, data: p.stops || [], getPosition: pos, pickable: true,
+      stroked: true, filled: true, radiusUnits: 'pixels', lineWidthUnits: 'pixels',
+      getRadius: near ? 9 : 4.5, getLineWidth: near ? 1.5 : 1,
+      getFillColor: STOP_RED, getLineColor: STOP_EDGE,
+      updateTriggers: { getRadius: near, getLineWidth: near },
+    })];
+    if (near && lettered.length) out.push(new deck.TextLayer({
+      id: 'stop-letters-' + p.route + p.date, data: lettered, getPosition: pos,
+      getText: stopLetter, getSize: function (d) { return d.letter.length > 1 ? 9 : 11; },
+      getColor: STOP_EDGE, fontFamily: 'DM Sans, system-ui, sans-serif', fontWeight: 700,
+      getTextAnchor: 'middle', getAlignmentBaseline: 'center',
+    }));
+    // TfL's closed stops, hollow, a size up so each covers its red stop
+    if (closedStops.length) out.push(new deck.ScatterplotLayer({
+      id: 'closed-' + p.route + p.date, data: closedStops, getPosition: pos, pickable: true,
+      stroked: true, filled: true, radiusUnits: 'pixels', lineWidthUnits: 'pixels',
+      getRadius: near ? 10 : 5.5, getLineWidth: 2,
+      getFillColor: [17, 17, 17, 255], getLineColor: [150, 150, 150, 255],
+      updateTriggers: { getRadius: near },
+    }));
+    return out;
+  }
+
+  // The card sits just above what it names, moved on every frame drawn.
+  function placeCard() {
+    var card = el.card;
+    if (!card) return;
+    var o = pinned && pinned.stop, lift = 14;
+    if (pinned && pinned.reg) {
+      for (var i = 0; i < lastBuses.length && !o; i++) if (lastBuses[i].reg === pinned.reg) o = lastBuses[i];
+      if (!o) pinned = null;                 // its day's journeys are over
+      else {
+        var kind = busKind(cur.payload.route), sp = specialIcon(kind, o);
+        lift = busStyle !== 'buses' ? 18 :
+          Math.round((sp ? ICON_W * sp.above / 64 : ICON_W * NB.aspect(kind)) + 22);
+      }
+    }
+    var vp = o && currentCam();
+    if (!o || !vp.project) { card.hidden = true; return; }
+    var xy = vp.project(o.position || [o.lon, o.lat]);
+    card.textContent = cardText(o);
+    card.style.left = Math.round(xy[0]) + 'px';
+    card.style.top = Math.round(xy[1] - lift) + 'px';
+    card.hidden = false;
   }
 
   /* ---- time, in London ---------------------------------------------------- */
@@ -287,19 +384,29 @@
        deck's keyboard controller pans on the arrow keys, which here step
        the replay a minute at a time. */
     controller: { dragRotate: false, touchRotate: false, keyboard: false },
+    pickingRadius: 6,                      // a stop is small for a fingertip
     getTooltip: function (info) {
       var o = info.object;
-      if (!o) return null;
-      if (o.reg) {
-        var dressed = cur && special && specialIcon(busKind(cur.payload.route), o);
-        return { text: R.plate(o.reg) + '\n' + (o.dead ? 'not in service: ' : 'to ') + cleanName(o.blind) +
-          (dressed && special.name ? '\n' + special.name + ' bus' : '') };
-      }
-      if (o.closed) return { text: cleanName(o.name) + ' \u2014 ' + (NWORDS.replay_closed || 'closed (TfL)') };
-      if (o.name) return { text: cleanName(o.name) };
-      return null;
+      if (!o || touched || isPinned(o)) return null;   // a tap gets the card instead
+      var text = cardText(o);
+      return text ? { text: text, style: TIP_STYLE } : null;
     },
-    onAfterRender: syncBasemap,
+    onClick: function (info) {
+      var o = info.object;
+      pinned = !o ? null : o.reg ? { reg: o.reg } : o.name ? { stop: o } : null;
+      placeCard();
+    },
+    onAfterRender: function () {
+      syncBasemap();
+      placeCard();
+      // Zoomed across STOP_LETTER_ZOOM while paused: draw the stops again
+      // (playing, the next frame does).
+      if (cur && !playing && stopsNear !== null &&
+          (currentCam().zoom >= STOP_LETTER_ZOOM) !== stopsNear) requestAnimationFrame(render);
+    },
+  });
+  ['pointerdown', 'pointermove'].forEach(function (t) {
+    $('map').addEventListener(t, function (e) { touched = e.pointerType === 'touch'; }, true);
   });
 
   var base = null;
@@ -462,13 +569,9 @@
         getPath: function (d) { return d.path; }, getColor: [255, 255, 255, 60],
         getWidth: 12, widthMinPixels: 2, widthMaxPixels: 6,
       }),
-      new deck.ScatterplotLayer({
-        id: 'stops-' + payload.route + payload.date, data: payload.stops || [],
-        getPosition: function (d) { return [d.lon, d.lat]; },
-        getFillColor: [255, 255, 255, 120],
-        getRadius: 15, radiusMinPixels: 2, radiusMaxPixels: 5, pickable: true,
-      }),
     ];
+    lettered = (payload.stops || []).filter(stopLetter);   // the stops: stopLayers, per frame
+    pinned = null; lastBuses = [];
 
     el.badge.hidden = true;
     var marked = markStop(payload, opts.at, opts.gap, opts.t);
@@ -502,7 +605,7 @@
       }
     }
     drawTimelineBase();
-    closedLayers = [];
+    closedStops = [];
     if (el.notices) { el.notices.hidden = true; el.notices.innerHTML = ''; }
     el.hud.classList.remove('has-notices');
     renderDays();
@@ -539,14 +642,11 @@
       var w = NN.serviceDay(day);
       var live = items.filter(function (it) { return NN.inEffect(it, w[0], w[1]); });
       var closed = live.filter(function (it) { return it.atco != null && it.lon != null; });
-      closedLayers = closed.length ? [new deck.ScatterplotLayer({
-        id: 'closed-' + route + day,
-        data: closed.map(function (c) { return { name: c.name, lon: c.lon, lat: c.lat, closed: true }; }),
-        getPosition: function (d) { return [d.lon, d.lat]; },
-        stroked: true, filled: true, getFillColor: [17, 17, 17, 255],
-        getLineColor: [150, 150, 150, 255], lineWidthUnits: 'pixels', getLineWidth: 2,
-        getRadius: 18, radiusMinPixels: 4, radiusMaxPixels: 8, pickable: true,
-      })] : [];
+      var byId = {};                                         // a closed stop's letter
+      (payload.stops || []).forEach(function (s) { if (s.id) byId[s.id] = s; });
+      closedStops = closed.map(function (c) {
+        return { name: c.name, letter: stopLetter(byId[c.atco]), lon: c.lon, lat: c.lat, closed: true };
+      });
       var notes = live.filter(function (it) { return it.atco == null; });
       var parts = [];
       if (notes.length || closed.length) {
@@ -912,7 +1012,8 @@
     var buses = R.positionsAt(E, p.blinds, simT);
     var icons = busStyle === 'buses', kind = busKind(p.route);
     if (icons) updateFacing(buses);
-    deckgl.setProps({ layers: staticLayers.concat(closedLayers, markLayers, [
+    lastBuses = buses;
+    deckgl.setProps({ layers: staticLayers.concat(markLayers, [
       new deck.TripsLayer({
         id: 'trails', data: trips,
         getPath: function (d) { return d.path; },
@@ -921,6 +1022,7 @@
         currentTime: simT, trailLength: TRAIL_S,
         widthMinPixels: 3, opacity: 0.6, fadeTrail: true,
       }),
+    ], stopLayers(p), [                    // over the trails, so a letter stays clear
       icons ? new deck.IconLayer({
         id: 'bus-icons', data: buses, pickable: true,
         getPosition: function (d) { return d.position; },
@@ -1131,6 +1233,10 @@
     var v = currentCam();
     return [v.longitude, v.latitude, v.zoom, v.pitch || 0, v.bearing || 0];
   };
+  window.__where = function (lon, lat) {   // where a place is on screen, for the smoke driver
+    var v = currentCam();
+    return v.project ? v.project([lon, lat]) : null;
+  };
   // For the smoke driver (and the curious): what the page thinks it is showing.
   window.__replay = function () {
     return cur ? {
@@ -1141,6 +1247,10 @@
       badge: el.badge.hidden ? null : el.badge.textContent,
       marked: markLayers.length > 0, back: el.back.getAttribute('href'),
       special: special ? { name: special.name, decks: Object.keys(special.icons) } : null,
+      card: el.card && !el.card.hidden ? el.card.textContent : null,
+      buses: lastBuses.map(function (b) { return { reg: b.reg, position: b.position, dead: b.dead }; }),
+      stops: (cur.payload.stops || []).length, lettered: lettered.length,
+      closedStops: closedStops.length, stopsNear: stopsNear,
       msg: el.msg.textContent, days: el.days.children.length,
       url: location.search, cached: Array.from(dayCache.keys()),
       fullIndex: !!fullIndex,
