@@ -32,7 +32,15 @@
   function mapper(view) { const k = (MAIN.x1 - MAIN.x0) / (view[1] - view[0]); return { k, x: s => MAIN.x0 + (s - view[0]) * k }; }
   function tlx(t, a, b) { return TL.x0 + (clamp(t, a, b) - a) / (b - a) * (TL.x1 - TL.x0); }
 
-  function train(ctx, th, x, y, w, h, ghost, est, showEst, dir) {
+  // Trains that ran, and what stands for them (the whole-line strip, the fleet
+  // count, the timeline's progress, the legend), are in the line's own colour
+  // (lines.py, in the data as line.colour); the theme's colour without one.
+  function themeFor(R, theme) {
+    const th = THEMES[theme || 'dark'], c = R && R.line && R.line.colour;
+    return c ? Object.assign({}, th, { train: c }) : th;
+  }
+
+  function train(ctx, th, x, y, w, h, ghost, dir) {
     if (ghost) {
       ctx.save(); ctx.globalAlpha = th.ghostAlpha; ctx.setLineDash([8, 6]); ctx.lineWidth = 3; ctx.strokeStyle = th.ghost;
       rr(ctx, x - w / 2, y - h / 2, w, h, h / 4); ctx.stroke(); ctx.globalAlpha = 0.08; ctx.fillStyle = th.ghost; ctx.fill();
@@ -41,12 +49,6 @@
     ctx.fillStyle = th.train; rr(ctx, x - w / 2, y - h / 2, w, h, h / 4); ctx.fill();
     ctx.save(); ctx.globalAlpha = 0.35; ctx.fillStyle = th.bg;                         // a window at the leading end
     rr(ctx, dir > 0 ? x + w / 2 - w * 0.2 : x - w / 2 + w * 0.08, y - h * 0.28, w * 0.12, h * 0.56, 2); ctx.fill(); ctx.restore();
-    if (est && showEst) {
-      ctx.save(); rr(ctx, x - w / 2, y - h / 2, w, h, h / 4); ctx.clip();
-      ctx.strokeStyle = th.bg; ctx.globalAlpha = 0.55; ctx.lineWidth = 3;
-      for (let k = -h; k < w; k += 9) { ctx.beginPath(); ctx.moveTo(x - w / 2 + k, y + h / 2); ctx.lineTo(x - w / 2 + k + h, y - h / 2); ctx.stroke(); }
-      ctx.restore();
-    }
   }
 
   const lineName = R => (R.line && R.line.name) || 'Bakerloo';
@@ -129,7 +131,7 @@
     const t0 = st.tallyFrom != null ? st.tallyFrom : Math.max(0, st.t - 3600);
     const tl = M.tally(day.calls[key], (day.ghost_calls[g] || {})[key], t0, st.t);
     const a = R.stations[st.focus.s].name + ' ' + dirLabel(R, st.focus.d).toLowerCase() + ' since ' + M.clockText(t0, day.tz) + ': ';
-    const b = tl.ran + ' of ' + tl.timetabled + ' timetabled' + (g === 'today' ? " (today's)" : ' (WTT 48)');
+    const b = tl.ran + ' of ' + tl.timetabled + ' timetabled';         // against the timetable chosen below
     ctx.font = font(22); const wa = ctx.measureText(a).width; ctx.font = font(22, 700); const wb = ctx.measureText(b).width;
     const w = wa + wb + 40, x = clamp(mp.x(st.focus.s) - w / 2, 260, 1848 - w), y = 826;
     rr(ctx, x, y, w, 44, 10); ctx.fillStyle = th.panel; ctx.fill();
@@ -156,7 +158,7 @@
     }
     for (const tr of M.trainsAt(day.trains, st.t)) {
       const x = mp.x(tr.x), y = tr.dir > 0 ? MAIN.nb : MAIN.sb;
-      train(ctx, th, x, y, tw, tht, false, tr.est, st.showEst, tr.dir);
+      train(ctx, th, x, y, tw, tht, false, tr.dir);
       hits.push({ x: x - tw / 2, y: y - tht / 2, w: tw, h: tht, v: tr.v });
     }
     ctx.restore();
@@ -245,7 +247,7 @@
   // The line runs top to bottom (layout.js): units are CSS pixels, outbound on the
   // right column, inbound on the left, names between, each timer outside its column.
 
-  function pTrain(ctx, th, L, x, y, w, h, ghost, est, showEst, dir) {
+  function pTrain(ctx, th, L, x, y, w, h, ghost, dir) {
     if (ghost) {
       ctx.save(); ctx.globalAlpha = th.ghostAlpha; ctx.setLineDash([5, 4]); ctx.lineWidth = 2; ctx.strokeStyle = th.ghost;
       rr(ctx, x - w / 2, y - h / 2, w, h, w / 4); ctx.stroke(); ctx.globalAlpha = 0.08; ctx.fillStyle = th.ghost; ctx.fill();
@@ -255,12 +257,6 @@
     const up = (dir > 0) === L.flip;                              // moving up the screen: the window at the top
     ctx.save(); ctx.globalAlpha = 0.35; ctx.fillStyle = th.bg;
     rr(ctx, x - w * 0.28, up ? y - h / 2 + h * 0.08 : y + h / 2 - h * 0.2, w * 0.56, h * 0.12, 2); ctx.fill(); ctx.restore();
-    if (est && showEst) {
-      ctx.save(); rr(ctx, x - w / 2, y - h / 2, w, h, w / 4); ctx.clip();
-      ctx.strokeStyle = th.bg; ctx.globalAlpha = 0.55; ctx.lineWidth = 2;
-      for (let k = -w; k < h; k += 6) { ctx.beginPath(); ctx.moveTo(x - w / 2, y - h / 2 + k); ctx.lineTo(x + w / 2, y - h / 2 + k + w); ctx.stroke(); }
-      ctx.restore();
-    }
   }
 
   function pHeader(ctx, th, R, day, st, L) {
@@ -351,7 +347,7 @@
     }
     for (const tr of M.trainsAt(day.trains, st.t)) {
       const x = L.colX(tr.dir), y = mp.y(tr.x);
-      pTrain(ctx, th, L, x, y, wid, len, false, tr.est, st.showEst, tr.dir);
+      pTrain(ctx, th, L, x, y, wid, len, false, tr.dir);
       hits.push({ x: x - wid / 2, y: y - len / 2, w: wid, h: len, v: tr.v });
     }
     ctx.restore();
@@ -411,7 +407,7 @@
   }
 
   function framePortrait(ctx, R, st, L) {
-    const th = THEMES[st.theme || 'dark'], day = R.days[st.dayKey], wtt = R.wtt48[day.wtt_key], hits = [];
+    const th = themeFor(R, st.theme), day = R.days[st.dayKey], wtt = R.wtt48[day.wtt_key], hits = [];
     ctx.save();
     ctx.fillStyle = th.bg; ctx.fillRect(0, 0, L.W, L.H);
     pHeader(ctx, th, R, day, st, L); pMain(ctx, th, R, day, wtt, st, L, hits);
@@ -424,7 +420,7 @@
   // tests), the 1920x1080 landscape picture.
   function frame(ctx, R, st, L) {
     if (L && L.mode === 'portrait') return framePortrait(ctx, R, st, L);
-    const th = THEMES[st.theme || 'dark'], day = R.days[st.dayKey], wtt = R.wtt48[day.wtt_key], hits = [];
+    const th = themeFor(R, st.theme), day = R.days[st.dayKey], wtt = R.wtt48[day.wtt_key], hits = [];
     ctx.save();
     ctx.fillStyle = th.bg; ctx.fillRect(0, 0, W, H);
     header(ctx, th, R, day, st); strip(ctx, th, R, day, wtt, st); fleet(ctx, th, day, st.t);
@@ -455,5 +451,5 @@
     ctx.restore();
   }
 
-  root.ReplayDraw = { W, H, THEMES, MAIN, STRIP, TL, mapper, tlx, frame, card };
+  root.ReplayDraw = { W, H, THEMES, MAIN, STRIP, TL, mapper, tlx, themeFor, frame, card };
 })(window);

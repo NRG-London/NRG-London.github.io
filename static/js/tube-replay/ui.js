@@ -23,7 +23,7 @@ window.ReplayStart = function () {
   const GHOSTS = (R.ghosts ? R.ghosts.available : ['wtt48', 'today']).concat('off');
   const GHOST0 = R.ghosts ? R.ghosts.default : 'wtt48';
   const reduced = () => !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
-  const S = { dayKey: R.default_day, t: 4 * 3600, speed: 30, playing: false, ghost: GHOST0, showEst: false,
+  const S = { dayKey: R.default_day, t: 4 * 3600, speed: 30, playing: false, ghost: GHOST0,
               view: R.default_view.slice(), target: null, focus: null, tallyFrom: null, theme: 'dark' };
   let L = LY.layout(0, 0, N, R.portrait_top), hits = [], last = 0, prevView = null, hashDirty = true, glide = null;
   let viewFromLink = false, laidOut = false;
@@ -33,7 +33,6 @@ window.ReplayStart = function () {
     p.set('day', S.dayKey); p.set('t', String(Math.round(S.t)));
     p.set('x0', S.view[0].toFixed(2)); p.set('x1', S.view[1].toFixed(2));
     p.set('sp', String(S.speed)); p.set('g', S.ghost);
-    if (S.showEst) p.set('est', '1');
     if (S.focus) p.set('f', S.focus.s + ',' + S.focus.d);
     history.replaceState(null, '', location.pathname + location.search + '#' + p.toString());
   }
@@ -44,7 +43,6 @@ window.ReplayStart = function () {
     if (p.get('x0') && p.get('x1')) { S.view = M.clampView([Number(p.get('x0')), Number(p.get('x1'))], N); viewFromLink = true; }
     if (p.get('sp')) S.speed = Number(p.get('sp'));
     if (GHOSTS.includes(p.get('g'))) S.ghost = p.get('g');
-    S.showEst = p.get('est') === '1';
     if (p.get('f')) { const [s, d] = p.get('f').split(',').map(Number); S.focus = { s, d }; }
     return p.has('day');
   }
@@ -275,7 +273,6 @@ window.ReplayStart = function () {
   if (!GHOSTS.includes('wtt48') && R.ghosts && R.ghosts.labels.today)
     for (const o of $('ghost').options) if (o.value === 'today') o.textContent = R.ghosts.labels.today;
   $('ghost').onchange = () => { S.ghost = $('ghost').value; hashDirty = true; };
-  $('est').onclick = () => { S.showEst = !S.showEst; hashDirty = true; };
   $('whole').onclick = toggleWhole;
   $('featured').onclick = () => { menu.style.display = menu.style.display === 'block' ? 'none' : 'block'; };
   // full screen where the browser allows it (not on an iPhone, which has no element full screen)
@@ -289,7 +286,7 @@ window.ReplayStart = function () {
   function syncBar() {
     $('play').textContent = S.playing ? '❚❚ Pause' : '▶ Play';
     document.querySelectorAll('[data-speed]').forEach(b => b.classList.toggle('on', Number(b.dataset.speed) === S.speed));
-    daySel.value = S.dayKey; $('ghost').value = S.ghost; $('est').classList.toggle('on', S.showEst);
+    daySel.value = S.dayKey; $('ghost').value = S.ghost;
   }
 
   // ---------------------------------------------------------------- featured moments
@@ -324,9 +321,11 @@ window.ReplayStart = function () {
   document.addEventListener('fullscreenchange', resize);
   document.addEventListener('webkitfullscreenchange', resize);
   if (window.ResizeObserver) new ResizeObserver(resize).observe(cv);
-  const featured = buildMenu();
-  const fromLink = readHash();
-  if (!fromLink && featured) menu.style.display = 'block';
+  // The featured moments open from their button only: the page starts on the line itself.
+  $('featured').hidden = !buildMenu();
+  readHash();
+  // the line's colour for its trains, here as in the drawing (draw.js themeFor)
+  if (R.line && R.line.colour) document.documentElement.style.setProperty('--train', R.line.colour);
   setInterval(() => { if (hashDirty) { writeHash(); hashDirty = false; } syncBar(); }, 500);
   window.ReplayUI = { state: S, drawState, draw, layout: () => L, hits: () => hits };
   Promise.all(['400 20px "DM Sans"', '700 20px "DM Sans"', '700 20px "Libre Baskerville"'].map(f => document.fonts.load(f)))

@@ -20,7 +20,7 @@
   filled nightly by NRG-1. Day files carry their own cache keys; bump JS_V when
   the JavaScript or CSS changes.
 */ -}}
-{{- $jsV := "2" -}}
+{{- $jsV := "3" -}}
 {{- $root := printf "%sv2/" .Site.Params.tubeReplayData -}}
 {{- with .Params.dataRoot }}{{ $root = . }}{{ end -}}
 <!doctype html>
@@ -81,7 +81,6 @@
       <option value="today">Timetable: today&rsquo;s (no working timetable published)</option>
       <option value="off">Timetable: off</option>
     </select>
-    <button id="est" type="button">Highlight estimated positions</button>
     <button id="whole" type="button">Whole line</button>
     <button id="featured" type="button">Featured moments</button>
     <button id="fs" type="button">Full screen</button>

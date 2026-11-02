@@ -1,7 +1,7 @@
 /* /labs/tube-replay/ — Tube lines, replayed (/tube/replay/ when it goes live).
    Dark, in the replay's palette (LU Tracking replay spec; house dark "social"
-   colours from the branding package): navy ground, blue trains, amber for
-   overdue. No red or green. Self-hosted DM Sans / Libre Baskerville. */
+   colours from the branding package): navy ground, trains in their line's colour,
+   amber for overdue. No red or green. Self-hosted DM Sans / Libre Baskerville. */
 
 @font-face { font-family: 'Libre Baskerville'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/libre-baskerville.woff2') format('woff2'); }
 @font-face { font-family: 'Libre Baskerville'; font-style: normal; font-weight: 700; font-display: swap; src: url('/fonts/libre-baskerville.woff2') format('woff2'); }
@@ -13,7 +13,8 @@
   --rule: #3A4656;
   --text: #F3F6F4;        /* site paper */
   --sub: #8A9490;         /* site muted */
-  --blue: #4FA3E0;        /* trains that ran */
+  --blue: #4FA3E0;        /* links and focus rings */
+  --train: var(--blue);   /* trains that ran: the line's own colour, set by ui.js */
   --amber: #E0A24E;       /* overdue */
   --serif: 'Libre Baskerville', Georgia, serif;
   --sans: 'DM Sans', system-ui, sans-serif;
@@ -63,7 +64,7 @@ h1 { font-family: var(--serif); font-weight: 700; font-size: clamp(26px, 4vw, 40
 .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 0; font-size: 14px; color: var(--sub); }
 .bar button, .bar select { background: var(--panel); color: var(--text); border: 1px solid var(--rule); border-radius: 6px;
   padding: 7px 12px; font: inherit; cursor: pointer; min-height: 36px; }
-.bar button.on { background: var(--blue); color: #0B1520; border-color: var(--blue); }
+.bar button.on { background: var(--train); color: #0B1520; border-color: var(--train); }
 .bar select { max-width: 100%; }
 .bar [hidden] { display: none; }
 @media (pointer: coarse) { .bar button, .bar select { min-height: 44px; min-width: 44px; } }
@@ -76,7 +77,7 @@ h2 { font-family: var(--serif); font-weight: 700; font-size: 21px; margin: 0 0 1
 .key ul { list-style: none; padding: 0; margin: 0 0 10px; display: grid; gap: 6px; }
 .key li { display: flex; align-items: center; gap: 10px; }
 .sw { flex: none; display: inline-block; width: 26px; height: 10px; border-radius: 3px; }
-.sw.ran { background: var(--blue); }
+.sw.ran { background: var(--train); }
 .sw.ghost { border: 2px dashed rgba(243, 246, 244, .55); background: transparent; }
 .sw.timer { background: transparent; border-bottom: 2px solid var(--sub); border-radius: 0; height: 8px; }
 .key .amber { color: var(--amber); }
