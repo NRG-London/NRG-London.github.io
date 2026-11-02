@@ -1,30 +1,34 @@
 {{- /*
-  /labs/bakerloo/ — the Bakerloo line, replayed (unlisted lab).
+  /labs/tube-replay/ — Tube lines, replayed (unlisted lab). ?line=bakerloo or ?line=victoria.
+  Its final home will be /tube/replay/ (one page, every line); going live is a later step.
 
   A standalone page, not baseof, like /labs/licensing/ and /bus/replay/: it keeps
   what every page needs from head.html (analytics, icon, share card, noindex)
   and carries none of the site chrome. Dark, in the replay's own palette.
 
-  The page body (content/labs/bakerloo.md) is the "About" text, editable in the CMS.
+  The page body (content/labs/tube-replay.md) is the "About" text, editable in the CMS.
 
   Code: static/js/tube-replay/*.js, copied from the LU Tracking repo by
-  `python lu_replay.py export --out static/labs/bakerloo/data --js static/js/tube-replay`
-  (model.js, cliptime.js and draw.js are shared with the offline replay and the
-  video clips; ui.js runs the page; web.js loads the data). Do not edit them
-  here: edit them in LU Tracking (analysis/replay_js/) and export again.
+  `python lu_replay.py export --out <scratch> --line all --js static/js/tube-replay`
+  (model.js, layout.js, gestures.js, cliptime.js and draw.js are shared with the
+  offline replay and the video clips; ui.js runs the page; web.js loads the data).
+  Do not edit them here: edit them in LU Tracking (analysis/replay_js/) and copy again.
   Styles: static/css/tube-replay.css.
 
-  Data: index.json, d/<day>.json.gz and w/<day type>.json.gz under
-  static/labs/bakerloo/data/ for the prototype. Later from R2 via a Worker, as
-  the bus replay does: change data-replay-root. Bump DATA_V when the data changes.
+  Data: the R2 bucket nrg-tube-replay through the tube-replay Worker
+  (hugo.toml tubeReplayData), format v2 (LU Tracking docs/replay-data-v2.md),
+  filled nightly by NRG-1. Day files carry their own cache keys; bump JS_V when
+  the JavaScript or CSS changes.
 */ -}}
-{{- $dataV := "1" -}}
+{{- $jsV := "2" -}}
+{{- $root := printf "%sv2/" .Site.Params.tubeReplayData -}}
+{{- with .Params.dataRoot }}{{ $root = . }}{{ end -}}
 <!doctype html>
 <html lang="en-GB">
 <head>
 {{ with .Site.Params.goatcounterURL }}<script data-goatcounter="{{ . }}" async src="//gc.zgo.at/count.js"></script>{{ end }}
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{{ .Title }} — Neil Garratt</title>
 <meta name="description" content="{{ .Params.summary }}">
 {{ if .Params.noindex }}<meta name="robots" content="noindex, nofollow">{{ end }}
@@ -43,19 +47,19 @@
 {{- $handle := printf "@%s" (path.Base .) }}
 <meta name="twitter:site" content="{{ $handle }}">
 {{- end }}
-<link rel="stylesheet" href="/css/tube-replay.css?v=1">
+<link rel="stylesheet" href="/css/tube-replay.css?v={{ $jsV }}">
 </head>
-<body data-replay-root="/labs/bakerloo/data/" data-replay-v="{{ $dataV }}">
+<body data-replay-root="{{ $root }}" data-replay-line="bakerloo">
 <div class="page">
   <header class="masthead">
     <a class="back" href="/">&larr; neilgarratt.com</a>
-    <div class="eyebrow">Bakerloo line &middot; TfL&rsquo;s live train feed, logged since 2 October 2026</div>
+    <div class="eyebrow"><span data-line-name>Bakerloo</span> line &middot; TfL&rsquo;s live train feed, logged since 2 October 2026</div>
     <h1>{{ .Title }}</h1>
     <p class="standfirst">Every train, minute by minute, against the timetable it was meant to run. Pick a day, press play, and watch where the gaps open up.</p>
   </header>
 
   <div id="stage" class="stage">
-    <canvas id="c" aria-label="Animated map of the Bakerloo line showing trains and timetable" role="img"></canvas>
+    <canvas id="c" aria-label="Animated map of the line showing trains and timetable" role="img"></canvas>
     <div id="tip" hidden></div>
     <div id="menu" class="menu"></div>
     <p id="loadnote" class="loadnote" aria-live="polite">Loading the replay…</p>
@@ -67,6 +71,8 @@
     <span class="speeds">
       <button type="button" data-speed="1">1×</button><button type="button" data-speed="10">10×</button><button type="button" data-speed="30">30×</button><button type="button" data-speed="60">60×</button><button type="button" data-speed="120">120×</button>
     </span>
+    <label class="sr" for="line">Line</label>
+    <select id="line" hidden></select>
     <label class="sr" for="day">Day</label>
     <select id="day"></select>
     <label class="sr" for="ghost">Timetable shown</label>
@@ -89,7 +95,7 @@
       <li><span class="sw ghost"></span>The timetable&rsquo;s trains</li>
       <li><span class="sw timer"></span>Time since the last train at each platform: <b>white</b> when longer than the timetable ever allows there, <b class="amber">amber</b> when twice the timetabled interval</li>
     </ul>
-    <p class="hint">Drag the line to pan, scroll to zoom, click a platform to count its trains, and drag the timeline at the bottom to move through the day. Space plays and pauses; the arrow keys step a minute. The address bar keeps your place, so a link takes others to the same moment.</p>
+    <p class="hint">Drag the line to move along it, and pinch or scroll to zoom. Tap a train for its number, or tap a platform to count its trains. Drag the timeline to move through the day. On a phone held upright the whole line runs top to bottom. On a keyboard, space plays and pauses and the arrow keys step a minute. The address bar keeps your place, so a link takes others to the same moment.</p>
   </section>
 
   <section class="about" aria-labelledby="h-about">
@@ -97,10 +103,12 @@
     {{ .Content }}
   </section>
 </div>
-<script src="/js/tube-replay/model.js?v={{ $dataV }}"></script>
-<script src="/js/tube-replay/cliptime.js?v={{ $dataV }}"></script>
-<script src="/js/tube-replay/draw.js?v={{ $dataV }}"></script>
-<script src="/js/tube-replay/web.js?v={{ $dataV }}"></script>
-<script src="/js/tube-replay/ui.js?v={{ $dataV }}"></script>
+<script src="/js/tube-replay/model.js?v={{ $jsV }}"></script>
+<script src="/js/tube-replay/layout.js?v={{ $jsV }}"></script>
+<script src="/js/tube-replay/gestures.js?v={{ $jsV }}"></script>
+<script src="/js/tube-replay/cliptime.js?v={{ $jsV }}"></script>
+<script src="/js/tube-replay/draw.js?v={{ $jsV }}"></script>
+<script src="/js/tube-replay/web.js?v={{ $jsV }}"></script>
+<script src="/js/tube-replay/ui.js?v={{ $jsV }}"></script>
 </body>
 </html>

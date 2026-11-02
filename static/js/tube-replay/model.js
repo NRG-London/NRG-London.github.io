@@ -53,7 +53,7 @@
   }
 
   function ghostsAt(day, ghost, wtt, t) {
-    if (ghost === 'wtt48') return trainsAt(wtt.trains, t);
+    if (ghost === 'wtt48') return wtt ? trainsAt(wtt.trains, t) : [];
     if (ghost === 'today') return departuresAt(day.today, t);
     return [];
   }
@@ -119,12 +119,32 @@
     return i < 0 ? { status: 'Good Service', reason: '' } : { status: status[i][2], reason: status[i][3] || '' };
   }
 
+  // Times count real seconds from 03:00; tz ([[t, utc offset in minutes], ...], from
+  // the day file) moves the wall clock on a clock-change night. Without it: no change.
+  function offsetShift(t, tz) {
+    if (!tz || !tz.length) return 0;
+    let off = tz[0][1];
+    for (const [t0, o] of tz) if (t >= t0) off = o;
+    return (off - tz[0][1]) * 60;
+  }
   const pad = n => String(n).padStart(2, '0');
-  function clockText(t) { const m = Math.floor(t / 60) + 180; return pad(Math.floor(m / 60) % 24) + ':' + pad(m % 60); }
+  function clockText(t, tz) {
+    const m = Math.floor((t + offsetShift(t, tz)) / 60) + 180;
+    return pad(Math.floor(m / 60) % 24) + ':' + pad(m % 60);
+  }
   function waitText(s) { return Math.floor(s / 60) + ':' + pad(Math.floor(s % 60)); }
-  function parseClock(hhmm) {
+  function parseClock(hhmm, tz) {
     const [h, m, s] = String(hhmm).split(':').map(Number);
-    return ((h < 3 ? h + 24 : h) - 3) * 3600 + m * 60 + (s || 0);
+    const w = ((h < 3 ? h + 24 : h) - 3) * 3600 + m * 60 + (s || 0);
+    let t = w;                                      // the first moment the wall clock shows it
+    for (const [t0, o] of (tz || []).slice(1)) { const x = w - (o - tz[0][1]) * 60; if (x >= t0) t = x; }
+    return t;
+  }
+  // The ghost whose timetable the timers and tallies use: WTT 48 where the line has
+  // it and it is chosen; otherwise today's.
+  function ghostKey(R, ghost) {
+    const has = !R.ghosts || R.ghosts.available.includes('wtt48');
+    return ghost === 'today' || !has ? 'today' : 'wtt48';
   }
 
   function clampView(v, n) {
@@ -137,6 +157,7 @@
   }
 
   const api = { LAY, EDGE, lastIndexAtOrBefore, trainAt, trainsAt, departuresAt, ghostsAt, blindBetween, blindAt,
-                waitAt, intervalAt, longestGapAt, overdue, waitLevel, tally, minuteValue, hourValue, statusAt, clockText, waitText, parseClock, clampView };
+                waitAt, intervalAt, longestGapAt, overdue, waitLevel, tally, minuteValue, hourValue, statusAt, clockText, waitText, parseClock,
+                ghostKey, offsetShift, clampView };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.ReplayModel = api;
 })(typeof window !== 'undefined' ? window : globalThis);

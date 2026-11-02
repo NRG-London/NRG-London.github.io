@@ -14,6 +14,10 @@ title = "Neil Garratt"
   # Bus replay data (/bus/replay/): an R2 bucket NRG-1 fills daily, served by a
   # Cloudflare Worker (E:\VM cloudflare/bus-replay-worker.js).
   busReplayData = "https://bus-replay.neil-garratt.workers.dev/"
+  # Tube replay data (/labs/tube-replay/; /tube/replay/ when it goes live): the R2
+  # bucket nrg-tube-replay, filled nightly by NRG-1 (LU Tracking's lu_nightly.py),
+  # served by E:\VM cloudflare/tube-replay-worker.js. The page reads v2/ under it.
+  tubeReplayData = "https://tube-replay.neil-garratt.workers.dev/"
 
   [params.social]
     twitter = "https://twitter.com/NeilGarratt"
