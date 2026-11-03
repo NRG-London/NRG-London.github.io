@@ -116,7 +116,12 @@
       for (let s = s0; s <= s1; s++) {
         let lines = R.stations[s].lines;                 // too wide for the spacing: the short name instead
         if (Math.max(...lines.map(l => ctx.measureText(l).width)) > mp.k * 0.92) lines = [R.stations[s].short];
+        // a single word with no shorter form, still too wide ('Westminster', 'Bermondsey' on the
+        // Jubilee): smaller type, not an ellipsis (names with a short form keep the clips' look)
+        const w1 = lines.length === 1 && R.stations[s].short === R.stations[s].name ? ctx.measureText(lines[0]).width : 0;
+        if (w1 > mp.k * 0.98) ctx.font = font(Math.max(14, fs * mp.k * 0.95 / w1), 600);   // a margin: widths round
         lines.forEach((ln, k) => ctx.fillText(fit(ctx, ln, mp.k * 0.98), mp.x(s), mid + 8 + (k - (lines.length - 1) / 2) * fs * 1.15));
+        ctx.font = font(fs, 600);
       }
     } else {
       const fs = clamp(mp.k * 0.3, 14, 20); ctx.font = font(fs, 600);

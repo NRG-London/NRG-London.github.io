@@ -72,6 +72,9 @@ window.REPLAY_WEB = true;
     if (idx.format !== FORMAT || idx.version !== VERSION)
       throw new Error('the data is in a format this page does not know (reload the page)');
     for (const el of document.querySelectorAll('[data-line-name]')) el.textContent = idx.line.name;
+    // the line's first day, "15 October 2026" (lines are logged from different dates)
+    const day0 = idx.day_list.length ? idx.day_list[0].long_label.replace(/^\S+ /, '') : '';
+    for (const el of document.querySelectorAll('[data-line-first]')) if (day0) el.textContent = day0;
     linePicker(line);
     const R = window.REPLAY = Object.assign({}, idx, { days: {}, wtt48: {} });
     for (const d of idx.day_list) R.days[d.key] = Object.assign({}, d);

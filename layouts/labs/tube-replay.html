@@ -20,7 +20,7 @@
   filled nightly by NRG-1. Day files carry their own cache keys; bump JS_V when
   the JavaScript or CSS changes.
 */ -}}
-{{- $jsV := "4" -}}
+{{- $jsV := "5" -}}
 {{- $root := printf "%sv2/" .Site.Params.tubeReplayData -}}
 {{- with .Params.dataRoot }}{{ $root = . }}{{ end -}}
 <!doctype html>
@@ -53,7 +53,7 @@
 <div class="page">
   <header class="masthead">
     <a class="back" href="/">&larr; neilgarratt.com</a>
-    <div class="eyebrow"><span data-line-name>Bakerloo</span> line &middot; TfL&rsquo;s live train feed, logged since 2 October 2026</div>
+    <div class="eyebrow"><span data-line-name>Bakerloo</span> line &middot; TfL&rsquo;s live train feed, replayed from <span data-line-first>3 October 2026</span></div>
     <h1>{{ .Title }}</h1>
     <p class="standfirst">Every train, minute by minute, against the timetable it was meant to run. Pick a day, press play, and watch where the gaps open up.</p>
   </header>
