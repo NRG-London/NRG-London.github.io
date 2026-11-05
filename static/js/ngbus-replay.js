@@ -111,13 +111,18 @@
     return special && !d.dead && special.icons[DECK_CODE[kind]] || null;
   }
 
-  // One sprite as a pair of icons, as drawn (east) and mirrored (west), each
-  // decoded once before use so a sprite that cannot be drawn is never chosen.
-  function specialSprite(name, s, text) {
+  function plainSvg(name, text) {
     var doc = new DOMParser().parseFromString(text, 'image/svg+xml');
     var root = doc.documentElement;
     if (!root || root.nodeName !== 'svg' || doc.getElementsByTagName('parsererror').length ||
         doc.querySelector('script, foreignObject')) throw new Error('sprite ' + name + ' is not a plain SVG');
+    return root;
+  }
+
+  // One sprite as a pair of icons, as drawn (east) and mirrored (west), each
+  // decoded once before use so a sprite that cannot be drawn is never chosen.
+  function specialSprite(name, s, text) {
+    var root = plainSvg(name, text);
     var vb = s.vb, an = s.anchor, k = 2;          // drawn at twice size, for sharp edges
     if (!vb || vb.length !== 4 || !an || an.length !== 2 || !(vb[2] > 0) || !(vb[3] > 0)) throw new Error('sprite ' + name + ' has no geometry');
     var inner = root.innerHTML;
@@ -140,6 +145,57 @@
     })).then(function () { return pair; });
   }
 
+  // An animated sprite (Bonfire Night's fireworks, Neil, 5 Nov) also has a
+  // strip of still frames baked from Design's animation: frames.count frames
+  // side by side, each the top-level <g> of its file and vb wide, played in a
+  // loop over frames.period seconds of real time, whatever the replay's
+  // speed. They go onto one picture for the map, drawn and mirrored, before
+  // the day uses them. Each bus starts the loop at its own frame, so the
+  // fireworks don't all go off together. If the strip can't be had, or the
+  // reader has asked for less motion, the sprite stays still.
+  var FILM_PAD = 8;                        // pixels between frames on the picture
+  function specialFilm(name, s, text) {
+    var f = s.frames, vb = s.vb, an = s.anchor, k = 2;
+    var cells = Array.prototype.slice.call(plainSvg(name, text).children);
+    if (!f || !(f.count > 0) || f.count !== cells.length || !(f.period > 0)) throw new Error('sprite ' + name + ': frames do not match');
+    var cw = vb[2] * k, ch = vb[3] * k, n = f.count;
+    return Promise.all(cells.map(function (g, i) {
+      var img = new Image();
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + [vb[0] + i * vb[2], vb[1], vb[2], vb[3]].join(' ') +
+        '" width="' + cw + '" height="' + ch + '">' + g.outerHTML + '</svg>');
+      return img.decode().then(function () { return img; });
+    })).then(function (imgs) {
+      var cols = Math.max(1, Math.floor(2048 / (cw + FILM_PAD)));
+      var canvas = document.createElement('canvas');
+      canvas.width = cols * (cw + FILM_PAD);
+      canvas.height = Math.ceil(2 * n / cols) * (ch + FILM_PAD);
+      var g = canvas.getContext('2d'), mapping = {};
+      var ax = (an[0] - vb[0]) * k, ay = (an[1] - vb[1]) * k;
+      imgs.forEach(function (img, i) {
+        [false, true].forEach(function (flip) {
+          var c = (flip ? n : 0) + i, x = (c % cols) * (cw + FILM_PAD), y = Math.floor(c / cols) * (ch + FILM_PAD);
+          g.setTransform(flip ? -1 : 1, 0, 0, 1, flip ? x + cw : x, y);
+          g.drawImage(img, 0, 0, cw, ch);
+          mapping[(flip ? 'w' : 'e') + i] = { x: x, y: y, width: cw, height: ch,
+                                              anchorX: flip ? cw - ax : ax, anchorY: ay };
+        });
+      });
+      g.getImageData(0, 0, 1, 1);            // throws if the browser won't let the map have it
+      return { atlas: canvas, mapping: mapping, count: n, period: f.period };
+    });
+  }
+  function stillPlease() {
+    return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
+  // Which frame a bus shows: the loop's frame now, moved on by the bus's own.
+  function filmTick(film) {
+    return Math.floor(performance.now() / 1000 / film.period * film.count);
+  }
+  function filmIcon(film, d, tick) {
+    return (facing[d.vi] < 0 ? 'w' : 'e') + ((tick + d.vi * 7) % film.count);
+  }
+
   function loadSpecials(payload) {
     special = null;
     var want = payload && payload.specials;
@@ -158,7 +214,16 @@
           if (!r.ok) throw new Error(s.file + ': HTTP ' + r.status);
           return r.text();
         }).then(function (text) { return specialSprite(name, s, text); })
-          .then(function (pair) { pair.dk = dk; return pair; })
+          .then(function (pair) {
+            pair.dk = dk;
+            if (!s.frames || !/^[a-z0-9-]+\.svg$/.test(s.frames.file || '') || stillPlease() ||
+                dk !== DECK_CODE[busKind(payload.route)]) return pair;          // only this route's deck moves
+            return fetch(SPRITES + s.frames.file, { cache: 'no-cache' }).then(function (r) {
+              if (!r.ok) throw new Error(s.frames.file + ': HTTP ' + r.status);
+              return r.text();
+            }).then(function (text) { return specialFilm(name, s, text); })
+              .then(function (film) { pair.film = film; return pair; }, function () { return pair; });
+          })
           .catch(function () { return null; });
       }));
     }).then(function (pairs) {
@@ -1006,6 +1071,8 @@
 
   function specialKey() { return special ? special.key : ''; }
 
+  var filmShown = null, filmShownTick = -1;   // the animated sprite last drawn, and its frame
+
   function render() {
     if (!cur) return;
     var p = cur.payload, E = cur.E;
@@ -1013,6 +1080,8 @@
     var icons = busStyle === 'buses', kind = busKind(p.route);
     if (icons) updateFacing(buses);
     lastBuses = buses;
+    var sp = icons && special && special.icons[DECK_CODE[kind]] || null;
+    var film = filmShown = sp && sp.film || null, tick = filmShownTick = film ? filmTick(film) : -1;
     deckgl.setProps({ layers: staticLayers.concat(markLayers, [
       new deck.TripsLayer({
         id: 'trails', data: trips,
@@ -1024,7 +1093,8 @@
       }),
     ], stopLayers(p), [                    // over the trails, so a letter stays clear
       icons ? new deck.IconLayer({
-        id: 'bus-icons', data: buses, pickable: true,
+        id: 'bus-icons', pickable: true,
+        data: film ? buses.filter(function (b) { return b.dead; }) : buses,   // the rest are on film
         getPosition: function (d) { return d.position; },
         getIcon: function (d) { return busIcon(kind, d); },
         sizeUnits: 'pixels', sizeBasis: 'width',
@@ -1038,6 +1108,15 @@
         stroked: true, getRadius: 40, radiusMinPixels: 5, radiusMaxPixels: 12,
         updateTriggers: { getPosition: simT, getFillColor: simT },
       }),
+    ], film ? [new deck.IconLayer({
+      id: 'bus-film', pickable: true,
+      data: buses.filter(function (b) { return !b.dead; }),
+      iconAtlas: film.atlas, iconMapping: film.mapping,
+      getPosition: function (d) { return d.position; },
+      getIcon: function (d) { return filmIcon(film, d, tick); },
+      sizeUnits: 'pixels', sizeBasis: 'width', getSize: ICON_W * sp.size,
+      updateTriggers: { getPosition: simT, getIcon: [simT, tick] },
+    })] : [], [
       new deck.TextLayer({
         id: 'labels', data: buses,
         getPosition: function (d) { return d.position; },
@@ -1079,6 +1158,8 @@
       simT += speed * Math.min(250, now - lastFrame) / 1000;
       if (simT > cur.payload.t1 - cur.payload.t0) simT = 0;
       render();
+    } else if (cur && filmShown && filmTick(filmShown) !== filmShownTick) {
+      render();                            // paused, the fireworks still go off
     }
     lastFrame = now;
     requestAnimationFrame(tick);
@@ -1246,7 +1327,9 @@
       banner: el.banner.hidden ? null : el.banner.textContent,
       badge: el.badge.hidden ? null : el.badge.textContent,
       marked: markLayers.length > 0, back: el.back.getAttribute('href'),
-      special: special ? { name: special.name, decks: Object.keys(special.icons) } : null,
+      special: special ? { name: special.name, decks: Object.keys(special.icons),
+        film: Object.keys(special.icons).filter(function (dk) { return special.icons[dk].film; }),
+        frame: filmShown ? filmShownTick % filmShown.count : null } : null,
       card: el.card && !el.card.hidden ? el.card.textContent : null,
       buses: lastBuses.map(function (b) { return { reg: b.reg, position: b.position, dead: b.dead }; }),
       stops: (cur.payload.stops || []).length, lettered: lettered.length,

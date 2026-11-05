@@ -804,6 +804,15 @@ sprite the catalogue doesn't list, a file that won't load) and the viewer draws 
 ordinary buses; buses out of service stay ordinary grey. **Keep every sprite a stamped
 day has named**: old files still ask for it.
 
+Animated sprites (added 5 Nov 2026, Bonfire Night's fireworks) carry `frames: {file,
+count, period}` in the catalogue as well: a strip of still frames baked from Design's
+SMIL animation in a headless browser (each frame checked pixel for pixel against the
+paused animation), each frame a top-level `<g>` of the file, side by side and one viewBox
+wide. The viewer puts them on one picture for the map and loops them in real time, each
+bus starting at its own frame; the still `file` is the fallback, and what a reader who
+asks for less motion sees. Only the stamp is in the day file, so how a sprite moves can
+change after the day is stamped.
+
 **Stops** (letters added 2 Nov 2026). Each entry in a day file's `stops` is
 `{name, lon, lat, dir, id?, letter?}`: `id` is TfL's NaPTAN code for the stop
 (`490003775J`) and `letter` its flag letter (`J`, `A12`), present only where TfL gives a
