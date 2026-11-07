@@ -13,6 +13,13 @@
  * Times come back RELATIVE TO t0, in seconds. deck.gl's TripsLayer keeps
  * timestamps as float32, and epoch seconds (~1.8e9) in float32 are only good
  * to 128 s — the trails would step in two-minute jumps.
+ *
+ * Live mode (the Delay Replay pilot, Road Data spec 2026-11-06 §4.4) reads
+ * two more files, an `ng-bus-live` head and recent file (parseLive), and
+ * merges their per-route fragments into the day so far (mergeLive). The merge
+ * must give exactly what Road Data's live_layers.merge_live gives; a Node test
+ * there (tests/test_live_js.py) holds it to that. positionsAt's `hold` keeps a
+ * bus at its last ping while it is still reported on the route.
  */
 (function (root) {
   'use strict';
@@ -20,6 +27,11 @@
   var FORMAT = 'ng-bus-replay';
   var VERSION = 1;
   var M_PER_DEG = 111320;
+  var LIVE_FORMAT = 'ng-bus-live';
+  var LIVE_VERSION = 1;
+  var LIVE_KINDS = ['head', 'recent'];
+  var GAP_SPLIT_S = 900;       // replay_core.GAP_SPLIT_S: a longer gap splits a track
+  var EDGE_LAG_S = 30;         // Viewer Ruling 1: presence judged at the edge less this
 
   function ReplayError(message) {
     var e = new Error(message);
@@ -87,6 +99,44 @@
     }
   }
 
+  /* A live head or recent file (`ng-bus-live`), unpacked as parse unpacks a
+     day file. The day-so-far files are ordinary v1 day files: use parse. */
+  async function parseLive(buf) {
+    var text;
+    try {
+      text = await bytesToText(buf);
+    } catch (e) {
+      if (e.name === 'ReplayError') throw e;
+      throw ReplayError('The live data is damaged or is not a live bus file.');
+    }
+    var obj;
+    try {
+      obj = JSON.parse(text);
+    } catch (e) {
+      throw ReplayError('The live data is not a live bus file.');
+    }
+    validateLive(obj);
+    return obj;
+  }
+
+  function validateLive(p) {
+    if (!p || typeof p !== 'object' || p.format !== LIVE_FORMAT) {
+      throw ReplayError('The live data is not a live bus file.');
+    }
+    if (p.version > LIVE_VERSION) {
+      throw ReplayError('The live data was made by a newer version of this ' +
+                        'page. Reload the page and try again.');
+    }
+    if (p.version !== LIVE_VERSION) {
+      throw ReplayError('The live data is in an old format this page no ' +
+                        'longer reads.');
+    }
+    if (LIVE_KINDS.indexOf(p.kind) === -1) {
+      throw ReplayError('The live data is of a kind this page does not read (' +
+                        p.kind + ').');
+    }
+  }
+
   /* ---- expansion -------------------------------------------------------- */
 
   function undelta(a) {
@@ -110,7 +160,8 @@
     return Math.hypot((bx - ax) * kx, by - ay) * M_PER_DEG;
   }
 
-  /* -> { segs: [{vi, t: Float64Array (s after t0), lon, lat, b: blind idx}],
+  /* -> { segs: [{vi, t: Float64Array (s after t0), lon, lat, b: blind idx,
+   *              t0, t1, pt: the pings' own times (s after t0)}],
    *      vehicles: [{reg}], points } */
   function expand(p) {
     var shapes = p.shapes.map(function (s) { return s.path; });
@@ -165,6 +216,7 @@
           lat: Float64Array.from(oy),
           b: ob,
           t0: ot[0], t1: ot[ot.length - 1],
+          pt: Float64Array.from(t, function (x) { return x - p.t0; }),
         });
       });
     });
@@ -175,11 +227,28 @@
     };
   }
 
-  /* Every vehicle's position at time t (seconds after t0). */
-  function positionsAt(E, blinds, t) {
+  /* Every vehicle's position at time t (seconds after t0).
+   *
+   * hold (live day only; omit it for a finished day, which then draws exactly
+   * as it always has): {seen: {reg: epoch}, t0: the epoch t is counted from,
+   * maxGap: 900, edge: the newest head's `to` (optional)}. Past its last ping,
+   * a bus is drawn AT that ping, never beyond it (spec §4.4), while
+   *   - seen[reg] >= min(c, edge - 30), c = t0 + t: it was still reported on
+   *     this route (with no edge, seen >= c). Every seen is earlier than
+   *     server-now, so Latest (c = server-now) judges it at the edge; in
+   *     Smooth c is well before the edge and this is seen >= c;
+   *   - c - its last ping <= maxGap.
+   * With a hold, each bus also says `held` and `age`, the seconds since its
+   * last ping. */
+  function positionsAt(E, blinds, t, hold) {
     var out = [], seen = {};
     for (var i = 0; i < E.segs.length; i++) {
       var s = E.segs[i];
+      if (hold && t > s.t1 && !seen[s.vi] && lastSegOf(E, i)) {
+        var h = heldAt(E, blinds, s, t, hold);
+        if (h) { seen[s.vi] = true; out.push(h); }
+        continue;
+      }
       if (t < s.t0 || t > s.t1 || seen[s.vi]) continue;
       var lo = 0, hi = s.t.length - 1;
       while (hi - lo > 1) {
@@ -190,14 +259,54 @@
       var f = span > 0 ? (t - s.t[lo]) / span : 0;
       var blind = blinds[s.b[lo]] || '?';
       seen[s.vi] = true;
-      out.push({
+      var bus = {
         vi: s.vi, reg: E.vehicles[s.vi].reg, blind: blind,
         dead: blind.indexOf('(') !== -1,     // "(tuk London)" etc: depot run
         position: [s.lon[lo] + f * (s.lon[hi] - s.lon[lo]),
                    s.lat[lo] + f * (s.lat[hi] - s.lat[lo])],
-      });
+      };
+      if (hold) { bus.held = false; bus.age = t - lastPingBy(s, t); }
+      out.push(bus);
     }
     return out;
+  }
+
+  // Segments come vehicle by vehicle, each vehicle's in time order (expand
+  // keeps the file's order, and build_route and mergeLive write it so).
+  function lastSegOf(E, i) {
+    return i + 1 === E.segs.length || E.segs[i + 1].vi !== E.segs[i].vi;
+  }
+
+  // The time of s's last ping at or before t (s.t0 <= t).
+  function lastPingBy(s, t) {
+    var pt = s.pt, lo = 0, hi = pt.length - 1;
+    if (pt[hi] <= t) return pt[hi];
+    while (hi - lo > 1) {
+      var mid = (lo + hi) >> 1;
+      if (pt[mid] <= t) lo = mid; else hi = mid;
+    }
+    return pt[lo];
+  }
+
+  // The bus at s's last ping, if the hold keeps it there at t (> s.t1).
+  function heldAt(E, blinds, s, t, hold) {
+    var reg = E.vehicles[s.vi].reg;
+    var age = t - s.t1;
+    var maxGap = hold.maxGap != null ? hold.maxGap : GAP_SPLIT_S;
+    if (age > maxGap) return null;
+    var c = hold.t0 + t;
+    var need = hold.edge != null ? Math.min(c, hold.edge - EDGE_LAG_S) : c;
+    var sn = hold.seen && Object.prototype.hasOwnProperty.call(hold.seen, reg)
+      ? hold.seen[reg] : null;
+    if (sn == null || !(sn >= need)) return null;
+    var n = s.t.length - 1;
+    var blind = blinds[s.b[n]] || '?';
+    return {
+      vi: s.vi, reg: reg, blind: blind,
+      dead: blind.indexOf('(') !== -1,
+      position: [s.lon[n], s.lat[n]],
+      held: true, age: age,
+    };
   }
 
   /* Vehicles seen, per minute, across [0, t1-t0] — the timeline's shape. */
@@ -218,6 +327,181 @@
       for (var m = 0; m < n; m++) counts[m] += mark[m];
     });
     return counts;
+  }
+
+  /* ---- live: the day so far plus the fragments -------------------------- */
+
+  function delta(a) {
+    var out = new Array(a.length);
+    for (var i = 0; i < a.length; i++) out[i] = i ? a[i] - a[i - 1] : a[0];
+    return out;
+  }
+
+  function orNull(v) { return v === undefined ? null : v; }
+
+  function cmp(a, b) { return a < b ? -1 : a > b ? 1 : 0; }
+
+  // export_replay._merge: sorted, then overlapping or touching holes that
+  // share kind and reason joined.
+  function joinHoles(hs) {
+    var out = [];
+    hs.slice().sort(function (p, q) {
+      return cmp(p[0], q[0]) || cmp(p[1], q[1]) || cmp(p[2], q[2]) || cmp(p[3], q[3]);
+    }).forEach(function (h) {
+      var last = out[out.length - 1];
+      if (last && h[0] <= last[1] && last[2] === h[2] && last[3] === h[3]) {
+        last[1] = Math.max(last[1], h[1]);
+      } else {
+        out.push([h[0], h[1], h[2], h[3]]);
+      }
+    });
+    return out;
+  }
+
+  var LONDON = null;
+  function londonDate(epoch) {           // the London date at epoch, YYYY-MM-DD
+    LONDON = LONDON || new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Europe/London', year: 'numeric', month: '2-digit', day: '2-digit'});
+    var d = {};
+    LONDON.formatToParts(new Date(epoch * 1000)).forEach(function (x) { d[x.type] = x.value; });
+    return d.year + '-' + d.month + '-' + d.day;
+  }
+
+  // live_layers._decode: src's pings into pings, reg -> Map(t -> [x, y,
+  // blind]) with x and y in 1e-5 degrees; and, when bridges is given, its
+  // bridges into bridges, reg -> Map('t,t_next' -> [k, a, b]). The first copy
+  // of each wins: copies are one report, so they agree.
+  function decodeInto(src, pings, bridges) {
+    var blinds = src.blinds || [];
+    (src.vehicles || []).forEach(function (v) {
+      var mine = pings.get(v.reg), mineBr = null;
+      if (!mine) pings.set(v.reg, mine = new Map());
+      if (bridges) {
+        mineBr = bridges.get(v.reg);
+        if (!mineBr) bridges.set(v.reg, mineBr = new Map());
+      }
+      v.segs.forEach(function (s) {
+        var t = undelta(s.t), x = undelta(s.x), y = undelta(s.y);
+        for (var i = 0; i < t.length; i++) {
+          if (!mine.has(t[i])) mine.set(t[i], [x[i], y[i], blinds[s.b[i]]]);
+        }
+        if (!mineBr) return;
+        var br = s.br || [], j = 0;
+        for (var k = 0; k < br.length; k += 4) {
+          j += br[k];
+          var key = t[j] + ',' + t[j + 1];
+          if (!mineBr.has(key)) mineBr.set(key, [br[k + 1], br[k + 2], br[k + 3]]);
+        }
+      });
+    });
+  }
+
+  /* The live day for route as one v1 payload, exactly as Road Data's
+   * live_layers.merge_live builds it (read its docstring; this follows it
+   * step for step):
+   *   1. decode the day file, then each fragment (recent, then the head), and
+   *      take the union of pings by (reg, t), the first copy winning;
+   *   2. keep pings in [t0, t1), the service day's window;
+   *   3. split each bus's pings at gaps over 900 s, and drop one-ping
+   *      segments;
+   *   4. keep the day file's bridges, and a fragment's only when its
+   *      route_version equals the day file's route_version id; with no day
+   *      file (day == null) no bridge at all, and shapes are the argument's;
+   *   5. re-encode as build_route does: buses by registration, blinds in
+   *      order of first use. t1 is the last ping (t0 if none). Holes are the
+   *      day file's plus the fragments' clipped to [t0, t1), joined. All else
+   *      the day file says is carried over, bar its stats.
+   * Plus live.seen, {reg: the latest seen in the fragments}, for the hold. */
+  function mergeLive(day, fragments, route, t0, t1, shapes) {
+    var pings = new Map(), bridges = new Map(), rv = null;
+    if (day != null) {
+      decodeInto(day, pings, bridges);
+      rv = orNull((day.route_version || {}).id);
+    }
+    fragments.forEach(function (fr) {
+      var same = day != null && orNull(fr.route_version) === rv;
+      decodeInto(fr, pings, same ? bridges : null);
+    });
+
+    var regs = Array.from(pings.keys()).sort();
+    var blinds = [], blindIx = new Map(), vehicles = [], last = t0;
+    regs.forEach(function (reg) {
+      var pts = [];
+      pings.get(reg).forEach(function (p, t) {
+        if (t0 <= t && t < t1) pts.push([t, p[0], p[1], p[2]]);
+      });
+      if (!pts.length) return;
+      pts.sort(function (a, b) { return a[0] - b[0]; });
+      var runs = [], run = [pts[0]];
+      for (var i = 1; i < pts.length; i++) {
+        if (pts[i][0] - run[run.length - 1][0] > GAP_SPLIT_S) { runs.push(run); run = []; }
+        run.push(pts[i]);
+      }
+      runs.push(run);
+      var regBr = bridges.get(reg), segs = [];
+      runs.forEach(function (run) {
+        if (run.length < 2) return;
+        var ts = [], xs = [], ys = [], bl = [];
+        run.forEach(function (p) {
+          ts.push(p[0]); xs.push(p[1]); ys.push(p[2]);
+          if (!blindIx.has(p[3])) { blindIx.set(p[3], blinds.length); blinds.push(p[3]); }
+          bl.push(blindIx.get(p[3]));
+        });
+        var br = [], lastJ = 0;
+        for (var j = 0; j < ts.length - 1; j++) {
+          var hit = regBr && regBr.get(ts[j] + ',' + ts[j + 1]);
+          if (hit) { br.push(j - lastJ, hit[0], hit[1], hit[2]); lastJ = j; }
+        }
+        segs.push({t: delta(ts), x: delta(xs), y: delta(ys), b: bl, br: br});
+        last = Math.max(last, ts[ts.length - 1]);
+      });
+      if (segs.length) vehicles.push({reg: reg, segs: segs});
+    });
+
+    var hs = ((day != null && day.holes) || []).map(function (h) { return h.slice(); });
+    var seen = {};
+    fragments.forEach(function (fr) {
+      (fr.holes || []).forEach(function (h) {
+        if (h[0] < t1 && h[1] > t0) hs.push([Math.max(h[0], t0), Math.min(h[1], t1), h[2], h[3]]);
+      });
+      (fr.vehicles || []).forEach(function (v) {
+        if (v.seen == null) return;
+        if (!Object.prototype.hasOwnProperty.call(seen, v.reg) || v.seen > seen[v.reg]) {
+          seen[v.reg] = v.seen;
+        }
+      });
+    });
+
+    var out = {};
+    if (day != null) {
+      Object.keys(day).forEach(function (k) { if (k !== 'stats') out[k] = day[k]; });
+    }
+    out.format = FORMAT;
+    out.version = VERSION;
+    out.route = route;
+    out.date = londonDate(t0);
+    out.t0 = t0;
+    out.t1 = last;
+    out.holes = joinHoles(hs);
+    out.shapes = day != null ? day.shapes : shapes;
+    out.stops = day != null && day.stops !== undefined ? day.stops : [];
+    out.blinds = blinds;
+    out.vehicles = vehicles;
+    out.live = Object.assign({}, day != null ? day.live : null, {seen: seen});
+    return out;
+  }
+
+  /* Each registration's colour slot. prior's are kept as they are, and a
+     registration new to it takes the next slot, so a bus keeps its colour
+     as others join the live day (its vi, its place in the payload, does
+     not). prior is not changed. */
+  function colourIndex(regs, prior) {
+    var out = new Map(prior || []), next = 0;
+    out.forEach(function (ix) { if (ix >= next) next = ix + 1; });
+    for (var i = 0; i < regs.length; i++) {
+      if (!out.has(regs[i])) out.set(regs[i], next++);
+    }
+    return out;
   }
 
   /* A registration as the plate shows it. BODS sends 'LY26ABC'; the plate
@@ -251,6 +535,9 @@
     parse: parse, validate: validate, expand: expand,
     positionsAt: positionsAt, inServiceByMinute: inServiceByMinute,
     filename: filename, isGzip: isGzip, plate: plate,
+    LIVE_FORMAT: LIVE_FORMAT, LIVE_VERSION: LIVE_VERSION,
+    parseLive: parseLive, validateLive: validateLive, mergeLive: mergeLive,
+    colourIndex: colourIndex,
   };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.ReplayData = api;
