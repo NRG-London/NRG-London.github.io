@@ -11,10 +11,8 @@ sitemap:
 noindex: true
 ---
 
-This pilot shows where the buses on seven routes are now, and lets you replay the days before on the same map. The routes are 127, 154, S4, 433, SL7, 130 and 157.
+A pilot programme for Delay Replay: upgrading my bus replay viewer to show not just previous days, but today. And not just today, but now. Or "nearly now" as the map shows where each bus was about 2 minutes ago.
 
-Positions are shown a short, set delay behind the real bus. A bus is only ever shown where it was reported. When it has not reported, it stays at its last known place and is never moved on by a guess.
+Eventually this will cover every bus route in London, but this pilot covers just 7 routes around Croydon and Sutton: 127, 154, S4, 433, SL7, 130 and 157.
 
-Smooth keeps the picture steady by showing the buses a little further behind, so each one has usually reported again before you see it. Latest shows the newest report as soon as it arrives, with its age, and the bus glides to its new place.
-
-This is a pilot, for testing.
+This is a pilot for testing, so it may not work properly. If you have any suggestions or especially if it doesn't work, please [drop me an email](mailto:London@NeilGarratt.com).
