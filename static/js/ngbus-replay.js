@@ -793,7 +793,7 @@
     if (!NN) return;
     var route = payload.route, day = payload.date, mine = cur;
     NN.load(DATA_ROOT, route).then(function (f) {
-      if (!cur || cur !== mine) return;                      // moved on meanwhile (a refresh is not a move)
+      if (cur !== mine) return;                              // moved on meanwhile (a refresh is not a move)
       var items = f ? f.notices.concat(f.closures) : [];
       var w = NN.serviceDay(day);
       var live = items.filter(function (it) { return NN.inEffect(it, w[0], w[1]); });
@@ -801,8 +801,15 @@
       var byId = {};                                         // a closed stop's letter
       (payload.stops || []).forEach(function (s) { if (s.id) byId[s.id] = s; });
       closedStops = closed.map(function (c) {
-        return { name: c.name, letter: stopLetter(byId[c.atco]), lon: c.lon, lat: c.lat, closed: true };
+        return { name: c.name, letter: stopLetter(byId[c.atco]), lon: c.lon, lat: c.lat, closed: true,
+                 atco: c.atco };
       });
+      // A pinned closed stop is held by identity: on a live refresh these are
+      // new objects, so find it again by its stop code, or let it go.
+      if (pinned && pinned.stop && pinned.stop.closed) {
+        var again = closedStops.filter(function (s) { return s.atco === pinned.stop.atco; })[0];
+        pinned = again ? { stop: again } : null;
+      }
       var notes = live.filter(function (it) { return it.atco == null; });
       var parts = [];
       if (notes.length || closed.length) {
@@ -1200,6 +1207,7 @@
     var buses = R.positionsAt(E, p.blinds, simT, hold);
     var latest = !!hold && liveLatest();   // every bus at its last report, its age shown
     if (latest) liveGlide(buses, E, p);
+    else if (hold) liveCatchUp(buses, E, p);   // Smooth: a late ping glides, not jumps
     var icons = busStyle === 'buses', kind = busKind(p.route);
     if (icons) updateFacing(buses);
     lastBuses = buses;
@@ -1297,6 +1305,8 @@
     try {
       if (LIVE && liveRunning()) {
         liveStep(now);                     // the live day: at the edge, or catching up to it
+      } else if (LIVE && liveEnding()) {
+        liveEnd(now);                      // its window just ended: hand over, or hold (Ruling 12)
       } else if (playing && cur) {
         // Cap the step: a frame that stalled (shader compile, background tab)
         // must not throw the replay minutes forward.
@@ -1400,19 +1410,29 @@
     pinned: true,                // at the live edge, or scrubbed back
     back: false,                 // ?live=0: the first live day opened starts scrubbed back
     glide: new Map(),            // Latest: registration -> R.latestGlide state
+    smooth: null,                // Smooth: R.smoothStep's state (held buses, glides under way)
+    cause: null,                 // since the last frame: 'data' (a refresh landed) or 'jump' (the
+                                 // reader moved the cursor, the day or the mode)
+    handing: null,               // the live day being handed over to (Ruling 12), while it loads
     poll: { text: 'not yet', at: null }, error: null, errorAt: null,
     timer: null, polling: null, first: null, pending: null,
     shownDates: '', ctl: '', overlayAt: 0,
   };
+  var STALE_REASON = 'a live file did not arrive';
 
   function serverNow() { return live.clock ? live.clock.now(performance.now()) : Date.now() / 1000; }
   function liveDelay() { return live.mode === 'latest' ? 0 : live.delay; }
 
   // A live day still running at the cursor's edge. Once its service window
-  // is behind the edge (D-1 after 05:00) it is a finished day, which loops.
+  // is behind the edge (D-1 after 05:00) it has ended: see liveEnd.
   function liveRunning() {
     return !!(LIVE && cur && cur.live && live.clock && serverNow() - liveDelay() < cur.t1);
   }
+  // A live day whose window has ended, not (yet) left to loop as a past day.
+  function liveEnding() {
+    return !!(cur && cur.live && live.clock && cur.liveEnd !== 'loop');
+  }
+  function liveJump() { live.cause = 'jump'; }   // every bus placed directly next frame
   function liveEdge() {           // the live edge, as simT
     return Math.max(0, Math.min(cur.t1 - cur.t0, serverNow() - liveDelay() - cur.t0));
   }
@@ -1537,6 +1557,12 @@
       live.pending = null;
       openLiveDay(p.key, p.iso, p.opts);
     }
+    // A live day held at its end for want of a newer one hands over as soon
+    // as the head lists one, unless the reader has moved off its end.
+    if (cur && cur.live && cur.liveEnd === 'hold' && !playing && simT >= cur.t1 - cur.t0 - 1) {
+      var d = R.whenLiveDayEnds(live.head, cur.live.date, true, cur.payload.route);
+      if (d.act === 'switch') { cur.liveEnd = 'switch'; liveHandOver(d.date); }
+    }
   }
 
   /* -- merging -- */
@@ -1555,6 +1581,13 @@
     var want = {};
     if (cur && cur.live && cur.payload.route === route) want[cur.live.date] = true;
     if (extra) want[extra] = true;
+    // In the shown day's last minute at the live edge, the day it will hand
+    // over to (Ruling 12) is merged ahead, so the switch need not wait.
+    if (cur && cur.live && cur.payload.route === route && live.pinned && liveRunning() &&
+        cur.t1 - (serverNow() - liveDelay()) <= 60) {
+      var next = R.whenLiveDayEnds(head, cur.live.date, true, route);
+      if (next.act === 'switch') want[next.date] = true;
+    }
     var plans = head.days.filter(function (d) { return want[d.date]; }).map(function (d) {
       var m = live.days.get(d.date);
       return { d: d, prev: m ? m.inputs : { route: route, date: d.date } };
@@ -1574,13 +1607,22 @@
       if (inp.day === undefined || inp.recent === undefined) return;   // nothing in hand yet
       var m = live.days.get(p.d.date);
       if (m && m.head === head && m.inputs.day === inp.day && m.inputs.recent === inp.recent) return;
+      // The set merged: the head's own, or (a named file not in hand) the
+      // last one, whose head says what its upto and capping were.
+      var setHead = inp.fresh ? head : (m && m.setHead) || head;
       try {
         var frags = [inp.recent.routes[route], head.routes[route]].filter(Boolean);
         var payload = R.mergeLive(inp.day, frags, route, p.d.t0, p.d.t1, []);
-        notYet(payload, head, p.d);
-        live.days.set(p.d.date, { inputs: inp, payload: payload, head: head,
+        notYet(payload, setHead, p.d);
+        // A stale set's recent file can end before this head begins: no file
+        // has that stretch, so it is a hole, and nothing is drawn across it.
+        if (!inp.fresh && inp.recent.to < head.from) {
+          payload = R.splitAtHole(payload, Math.max(inp.recent.to, p.d.t0), Math.min(head.from, p.d.t1),
+                                  STALE_REASON);
+        }
+        live.days.set(p.d.date, { inputs: inp, payload: payload, head: head, setHead: setHead,
                                   win: { date: p.d.date, t0: p.d.t0, t1: p.d.t1 },
-                                  hours: inp.recent.hours || {}, upto: head.upto });
+                                  hours: inp.recent.hours || {}, upto: setHead.upto });
       } catch (e) {
         liveFault(e, 'route ' + route + ' on ' + p.d.date);   // the last good merge stays
       }
@@ -1630,6 +1672,7 @@
       return;
     }
     cur.liveInfo = { hours: m.hours, upto: m.upto };
+    if (live.cause !== 'jump') live.cause = 'data';        // a held bus's next ping may be here
     try {
       liveRedraw(old, m.payload);
       drawTimelineBase();
@@ -1689,13 +1732,28 @@
     }
     live.pinned = !(opts.back || opts.t != null);
     live.glide = new Map();
+    var keep = opts.handover ? pinned : null;     // a handover keeps the pinned bus or stop
     try {
       start(m.payload, { source: 'live', live: m.win, liveInfo: { hours: m.hours, upto: m.upto },
                          t: opts.t, at: opts.at, gap: opts.gap });
     } catch (e) {
       say(e.name === 'ReplayError' ? e.message : 'Something went wrong drawing that day (' + e.message + ').');
       console.error(e);
+      return;
     }
+    if (keep) {
+      var s = keep.stop && findStop(cur.payload.stops, keep.stop);
+      pinned = keep.reg ? { reg: keep.reg } : s ? { stop: s } : null;   // a bus no longer out lets go itself
+      placeCard();
+    }
+  }
+
+  // Ruling 12: the live day shown at the live edge has ended, and the head
+  // lists a newer one: open it, still Live, in the same mode, the camera and
+  // the pin kept. Until it is in, the ended day waits at its end (liveEnd).
+  function liveHandOver(date) {
+    live.handing = date;
+    openLiveDay(cur.payload.route, date, { handover: true });
   }
 
   // At load: a pilot route opens on its newest live day (or the live day
@@ -1733,12 +1791,45 @@
       var edge = liveEdge();
       if (simT >= edge) { simT = edge; liveRejoin(); }     // caught up: Live again, at 1x
     }
+    cur.liveRanPinned = live.pinned;      // whether the reader was at the edge when it ends
     render();
+  }
+
+  // Ruling 12: the live day's window has passed the edge. Decided once
+  // (R.whenLiveDayEnds): at the live edge then, hand over to the newest live
+  // day, or with none hold at the end, paused, and never loop; scrubbed back
+  // or opened as a replay, it loops as any past day (the next frame takes
+  // tick's own branch).
+  function liveEnd(now) {
+    var span = cur.t1 - cur.t0;
+    if (!cur.liveEnd) {
+      var d = R.whenLiveDayEnds(live.head, cur.live.date, !!cur.liveRanPinned, cur.payload.route);
+      cur.liveEnd = d.act;
+      if (d.act === 'loop') return;
+      simT = span;
+      if (d.act === 'switch') liveHandOver(d.date);
+      else liveHeldAtEnd();
+    }
+    if (cur.liveEnd === 'switch') {
+      simT = span;                          // waits at its end while the next day comes in
+    } else if (playing) {                   // held, then played again by hand: to its end, never round
+      simT = Math.min(span, simT + speed * Math.min(250, now - lastFrame) / 1000);
+      if (simT >= span) liveHeldAtEnd();
+    }
+    render();
+  }
+
+  function liveHeldAtEnd() {
+    playing = false;
+    el.play.textContent = 'Play';
+    el.play.classList.add('paused');
+    liveControls();
   }
 
   function liveRejoin() {
     live.pinned = true;
     live.glide = new Map();
+    liveJump();
     if (!playing) {
       playing = true;
       el.play.textContent = 'Pause';
@@ -1746,6 +1837,7 @@
     }
     speed = 1;
     el.speed.value = '1';
+    liveURL();                            // ?live=0 is spent: a reload opens at the edge
     liveControls();
   }
 
@@ -1760,9 +1852,20 @@
   // never past the live edge, and onto it is Live again.
   function liveScrubbed() {
     if (!liveRunning()) return;
+    liveJump();
     var edge = liveEdge();
     if (simT >= edge) { simT = edge; liveRejoin(); }
     else if (live.pinned) { live.pinned = false; live.glide = new Map(); liveControls(); }
+  }
+
+  // The address follows the mode, and drops ?live=0 once at the edge.
+  function liveURL() {
+    var u = new URL(location.href);
+    if (live.mode === 'latest') u.searchParams.set('mode', 'latest');
+    else u.searchParams.delete('mode');
+    if (live.pinned) u.searchParams.delete('live');
+    var next = u.pathname + (u.search || '');
+    if (next !== location.pathname + location.search) history.replaceState(null, '', next);
   }
 
   /* -- what a live day shows -- */
@@ -1777,18 +1880,40 @@
       live.glide.set(b.reg, g.state);
       here.add(b.reg);
       if (g.trackT === last) return;
-      var at = R.positionsAt(E, p.blinds, g.trackT);
-      for (var i = 0; i < at.length; i++) {
-        if (at[i].reg === b.reg) { b.position = at[i].position; break; }
-      }
+      placeOnTrack(b, E, p, g.trackT);
     });
     live.glide.forEach(function (s, reg) { if (!here.has(reg)) live.glide.delete(reg); });
+  }
+
+  // Smooth (Ruling 13): a bus held at its last ping whose next ping has just
+  // come in glides to the cursor rather than jumping there (R.smoothStep).
+  // Glides start only when data lands; a scrub, a seek, a day or mode switch
+  // or a rejoin ('jump') places every bus directly.
+  function liveCatchUp(buses, E, p) {
+    var r = R.smoothStep(live.smooth, buses.map(function (b) {
+      return { reg: b.reg, held: b.held, last: Math.round(simT - b.age) };
+    }), simT, performance.now(), live.cause);
+    live.smooth = r.st;
+    live.cause = null;
+    buses.forEach(function (b) {
+      if (Object.prototype.hasOwnProperty.call(r.trackT, b.reg)) placeOnTrack(b, E, p, r.trackT[b.reg]);
+    });
+  }
+
+  // A bus drawn at track time t of its own track instead of the cursor's.
+  function placeOnTrack(b, E, p, t) {
+    var at = R.positionsAt(E, p.blinds, t);
+    for (var i = 0; i < at.length; i++) {
+      if (at[i].reg === b.reg) { b.position = at[i].position; b.gliding = true; return; }
+    }
   }
 
   // On each frame of a live page: the banner, the controls, the overlay.
   function liveFrame(buses) {
     var running = liveRunning(), n = serverNow();
-    var b = running ? R.bannerFor(live.head, n) : null;
+    // the banners belong to a running live day, and to one held at its end
+    // for want of a newer one (often because the writer has stopped)
+    var b = running || (cur && cur.live && cur.liveEnd === 'hold') ? R.bannerFor(live.head, n) : null;
     var text = !b ? '' : b.kind === 'data'
       ? 'Live data stopped at ' + fmtHM(b.at) + '. The buses stay where they were last reported, then drop out.'
       : 'Feed stopped at ' + fmtHM(b.at) + ': no new London bus positions have come in since.';
@@ -1810,10 +1935,15 @@
     lines.push('poll: ' + live.poll.text + (live.poll.at ? ' at ' + fmtClock(live.poll.at) : ''));
     if (cur && cur.live) {
       var held = buses.filter(function (x) { return x.held; }).length;
+      var gliding = buses.filter(function (x) { return x.gliding; }).length;
+      var over = cur.liveEnd === 'switch' ? 'the day is over: moving to ' + live.handing
+        : cur.liveEnd === 'hold' ? 'the day is over: held at its end (no newer live day)'
+        : 'the day is over: replayed as a past day';
       lines.push('cursor ' + lagText(n - (cur.t0 + simT)) + ' behind · ' +
-                 (!running ? 'the day is over' : live.pinned ? live.mode + ', at the edge'
+                 (!running ? over : live.pinned ? live.mode + ', at the edge'
                    : 'scrubbed back, ' + speed + '×'));
-      lines.push((buses.length - held) + ' moving · ' + held + ' held');
+      lines.push((buses.length - held) + ' moving · ' + held + ' held' +
+                 (gliding ? ' · ' + gliding + ' gliding' : ''));
     } else {
       lines.push('not a live day');
     }
@@ -1848,6 +1978,9 @@
   // Called at the end of every start on a live page.
   function liveDayShown() {
     var on = !!cur.live;
+    live.handing = null;
+    live.smooth = null;
+    liveJump();                             // a new day: every bus placed directly
     liveSpeeds(on);
     if (on && live.pinned) liveRejoin();
     el.timeline.title = on ? 'The day so far, across its whole service window; the shaded end is ' +
@@ -1883,18 +2016,18 @@
     $('live-go').onclick = function () {
       if (liveRunning()) { liveRejoin(); simT = liveEdge(); render(); return; }
       var key = cur ? cur.payload.route : resolveRoute(el.route.value);
-      var dates = liveDates(key);
-      if (dates.length) openLiveDay(key, dates[dates.length - 1]);
+      var dates = liveDates(key), newest = dates[dates.length - 1];
+      if (!newest) return;
+      if (cur && cur.live && cur.liveEnd && cur.live.date === newest) return;   // held at its end: nothing newer
+      openLiveDay(key, newest);
     };
     Array.prototype.forEach.call(el.liveControls.querySelectorAll('[data-mode]'), function (b) {
       b.onclick = function () {
         live.mode = b.getAttribute('data-mode');
         live.glide = new Map();
+        liveJump();
         if (live.pinned && liveRunning()) simT = liveEdge();
-        var u = new URL(location.href);
-        if (live.mode === 'latest') u.searchParams.set('mode', 'latest');
-        else u.searchParams.delete('mode');
-        history.replaceState(null, '', u.pathname + (u.search || ''));
+        liveURL();
         liveControls();
         if (cur) render();
       };
@@ -1908,6 +2041,11 @@
     var sig = [has, atEdge, live.mode].join();
     if (sig === live.ctl) return;
     live.ctl = sig;
+    // At the live edge the cursor runs in real time whatever the menu says:
+    // the menu is off there (it reads 1x), and on again once scrubbed back.
+    el.speed.disabled = atEdge;
+    if (atEdge) el.speed.title = 'Live plays in real time: go back to choose a speed';
+    else el.speed.removeAttribute('title');
     el.liveControls.hidden = !has;
     var go = $('live-go');
     go.classList.toggle('on', atEdge);
@@ -1931,8 +2069,9 @@
     liveBuildControls();
     el.liveOverlay.hidden = false;
     livePoll();
+    // Back in front after the timer slept: poll now if the next head is due.
     document.addEventListener('visibilitychange', function () {
-      if (!document.hidden && live.head && serverNow() >= R.nextPollAt(live.head, serverNow()) - 0.5) livePoll();
+      if (!document.hidden && R.pollDue(live.head, serverNow())) livePoll();
     });
   }
 

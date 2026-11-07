@@ -696,7 +696,113 @@
     var f = ms > 0 ? (perf - s.startPerf) / ms : 1;
     if (f >= 1) return s.to;
     if (f <= 0) return s.from;
-    return s.from + (1 - Math.pow(1 - f, 3)) * (s.to - s.from);    // ease-out cubic
+    return s.from + easeOut(f) * (s.to - s.from);
+  }
+
+  function easeOut(f) { return 1 - Math.pow(1 - f, 3); }       // cubic: quick, then settling
+
+  /* Smooth (Viewer Ruling 13). A bus held at its last ping H, whose next
+   * ping then arrives, is not jumped to the cursor: it glides there. Its
+   * track time is H + ease(f)·(target − H), where the target is the cursor
+   * now (it moves during the glide), f = (perf − start) / glideMs with the
+   * same ease-out as Latest, and the target itself from f >= 1. So it never
+   * passes the cursor, and meets it exactly when the glide ends, at any frame
+   * rate. (latestGlide restarts at every new target, which with a moving one
+   * is a lag that never closes.)
+   *
+   * One frame: st, {held: {reg: H}, glide: {reg: {from, startPerf}}} from the
+   * last (null to begin); buses, [{reg, held, last}] as drawn now (held as
+   * positionsAt's hold says; last, its last ping's track time); simT, the
+   * cursor; cause, 'data' when a refresh has landed since the last frame,
+   * 'jump' when the reader moved the cursor, the day or the mode (every bus
+   * is then placed directly, and a glide under way ends), else null. A glide
+   * starts only for a bus held in the last frame and moving in this one, and
+   * only on 'data'.
+   * -> {st, trackT: {reg: track time}} for the buses gliding now; any other
+   * bus is drawn where positionsAt put it. */
+  function smoothStep(st, buses, simT, perfNow, cause, glideMs) {
+    var ms = glideMs == null ? GLIDE_MS : glideMs;
+    var prev = st && cause !== 'jump' ? st : {held: {}, glide: {}};
+    var out = {held: {}, glide: {}}, trackT = {};
+    buses.forEach(function (b) {
+      if (b.held) { out.held[b.reg] = b.last; return; }
+      var g = prev.glide[b.reg];
+      if (!g && cause === 'data' && prev.held[b.reg] != null) {
+        g = {from: prev.held[b.reg], startPerf: perfNow};
+      }
+      if (!g) return;
+      var f = ms > 0 ? (perfNow - g.startPerf) / ms : 1;
+      if (f >= 1 || !(simT > g.from)) return;      // there: drawn on the cursor
+      out.glide[b.reg] = g;
+      trackT[b.reg] = g.from + easeOut(Math.max(0, f)) * (simT - g.from);
+    });
+    return {st: out, trackT: trackT};
+  }
+
+  /* Viewer Ruling 12: what a live day the reader was watching at the live
+     edge does when its window ends (D-1 at 05:00, plus the delay): hand over
+     to the newest live day the head lists for route after it, {act: 'switch',
+     date}; with none (the writer may have stopped), {act: 'hold'} at its end,
+     never looping. A day the reader was not at the edge of then (scrubbed
+     back, or opened as a replay) loops as any past day does: {act: 'loop'}. */
+  function whenLiveDayEnds(head, date, pinned, route) {
+    if (!pinned) return {act: 'loop'};
+    var newer = liveDays(head, [], route).filter(function (d) { return d.live && d.date > date; })
+      .map(function (d) { return d.date; }).sort();
+    return newer.length ? {act: 'switch', date: newer[newer.length - 1]} : {act: 'hold'};
+  }
+
+  /* Whether the next head is due by nowS: at generated + cadence_s + 1, the
+     time nextPollAt first waits for, or any time after; or there is no head.
+     (nextPollAt itself never answers "now", so it cannot say a poll is
+     overdue.) */
+  function pollDue(head, nowS) {
+    if (!head) return true;
+    var cad = head.cadence_s > 0 ? head.cadence_s : 10;
+    return nowS >= head.generated + cad + 1;
+  }
+
+  /* A live day merged from a stale set (the head names a file not yet in
+   * hand, so the last day and recent files stand) has no file at all for
+   * [a, b): from the old recent file's `to` to the new head's `from`. That
+   * stretch becomes a no-data hole, and no segment may join pings across it:
+   * each pair of consecutive pings whose interval meets [a, b) is cut, and a
+   * segment left with one ping is dropped, as build_route drops them. The
+   * bridges of the pairs kept are kept. Fail loudly: a gap drawn as a gap,
+   * never as a straight line across it.
+   * -> a new payload (payload itself is not changed); payload when b <= a. */
+  function splitAtHole(payload, a, b, reason) {
+    if (!(b > a)) return payload;
+    var vehicles = [], last = payload.t0;
+    list(payload.vehicles, 'the day: no vehicles').forEach(function (v) {
+      var segs = [];
+      v.segs.forEach(function (s) {
+        var t = undelta(s.t), x = undelta(s.x), y = undelta(s.y), raw = s.br || [], br = {}, j = 0;
+        for (var k = 0; k < raw.length; k += 4) { j += raw[k]; br[j] = [raw[k + 1], raw[k + 2], raw[k + 3]]; }
+        var from = 0;
+        for (var i = 0; i < t.length; i++) {
+          if (i + 1 < t.length && !(t[i] < b && t[i + 1] > a)) continue;   // the run goes on
+          if (i > from) {                                                  // pings from..i: two or more
+            var seg = {t: delta(t.slice(from, i + 1)), x: delta(x.slice(from, i + 1)),
+                       y: delta(y.slice(from, i + 1)), b: s.b.slice(from, i + 1), br: []};
+            for (var q = from, lastJ = 0; q < i; q++) {
+              if (!br[q]) continue;
+              seg.br.push(q - from - lastJ, br[q][0], br[q][1], br[q][2]);
+              lastJ = q - from;
+            }
+            segs.push(seg);
+            last = Math.max(last, t[i]);
+          }
+          from = i + 1;
+        }
+      });
+      if (segs.length) vehicles.push({reg: v.reg, segs: segs});
+    });
+    var out = Object.assign({}, payload);
+    out.vehicles = vehicles;
+    out.t1 = last;
+    out.holes = joinHoles((payload.holes || []).concat([[Math.max(a, payload.t0), b, 'no-data', reason]]));
+    return out;
   }
 
   /* Each registration's colour slot. prior's are kept as they are, and a
@@ -748,6 +854,8 @@
     colourIndex: colourIndex,
     liveClock: liveClock, nextPollAt: nextPollAt, liveDays: liveDays, bannerFor: bannerFor,
     mergeInputs: mergeInputs, latestGlide: latestGlide,
+    smoothStep: smoothStep, whenLiveDayEnds: whenLiveDayEnds, pollDue: pollDue,
+    splitAtHole: splitAtHole,
   };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.ReplayData = api;

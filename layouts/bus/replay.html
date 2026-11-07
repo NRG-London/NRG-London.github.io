@@ -136,7 +136,7 @@
 <script src="/js/maplibre-gl.js"></script>
 <script type="application/json" id="ngbus-notices-words">{{ hugo.Data.buswords.notices | jsonify | safeJS }}</script>
 <script src="/js/ngbus-notices.js?v=3"></script>
-<script src="/js/ngbus-replay-data.js?v=3"></script>
+<script src="/js/ngbus-replay-data.js?v=4"></script>
 {{- /* Each route's usual deck for the little buses, "night" for a night route
        (a purple triple decker): from the sweep's fleet data and the holding
        list. ROUTE:kind pairs, read by ngbus-replay.js. */ -}}
@@ -151,6 +151,6 @@
 {{- end }}
 <script type="text/plain" id="ngbus-decks">{{ delimit $decks "," }}</script>
 <script src="/js/ngbus-buses.js?v=1"></script>
-<script src="/js/ngbus-replay.js?v=13"></script>
+<script src="/js/ngbus-replay.js?v=14"></script>
 </body>
 </html>
