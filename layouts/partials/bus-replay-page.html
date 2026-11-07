@@ -1,0 +1,157 @@
+{{- /*
+  The bus replay page, shared by /bus/replay/ (layouts/bus/replay.html) and the
+  unlisted live pilot /labs/bus-live/ (layouts/labs/bus-live.html).
+
+  Called with a dict: "page" (the page context) and "live" (the live data root,
+  or "" for the production page). Live mode is on only when <body data-live-root>
+  is set; the live controls, banners and overlay below are hidden otherwise.
+  Everything else is identical, so the two pages cannot drift apart.
+*/ -}}
+{{- $p := .page -}}
+{{- $live := .live -}}
+<!doctype html>
+<html lang="en-GB">
+<head>
+{{ with $p.Site.Params.goatcounterURL }}<script data-goatcounter="{{ . }}" async src="//gc.zgo.at/count.js"></script>{{ end }}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bus replay — Neil Garratt</title>
+<meta name="description" content="{{ $p.Params.summary }}">
+{{ if $p.Params.noindex }}<meta name="robots" content="noindex, nofollow">{{ end }}
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+{{- $og := absURL (default "/images/og-default.png" $p.Params.image) }}
+<meta property="og:title" content="{{ $p.Title }} — {{ $p.Site.Params.author }}">
+<meta property="og:description" content="{{ $p.Params.summary }}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ $p.Permalink }}">
+<meta property="og:site_name" content="{{ $p.Site.Title }}">
+<meta property="og:locale" content="en_GB">
+<meta property="og:image" content="{{ $og }}">
+<meta name="twitter:card" content="summary_large_image">
+{{- with $p.Site.Params.social.twitter }}
+{{- $handle := printf "@%s" (path.Base .) }}
+<meta name="twitter:site" content="{{ $handle }}">
+{{- end }}
+<link rel="stylesheet" href="/css/ngbus-replay.css?v=7">
+</head>
+<body data-replay-root="{{ $p.Site.Params.busReplayData }}"{{ with $live }} data-live-root="{{ . }}"{{ end }}>
+<div id="basemap"></div>
+<div id="map"></div>
+<div id="card" role="status" aria-live="polite" hidden></div>
+<div id="banner" hidden></div>
+{{- /* Live mode only (the Delay Replay lab page, <body data-live-root>):
+       ngbus-replay.js fills and shows these; this page never does. */}}
+<div id="live-banner" role="status" aria-live="polite" hidden></div>
+<div id="live-overlay" aria-hidden="true" hidden></div>
+<div id="drop" hidden>Drop a saved bus replay file to open it</div>
+
+<aside id="hud">
+  <a id="back" href="/bus/">&larr; All bus routes</a>
+  <header>
+    <h1 id="title">Bus replay</h1>
+    <button id="collapse" aria-expanded="true" title="Hide or show the controls and TfL notices">Hide <span aria-hidden="true">&#9652;</span></button>
+  </header>
+  <div id="badge" hidden></div>
+  <div id="notices" hidden aria-live="polite"></div>
+
+  <div class="more">
+    <div class="row">
+      <label class="lbl" for="route">Route</label>
+      <select id="route" aria-label="Route"><option value="" disabled selected>Choose&hellip;</option></select>
+      <button id="prev" class="btn" title="Previous day" aria-label="Previous day">&lsaquo;</button>
+      <span id="daylabel"></span>
+      <button id="next" class="btn" title="Next day" aria-label="Next day">&rsaquo;</button>
+    </div>
+    <div id="days"></div>
+    <div class="daykey">few <i></i> many journeys cut short &middot; grey = no figure yet (weekly)</div>
+  </div>
+
+  <div id="clock">--:--:--</div>
+  <div id="meta"></div>
+  <div id="timeline" title="Buses seen through the day. Click or drag to jump."><canvas id="tl"></canvas></div>
+  <input id="slider" type="range" min="0" max="1000" value="0" aria-label="Time of day">
+  <div class="row">
+    <button id="play">Pause</button>
+    <span class="lbl">speed</span>
+    <select id="speed" aria-label="Playback speed">
+      <option value="10">10&times;</option>
+      <option value="30">30&times;</option>
+      <option value="60" selected>60&times;</option>
+      <option value="120">120&times;</option>
+      <option value="300">300&times;</option>
+      <option value="600">600&times;</option>
+    </select>
+    <button id="copylink" class="btn" title="Copy a link that opens this route, day and moment">Copy link</button>
+  </div>
+  <div id="live-controls" hidden></div>
+  {{- /* The lab page's body text (content/labs/bus-live.md), live page only. */}}
+  {{- if $live }}
+  <details class="live-about" style="font-size:12px;line-height:1.4;margin-top:6px">
+    <summary style="cursor:pointer">About this pilot</summary>
+    {{ $p.Content }}
+  </details>
+  {{- end }}
+
+  <div class="more">
+    <div class="row">
+      <button id="save" class="btn" disabled title="Keep this day on your computer, so you can open it here after it has left the server">Save this day</button>
+      <button id="open" class="btn" title="Open a replay file you saved earlier (or drop it on the map)">Open a saved day&hellip;</button>
+      <input id="file" type="file" accept=".gz,.json,application/gzip,application/json" hidden>
+    </div>
+    <div class="row">
+      <span class="lbl">map</span>
+      <select id="mapstyle" aria-label="Map style">
+        <option value="dark" selected>Dark</option>
+        <option value="street">Streets</option>
+      </select>
+      <span class="lbl">bright</span>
+      <input id="mapbright" type="range" min="15" max="150" value="100" style="flex:1" aria-label="Map brightness">
+    </div>
+
+  </div>
+  <div id="msg" role="status" aria-live="polite"></div>
+  <div class="more">
+    <div id="legend">Trail = last 15 min &middot; grey = not in service (depot blind) &middot;
+      tap or hover over a bus for its registration and destination, or a stop for its name and letter &middot; space = play/pause, &larr;&rarr; = a minute (shift: ten).
+      The last 35 days are kept; use &ldquo;Save this day&rdquo; to keep one for longer.</div>
+    <div id="attrib">
+      <details>
+        <summary>Data: Bus Open Data Service (DfT) &middot; Powered by TfL Open Data &middot; &copy; OpenStreetMap &copy; CARTO &middot; built independently</summary>
+        <p>{{ hugo.Data.bus.weekly.attribution }}</p>
+        <p>{{ partial "bus-sources.html" $p }}</p>
+        <p>Map: &copy; <a href="https://www.openstreetmap.org/copyright" style="color:inherit">OpenStreetMap</a>
+          contributors &copy; <a href="https://carto.com/attributions" style="color:inherit">CARTO</a>.</p>
+      </details>
+    </div>
+  </div>
+</aside>
+
+{{- /* Routes with a performance page, so "back" can go to the route's own
+       page rather than the A-Z (the replay also has school and other routes
+       the bus pages do not cover). */ -}}
+{{- $pages := slice -}}
+{{- range hugo.Data.bus.weekly.routes }}{{ $pages = $pages | append .route }}{{ end }}
+<script type="application/json" id="ngbus-replay-pages">{{ $pages | jsonify | safeJS }}</script>
+<script src="/js/deck.min.js"></script>
+<script src="/js/maplibre-gl.js"></script>
+<script type="application/json" id="ngbus-notices-words">{{ hugo.Data.buswords.notices | jsonify | safeJS }}</script>
+<script src="/js/ngbus-notices.js?v=3"></script>
+<script src="/js/ngbus-replay-data.js?v=4"></script>
+{{- /* Each route's usual deck for the little buses, "night" for a night route
+       (a purple triple decker): from the sweep's fleet data and the holding
+       list. ROUTE:kind pairs, read by ngbus-replay.js. */ -}}
+{{- $decks := slice -}}
+{{- range hugo.Data.bus.weekly.routes -}}
+  {{- $k := cond (eq .service_class "night") "night" (.deck | default "") -}}
+  {{- if $k }}{{ $decks = $decks | append (printf "%s:%s" .route $k) }}{{ end -}}
+{{- end -}}
+{{- range hugo.Data.bus.holding.routes -}}
+  {{- $k := cond (eq .class "night") "night" (.deck | default "") -}}
+  {{- if $k }}{{ $decks = $decks | append (printf "%s:%s" .route $k) }}{{ end -}}
+{{- end }}
+<script type="text/plain" id="ngbus-decks">{{ delimit $decks "," }}</script>
+<script src="/js/ngbus-buses.js?v=1"></script>
+<script src="/js/ngbus-replay.js?v=14"></script>
+</body>
+</html>

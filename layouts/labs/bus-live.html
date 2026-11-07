@@ -1,0 +1,13 @@
+{{- /*
+  /labs/bus-live/ — the Delay Replay pilot (unlisted lab): a live view of seven
+  bus routes that is also a replay. The same page as /bus/replay/, with live
+  mode switched on by <body data-live-root> (params.busLiveData in hugo.toml).
+
+  Everything is in the shared partial layouts/partials/bus-replay-page.html;
+  this file only turns live mode on. Data format: scripts/BUS-DATA-CONTRACT.md,
+  "Bus live (pilot)". Earlier days still come from params.busReplayData.
+
+  The page body (content/labs/bus-live.md) is the "About" text, shown by the
+  viewer's live card; keep it short.
+*/ -}}
+{{- partial "bus-replay-page.html" (dict "page" . "live" .Site.Params.busLiveData) -}}

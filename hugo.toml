@@ -14,6 +14,9 @@ title = "Neil Garratt"
   # Bus replay data (/bus/replay/): an R2 bucket NRG-1 fills daily, served by a
   # Cloudflare Worker (E:\VM cloudflare/bus-replay-worker.js).
   busReplayData = "https://bus-replay.neil-garratt.workers.dev/"
+  # Delay Replay pilot (/labs/bus-live/): the R2 bucket bus-live, written every ~30 s by
+  # the live writer on NRG-1 (platform/live_bods.py). Turns the viewer's live mode on.
+  busLiveData = "https://bus-live.maproom.page/"
   # Tube replay data (/labs/tube-replay/; /tube/replay/ when it goes live): the R2
   # bucket nrg-tube-replay, filled nightly by NRG-1 (LU Tracking's lu_nightly.py),
   # served by E:\VM cloudflare/tube-replay-worker.js. The page reads v2/ under it.

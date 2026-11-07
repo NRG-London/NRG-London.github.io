@@ -873,6 +873,101 @@ a 404 means no notices. Read by `static/js/ngbus-notices.js`, whose "in force" i
 `journeys_turned_short`, read on NRG-1 from its clone of this repo. A day the
 weekly run has not reached yet is unshaded ("no figure yet"), never shaded as good.
 
+## Bus live (pilot) (/labs/bus-live/) — added 7 Nov 2026
+
+The Delay Replay pilot: a live view of seven routes (127, 154, S4, 433, SL7, 130, 157) that is also
+a replay. It is the bus replay page with **live mode** switched on, and it is an unlisted lab page
+(`build.list: never`, `sitemap.disable`, `noindex`). Live mode is on only when
+`<body data-live-root="…">` is set, from `params.busLiveData` in `hugo.toml`
+(`https://bus-live.maproom.page/`); `/bus/replay/` never sets it and behaves as before. Earlier
+days still come from `params.busReplayData` (the Worker above). Both pages are one partial,
+`layouts/partials/bus-replay-page.html`.
+
+**Where it comes from.** `E:\Road Data\platform\live_bods.py` (`bods-live.service` on NRG-1) follows
+the raw BODS snapshots and writes to its own R2 bucket, `bus-live`, served on the custom domain
+`bus-live.maproom.page`. The file format is `E:\Road Data\platform\live_layers.py`, whose
+`merge_live` is the contract: the viewer's `mergeLive` (`static/js/ngbus-replay-data.js`) must give
+exactly what it gives (a Node test holds it to that). **Full design:**
+`docs/superpowers/specs/2026-11-06-delay-replay-pilot-design.md` in Road Data, §4 (files and rules),
+§5 (the delay) and §6 (Cloudflare). Where this section and the spec differ, the code is what ships
+and this section follows the code.
+
+| Key | What | Written | Cache-Control |
+|---|---|---|---|
+| `t/p.json.gz` | the **head**, the only mutable file | every `cadence_s` (10 s) | `public, max-age=5` |
+| `r/p/<YYYYMMDDTHHMMSSZ>.json.gz` | **recent**: rows first seen since `upto` | every 5 min | `public, max-age=31536000, immutable` |
+| `d/<ROUTE>/<YYYY-MM-DD>/<md5:12>.json.gz` | **day so far**: an `ng-bus-replay` v1 day file for the compacted hours, named by the first 12 hex digits of the md5 of its own bytes | when an hour's state or the route register changes | `public, max-age=31536000, immutable` |
+
+`p` is the shard (the seven routes). Every object is `Content-Type: application/gzip` with no
+`Content-Encoding`; the viewer sniffs the gzip bytes. The day file carries an extra
+`live: {upto, built}`. A route with a route entry but fewer than 2 compacted pings gets a
+**skeleton** day file (its lines, stops and `route_version`, no buses) so the fragments' bridges
+have shapes to index; only a route with no route entry has `null` in the head's `d`. The writer
+deletes superseded `r/` and `d/` keys an hour after the last head named them.
+
+**CORS and caching.** The bucket answers any origin (`Access-Control-Allow-Origin: *`) to GET and
+HEAD, exposes `Date, ETag`, and preflights for 86400 s. The viewer needs `Date`: server-now comes
+from the first head's `Date` header. A Cache Rule on the hostname honours the origin's
+Cache-Control and bypasses the cache for a missing key.
+**Trap (found 7 Nov): Cloudflare answers a HEAD on this hostname `DYNAMIC`, with no CORS headers.**
+Check the bucket with GET, as the viewer does, never HEAD (spec §6, "Checked 7 Nov 2026").
+
+**Format `ng-bus-live`, version 1.** All three kinds carry `format`, `version: 1`, `kind` and
+`shard: "p"`. Times are epoch seconds unless a field is an ISO date.
+
+- **Head** (`kind: "head"`): `generated`; `feed_at` (the last snapshot that carried London buses);
+  `cadence_s`; `upto` (end of the latest UTC hour compaction has finished); `r_capped` (bool);
+  `days: [{date, t0, t1, d: {ROUTE: day key | null}}]`; `r: {key, from, to}` (the recent file it
+  names); `from`, `to` (the tail it carries, the last 10 minutes); `routes: {ROUTE: fragment}`.
+- **Recent** (`kind: "recent"`): `generated`, `from`, `to`, `hours: {"<hour start epoch>":
+  "compacted" | "signed"}` (signed means a `signoff-*.json` exists), `routes: {ROUTE: fragment}`.
+- **Fragment**: `{route_version: "<id>" | null, blinds, vehicles: [{reg, seen, segs}], holes}`.
+  `segs` are v1 segments exactly as `build_route` writes them (`t`, `x`, `y` delta-coded, `b`,
+  `br` bridges), built against the current day file's route entry, so a bridge indexes the same
+  shapes. `seen` is the last snapshot that reported this registration on this route, new report or
+  not. `holes` are gaps over 300 s in the writer's own snapshot sequence, as
+  `[start, end, "no-data", reason]` (the collector when there were no snapshots, the feed when the
+  snapshots carried no London buses).
+
+**What the head guarantees.** The writer refuses to publish a head, logs it and skips it, unless:
+`r.from == upto` (or `r_capped` is true, when `upto` is over 3 h old and `r.from = to − 3 h`, which
+the client draws as a hole reading "not yet available"); the tail starts before the recent file ends
+(`from ≤ r.to`); every route's fragment has the same `route_version` id as that route's current day
+file; and every key it names has finished uploading. A client therefore needs only the keys it does
+not already hold, and a cached `r/` or `d/` copy can never be stale. The viewer uses a fragment's
+bridges only when its `route_version` equals the day file's; otherwise it draws straight.
+
+**Anchors.** A fragment also carries, for each bus, its last row first seen before the fragment's
+start, if that row was recorded within the anchor limit (900 s) before the bus's first row in the
+fragment, so the bridge into the window exists. The client drops the duplicate ping.
+
+**Boundaries are in snapshot time**, not in the buses' own clocks: a row belongs to a window by the
+time the writer first saw it (`seen_at`), while its position is timed by its own `recorded_at`.
+`upto`, `r.from`, `r.to`, `from` and `to` are all snapshot times. Active days are the service days
+whose window holds now (two from 03:00 to 05:00); the previous day stays in `days` until the
+production replay's own index lists it.
+
+**The viewer's rules.**
+- **Merge:** union the rows of day file, recent and head by (reg, `recorded_at`); clip to the day's
+  `[t0, t1)`; re-segment at 900 s; drop one-ping segments.
+- **Hold, never extrapolate.** On the live day, at cursor `c`, a bus whose last ping is at or before
+  `c` is drawn at that ping while `seen ≥ min(c, edge − 30)` (`edge` is the newest head's `to`; in
+  Smooth this is `seen ≥ c`) and `c − last ping ≤ 900 s`. Otherwise it is not drawn. A bus is never
+  moved on by a guess.
+- **Smooth** (default): `c` = server-now − delay (`?delay=<s>`; the default is provisional until the
+  dry run measures it, so this contract does not state it). **Latest:** `c` = server-now, each bus
+  at its last report with the report's age shown. A new report is reached by a 1.5 s ease-out
+  glide along the track between the two pings, then the bus holds; a bus with no held position is
+  placed directly.
+- **Clock:** server-now is the first head's `Date` plus `performance.now()`; later heads correct it
+  forwards only. The next head is fetched `cadence_s` after the last one's `generated`, with plain
+  `fetch` and no cache-busting.
+- **Banners:** "Live data stopped at HH:MM" when `generated` is over 60 s old (the writer or the
+  upload has stopped); "Feed stopped at HH:MM" when `feed_at` is over 120 s old while `generated` is
+  fresh. Buses stay held and drop out by the hold rule.
+- **The live day never loops.** Scrubbed back and played, it runs up to the live edge and rejoins
+  Live at 1×. Previous days loop as on `/bus/replay/`. Save is disabled on the live day.
+
 ## The rules the front end will not break
 
 - **A `null` metric, or `coverage` below `coverage_threshold`, renders as
