@@ -963,9 +963,9 @@ production replay's own index lists it.
 - **Clock:** server-now is the first head's `Date` plus `performance.now()`; later heads correct it
   forwards only. The next head is fetched `cadence_s` after the last one's `generated`, with plain
   `fetch` and no cache-busting.
-- **Banners:** "Live data stopped at HH:MM" when `generated` is over 60 s old (the writer or the
-  upload has stopped); "Feed stopped at HH:MM" when `feed_at` is over 120 s old while `generated` is
-  fresh. Buses stay held and drop out by the hold rule.
+- **Banners:** "Live data stopped at HH:MM" when `generated` is over 60 s old, or two `cadence_s`
+  if that is longer (the writer or the upload has stopped); "Feed stopped at HH:MM" when `feed_at` is
+  60 s older than that while `generated` is fresh. Buses stay held and drop out by the hold rule.
 - **The live day never loops.** Scrubbed back and played, it runs up to the live edge and rejoins
   Live at 1×. Previous days loop as on `/bus/replay/`. Save is disabled on the live day.
 

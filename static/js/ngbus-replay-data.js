@@ -558,8 +558,8 @@
   var CLOCK_STEP_MS = 5000;      // ... unless it is this far out (the machine slept): a step
   var POLL_AHEAD_S = 30;         // a poll is never planned further ahead than this
   var POLL_LATE_S = 2;           // a late head: ask again this soon, backing off to the cap
-  var STOPPED_S = 60;            // "Live data stopped" once generated is over this old
-  var FEED_STOPPED_S = 120;      // "Feed stopped" once feed_at is, while generated is fresh
+  var STOPPED_S = 60;            // "Live data stopped" once generated is over this old (or 2 cadences)
+  var FEED_STOPPED_S = 120;      // "Feed stopped" once feed_at is, while generated is fresh (60 s more)
   var GLIDE_MS = 1500;           // Latest: a new report is reached over this much wall time
 
   /* Server-now: the first head's Date header (dateMs), advanced by
@@ -625,11 +625,15 @@
 
   /* Which banner the live day wants at nowS: {kind: 'data', at: generated}
      ("Live data stopped at HH:MM": the writer or the upload has stopped),
-     {kind: 'feed', at: feed_at} ("Feed stopped at HH:MM"), or null. */
+     {kind: 'feed', at: feed_at} ("Feed stopped at HH:MM"), or null. A head
+     slower than every 30 s is not called stopped until it is two cadences
+     old, so one that is merely due does not raise the banner. */
   function bannerFor(head, nowS) {
     if (!head) return null;
-    if (nowS - head.generated > STOPPED_S) return {kind: 'data', at: head.generated};
-    if (head.feed_at != null && nowS - head.feed_at > FEED_STOPPED_S) {
+    var cad = head.cadence_s > 0 ? head.cadence_s : 10;
+    var stopped = Math.max(STOPPED_S, 2 * cad);
+    if (nowS - head.generated > stopped) return {kind: 'data', at: head.generated};
+    if (head.feed_at != null && nowS - head.feed_at > stopped + FEED_STOPPED_S - STOPPED_S) {
       return {kind: 'feed', at: head.feed_at};
     }
     return null;
