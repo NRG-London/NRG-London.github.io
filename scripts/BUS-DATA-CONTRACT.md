@@ -804,6 +804,12 @@ sprite the catalogue doesn't list, a file that won't load) and the viewer draws 
 ordinary buses; buses out of service stay ordinary grey. **Keep every sprite a stamped
 day has named**: old files still ask for it.
 
+Night routes (added 7 Nov 2026, for Remembrance): `td` is the triple decker's sprite, and
+a day without one leaves night routes their ordinary Knight bus (Bonfire Night). A `td`
+that names the same sprite as `dd` means "dress night buses like the day ones": a night
+route then wears its own deck's sprite, `dd` or `sd` by the route's fleet (N33 and N72
+are single-deck). A viewer older than this draws the `dd` sprite on every night route.
+
 Animated sprites (added 5 Nov 2026, Bonfire Night's fireworks) carry `frames: {file,
 count, period}` in the catalogue as well: a strip of still frames baked from Design's
 SMIL animation in a headless browser (each frame checked pixel for pixel against the

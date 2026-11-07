@@ -65,7 +65,7 @@
   // to remember, so nothing is stored in the browser: the site sets no
   // cookies and keeps no "preferences" (privacy page).
   var NB = window.NgbusBuses;
-  var DECKS = {};                                   // route -> double | single | night
+  var DECKS = {};                                   // route -> double | single | night | night-single
   (($('ngbus-decks') || {}).textContent || '').split(',').forEach(function (kv) {
     var i = kv.indexOf(':');
     if (i > 0) DECKS[kv.slice(0, i).trim()] = kv.slice(i + 1).trim();
@@ -79,7 +79,11 @@
 
   function busKind(route) {
     var k = DECKS[String(route).toUpperCase()];
-    return k === 'night' ? 'triple' : k === 'single' ? 'single' : 'double';
+    return k === 'night' || k === 'night-single' ? 'triple' : k === 'single' ? 'single' : 'double';
+  }
+  // A night route's own deck, under the triple decker (N33 and N72 are single).
+  function nightDeck(route) {
+    return DECKS[String(route).toUpperCase()] === 'night-single' ? 'single' : 'double';
   }
 
   // Which way each bus faces: the way it last moved east or west, playing
@@ -125,6 +129,16 @@
 
   function specialIcon(kind, d) {
     return special && !d.dead && special.icons[DECK_CODE[kind]] || null;
+  }
+
+  // Which of the day's sprites a route wears: its deck's, and on a night route
+  // the triple decker's (td), unless the occasion dresses night buses like the
+  // day ones by giving td the dd sprite (Remembrance, Neil, 7 Nov): then the
+  // night route's own deck's.
+  function specialDeck(route, sprites) {
+    var kind = busKind(route);
+    if (kind !== 'triple') return DECK_CODE[kind];
+    return sprites.td && sprites.td === sprites.dd ? DECK_CODE[nightDeck(route)] : 'td';
   }
 
   function plainSvg(name, text) {
@@ -235,7 +249,7 @@
           .then(function (pair) {
             pair.dk = dk;
             if (!s.frames || !/^[a-z0-9-]+\.svg$/.test(s.frames.file || '') || stillPlease() ||
-                dk !== DECK_CODE[busKind(payload.route)]) return pair;          // only this route's deck moves
+                dk !== specialDeck(payload.route, want.sprites)) return pair;   // only this route's deck moves
             return fetch(SPRITES + s.frames.file, { cache: 'no-cache' }).then(function (r) {
               if (!r.ok) throw new Error(s.frames.file + ': HTTP ' + r.status);
               return r.text();
@@ -249,6 +263,8 @@
       var icons = {}, n = 0;
       pairs.forEach(function (p) { if (p) { icons[p.dk] = p; n++; } });
       if (!n) return;
+      var own = DECK_CODE[busKind(payload.route)], wear = specialDeck(payload.route, want.sprites);
+      if (wear !== own && icons[wear]) icons[own] = icons[wear];   // a night route in its own deck's sprite
       special = { name: String(want.name || ''), key: String(want.occasion || '') + payload.date, icons: icons };
       render();
     }).catch(function () {
