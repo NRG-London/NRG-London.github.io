@@ -7,7 +7,7 @@
   this file only turns live mode on. Data format: scripts/BUS-DATA-CONTRACT.md,
   "Bus live (pilot)". Earlier days still come from params.busReplayData.
 
-  The page body (content/labs/bus-live.md) is the "About" text, shown by the
-  viewer's live card; keep it short.
+  The page body (content/labs/bus-live.md) is rendered by the partial, in an
+  "About this pilot" <details> in the control panel (live page only); keep it short.
 */ -}}
 {{- partial "bus-replay-page.html" (dict "page" . "live" .Site.Params.busLiveData) -}}

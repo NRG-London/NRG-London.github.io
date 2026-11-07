@@ -150,6 +150,8 @@
      ngbus-replay.js, "live mode"). The production page never shows these. */
   #live-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
   #live-controls .btn.on { background: #3a2e1a; border-color: #E0A24E; color: #ffe2b0; }
+  .live-about { font-size: 12px; line-height: 1.4; margin-top: 6px; }
+  .live-about summary { cursor: pointer; }
   #live-go .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px;
                   background: #E0A24E; vertical-align: 0; animation: live-pulse 2s ease-in-out infinite; }
   @keyframes live-pulse { 50% { opacity: .35; } }

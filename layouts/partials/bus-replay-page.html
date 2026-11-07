@@ -15,7 +15,7 @@
 {{ with $p.Site.Params.goatcounterURL }}<script data-goatcounter="{{ . }}" async src="//gc.zgo.at/count.js"></script>{{ end }}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bus replay — Neil Garratt</title>
+<title>{{ if $live }}{{ $p.Title }}{{ else }}Bus replay{{ end }} — Neil Garratt</title>
 <meta name="description" content="{{ $p.Params.summary }}">
 {{ if $p.Params.noindex }}<meta name="robots" content="noindex, nofollow">{{ end }}
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -33,7 +33,7 @@
 {{- $handle := printf "@%s" (path.Base .) }}
 <meta name="twitter:site" content="{{ $handle }}">
 {{- end }}
-<link rel="stylesheet" href="/css/ngbus-replay.css?v=7">
+<link rel="stylesheet" href="/css/ngbus-replay.css?v=8">
 </head>
 <body data-replay-root="{{ $p.Site.Params.busReplayData }}"{{ with $live }} data-live-root="{{ . }}"{{ end }}>
 <div id="basemap"></div>
@@ -49,7 +49,7 @@
 <aside id="hud">
   <a id="back" href="/bus/">&larr; All bus routes</a>
   <header>
-    <h1 id="title">Bus replay</h1>
+    <h1 id="title">{{ if $live }}{{ $p.Title }}{{ else }}Bus replay{{ end }}</h1>
     <button id="collapse" aria-expanded="true" title="Hide or show the controls and TfL notices">Hide <span aria-hidden="true">&#9652;</span></button>
   </header>
   <div id="badge" hidden></div>
@@ -87,8 +87,8 @@
   <div id="live-controls" hidden></div>
   {{- /* The lab page's body text (content/labs/bus-live.md), live page only. */}}
   {{- if $live }}
-  <details class="live-about" style="font-size:12px;line-height:1.4;margin-top:6px">
-    <summary style="cursor:pointer">About this pilot</summary>
+  <details class="live-about">
+    <summary>About this pilot</summary>
     {{ $p.Content }}
   </details>
   {{- end }}
