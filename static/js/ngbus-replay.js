@@ -63,7 +63,10 @@
   });
   var busStyle = NB ? 'buses' : 'dots';
   var ICON_W = 30;                                  // a bus is this many pixels long
-  var facing = {}, lastX = {}, lastT = null, iconCache = {};
+  // Per bus, keyed by registration, not by its place in the payload (vi),
+  // which moves when a bus joins the live day: which way it faces, and where
+  // it was last drawn.
+  var facing = new Map(), lastX = new Map(), lastT = null, iconCache = {};
 
   function busKind(route) {
     var k = DECKS[String(route).toUpperCase()];
@@ -76,18 +79,18 @@
   function updateFacing(buses) {
     var dt = lastT == null ? 0 : simT - lastT;
     buses.forEach(function (b) {
-      var x = b.position[0], px = lastX[b.vi];
+      var x = b.position[0], px = lastX.get(b.reg);
       if (px != null && dt !== 0 && Math.abs(dt) <= 120) {
         var dx = (x - px) * (dt > 0 ? 1 : -1);
-        if (Math.abs(dx) > 2e-6) facing[b.vi] = dx < 0 ? -1 : 1;
+        if (Math.abs(dx) > 2e-6) facing.set(b.reg, dx < 0 ? -1 : 1);
       }
-      lastX[b.vi] = x;
+      lastX.set(b.reg, x);
     });
     lastT = simT;
   }
 
   function busIcon(kind, d) {
-    var west = facing[d.vi] < 0;
+    var west = facing.get(d.reg) < 0;
     var sp = specialIcon(kind, d);
     if (sp) return west ? sp.w : sp.e;
     var key = kind + (west ? 'w' : 'e') + (d.dead ? 'x' : '');
@@ -188,16 +191,18 @@
   function stillPlease() {
     return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   }
-  // Which frame a bus shows: the loop's frame now, moved on by the bus's own.
+  // Which frame a bus shows: the loop's frame now, moved on by the bus's own
+  // (from its colour slot, so a bus keeps its place in the loop as others join).
   function filmTick(film) {
     return Math.floor(performance.now() / 1000 / film.period * film.count);
   }
   function filmIcon(film, d, tick) {
-    return (facing[d.vi] < 0 ? 'w' : 'e') + ((tick + d.vi * 7) % film.count);
+    return (facing.get(d.reg) < 0 ? 'w' : 'e') + ((tick + slots.get(d.reg) * 7) % film.count);
   }
 
   function loadSpecials(payload) {
     special = null;
+    var day = cur;
     var want = payload && payload.specials;
     if (!want || typeof want !== 'object' || !want.sprites || typeof want.sprites !== 'object') return;
     specialsCat = specialsCat || fetch(SPRITES + 'specials.json', { cache: 'no-cache' }).then(function (r) {
@@ -227,7 +232,7 @@
           .catch(function () { return null; });
       }));
     }).then(function (pairs) {
-      if (!cur || cur.payload !== payload) return;            // moved on meanwhile
+      if (!cur || cur !== day) return;                         // moved on meanwhile (a refresh is not a move)
       var icons = {}, n = 0;
       pairs.forEach(function (p) { if (p) { icons[p.dk] = p; n++; } });
       if (!n) return;
@@ -261,8 +266,8 @@
   var routeDays = {};        // KEY -> {iso: record}, loaded per route
   var fullIndex = null;      // only if the per-route files are unavailable
   var routeKey = {};         // UPPER -> key as stored
-  var cur = null;            // {payload, bytes, E, source}
-  var simT = 0;              // seconds after payload.t0
+  var cur = null;            // {payload, bytes, E, source, t0, t1}: one per day opened
+  var simT = 0;              // seconds after cur.t0
   var playing = true;
   var speed = 60;
   var lastFrame = performance.now();
@@ -271,8 +276,9 @@
   var mapMode = 'dark';
   var staticLayers = [];
   var markLayers = [];       // the worst-gap stop, when a link named one
-  var trips = [];
-  var colors = [];
+  var trips = [];            // the trails, {reg, path, timestamps}
+  var slots = new Map();     // registration -> colour slot (R.colourIndex)
+  var colors = new Map();    // registration -> [r, g, b], from its slot
 
   /* ---- names, as a reader should see them --------------------------------- */
 
@@ -613,21 +619,23 @@
 
   /* ---- a day arrives ----------------------------------------------------- */
 
+  // A new day: the last day's buses, pin, badge and notices go, the camera
+  // fits the route (unless this route and source are already shown), and the
+  // clock starts where the day gets going, or where the link says.
   function start(payload, opts) {
-    var E = R.expand(payload);
     var prevRoute = cur && cur.payload.route;
     var prevSource = cur && cur.source;
-    cur = { payload: payload, bytes: opts.bytes, E: E, source: opts.source };
-    var span = payload.t1 - payload.t0;
-    counts = R.inServiceByMinute(E, span);
-    colors = E.vehicles.map(function (v, i) { return hsl2rgb((i * 137.5) % 360, 0.75, 0.6); });
-    facing = {}; lastX = {}; lastT = null; iconCache = {};
+    var was = cur;
+    cur = { payload: payload, bytes: opts.bytes, source: opts.source };
+    try {
+      refresh(payload, false);
+    } catch (e) {
+      if (!cur.E) cur = was;           // a day that will not expand leaves the one shown as it was
+      throw e;
+    }
+    var span = cur.t1 - cur.t0;
+    facing = new Map(); lastX = new Map(); lastT = null; iconCache = {};
     loadSpecials(payload);
-    trips = E.segs.map(function (s) {
-      var path = new Array(s.lon.length);
-      for (var i = 0; i < path.length; i++) path[i] = [s.lon[i], s.lat[i]];
-      return { vi: s.vi, path: path, timestamps: Array.from(s.t) };
-    });
     staticLayers = [
       new deck.PathLayer({
         id: 'route-' + payload.route + payload.date, data: payload.shapes,
@@ -665,8 +673,8 @@
       var m = /^(\d{1,2}):?(\d{2})$/.exec(opts.t);
       if (m) {
         var e = londonEpoch(payload.date, +m[1], +m[2]);
-        if (e < payload.t0 && e + 86400 <= payload.t1) e += 86400;   // after midnight
-        simT = Math.max(0, Math.min(span, e - payload.t0));
+        if (e < cur.t0 && e + 86400 <= cur.t1) e += 86400;   // after midnight
+        simT = Math.max(0, Math.min(span, e - cur.t0));
       }
     }
     drawTimelineBase();
@@ -679,6 +687,36 @@
     say('');
     render();
     if (opts.source === 'server') prefetchAround(payload.route, payload.date);
+  }
+
+  /* The day's data, rebuilt from payload in place: cur.E, the trails, the
+   * timeline's counts, each bus's colour, and the time base cur.t0/cur.t1.
+   * Nothing else moves: not the camera, not simT, not a pinned bus, and the
+   * notices are not loaded again, so a day can grow under the reader (the
+   * live day). keep: each registration keeps its colour, and one new to the
+   * day takes the next slot (R.colourIndex); without it, colours are dealt
+   * afresh in the payload's order, as for a new day. It draws nothing: the
+   * caller draws the timeline (drawTimelineBase) and the frame (render). The
+   * route's lines and stops are start's.
+   *
+   * cur.t0 must be the payload's t0: R.expand times every point from it, and
+   * simT counts from it. For a day from the server or a file, cur.t1 is the
+   * payload's t1 too. */
+  function refresh(payload, keep) {
+    var E = R.expand(payload);         // first: a payload it cannot read changes nothing
+    cur.payload = payload;
+    cur.E = E;
+    cur.t0 = payload.t0;
+    cur.t1 = payload.t1;
+    counts = R.inServiceByMinute(E, cur.t1 - cur.t0);
+    slots = R.colourIndex(E.vehicles.map(function (v) { return v.reg; }), keep ? slots : null);
+    colors = new Map();
+    slots.forEach(function (i, reg) { colors.set(reg, hsl2rgb((i * 137.5) % 360, 0.75, 0.6)); });
+    trips = E.segs.map(function (s) {
+      var path = new Array(s.lon.length);
+      for (var i = 0; i < path.length; i++) path[i] = [s.lon[i], s.lat[i]];
+      return { reg: E.vehicles[s.vi].reg, path: path, timestamps: Array.from(s.t) };
+    });
   }
 
   // Start where the day gets going: the first minute with half the day's
@@ -700,9 +738,9 @@
   // up", not that day's notice; nor do the days a notice was up before them.
   function applyNotices(payload) {
     if (!NN) return;
-    var route = payload.route, day = payload.date;
+    var route = payload.route, day = payload.date, mine = cur;
     NN.load(DATA_ROOT, route).then(function (f) {
-      if (!cur || cur.payload !== payload) return;           // moved on meanwhile
+      if (!cur || cur !== mine) return;                      // moved on meanwhile (a refresh is not a move)
       var items = f ? f.notices.concat(f.closures) : [];
       var w = NN.serviceDay(day);
       var live = items.filter(function (it) { return NN.inEffect(it, w[0], w[1]); });
@@ -1008,12 +1046,12 @@
     g.scale(dpr, dpr);
     g.fillStyle = '#1c1f24'; g.fillRect(0, 0, w, h);
     if (!cur) return;
-    var p = cur.payload, span = p.t1 - p.t0;
+    var p = cur.payload, t0 = cur.t0, t1 = cur.t1, span = t1 - t0;
     // hour ticks, London time
     g.fillStyle = '#2c3138';
-    var firstHour = Math.ceil(p.t0 / 3600) * 3600;
-    for (var t = firstHour; t <= p.t1; t += 3600) {
-      var x = (t - p.t0) / span * w;
+    var firstHour = Math.ceil(t0 / 3600) * 3600;
+    for (var t = firstHour; t <= t1; t += 3600) {
+      var x = (t - t0) / span * w;
       var hr = +fmtHM(t).slice(0, 2);
       g.fillRect(Math.round(x), hr % 6 === 0 ? 0 : h - 6, 1, hr % 6 === 0 ? h : 6);
     }
@@ -1028,8 +1066,8 @@
     g.fillStyle = 'rgba(120,170,220,.45)'; g.fill();
     // holes: hatched — absence of data must not read as absence of buses
     (p.holes || []).forEach(function (hole) {
-      var x0 = Math.max(0, (hole[0] - p.t0) / span * w);
-      var x1 = Math.min(w, (hole[1] - p.t0) / span * w);
+      var x0 = Math.max(0, (hole[0] - t0) / span * w);
+      var x1 = Math.min(w, (hole[1] - t0) / span * w);
       g.save();
       g.beginPath(); g.rect(x0, 0, Math.max(2, x1 - x0), h); g.clip();
       g.fillStyle = hole[2] === 'no-service' ? 'rgba(61,90,122,.55)' : 'rgba(122,90,34,.55)';
@@ -1047,7 +1085,7 @@
     var c = el.tl, g = c.getContext('2d');
     g.setTransform(1, 0, 0, 1, 0, 0);
     g.drawImage(tlBase, 0, 0);
-    var span = cur.payload.t1 - cur.payload.t0;
+    var span = cur.t1 - cur.t0;
     var x = Math.round(simT / span * c.width);
     g.fillStyle = '#fff';
     g.fillRect(x - 1, 0, 2 * (window.devicePixelRatio || 1), c.height);
@@ -1057,7 +1095,7 @@
     if (!cur) return;
     var r = el.timeline.getBoundingClientRect();
     var f = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
-    simT = f * (cur.payload.t1 - cur.payload.t0);
+    simT = f * (cur.t1 - cur.t0);
     render();
   }
 
@@ -1087,7 +1125,7 @@
         id: 'trails', data: trips,
         getPath: function (d) { return d.path; },
         getTimestamps: function (d) { return d.timestamps; },
-        getColor: function (d) { return colors[d.vi]; },
+        getColor: function (d) { return colors.get(d.reg); },
         currentTime: simT, trailLength: TRAIL_S,
         widthMinPixels: 3, opacity: 0.6, fadeTrail: true,
       }),
@@ -1103,7 +1141,7 @@
       }) : new deck.ScatterplotLayer({
         id: 'buses', data: buses, pickable: true,
         getPosition: function (d) { return d.position; },
-        getFillColor: function (d) { return d.dead ? [130, 130, 130, 220] : colors[d.vi].concat(255); },
+        getFillColor: function (d) { return d.dead ? [130, 130, 130, 220] : colors.get(d.reg).concat(255); },
         getLineColor: [255, 255, 255, 200], getLineWidth: 2, lineWidthUnits: 'pixels',
         stroked: true, getRadius: 40, radiusMinPixels: 5, radiusMaxPixels: 12,
         updateTriggers: { getPosition: simT, getFillColor: simT },
@@ -1130,12 +1168,12 @@
         updateTriggers: { getPosition: simT, getPixelOffset: [simT, icons, kind, specialKey()] },
       }),
     ]) });
-    var now = p.t0 + simT;
+    var now = cur.t0 + simT;
     el.clock.textContent = fmtClock(now);
     var dead = buses.filter(function (b) { return b.dead; }).length;
     el.meta.textContent = (buses.length - dead) + ' in service \u00b7 ' + dead +
       ' not in service \u00b7 ' + E.vehicles.length + ' vehicles all day';
-    el.slider.value = Math.round(1000 * simT / (p.t1 - p.t0));
+    el.slider.value = Math.round(1000 * simT / (cur.t1 - cur.t0));
     drawTimeline();
     var h = holeAt(now);
     if (h) {
@@ -1156,7 +1194,7 @@
       // Cap the step: a frame that stalled (shader compile, background tab)
       // must not throw the replay minutes forward.
       simT += speed * Math.min(250, now - lastFrame) / 1000;
-      if (simT > cur.payload.t1 - cur.payload.t0) simT = 0;
+      if (simT > cur.t1 - cur.t0) simT = 0;
       render();
     } else if (cur && filmShown && filmTick(filmShown) !== filmShownTick) {
       render();                            // paused, the fireworks still go off
@@ -1190,14 +1228,14 @@
     var u = new URL(location.origin + location.pathname);
     u.searchParams.set('route', cur.payload.route);
     u.searchParams.set('date', cur.payload.date);
-    u.searchParams.set('t', fmtHM(cur.payload.t0 + simT));
+    u.searchParams.set('t', fmtHM(cur.t0 + simT));
     if (speed !== 60) u.searchParams.set('speed', speed);
     var text = u.toString();
     var note = cur.source === 'file'
       ? ' (it opens the server copy, which may since have been removed)' : '';
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(
-        function () { say('Link copied: route ' + cur.payload.route + ' at ' + fmtHM(cur.payload.t0 + simT) + note + '.'); },
+        function () { say('Link copied: route ' + cur.payload.route + ' at ' + fmtHM(cur.t0 + simT) + note + '.'); },
         function () { window.prompt('Copy this link:', text); });
     } else {
       window.prompt('Copy this link:', text);
@@ -1214,7 +1252,7 @@
   el.speed.onchange = function () { speed = +el.speed.value; el.speed.blur(); };
   el.slider.oninput = function () {
     if (!cur) return;
-    simT = (cur.payload.t1 - cur.payload.t0) * (+el.slider.value / 1000);
+    simT = (cur.t1 - cur.t0) * (+el.slider.value / 1000);
     render();
   };
   var scrubbing = false;
@@ -1304,7 +1342,7 @@
     else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
       e.preventDefault();
       var d = (e.shiftKey ? 600 : 60) * (e.key === 'ArrowRight' ? 1 : -1);
-      simT = Math.max(0, Math.min(cur.payload.t1 - cur.payload.t0, simT + d));
+      simT = Math.max(0, Math.min(cur.t1 - cur.t0, simT + d));
       render();
     }
   });
