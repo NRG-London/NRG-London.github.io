@@ -1,0 +1,28 @@
+{{ define "main" }}
+{{- /*
+  /labs/delay-replay/ — the front door of the Delay Replay pilot (unlisted lab).
+  A plain page (the site's ordinary page look) with the text from
+  content/labs/delay-replay.md and one big button per pilot route, each
+  opening that route's live day at /labs/bus-live/?route=<R>.
+*/ -}}
+<div class="page-header">
+  <h1>{{ .Title }}</h1>
+</div>
+
+<div class="page-content">
+  {{ .Content }}
+  <ul class="dr-routes" aria-label="Pilot routes">
+    {{- range slice "127" "154" "S4" "433" "SL7" "130" "157" }}
+    <li><a href="/labs/bus-live/?route={{ . }}">{{ . }}</a></li>
+    {{- end }}
+  </ul>
+</div>
+<style>
+  .page-content ul.dr-routes { list-style: none; margin: 1.5rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 12px; }
+  .dr-routes li { margin: 0; }
+  .page-content .dr-routes a { display: flex; align-items: center; justify-content: center; box-sizing: border-box;
+    min-width: 88px; min-height: 52px; padding: 0 22px; border-radius: 8px; background: var(--ink); color: var(--paper);
+    font-size: 1.3rem; font-weight: 700; text-decoration: none; }
+  .page-content .dr-routes a:hover, .page-content .dr-routes a:focus-visible { background: var(--blue); }
+</style>
+{{ end }}

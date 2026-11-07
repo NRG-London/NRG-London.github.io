@@ -954,9 +954,10 @@ production replay's own index lists it.
   `c` is drawn at that ping while `seen ≥ min(c, edge − 30)` (`edge` is the newest head's `to`; in
   Smooth this is `seen ≥ c`) and `c − last ping ≤ 900 s`. Otherwise it is not drawn. A bus is never
   moved on by a guess.
-- **Smooth** (default): `c` = server-now − delay (`?delay=<s>`; the default is provisional until the
-  dry run measures it, so this contract does not state it). **Latest:** `c` = server-now, each bus
-  at its last report with the report's age shown. A new report is reached by a 1.5 s ease-out
+- **Latest** (default, and the only mode in the UI): `c` = server-now, each bus at its last report
+  with the report's age shown. **Smooth** (`?mode=smooth`, an undocumented lab parameter): `c` =
+  server-now − delay (`?delay=<s>`; the default is provisional until the dry run measures it, so
+  this contract does not state it). A new report is reached by a 1.5 s ease-out
   glide along the track between the two pings, then the bus holds; a bus with no held position is
   placed directly.
 - **Clock:** server-now is the first head's `Date` plus `performance.now()`; later heads correct it

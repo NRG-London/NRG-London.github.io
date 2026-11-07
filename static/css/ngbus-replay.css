@@ -50,7 +50,9 @@
               cursor: pointer; white-space: nowrap; position: relative; }
   #collapse span { font-size: 10px; margin-left: 2px; }
   @media (pointer: coarse) { #collapse { min-height: 36px; padding: 6px 12px; font-size: 13px; } }
-  #hud.collapsed .more, #hud.collapsed #notices { display: none; }
+  /* collapsed: only the back link, title, clock, slider and Pause + speed stay */
+  #hud.collapsed .more, #hud.collapsed #notices, #hud.collapsed #meta,
+  #hud.collapsed #timeline, #hud.collapsed #live-controls, #hud.collapsed #copylink { display: none; }
   #hud.collapsed.has-notices #collapse::after {
     content: ""; position: absolute; top: -3px; right: -3px; width: 9px; height: 9px;
     border-radius: 50%; background: #E0A24E; box-shadow: 0 0 0 2px var(--panel); }
@@ -150,16 +152,10 @@
      ngbus-replay.js, "live mode"). The production page never shows these. */
   #live-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
   #live-controls .btn.on { background: #3a2e1a; border-color: #E0A24E; color: #ffe2b0; }
-  .live-about { font-size: 12px; line-height: 1.4; margin-top: 6px; }
-  .live-about summary { cursor: pointer; }
   #live-go .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px;
                   background: #E0A24E; vertical-align: 0; animation: live-pulse 2s ease-in-out infinite; }
   @keyframes live-pulse { 50% { opacity: .35; } }
   @media (prefers-reduced-motion: reduce) { #live-go .dot { animation: none; } }
-  .live-modes { display: inline-flex; }
-  .live-modes .btn { border-radius: 0; }
-  .live-modes .btn:first-child { border-radius: 6px 0 0 6px; }
-  .live-modes .btn:last-child { border-radius: 0 6px 6px 0; margin-left: -1px; }
   .day.live { border-color: #E0A24E; background: rgba(224,162,78,.14); }
   .day .livedot { position: absolute; top: -3px; right: -3px; width: 7px; height: 7px; border-radius: 50%;
                   background: #E0A24E; box-shadow: 0 0 0 2px #111; }
@@ -170,6 +166,7 @@
   @media (min-width: 900px) { #live-banner { left: calc(50% + 190px); } }
   @media (max-width: 899px) { #live-banner { top: auto; bottom: 58px; } }
   #live-overlay { position: absolute; right: 12px; bottom: 12px; z-index: 9; pointer-events: none;
-                  white-space: pre; font: 11px/1.45 ui-monospace, Consolas, monospace; color: #cfe3f5;
+                  white-space: pre-wrap; max-width: calc(100vw - 24px); box-sizing: border-box; font: 11px/1.45 ui-monospace, Consolas, monospace; color: #cfe3f5;
                   background: rgba(17,17,17,.8); border: 1px solid #333; border-radius: 6px; padding: 6px 8px; }
-  @media (max-width: 899px) { #live-overlay { bottom: 150px; font-size: 10px; } }   /* over a three-line banner */
+  /* bottom is set from JS (ngbus-replay.js liveFrame) to clear a bottom banner */
+  @media (max-width: 899px) { #live-overlay { font-size: 9.5px; line-height: 1.35; padding: 4px 6px; } }

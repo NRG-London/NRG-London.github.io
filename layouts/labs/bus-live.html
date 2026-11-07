@@ -7,7 +7,9 @@
   this file only turns live mode on. Data format: scripts/BUS-DATA-CONTRACT.md,
   "Bus live (pilot)". Earlier days still come from params.busReplayData.
 
-  The page body (content/labs/bus-live.md) is rendered by the partial, in an
-  "About this pilot" <details> in the control panel (live page only); keep it short.
+  The page has no body text: the pilot's description and route buttons are on
+  its landing page, /labs/delay-replay/ (content/labs/delay-replay.md), which
+  the viewer's back link goes to. Live mode shows the latest report of each
+  bus at the edge (?mode=smooth is an undocumented lab comparison).
 */ -}}
 {{- partial "bus-replay-page.html" (dict "page" . "live" .Site.Params.busLiveData) -}}

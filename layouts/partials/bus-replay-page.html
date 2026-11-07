@@ -33,7 +33,7 @@
 {{- $handle := printf "@%s" (path.Base .) }}
 <meta name="twitter:site" content="{{ $handle }}">
 {{- end }}
-<link rel="stylesheet" href="/css/ngbus-replay.css?v=8">
+<link rel="stylesheet" href="/css/ngbus-replay.css?v=9">
 </head>
 <body data-replay-root="{{ $p.Site.Params.busReplayData }}"{{ with $live }} data-live-root="{{ . }}"{{ end }}>
 <div id="basemap"></div>
@@ -85,13 +85,6 @@
     <button id="copylink" class="btn" title="Copy a link that opens this route, day and moment">Copy link</button>
   </div>
   <div id="live-controls" hidden></div>
-  {{- /* The lab page's body text (content/labs/bus-live.md), live page only. */}}
-  {{- if $live }}
-  <details class="live-about">
-    <summary>About this pilot</summary>
-    {{ $p.Content }}
-  </details>
-  {{- end }}
 
   <div class="more">
     <div class="row">
@@ -152,6 +145,6 @@
 {{- end }}
 <script type="text/plain" id="ngbus-decks">{{ delimit $decks "," }}</script>
 <script src="/js/ngbus-buses.js?v=1"></script>
-<script src="/js/ngbus-replay.js?v=14"></script>
+<script src="/js/ngbus-replay.js?v=15"></script>
 </body>
 </html>

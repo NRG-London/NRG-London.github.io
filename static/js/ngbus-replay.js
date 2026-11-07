@@ -670,11 +670,8 @@
     if (marked && opts.live) cur.markAt = opts.at;           // redrawn if a live refresh moves the stops
     if (!marked && (prevRoute !== payload.route || camSource(prevSource) !== camSource(opts.source))) fitTo(payload);
 
-    var liveTag = opts.live ? ' \u00b7 live' : '';
-    el.title.textContent = 'Route ' + payload.route + ' \u00b7 ' +
-      fmtDay(payload.date, { year: 'numeric' }) + liveTag;
-    document.title = 'Route ' + payload.route + ', ' + fmtDay(payload.date, { year: 'numeric' }) +
-      liveTag + ': bus replay \u2014 Neil Garratt';
+    cur.liveTag = !!opts.live;
+    setTitle();
     setBack(payload.route);
     if (!Array.prototype.some.call(el.route.options, function (o) { return o.value === payload.route; })) {
       var o = document.createElement('option');
@@ -840,8 +837,35 @@
     }).catch(function () { /* no panel: the replay stands without it */ });
   }
 
+  // The heading and the tab title. The day shown is "today" when its date is
+  // today's in London (by the server's clock on the live page): no date, no
+  // "live". Any other day keeps its date. Re-run by a timer, so a day change
+  // under the viewer (the 05:00 handover, midnight) updates it too.
+  function londonToday() {
+    return new Date((LIVE ? serverNow() : Date.now() / 1000) * 1000).toLocaleDateString('en-CA', { timeZone: TZ });
+  }
+  function setTitle() {
+    if (!cur) return;
+    var payload = cur.payload, h, t;
+    if (payload.date === londonToday()) {
+      h = 'Route ' + payload.route + ' \u00b7 today';
+      t = 'Route ' + payload.route + ', today: bus replay \u2014 Neil Garratt';
+    } else {
+      var liveTag = cur.liveTag ? ' \u00b7 live' : '';
+      h = 'Route ' + payload.route + ' \u00b7 ' + fmtDay(payload.date, { year: 'numeric' }) + liveTag;
+      t = 'Route ' + payload.route + ', ' + fmtDay(payload.date, { year: 'numeric' }) +
+        liveTag + ': bus replay \u2014 Neil Garratt';
+    }
+    if (el.title.textContent !== h) el.title.textContent = h;
+    if (document.title !== t) document.title = t;
+  }
+  setInterval(setTitle, 15000);
+
   function setBack(route) {
-    if (route && PAGES[route.toUpperCase()]) {
+    if (LIVE) {
+      el.back.href = '/labs/delay-replay/';
+      el.back.textContent = '\u2190 Delay Replay';
+    } else if (route && PAGES[route.toUpperCase()]) {
       el.back.href = '/bus/' + route.toLowerCase() + '/';
       el.back.textContent = '\u2190 Route ' + route + ' performance';
     } else {
@@ -1123,6 +1147,8 @@
   /* ---- timeline ----------------------------------------------------------- */
 
   function drawTimelineBase() {
+    // hidden while the panel is collapsed: nothing to size, and redrawn on expanding
+    if (!el.timeline.clientHeight) { tlBase = null; return; }
     var c = el.tl, dpr = window.devicePixelRatio || 1;
     var w = Math.max(1, el.timeline.clientWidth), h = el.timeline.clientHeight;
     c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
@@ -1405,7 +1431,7 @@
     route: null,                 // the route whose live days are merged
     days: new Map(),             // date -> its last good merge {inputs, payload, head, win, hours, upto}
     chain: Promise.resolve(),    // merges, one at a time
-    mode: 'smooth',              // or 'latest'
+    mode: 'latest',              // 'smooth' only for ?mode=smooth (a lab comparison)
     delay: DEFAULT_DELAY_S,
     pinned: true,                // at the live edge, or scrubbed back
     back: false,                 // ?live=0: the first live day opened starts scrubbed back
@@ -1862,7 +1888,7 @@
   // The address follows the mode, and drops ?live=0 once at the edge.
   function liveURL() {
     var u = new URL(location.href);
-    if (live.mode === 'latest') u.searchParams.set('mode', 'latest');
+    if (live.mode === 'smooth') u.searchParams.set('mode', 'smooth');
     else u.searchParams.delete('mode');
     if (live.pinned) u.searchParams.delete('live');
     var next = u.pathname + (u.search || '');
@@ -1925,6 +1951,16 @@
     if (perf - live.overlayAt < 250) return;      // four times a second is plenty
     live.overlayAt = perf;
     liveOverlay(buses, running, n);
+    // Sit just above a banner showing at the bottom of the screen (narrow
+    // screens), else in the corner.
+    var lift = 12;
+    [el.banner, el.liveBanner].forEach(function (bn) {
+      if (bn.hidden) return;
+      var r = bn.getBoundingClientRect();
+      if (r.top > window.innerHeight / 2) lift = Math.max(lift, Math.round(window.innerHeight - r.top) + 6);
+    });
+    var bot = lift + 'px';
+    if (el.liveOverlay.style.bottom !== bot) el.liveOverlay.style.bottom = bot;
   }
 
   // The lab overlay: how old the head is, how far behind server-now the
@@ -2006,14 +2042,7 @@
   }
 
   function liveBuildControls() {
-    el.liveControls.innerHTML =
-      '<button id="live-go" class="btn"></button>' +
-      '<span class="live-modes" role="group" aria-label="Live view">' +
-      '<button class="btn" data-mode="smooth" title="Buses glide between their real reports, ' +
-      fmtDelay(live.delay) + ' behind">Smooth</button>' +
-      '<button class="btn" data-mode="latest" title="Every bus where it last reported, and how ' +
-      'long ago: as little delay as there can be without guessing">Latest</button>' +
-      '</span><span id="live-note" class="lbl"></span>';
+    el.liveControls.innerHTML = '<button id="live-go" class="btn"></button>';
     $('live-go').onclick = function () {
       if (liveRunning()) { liveRejoin(); simT = liveEdge(); render(); return; }
       var key = cur ? cur.payload.route : resolveRoute(el.route.value);
@@ -2022,24 +2051,13 @@
       if (cur && cur.live && cur.liveEnd && cur.live.date === newest) return;   // held at its end: nothing newer
       openLiveDay(key, newest);
     };
-    Array.prototype.forEach.call(el.liveControls.querySelectorAll('[data-mode]'), function (b) {
-      b.onclick = function () {
-        live.mode = b.getAttribute('data-mode');
-        live.glide = new Map();
-        liveJump();
-        if (live.pinned && liveRunning()) simT = liveEdge();
-        liveURL();
-        liveControls();
-        if (cur) render();
-      };
-    });
   }
 
   function liveControls() {
     var key = cur ? cur.payload.route : resolveRoute(el.route.value);
     var has = liveDates(key).length > 0;
     var atEdge = !!(live.pinned && liveRunning());
-    var sig = [has, atEdge, live.mode].join();
+    var sig = [has, atEdge].join();
     if (sig === live.ctl) return;
     live.ctl = sig;
     // At the live edge the cursor runs in real time whatever the menu says:
@@ -2052,20 +2070,13 @@
     go.classList.toggle('on', atEdge);
     go.innerHTML = atEdge ? '<span class="dot" aria-hidden="true"></span>Live' : 'Go live';
     go.title = atEdge ? 'At the live edge' : 'To the live edge of the day so far';
-    Array.prototype.forEach.call(el.liveControls.querySelectorAll('[data-mode]'), function (b) {
-      var on = b.getAttribute('data-mode') === live.mode;
-      b.classList.toggle('on', on);
-      b.setAttribute('aria-pressed', String(on));
-    });
-    $('live-note').textContent = live.mode === 'latest' ? 'each bus at its latest report'
-      : fmtDelay(live.delay) + ' behind';
   }
 
-  // ?delay=<s> (Smooth's delay), ?mode=latest, ?live=0 (start scrubbed back).
+  // ?mode=smooth with ?delay=<s> (Smooth's delay: a lab comparison), ?live=0 (start scrubbed back).
   function liveInit(q) {
     var dl = q.get('delay');
     if (dl != null && /^\d{1,4}$/.test(dl)) live.delay = Math.min(3600, +dl);
-    if (q.get('mode') === 'latest') live.mode = 'latest';
+    if (q.get('mode') === 'smooth') live.mode = 'smooth';
     live.back = q.get('live') === '0';
     liveBuildControls();
     el.liveOverlay.hidden = false;
