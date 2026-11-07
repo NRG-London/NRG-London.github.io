@@ -4,6 +4,8 @@ summary: "A live view of seven London bus routes, which is also a replay of the 
 layout: "delay-replay"
 # Lab: unlisted until the pilot goes public. All three switches go together.
 # The viewer itself is /labs/bus-live/ (content/labs/bus-live.md); this is its front door.
+# after: the line under the route buttons (markdown).
+after: "All of London's nearly 700 bus routes are available on the main [Bus Replay Viewer](/campaigns/bus-replay-viewer/), which shows the last 35 days up to yesterday."
 build:
   list: never
   render: always
