@@ -29,7 +29,10 @@
   var M_PER_DEG = 111320;
   var LIVE_FORMAT = 'ng-bus-live';
   var LIVE_VERSION = 1;
-  var LIVE_KINDS = ['head', 'recent'];
+  var LIVE_NEED = {                // each kind, and the keys the viewer reads from it
+    head: ['generated', 'to', 'routes', 'days', 'r'],
+    recent: ['from', 'to', 'routes'],
+  };
   var GAP_SPLIT_S = 900;       // replay_core.GAP_SPLIT_S: a longer gap splits a track
   var EDGE_LAG_S = 30;         // Viewer Ruling 1: presence judged at the edge less this
 
@@ -61,22 +64,29 @@
     return await new Response(stream).text();
   }
 
-  async function parse(buf) {
+  // Bytes -> a checked object: unpacked, parsed, then check(obj). damaged and
+  // notJson are the messages for bytes that will not unpack or parse.
+  async function readChecked(buf, damaged, notJson, check) {
     var text;
     try {
       text = await bytesToText(buf);
     } catch (e) {
       if (e.name === 'ReplayError') throw e;
-      throw ReplayError('That file is damaged or is not a bus replay file.');
+      throw ReplayError(damaged);
     }
     var obj;
     try {
       obj = JSON.parse(text);
     } catch (e) {
-      throw ReplayError('That file is not a bus replay file.');
+      throw ReplayError(notJson);
     }
-    validate(obj);
+    check(obj);
     return obj;
+  }
+
+  async function parse(buf) {
+    return readChecked(buf, 'That file is damaged or is not a bus replay file.',
+                       'That file is not a bus replay file.', validate);
   }
 
   function validate(p) {
@@ -102,21 +112,8 @@
   /* A live head or recent file (`ng-bus-live`), unpacked as parse unpacks a
      day file. The day-so-far files are ordinary v1 day files: use parse. */
   async function parseLive(buf) {
-    var text;
-    try {
-      text = await bytesToText(buf);
-    } catch (e) {
-      if (e.name === 'ReplayError') throw e;
-      throw ReplayError('The live data is damaged or is not a live bus file.');
-    }
-    var obj;
-    try {
-      obj = JSON.parse(text);
-    } catch (e) {
-      throw ReplayError('The live data is not a live bus file.');
-    }
-    validateLive(obj);
-    return obj;
+    return readChecked(buf, 'The live data is damaged or is not a live bus file.',
+                       'The live data is not a live bus file.', validateLive);
   }
 
   function validateLive(p) {
@@ -131,9 +128,15 @@
       throw ReplayError('The live data is in an old format this page no ' +
                         'longer reads.');
     }
-    if (LIVE_KINDS.indexOf(p.kind) === -1) {
+    var need = Object.prototype.hasOwnProperty.call(LIVE_NEED, p.kind) ? LIVE_NEED[p.kind] : null;
+    if (!need) {
       throw ReplayError('The live data is of a kind this page does not read (' +
                         p.kind + ').');
+    }
+    for (var i = 0; i < need.length; i++) {
+      if (p[need[i]] == null) {
+        throw ReplayError('The live data is incomplete (no ' + need[i] + ').');
+      }
     }
   }
 
@@ -216,7 +219,7 @@
           lat: Float64Array.from(oy),
           b: ob,
           t0: ot[0], t1: ot[ot.length - 1],
-          pt: Float64Array.from(t, function (x) { return x - p.t0; }),
+          pt: Float64Array.from(t, function (tp) { return tp - p.t0; }),
         });
       });
     });
@@ -257,18 +260,25 @@
       }
       var span = s.t[hi] - s.t[lo];
       var f = span > 0 ? (t - s.t[lo]) / span : 0;
-      var blind = blinds[s.b[lo]] || '?';
       seen[s.vi] = true;
-      var bus = {
-        vi: s.vi, reg: E.vehicles[s.vi].reg, blind: blind,
-        dead: blind.indexOf('(') !== -1,     // "(tuk London)" etc: depot run
-        position: [s.lon[lo] + f * (s.lon[hi] - s.lon[lo]),
-                   s.lat[lo] + f * (s.lat[hi] - s.lat[lo])],
-      };
+      var bus = busRecord(E, blinds, s, lo,
+                          [s.lon[lo] + f * (s.lon[hi] - s.lon[lo]),
+                           s.lat[lo] + f * (s.lat[hi] - s.lat[lo])]);
       if (hold) { bus.held = false; bus.age = t - lastPingBy(s, t); }
       out.push(bus);
     }
     return out;
+  }
+
+  // What positionsAt says of one bus: s's vehicle under the blind of point
+  // bi, at position.
+  function busRecord(E, blinds, s, bi, position) {
+    var blind = blinds[s.b[bi]] || '?';
+    return {
+      vi: s.vi, reg: E.vehicles[s.vi].reg, blind: blind,
+      dead: blind.indexOf('(') !== -1,       // "(tuk London)" etc: depot run
+      position: position,
+    };
   }
 
   // Segments come vehicle by vehicle, each vehicle's in time order (expand
@@ -300,13 +310,10 @@
       ? hold.seen[reg] : null;
     if (sn == null || !(sn >= need)) return null;
     var n = s.t.length - 1;
-    var blind = blinds[s.b[n]] || '?';
-    return {
-      vi: s.vi, reg: reg, blind: blind,
-      dead: blind.indexOf('(') !== -1,
-      position: [s.lon[n], s.lat[n]],
-      held: true, age: age,
-    };
+    var bus = busRecord(E, blinds, s, n, [s.lon[n], s.lat[n]]);
+    bus.held = true;
+    bus.age = age;
+    return bus;
   }
 
   /* Vehicles seen, per minute, across [0, t1-t0] — the timeline's shape. */
@@ -367,28 +374,67 @@
     return d.year + '-' + d.month + '-' + d.day;
   }
 
+  // The merge fails loudly, as merge_live does: a key it needs that is
+  // missing, or an index past the end of its list, throws rather than
+  // defaulting, because a bus quietly missing from the live day is worse than
+  // no live day. Only what merge_live treats as optional is defaulted.
+  function malformed(what) {
+    return ReplayError('The live data is malformed (' + what + ').');
+  }
+
+  function list(v, what) {
+    if (!Array.isArray(v)) throw malformed(what);
+    return v;
+  }
+
+  // obj[key] when it is there (and then it must be a list); [] when it is
+  // not, as Python's obj.get(key, []).
+  function optList(obj, key, what) {
+    return obj[key] === undefined ? [] : list(obj[key], what);
+  }
+
+  function hole(h, what) {
+    if (!Array.isArray(h) || h.length !== 4) {
+      throw malformed(what + ': a hole is not [a, b, kind, reason]');
+    }
+    return h;
+  }
+
   // live_layers._decode: src's pings into pings, reg -> Map(t -> [x, y,
   // blind]) with x and y in 1e-5 degrees; and, when bridges is given, its
   // bridges into bridges, reg -> Map('t,t_next' -> [k, a, b]). The first copy
-  // of each wins: copies are one report, so they agree.
-  function decodeInto(src, pings, bridges) {
+  // of each wins: copies are one report, so they agree. `blinds` is optional
+  // (`src.get("blinds") or []`); vehicles, reg, segs, t, x, y and b are not,
+  // nor is br when the bridges are kept (merge_live reads it only then).
+  function decodeInto(src, pings, bridges, what) {
     var blinds = src.blinds || [];
-    (src.vehicles || []).forEach(function (v) {
+    list(src.vehicles, what + ': no vehicles').forEach(function (v) {
+      if (!v || v.reg === undefined) throw malformed(what + ': a bus with no reg');
+      var name = what + ', ' + v.reg;
       var mine = pings.get(v.reg), mineBr = null;
       if (!mine) pings.set(v.reg, mine = new Map());
       if (bridges) {
         mineBr = bridges.get(v.reg);
         if (!mineBr) bridges.set(v.reg, mineBr = new Map());
       }
-      v.segs.forEach(function (s) {
-        var t = undelta(s.t), x = undelta(s.x), y = undelta(s.y);
+      list(v.segs, name + ': no segs').forEach(function (s) {
+        var t = undelta(list(s.t, name + ': no t')), x = undelta(list(s.x, name + ': no x'));
+        var y = undelta(list(s.y, name + ': no y')), b = list(s.b, name + ': no b');
+        if (x.length !== t.length || y.length !== t.length || b.length !== t.length) {
+          throw malformed(name + ': t, x, y and b differ in length');
+        }
         for (var i = 0; i < t.length; i++) {
-          if (!mine.has(t[i])) mine.set(t[i], [x[i], y[i], blinds[s.b[i]]]);
+          if (!(Number.isInteger(b[i]) && b[i] >= 0 && b[i] < blinds.length)) {
+            throw malformed(name + ': blind ' + b[i] + ' of ' + blinds.length);
+          }
+          if (!mine.has(t[i])) mine.set(t[i], [x[i], y[i], blinds[b[i]]]);
         }
         if (!mineBr) return;
-        var br = s.br || [], j = 0;
+        var br = list(s.br, name + ': no br'), j = 0;
+        if (br.length % 4) throw malformed(name + ': br is not [dj, k, a, b] runs');
         for (var k = 0; k < br.length; k += 4) {
           j += br[k];
+          if (!(j >= 0 && j + 1 < t.length)) throw malformed(name + ': a bridge past its pings');
           var key = t[j] + ',' + t[j + 1];
           if (!mineBr.has(key)) mineBr.set(key, [br[k + 1], br[k + 2], br[k + 3]]);
         }
@@ -411,16 +457,20 @@
    *      order of first use. t1 is the last ping (t0 if none). Holes are the
    *      day file's plus the fragments' clipped to [t0, t1), joined. All else
    *      the day file says is carried over, bar its stats.
-   * Plus live.seen, {reg: the latest seen in the fragments}, for the hold. */
+   * Plus live.seen, {reg: the latest seen in the fragments}, for the hold.
+   * Malformed input throws a ReplayError (see malformed above). */
   function mergeLive(day, fragments, route, t0, t1, shapes) {
     var pings = new Map(), bridges = new Map(), rv = null;
+    list(fragments, 'the fragments are not a list');
     if (day != null) {
-      decodeInto(day, pings, bridges);
+      if (day.shapes === undefined) throw malformed('the day file: no shapes');
+      decodeInto(day, pings, bridges, 'the day file');
       rv = orNull((day.route_version || {}).id);
     }
-    fragments.forEach(function (fr) {
+    fragments.forEach(function (fr, n) {
+      if (!fr || typeof fr !== 'object') throw malformed('fragment ' + n + ' is not an object');
       var same = day != null && orNull(fr.route_version) === rv;
-      decodeInto(fr, pings, same ? bridges : null);
+      decodeInto(fr, pings, same ? bridges : null, 'fragment ' + n);
     });
 
     var regs = Array.from(pings.keys()).sort();
@@ -458,14 +508,21 @@
       if (segs.length) vehicles.push({reg: reg, segs: segs});
     });
 
-    var hs = ((day != null && day.holes) || []).map(function (h) { return h.slice(); });
+    // holes are optional in both, as (day or {}).get("holes", []) and
+    // fr.get("holes", []); each one present must be [a, b, kind, reason]
+    var hs = (day != null ? optList(day, 'holes', 'the day file: holes is not a list') : [])
+      .map(function (h) { return hole(h, 'the day file').slice(); });
     var seen = {};
-    fragments.forEach(function (fr) {
-      (fr.holes || []).forEach(function (h) {
+    fragments.forEach(function (fr, n) {
+      var what = 'fragment ' + n;
+      optList(fr, 'holes', what + ': holes is not a list').forEach(function (h) {
+        hole(h, what);
         if (h[0] < t1 && h[1] > t0) hs.push([Math.max(h[0], t0), Math.min(h[1], t1), h[2], h[3]]);
       });
-      (fr.vehicles || []).forEach(function (v) {
-        if (v.seen == null) return;
+      // merge_live never reads seen, but live_layers.fragment always writes
+      // it: a bus without one would silently never be held
+      fr.vehicles.forEach(function (v) {
+        if (typeof v.seen !== 'number') throw malformed(what + ', ' + v.reg + ': no seen');
         if (!Object.prototype.hasOwnProperty.call(seen, v.reg) || v.seen > seen[v.reg]) {
           seen[v.reg] = v.seen;
         }
