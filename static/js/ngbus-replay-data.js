@@ -548,6 +548,157 @@
     return out;
   }
 
+  /* ---- live: the viewer's clock, polling, days, banners and glide -------- */
+
+  // The parts of live mode that need no page (spec §4.4), so Node can test
+  // them (Road Data tests/test_live_js.py). All times are epoch seconds
+  // unless named ms; perf is performance.now(), in ms.
+
+  var CLOCK_SLEW = 0.1;          // a forward correction runs the clock at most 10% fast
+  var CLOCK_STEP_MS = 5000;      // ... unless it is this far out (the machine slept): a step
+  var POLL_AHEAD_S = 30;         // a poll is never planned further ahead than this
+  var POLL_LATE_S = 2;           // a late head: ask again this soon, backing off to the cap
+  var STOPPED_S = 60;            // "Live data stopped" once generated is over this old
+  var FEED_STOPPED_S = 120;      // "Feed stopped" once feed_at is, while generated is fresh
+  var GLIDE_MS = 1500;           // Latest: a new report is reached over this much wall time
+
+  /* Server-now: the first head's Date header (dateMs), advanced by
+     performance.now(). A later head may only move it forwards, slewed in a
+     little at a time so the cursor never leaps (stepped at once if it is
+     over CLOCK_STEP_MS out, as after the machine slept), and never
+     backwards: a Date header is cut to the second, and a cached head's is
+     old, so a lower one says nothing new. now(perf) never decreases. */
+  function liveClock(dateMs, perf0) {
+    var base = dateMs - perf0;            // epoch ms = perf + base + lead
+    var extra = 0, owed = 0, at = perf0;  // lead: extra, plus owed slewed in from at
+    var last = -Infinity;
+    function lead(perf) {
+      return extra + Math.min(owed, Math.max(0, perf - at) * CLOCK_SLEW);
+    }
+    return {
+      now: function (perf) {
+        var t = (perf + base + lead(perf)) / 1000;
+        if (t < last) t = last;           // asked out of order: still never back
+        last = t;
+        return t;
+      },
+      correct: function (ms, perf) {
+        var l = lead(perf);
+        owed -= l - extra; extra = l; at = perf;      // what has slewed in so far is spent
+        var behind = ms - (perf + base + extra);      // what the server says we lack
+        if (behind > owed) owed = behind;             // forwards only
+        if (owed > CLOCK_STEP_MS) { extra += owed; owed = 0; }
+      },
+    };
+  }
+
+  /* When to ask for the head again: its cadence after it was generated, plus
+     a second for the upload. A head that is late (a cache, or a stopped
+     writer) is asked for again soon, then less often; never more than
+     POLL_AHEAD_S ahead, and never in the past. */
+  function nextPollAt(head, nowS) {
+    var cad = head && head.cadence_s > 0 ? head.cadence_s : 10;
+    var at = head ? head.generated + cad + 1 : nowS;
+    if (!(at > nowS)) {
+      var late = head ? nowS - (head.generated + cad + 1) : 0;
+      at = nowS + Math.min(POLL_AHEAD_S, Math.max(POLL_LATE_S, late / 2));
+    }
+    return Math.min(at, nowS + POLL_AHEAD_S);
+  }
+
+  /* The day strip's days: the head's (live: true), then the replay index's
+     (an i/ file's `days` object, or a list of dates), each date once, so
+     D-1 is the head's until the head drops it. With route, a head day counts
+     only if it names a day file (or null) for that route. */
+  function liveDays(head, index, route) {
+    var out = [], have = {};
+    ((head && head.days) || []).forEach(function (d) {
+      if (route != null && !(d.d && Object.prototype.hasOwnProperty.call(d.d, route))) return;
+      if (!have[d.date]) { have[d.date] = true; out.push({date: d.date, live: true}); }
+    });
+    var dates = Array.isArray(index) ? index.slice() : Object.keys(index || {});
+    dates.sort().forEach(function (iso) {
+      if (!have[iso]) { have[iso] = true; out.push({date: iso, live: false}); }
+    });
+    return out;
+  }
+
+  /* Which banner the live day wants at nowS: {kind: 'data', at: generated}
+     ("Live data stopped at HH:MM": the writer or the upload has stopped),
+     {kind: 'feed', at: feed_at} ("Feed stopped at HH:MM"), or null. */
+  function bannerFor(head, nowS) {
+    if (!head) return null;
+    if (nowS - head.generated > STOPPED_S) return {kind: 'data', at: head.generated};
+    if (head.feed_at != null && nowS - head.feed_at > FEED_STOPPED_S) {
+      return {kind: 'feed', at: head.feed_at};
+    }
+    return null;
+  }
+
+  /* Which day file and recent file to merge for prev.route on prev.date.
+   * prev: {route, date}, and after a merge what this returned for it.
+   * fetched: Map key -> object of every r/ and d/ file in hand. They are
+   * immutable, so each is fetched once and kept; a failed fetch is not in it.
+   * -> {route, date, dayKey, day, recentKey, recent, fresh, listed, need}:
+   *   - the head's set when both its files are in hand (fresh): its d key for
+   *     the route and date (null, a day of null: the route has no day file)
+   *     and its r key. The writer names them together, a day file built to
+   *     upto and the recent file from upto, so they move together;
+   *   - otherwise prev's set unchanged (day and recent absent if it had
+   *     none): the last merge stands;
+   *   - need: the keys the head names that are not in hand, to fetch. A key
+   *     that failed is still named by the next head, so it is retried then.
+   *   - listed: whether the head still lists the date (false: prev stands,
+   *     and nothing is wanted). */
+  function mergeInputs(prev, head, fetched) {
+    var out = {route: prev.route, date: prev.date, fresh: false, listed: false, need: []};
+    ['dayKey', 'day', 'recentKey', 'recent'].forEach(function (k) {
+      if (prev[k] !== undefined) out[k] = prev[k];
+    });
+    var days = (head && head.days) || [], entry = null;
+    for (var i = 0; i < days.length; i++) if (days[i].date === prev.date) entry = days[i];
+    if (!entry || !entry.d || !Object.prototype.hasOwnProperty.call(entry.d, prev.route)) return out;
+    out.listed = true;
+    var dKey = entry.d[prev.route], rKey = head.r && head.r.key;
+    if (dKey != null && !fetched.has(dKey)) out.need.push(dKey);
+    if (rKey == null) return out;
+    if (!fetched.has(rKey)) out.need.push(rKey);
+    if (out.need.length) return out;
+    out.dayKey = dKey == null ? null : dKey;
+    out.day = dKey == null ? null : fetched.get(dKey);
+    out.recentKey = rKey;
+    out.recent = fetched.get(rKey);
+    out.fresh = true;
+    return out;
+  }
+
+  /* Latest mode: where along its track (track time, s after t0) to draw a bus
+   * whose last ping is lastPingT, given its glide state from the last frame
+   * ({from, to, startPerf}, or null for a bus not drawn then). A new report
+   * is reached by a glide from where the bus is, over glideMs of wall time,
+   * easing out; the bus then holds at it. It only ever moves between two
+   * real pings, after the second has arrived. A first sighting is placed at
+   * once, and so is a last ping earlier than the one held (the track was
+   * rewritten under it): never a glide backwards.
+   * -> {state, trackT}. */
+  function latestGlide(state, lastPingT, perfNow, glideMs) {
+    var ms = glideMs == null ? GLIDE_MS : glideMs;
+    if (!state || lastPingT < state.to) {
+      return {state: {from: lastPingT, to: lastPingT, startPerf: perfNow}, trackT: lastPingT};
+    }
+    if (lastPingT !== state.to) {
+      state = {from: glideAt(state, perfNow, ms), to: lastPingT, startPerf: perfNow};
+    }
+    return {state: state, trackT: glideAt(state, perfNow, ms)};
+  }
+
+  function glideAt(s, perf, ms) {
+    var f = ms > 0 ? (perf - s.startPerf) / ms : 1;
+    if (f >= 1) return s.to;
+    if (f <= 0) return s.from;
+    return s.from + (1 - Math.pow(1 - f, 3)) * (s.to - s.from);    // ease-out cubic
+  }
+
   /* Each registration's colour slot. prior's are kept as they are, and a
      registration new to it takes the next slot, so a bus keeps its colour
      as others join the live day (its vi, its place in the payload, does
@@ -595,6 +746,8 @@
     LIVE_FORMAT: LIVE_FORMAT, LIVE_VERSION: LIVE_VERSION,
     parseLive: parseLive, validateLive: validateLive, mergeLive: mergeLive,
     colourIndex: colourIndex,
+    liveClock: liveClock, nextPollAt: nextPollAt, liveDays: liveDays, bannerFor: bannerFor,
+    mergeInputs: mergeInputs, latestGlide: latestGlide,
   };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.ReplayData = api;

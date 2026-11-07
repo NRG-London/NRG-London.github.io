@@ -14,6 +14,11 @@
  * day itself (~100 KB). The days either side are fetched in the background so
  * stepping through them does not wait. If the per-route files are missing
  * (an older Worker), it falls back to the full index.json once.
+ *
+ * Live mode (the Delay Replay pilot) is on only when the page names the live
+ * files' root, <body data-live-root>, which only the lab page does: see "live
+ * mode" below. Without it nothing here polls, nothing is drawn live, and the
+ * page behaves exactly as it always has.
  */
 (function () {
   'use strict';
@@ -21,6 +26,9 @@
   var R = window.ReplayData;
   var DATA_ROOT = document.body.getAttribute('data-replay-root') || './';
   if (DATA_ROOT.slice(-1) !== '/') DATA_ROOT += '/';
+  var LIVE_ROOT = document.body.getAttribute('data-live-root') || '';
+  if (LIVE_ROOT && LIVE_ROOT.slice(-1) !== '/') LIVE_ROOT += '/';
+  var LIVE = !!LIVE_ROOT;
 
   var CARTO_KEY = 'cb1_2jwn_1_b719f4820b3d9fc06421d20e';
   var STYLES = {
@@ -46,6 +54,7 @@
     mapstyle: $('mapstyle'), mapbright: $('mapbright'), msg: $('msg'),
     banner: $('banner'), drop: $('drop'), collapse: $('collapse'), notices: $('notices'),
     card: $('card'),
+    liveBanner: $('live-banner'), liveControls: $('live-controls'), liveOverlay: $('live-overlay'),
   };
 
   // The buses are little buses (ngbus-buses.js; Claude Design, 19 Oct): the
@@ -75,16 +84,20 @@
 
   // Which way each bus faces: the way it last moved east or west, playing
   // forwards or back. A jump of more than two minutes (a click on the
-  // timeline) says nothing about direction, so it keeps the old one.
+  // timeline) says nothing about direction, so it keeps the old one. On a
+  // live day, played in real time, a bus moves too little between frames to
+  // tell, so there the way it faces is judged from where it was when last
+  // judged, not from the frame before.
   function updateFacing(buses) {
     var dt = lastT == null ? 0 : simT - lastT;
+    var slow = !!(cur && cur.live);
     buses.forEach(function (b) {
-      var x = b.position[0], px = lastX.get(b.reg);
+      var x = b.position[0], px = lastX.get(b.reg), turned = false;
       if (px != null && dt !== 0 && Math.abs(dt) <= 120) {
         var dx = (x - px) * (dt > 0 ? 1 : -1);
-        if (Math.abs(dx) > 2e-6) facing.set(b.reg, dx < 0 ? -1 : 1);
+        if (Math.abs(dx) > 2e-6) { facing.set(b.reg, dx < 0 ? -1 : 1); turned = true; }
       }
-      lastX.set(b.reg, x);
+      if (!slow || turned || px == null || Math.abs(dt) > 120) lastX.set(b.reg, x);
     });
     lastT = simT;
   }
@@ -202,7 +215,7 @@
 
   function loadSpecials(payload) {
     special = null;
-    var day = cur;
+    var mine = cur;
     var want = payload && payload.specials;
     if (!want || typeof want !== 'object' || !want.sprites || typeof want.sprites !== 'object') return;
     specialsCat = specialsCat || fetch(SPRITES + 'specials.json', { cache: 'no-cache' }).then(function (r) {
@@ -232,7 +245,7 @@
           .catch(function () { return null; });
       }));
     }).then(function (pairs) {
-      if (!cur || cur !== day) return;                         // moved on meanwhile (a refresh is not a move)
+      if (cur !== mine) return;                                // moved on meanwhile (a refresh is not a move)
       var icons = {}, n = 0;
       pairs.forEach(function (p) { if (p) { icons[p.dk] = p; n++; } });
       if (!n) return;
@@ -331,7 +344,8 @@
   function busText(o) {
     var dressed = cur && special && specialIcon(busKind(cur.payload.route), o);
     return R.plate(o.reg) + '\n' + (o.dead ? 'not in service: ' : 'to ') + cleanName(o.blind) +
-      (dressed && special.name ? '\n' + special.name + ' bus' : '');
+      (dressed && special.name ? '\n' + special.name + ' bus' : '') +
+      (o.held ? '\nlast report ' + ago(o.age) : '');       // only a live day holds a bus
   }
   function cardText(o) {
     if (o.reg) return busText(o);
@@ -583,13 +597,28 @@
   // Every stop of that name is marked (usually one each side of the road)
   // and the map closes in on them, about a kilometre across.
   function markStop(payload, at, gap, t) {
+    var hits = markLayersFor(payload, at);
+    if (!hits) return false;
+    var lon = hits.reduce(function (a, s) { return a + s.lon; }, 0) / hits.length;
+    var lat = hits.reduce(function (a, s) { return a + s.lat; }, 0) / hits.length;
+    fitBox(lon - 0.008, lat - 0.005, lon + 0.008, lat + 0.005, 15.5);
+    el.badge.hidden = false;
+    el.badge.textContent = (gap ? 'The ' + gap + '-minute gap' : 'The gap') +
+      ' at ' + cleanName(at) + (t ? ', from ' + t : '') +
+      '. The ring marks the stop; press play to watch it build.';
+    return true;
+  }
+
+  // The ring and label at every stop named `at` (markLayers): the stops it
+  // marks, or null for none.
+  function markLayersFor(payload, at) {
     markLayers = [];
-    if (!at) return false;
+    if (!at) return null;
     var want = cleanName(at).toLowerCase();
     var hits = (payload.stops || []).filter(function (s) {
       return cleanName(s.name).toLowerCase() === want;
     });
-    if (!hits.length) return false;
+    if (!hits.length) return null;
     markLayers = [
       new deck.ScatterplotLayer({
         id: 'mark', data: hits, stroked: true, filled: true,
@@ -607,28 +636,24 @@
         outlineWidth: 3, outlineColor: [17, 17, 17, 230], fontSettings: { sdf: true },
       }),
     ];
-    var lon = hits.reduce(function (a, s) { return a + s.lon; }, 0) / hits.length;
-    var lat = hits.reduce(function (a, s) { return a + s.lat; }, 0) / hits.length;
-    fitBox(lon - 0.008, lat - 0.005, lon + 0.008, lat + 0.005, 15.5);
-    el.badge.hidden = false;
-    el.badge.textContent = (gap ? 'The ' + gap + '-minute gap' : 'The gap') +
-      ' at ' + cleanName(at) + (t ? ', from ' + t : '') +
-      '. The ring marks the stop; press play to watch it build.';
-    return true;
+    return hits;
   }
 
   /* ---- a day arrives ----------------------------------------------------- */
 
   // A new day: the last day's buses, pin, badge and notices go, the camera
   // fits the route (unless this route and source are already shown), and the
-  // clock starts where the day gets going, or where the link says.
+  // clock starts where the day gets going, or where the link says. A live
+  // day (opts.live: its service window {date, t0, t1}, from the head) starts
+  // at the live edge unless the reader asked to start back.
   function start(payload, opts) {
     var prevRoute = cur && cur.payload.route;
     var prevSource = cur && cur.source;
     var was = cur;
     cur = { payload: payload, bytes: opts.bytes, source: opts.source };
+    if (opts.live) { cur.live = opts.live; cur.liveInfo = opts.liveInfo || null; }
     try {
-      refresh(payload, false);
+      refresh(payload, false, opts.live);
     } catch (e) {
       if (!cur.E) cur = was;           // a day that will not expand leaves the one shown as it was
       throw e;
@@ -636,24 +661,20 @@
     var span = cur.t1 - cur.t0;
     facing = new Map(); lastX = new Map(); lastT = null; iconCache = {};
     loadSpecials(payload);
-    staticLayers = [
-      new deck.PathLayer({
-        id: 'route-' + payload.route + payload.date, data: payload.shapes,
-        getPath: function (d) { return d.path; }, getColor: [255, 255, 255, 60],
-        getWidth: 12, widthMinPixels: 2, widthMaxPixels: 6,
-      }),
-    ];
+    staticLayers = routeLayers(payload);
     lettered = (payload.stops || []).filter(stopLetter);   // the stops: stopLayers, per frame
     pinned = null; lastBuses = [];
 
     el.badge.hidden = true;
     var marked = markStop(payload, opts.at, opts.gap, opts.t);
-    if (!marked && (prevRoute !== payload.route || prevSource !== opts.source)) fitTo(payload);
+    if (marked && opts.live) cur.markAt = opts.at;           // redrawn if a live refresh moves the stops
+    if (!marked && (prevRoute !== payload.route || camSource(prevSource) !== camSource(opts.source))) fitTo(payload);
 
+    var liveTag = opts.live ? ' \u00b7 live' : '';
     el.title.textContent = 'Route ' + payload.route + ' \u00b7 ' +
-      fmtDay(payload.date, { year: 'numeric' });
+      fmtDay(payload.date, { year: 'numeric' }) + liveTag;
     document.title = 'Route ' + payload.route + ', ' + fmtDay(payload.date, { year: 'numeric' }) +
-      ': bus replay \u2014 Neil Garratt';
+      liveTag + ': bus replay \u2014 Neil Garratt';
     setBack(payload.route);
     if (!Array.prototype.some.call(el.route.options, function (o) { return o.value === payload.route; })) {
       var o = document.createElement('option');
@@ -661,7 +682,7 @@
       el.route.appendChild(o);
     }
     el.route.value = payload.route;
-    el.save.disabled = false;
+    el.save.disabled = opts.source === 'live';             // a live day is not finished: nothing to keep yet
     if (opts.source === 'file') {
       el.badge.hidden = false;
       el.badge.textContent = 'From your file \u00b7 made ' +
@@ -677,6 +698,7 @@
         simT = Math.max(0, Math.min(span, e - cur.t0));
       }
     }
+    if (opts.live) simT = live.pinned ? liveEdge() : Math.min(simT, liveEdge());
     drawTimelineBase();
     closedStops = [];
     if (el.notices) { el.notices.hidden = true; el.notices.innerHTML = ''; }
@@ -685,8 +707,24 @@
     applyNotices(payload);
     updateURL(marked ? opts : null);
     say('');
+    if (LIVE) liveDayShown();
     render();
     if (opts.source === 'server') prefetchAround(payload.route, payload.date);
+  }
+
+  // A live day and a server day of one route are one source to the camera:
+  // stepping between them keeps the view.
+  function camSource(s) { return s === 'live' ? 'server' : s; }
+
+  // The route's drawn line, under everything else.
+  function routeLayers(payload) {
+    return [
+      new deck.PathLayer({
+        id: 'route-' + payload.route + payload.date, data: payload.shapes,
+        getPath: function (d) { return d.path; }, getColor: [255, 255, 255, 60],
+        getWidth: 12, widthMinPixels: 2, widthMaxPixels: 6,
+      }),
+    ];
   }
 
   /* The day's data, rebuilt from payload in place: cur.E, the trails, the
@@ -697,26 +735,41 @@
    * day takes the next slot (R.colourIndex); without it, colours are dealt
    * afresh in the payload's order, as for a new day. It draws nothing: the
    * caller draws the timeline (drawTimelineBase) and the frame (render). The
-   * route's lines and stops are start's.
+   * route's line and the stops' letters are start's (a live refresh that
+   * changes them redraws them: liveRedraw).
    *
-   * cur.t0 must be the payload's t0: R.expand times every point from it, and
-   * simT counts from it. For a day from the server or a file, cur.t1 is the
-   * payload's t1 too. */
-  function refresh(payload, keep) {
-    var E = R.expand(payload);         // first: a payload it cannot read changes nothing
-    cur.payload = payload;
-    cur.E = E;
-    cur.t0 = payload.t0;
-    cur.t1 = payload.t1;
-    counts = R.inServiceByMinute(E, cur.t1 - cur.t0);
-    slots = R.colourIndex(E.vehicles.map(function (v) { return v.reg; }), keep ? slots : null);
-    colors = new Map();
-    slots.forEach(function (i, reg) { colors.set(reg, hsl2rgb((i * 137.5) % 360, 0.75, 0.6)); });
-    trips = E.segs.map(function (s) {
+   * It is all or nothing: everything is worked out first and only then put
+   * in place, so a payload that throws anywhere changes nothing, and the day
+   * shown (on a live day, the last good merge) stays as it was.
+   *
+   * cur.t0 is the payload's t0: R.expand times every point from it, and simT
+   * counts from it. cur.t1 is the payload's t1 for a day from the server or
+   * a file; on a live day, win ({t0, t1}, the head's service window) gives
+   * cur.t0 and cur.t1 instead, the whole day, while the payload's own t1 is
+   * its last ping. */
+  function refresh(payload, keep, win) {
+    var E = R.expand(payload);
+    var t0 = payload.t0, t1 = win ? win.t1 : payload.t1;
+    if (win && win.t0 !== t0) {
+      throw new Error('the live day starts at ' + win.t0 + ' but its payload at ' + t0);
+    }
+    var nCounts = R.inServiceByMinute(E, t1 - t0);
+    var nSlots = R.colourIndex(E.vehicles.map(function (v) { return v.reg; }), keep ? slots : null);
+    var nColors = new Map();
+    nSlots.forEach(function (i, reg) { nColors.set(reg, hsl2rgb((i * 137.5) % 360, 0.75, 0.6)); });
+    var nTrips = E.segs.map(function (s) {
       var path = new Array(s.lon.length);
       for (var i = 0; i < path.length; i++) path[i] = [s.lon[i], s.lat[i]];
       return { reg: E.vehicles[s.vi].reg, path: path, timestamps: Array.from(s.t) };
     });
+    cur.payload = payload;             // all in hand: only now does anything change
+    cur.E = E;
+    cur.t0 = t0;
+    cur.t1 = t1;
+    counts = nCounts;
+    slots = nSlots;
+    colors = nColors;
+    trips = nTrips;
   }
 
   // Start where the day gets going: the first minute with half the day's
@@ -770,7 +823,7 @@
       // drawn on the map instead; a long closure would mark every day)
       var marks = {};
       var notices = f ? f.notices : [];
-      availableDates(route).forEach(function (d) {
+      stripDates(route).forEach(function (d) {
         var dw = NN.serviceDay(d);
         if (notices.some(function (it) { return NN.inEffect(it, dw[0], dw[1]); })) marks[d] = true;
       });
@@ -932,7 +985,7 @@
   function updateURL(keep) {
     var u = new URL(location.href);
     ['route', 'date', 't', 'at', 'gap'].forEach(function (k) { u.searchParams.delete(k); });
-    if (cur && cur.source === 'server') {
+    if (cur && (cur.source === 'server' || cur.source === 'live')) {
       u.searchParams.set('route', cur.payload.route);
       u.searchParams.set('date', cur.payload.date);
       if (keep && keep.at) {
@@ -969,22 +1022,41 @@
 
   function renderDays() {
     el.days.innerHTML = '';
-    var key = cur && cur.source === 'server' ? cur.payload.route : resolveRoute(el.route.value);
-    var dates = key ? availableDates(key) : [];
+    var listed = cur && (cur.source === 'server' || cur.source === 'live');
+    var key = listed ? cur.payload.route : resolveRoute(el.route.value);
+    var dates = key ? stripDates(key) : [];
+    var liveSet = {};                                      // live mode: the head's days
+    if (LIVE) {
+      var ld = key ? liveDates(key) : [];
+      ld.forEach(function (iso) { liveSet[iso] = true; });
+      live.shownDates = ld.join(',');
+    }
     var curIso = cur && cur.payload.date;
     el.daylabel.textContent = curIso ? fmtDay(curIso) : '';
-    var inList = curIso && dates.indexOf(curIso) !== -1 && cur.source === 'server';
+    var inList = curIso && dates.indexOf(curIso) !== -1 && listed;
     el.prev.disabled = !inList || dates.indexOf(curIso) === 0;
     el.next.disabled = !inList || dates.indexOf(curIso) === dates.length - 1;
     if (!dates.length) return;
-    var entries = routeDays[key];
+    var entries = routeDays[key] || {};
     for (var iso = dates[0]; iso <= dates[dates.length - 1]; iso = addDays(iso, 1)) {
       var b = document.createElement('button');
       b.className = 'day';
       var d = new Date(iso + 'T12:00:00Z');
       b.innerHTML = '<span class="wd">' + 'SMTWTFS'[d.getUTCDay()] + '</span>' + d.getUTCDate();
       var rec = entries[iso];
-      if (rec) {
+      if (liveSet[iso]) {
+        // The day so far, from the live files: the head's until the
+        // production replay lists it, even once i/ has it too.
+        b.classList.add('live');
+        b.insertAdjacentHTML('beforeend', '<span class="livedot" aria-hidden="true"></span>');
+        b.title = fmtDay(iso, { year: 'numeric' }) + ' · live: the day so far';
+        if (noticeMarks.route === key && noticeMarks.days[iso]) {
+          b.insertAdjacentHTML('beforeend', '<span class="nmark" aria-hidden="true"></span>');
+          b.title += ' · ' + (NWORDS.replay_day_mark || 'TfL notice in force');
+        }
+        b.onclick = (function (i) { return function () { openLiveDay(key, i); }; })(iso);
+        if (cur && cur.live && cur.live.date === iso) b.classList.add('cur');
+      } else if (rec) {
         var share = (rec.journeys > 0 && rec.cut_short != null) ? rec.cut_short / rec.journeys : null;
         if (share == null) {
           b.classList.add('nofig');
@@ -1005,7 +1077,7 @@
           b.title += ' \u00b7 ' + (NWORDS.replay_day_mark || 'TfL notice in force');
         }
         b.onclick = (function (i) { return function () { loadServerDay(key, i); }; })(iso);
-        if (iso === curIso && cur.source === 'server') b.classList.add('cur');
+        if (iso === curIso && listed) b.classList.add('cur');
       } else {
         var g = gapFor(iso);
         b.disabled = true;
@@ -1028,10 +1100,17 @@
   }
 
   function stepDay(n) {
-    if (!cur || cur.source !== 'server') return;
-    var dates = availableDates(cur.payload.route);
+    if (!cur || (cur.source !== 'server' && cur.source !== 'live')) return;
+    var dates = stripDates(cur.payload.route);
     var i = dates.indexOf(cur.payload.date) + n;
-    if (i >= 0 && i < dates.length) loadServerDay(cur.payload.route, dates[i]);
+    if (i >= 0 && i < dates.length) openDay(cur.payload.route, dates[i]);
+  }
+
+  // A day of a route: from the live files while the head lists it, else
+  // from the server.
+  function openDay(key, iso, opts) {
+    if (LIVE && isLiveDate(key, iso)) openLiveDay(key, iso, opts);
+    else loadServerDay(key, iso, opts);
   }
 
   /* ---- timeline ----------------------------------------------------------- */
@@ -1078,6 +1157,7 @@
       g.stroke();
       g.restore();
     });
+    if (cur.live) liveHours(g, w, t0, span);
   }
 
   function drawTimeline() {
@@ -1086,6 +1166,7 @@
     g.setTransform(1, 0, 0, 1, 0, 0);
     g.drawImage(tlBase, 0, 0);
     var span = cur.t1 - cur.t0;
+    if (cur.live) liveFuture(g, c, span);
     var x = Math.round(simT / span * c.width);
     g.fillStyle = '#fff';
     g.fillRect(x - 1, 0, 2 * (window.devicePixelRatio || 1), c.height);
@@ -1096,6 +1177,7 @@
     var r = el.timeline.getBoundingClientRect();
     var f = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
     simT = f * (cur.t1 - cur.t0);
+    if (LIVE) liveScrubbed();
     render();
   }
 
@@ -1114,7 +1196,10 @@
   function render() {
     if (!cur) return;
     var p = cur.payload, E = cur.E;
-    var buses = R.positionsAt(E, p.blinds, simT);
+    var hold = liveHold();                 // a running live day only: hold, never extrapolate
+    var buses = R.positionsAt(E, p.blinds, simT, hold);
+    var latest = !!hold && liveLatest();   // every bus at its last report, its age shown
+    if (latest) liveGlide(buses, E, p);
     var icons = busStyle === 'buses', kind = busKind(p.route);
     if (icons) updateFacing(buses);
     lastBuses = buses;
@@ -1155,24 +1240,13 @@
       sizeUnits: 'pixels', sizeBasis: 'width', getSize: ICON_W * sp.size,
       updateTriggers: { getPosition: simT, getIcon: [simT, tick] },
     })] : [], [
-      new deck.TextLayer({
-        id: 'labels', data: buses,
-        getPosition: function (d) { return d.position; },
-        getText: function (d) { return R.plate(d.reg); },
-        getColor: [255, 255, 255, 200], getSize: 11,
-        getPixelOffset: !icons ? [0, -16] : function (d) {
-          var sp = specialIcon(kind, d);
-          return [0, -Math.round(sp ? ICON_W * sp.above / 64 + 5 : ICON_W * NB.aspect(kind) + 5)];
-        },
-        fontFamily: 'DM Sans, system-ui, sans-serif',
-        updateTriggers: { getPosition: simT, getPixelOffset: [simT, icons, kind, specialKey()] },
-      }),
+      new deck.TextLayer(labelProps(buses, icons, kind, latest)),
     ]) });
     var now = cur.t0 + simT;
     el.clock.textContent = fmtClock(now);
     var dead = buses.filter(function (b) { return b.dead; }).length;
     el.meta.textContent = (buses.length - dead) + ' in service \u00b7 ' + dead +
-      ' not in service \u00b7 ' + E.vehicles.length + ' vehicles all day';
+      ' not in service \u00b7 ' + E.vehicles.length + (cur.live ? ' vehicles so far' : ' vehicles all day');
     el.slider.value = Math.round(1000 * simT / (cur.t1 - cur.t0));
     drawTimeline();
     var h = holeAt(now);
@@ -1186,21 +1260,66 @@
     } else {
       el.banner.hidden = true;
     }
+    if (LIVE) liveFrame(buses);
   }
   function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
-  function tick(now) {
-    if (playing && cur) {
-      // Cap the step: a frame that stalled (shader compile, background tab)
-      // must not throw the replay minutes forward.
-      simT += speed * Math.min(250, now - lastFrame) / 1000;
-      if (simT > cur.t1 - cur.t0) simT = 0;
-      render();
-    } else if (cur && filmShown && filmTick(filmShown) !== filmShownTick) {
-      render();                            // paused, the fireworks still go off
+  // The registrations over the buses. In Latest each also says how old its
+  // report is, on a second line, so the block grows upwards off the bus.
+  function labelProps(buses, icons, kind, latest) {
+    var props = {
+      id: 'labels', data: buses,
+      getPosition: function (d) { return d.position; },
+      getText: function (d) { return R.plate(d.reg); },
+      getColor: [255, 255, 255, 200], getSize: 11,
+      getPixelOffset: !icons ? [0, -16] : function (d) {
+        var sp = specialIcon(kind, d);
+        return [0, -Math.round(sp ? ICON_W * sp.above / 64 + 5 : ICON_W * NB.aspect(kind) + 5)];
+      },
+      fontFamily: 'DM Sans, system-ui, sans-serif',
+      updateTriggers: { getPosition: simT, getPixelOffset: [simT, icons, kind, specialKey()] },
+    };
+    if (latest) {
+      var off = props.getPixelOffset;
+      props.getText = function (d) { return R.plate(d.reg) + '\n' + ago(d.age); };
+      props.getAlignmentBaseline = 'bottom';
+      props.getPixelOffset = function (d) {           // the first line's centre, as before, less half a line
+        var o = typeof off === 'function' ? off(d) : off;
+        return [o[0], o[1] + 6];
+      };
+      props.updateTriggers.getText = Math.floor(simT);
     }
-    lastFrame = now;
-    requestAnimationFrame(tick);
+    return props;
+  }
+
+  function tick(now) {
+    requestAnimationFrame(tick);           // first: a throw below must never stop the loop
+    try {
+      if (LIVE && liveRunning()) {
+        liveStep(now);                     // the live day: at the edge, or catching up to it
+      } else if (playing && cur) {
+        // Cap the step: a frame that stalled (shader compile, background tab)
+        // must not throw the replay minutes forward.
+        simT += speed * Math.min(250, now - lastFrame) / 1000;
+        if (simT > cur.t1 - cur.t0) simT = 0;
+        render();
+      } else if (cur && filmShown && filmTick(filmShown) !== filmShownTick) {
+        render();                          // paused, the fireworks still go off
+      }
+    } catch (e) {
+      loopFault(e);
+    } finally {
+      lastFrame = now;
+    }
+  }
+
+  // A frame that throws: said once (per message) on the console, and on a
+  // live page in the overlay too. The next frame tries again.
+  var lastLoopFault = '';
+  function loopFault(e) {
+    var msg = (e && e.message) || String(e);
+    if (msg !== lastLoopFault) { lastLoopFault = msg; console.error('replay: drawing failed:', e); }
+    if (LIVE) liveFault(e, 'drawing');
   }
 
   /* ---- save / open -------------------------------------------------------- */
@@ -1242,17 +1361,594 @@
     }
   }
 
+  /* ---- live mode (the lab page only) -------------------------------------- */
+
+  // The Delay Replay pilot (Road Data docs/superpowers/specs/2026-11-06-
+  // delay-replay-pilot-design.md, section 4). For the pilot routes, NRG-1's
+  // live writer (platform/live_bods.py) publishes under LIVE_ROOT:
+  //   t/p.json.gz          the head, every 10 s: the last ten minutes of every
+  //                        bus, and the keys of the two below (max-age=5)
+  //   r/p/<time>.json.gz   recent: everything since `upto` (immutable)
+  //   d/<R>/<date>/<md5>   the day so far, to upto: a v1 day file (immutable)
+  // The live day is the three merged (R.mergeLive), drawn across its whole
+  // service window, and it never loops. At the live edge the cursor is
+  // server-now less the delay (Smooth: buses glide between real reports) or
+  // server-now itself (Latest: every bus at its last report, a new one
+  // reached by a brief glide along the road). A bus past its last ping is
+  // held there while it is still reported on the route (R.positionsAt's
+  // hold), never extrapolated. Scrubbed back, the day plays at the chosen
+  // speed and rejoins the edge, at 1x, when it gets there. Earlier days come
+  // from the Worker, exactly as on the production page. Nothing here runs
+  // unless LIVE.
+
+  var DEFAULT_DELAY_S = 120;     // Viewer Ruling 4: Smooth's delay, until the dry run measures it
+  var LIVE_HEAD = 't/p.json.gz';
+  var LIVE_FETCH_MS = 15000;     // a live fetch slower than this is given up, and tried again
+  var NOT_YET = 'not yet available';
+  var HOUR_COLOUR = { signed: '#8fb3d9', compacted: '#4f6a85', live: '#E0A24E' };
+
+  var live = !LIVE ? null : {
+    clock: null,                 // R.liveClock: server-now, from the heads' Date headers
+    head: null,                  // the newest head
+    files: new Map(),            // r/ and d/ key -> its object: immutable, so fetched once and kept
+    getting: new Map(),          // key -> its fetch in flight
+    route: null,                 // the route whose live days are merged
+    days: new Map(),             // date -> its last good merge {inputs, payload, head, win, hours, upto}
+    chain: Promise.resolve(),    // merges, one at a time
+    mode: 'smooth',              // or 'latest'
+    delay: DEFAULT_DELAY_S,
+    pinned: true,                // at the live edge, or scrubbed back
+    back: false,                 // ?live=0: the first live day opened starts scrubbed back
+    glide: new Map(),            // Latest: registration -> R.latestGlide state
+    poll: { text: 'not yet', at: null }, error: null, errorAt: null,
+    timer: null, polling: null, first: null, pending: null,
+    shownDates: '', ctl: '', overlayAt: 0,
+  };
+
+  function serverNow() { return live.clock ? live.clock.now(performance.now()) : Date.now() / 1000; }
+  function liveDelay() { return live.mode === 'latest' ? 0 : live.delay; }
+
+  // A live day still running at the cursor's edge. Once its service window
+  // is behind the edge (D-1 after 05:00) it is a finished day, which loops.
+  function liveRunning() {
+    return !!(LIVE && cur && cur.live && live.clock && serverNow() - liveDelay() < cur.t1);
+  }
+  function liveEdge() {           // the live edge, as simT
+    return Math.max(0, Math.min(cur.t1 - cur.t0, serverNow() - liveDelay() - cur.t0));
+  }
+  function liveHold() {
+    if (!liveRunning()) return undefined;
+    return { seen: (cur.payload.live && cur.payload.live.seen) || {}, t0: cur.t0, maxGap: 900,
+             edge: live.head ? live.head.to : undefined };
+  }
+  function liveLatest() { return live.mode === 'latest' && live.pinned && liveRunning(); }
+
+  function ago(s) {
+    s = Math.max(0, Math.round(s));
+    return s < 90 ? s + ' s ago' : Math.round(s / 60) + ' min ago';
+  }
+  function fmtDelay(s) { return s % 60 ? s + ' s' : s / 60 + ' min'; }
+  function lagText(s) {
+    var a = Math.round(Math.abs(s)), r = a % 60;
+    return (s < -0.5 ? '-' : '') + Math.floor(a / 60) + ':' + (r < 10 ? '0' : '') + r;
+  }
+
+  function liveHasRoute(key) {
+    return !!(LIVE && key && live.head && live.head.routes &&
+              Object.prototype.hasOwnProperty.call(live.head.routes, key));
+  }
+  function liveDates(key) {       // the head's days for this route
+    if (!liveHasRoute(key)) return [];
+    return R.liveDays(live.head, [], key).map(function (d) { return d.date; });
+  }
+  function isLiveDate(key, iso) { return liveDates(key).indexOf(iso) !== -1; }
+  // The days the strip shows: the replay index's, and in live mode the head's too.
+  function stripDates(key) {
+    var dates = availableDates(key);
+    if (!LIVE || !liveHasRoute(key)) return dates;
+    return R.liveDays(live.head, dates, key).map(function (d) { return d.date; }).sort();
+  }
+
+  function liveFault(e, what) {
+    var msg = (what ? what + ': ' : '') + ((e && e.message) || String(e));
+    if (msg !== live.error) console.error('replay (live): ' + msg);
+    live.error = msg;
+    live.errorAt = serverNow();
+  }
+
+  /* -- fetching -- */
+
+  function fetchLive(key) {       // {res, buf}; given up after LIVE_FETCH_MS
+    var ctl = typeof AbortController === 'function' ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, LIVE_FETCH_MS);
+    return fetch(LIVE_ROOT + key, ctl ? { signal: ctl.signal } : undefined).then(function (res) {
+      if (!res.ok) { var e = new Error('HTTP ' + res.status); e.status = res.status; throw e; }
+      return res.arrayBuffer().then(function (buf) { return { res: res, buf: buf }; });
+    }).finally(function () { clearTimeout(timer); });
+  }
+
+  // An r/ or d/ file: once, then kept. A failure is not kept, so the next
+  // head that names the key tries it again (R.mergeInputs wants it again).
+  function liveFile(key) {
+    if (live.files.has(key)) return Promise.resolve(live.files.get(key));
+    if (live.getting.has(key)) return live.getting.get(key);
+    var day = key.charAt(0) === 'd';
+    var p = fetchLive(key).then(function (got) {
+      return day ? R.parse(got.buf) : R.parseLive(got.buf);
+    }).then(function (obj) {
+      if (!day && obj.kind !== 'recent') throw new Error('a ' + obj.kind + ' file, not a recent one');
+      live.files.set(key, obj);
+      return obj;
+    });
+    live.getting.set(key, p);
+    p.then(function () { live.getting.delete(key); },
+           function (e) { live.getting.delete(key); liveFault(e, key); });
+    return p;
+  }
+
+  // The head, with plain fetch (it is max-age=5), then the files it names
+  // and the merge, then the next poll: timed from the head's generated and
+  // cadence (R.nextPollAt). The clock is set from the first head's Date
+  // header and only ever moved forwards by later ones.
+  function livePoll() {
+    if (live.polling) return live.polling;
+    clearTimeout(live.timer);
+    var t = performance.now();
+    var p = fetchLive(LIVE_HEAD).then(function (got) {
+      var perf = performance.now();
+      var date = Date.parse(got.res.headers.get('Date') || '');
+      return R.parseLive(got.buf).then(function (head) {
+        if (head.kind !== 'head') throw new Error(LIVE_HEAD + ' is a ' + head.kind + ' file, not a head');
+        if (!isFinite(date)) {
+          liveFault(new Error('no Date header on the head (is it exposed?): this device’s clock is used'));
+          date = Date.now();
+        }
+        if (live.clock) live.clock.correct(date, perf); else live.clock = R.liveClock(date, perf);
+        var newer = !live.head || head.generated > live.head.generated;
+        if (newer) live.head = head;       // never back to an older copy, as a cache can give
+        live.poll = { text: (newer ? 'new head' : 'same head') + ', ' + Math.round(perf - t) + ' ms',
+                      at: serverNow() };
+        return liveUpdate();
+      });
+    }).catch(function (e) {
+      live.poll = { text: 'failed (' + ((e && e.message) || e) + ')', at: serverNow() };
+      console.warn('replay (live): the head: ' + ((e && e.message) || e));
+    }).then(function () {
+      live.polling = null;
+      var n = serverNow(), at = live.head ? R.nextPollAt(live.head, n) : n + 5;
+      clearTimeout(live.timer);
+      live.timer = setTimeout(livePoll, Math.max(0.5, at - n) * 1000);
+      liveStrip();
+    });
+    live.polling = p;
+    if (!live.first) live.first = p;
+    return p;
+  }
+
+  // After each poll: the strip if the head's days have changed, and a live
+  // day that could not be opened yet, tried again.
+  function liveStrip() {
+    var listed = cur && (cur.source === 'server' || cur.source === 'live');
+    var key = listed ? cur.payload.route : resolveRoute(el.route.value);
+    if ((key ? liveDates(key).join(',') : '') !== live.shownDates) renderDays();
+    liveControls();
+    if (live.pending && live.pending.token === loadToken) {
+      var p = live.pending;
+      live.pending = null;
+      openLiveDay(p.key, p.iso, p.opts);
+    }
+  }
+
+  /* -- merging -- */
+
+  // Merge live.route's live days that are wanted (the one shown, and
+  // extra, a date being opened), one update at a time.
+  function liveUpdate(extra) {
+    var run = function () { return liveMerge(extra); };
+    live.chain = live.chain.then(run, run);
+    return live.chain.catch(function (e) { liveFault(e, 'update'); });
+  }
+
+  async function liveMerge(extra) {
+    var head = live.head, route = live.route;
+    if (!head || !liveHasRoute(route)) return;
+    var want = {};
+    if (cur && cur.live && cur.payload.route === route) want[cur.live.date] = true;
+    if (extra) want[extra] = true;
+    var plans = head.days.filter(function (d) { return want[d.date]; }).map(function (d) {
+      var m = live.days.get(d.date);
+      return { d: d, prev: m ? m.inputs : { route: route, date: d.date } };
+    });
+    var need = [];
+    plans.forEach(function (p) {
+      R.mergeInputs(p.prev, head, live.files).need.forEach(function (k) {
+        if (need.indexOf(k) === -1) need.push(k);
+      });
+    });
+    await Promise.all(need.map(function (k) {
+      return liveFile(k).catch(function () { /* the last merge stands; the next head retries */ });
+    }));
+    if (route !== live.route) return;                       // moved on meanwhile
+    plans.forEach(function (p) {
+      var inp = R.mergeInputs(p.prev, head, live.files);
+      if (inp.day === undefined || inp.recent === undefined) return;   // nothing in hand yet
+      var m = live.days.get(p.d.date);
+      if (m && m.head === head && m.inputs.day === inp.day && m.inputs.recent === inp.recent) return;
+      try {
+        var frags = [inp.recent.routes[route], head.routes[route]].filter(Boolean);
+        var payload = R.mergeLive(inp.day, frags, route, p.d.t0, p.d.t1, []);
+        notYet(payload, head, p.d);
+        live.days.set(p.d.date, { inputs: inp, payload: payload, head: head,
+                                  win: { date: p.d.date, t0: p.d.t0, t1: p.d.t1 },
+                                  hours: inp.recent.hours || {}, upto: head.upto });
+      } catch (e) {
+        liveFault(e, 'route ' + route + ' on ' + p.d.date);   // the last good merge stays
+      }
+    });
+    liveForget(head);
+    liveShow();
+  }
+
+  // A capped recent file (compaction has stalled, so it starts 3 h back, not
+  // at upto) leaves [upto, r.from) in no file at all: drawn as a hole, never
+  // silently missing.
+  function notYet(payload, head, d) {
+    if (!head.r_capped || !head.r) return;
+    var a = Math.max(head.upto, d.t0), b = Math.min(head.r.from, d.t1);
+    if (b <= a) return;
+    payload.holes = payload.holes.concat([[a, b, 'no-data', NOT_YET]])
+      .sort(function (x, y) { return x[0] - y[0]; });
+  }
+
+  // Keep only the files the head names or a kept merge was made from.
+  function liveForget(head) {
+    var keep = {};
+    if (head.r && head.r.key) keep[head.r.key] = true;
+    head.days.forEach(function (d) {
+      Object.keys(d.d || {}).forEach(function (r) { if (d.d[r]) keep[d.d[r]] = true; });
+    });
+    live.days.forEach(function (m) {
+      if (m.inputs.dayKey) keep[m.inputs.dayKey] = true;
+      if (m.inputs.recentKey) keep[m.inputs.recentKey] = true;
+    });
+    Array.from(live.files.keys()).forEach(function (k) { if (!keep[k]) live.files.delete(k); });
+  }
+
+  // The live day shown takes its new merge in place: refresh, then the
+  // route's drawing if that moved, then the timeline and the frame. A merge
+  // that cannot be drawn changes nothing (refresh is all or nothing): the
+  // last good one stays on screen.
+  function liveShow() {
+    if (!cur || !cur.live || cur.payload.route !== live.route) return;
+    var m = live.days.get(cur.live.date);
+    if (!m || m.payload === cur.payload) return;
+    var old = cur.payload;
+    try {
+      refresh(m.payload, true, m.win);
+    } catch (e) {
+      liveFault(e, 'refresh');
+      return;
+    }
+    cur.liveInfo = { hours: m.hours, upto: m.upto };
+    try {
+      liveRedraw(old, m.payload);
+      drawTimelineBase();
+      render();
+    } catch (e) {
+      liveFault(e, 'drawing');
+    }
+  }
+
+  // The route's line and the stops' letters are start's. A live refresh
+  // that changes the shapes, the stops or the route version (the register's
+  // 06:15 flip, say) redraws them too; one that does not leaves them be.
+  // New stop objects with the same stops (a new day file, an hour on) only
+  // take over the letters and a pinned stop, which is held by identity.
+  function liveRedraw(old, p) {
+    var rv = function (x) { return (x.route_version || {}).id; };
+    var same = function (a, b) { return a === b || JSON.stringify(a || []) === JSON.stringify(b || []); };
+    var moved = rv(old) !== rv(p);
+    var shapes = moved || !same(old.shapes, p.shapes);
+    var stops = moved || !same(old.stops, p.stops);
+    if (shapes) staticLayers = routeLayers(p);
+    if (old.stops !== p.stops) {
+      lettered = (p.stops || []).filter(stopLetter);
+      if (pinned && pinned.stop && !pinned.stop.closed) {
+        var i = (old.stops || []).indexOf(pinned.stop);
+        var s = !stops && i !== -1 ? p.stops[i] : findStop(p.stops, pinned.stop);
+        pinned = s ? { stop: s } : null;
+      }
+    }
+    if (stops) {
+      if (cur.markAt) markLayersFor(p, cur.markAt);
+      applyNotices(p);                   // closed stops take their letters from the day's stops
+    }
+  }
+  function findStop(stops, s) {
+    return (stops || []).filter(function (x) {
+      return s.id ? x.id === s.id : x.name === s.name && x.lon === s.lon && x.lat === s.lat;
+    })[0] || null;
+  }
+
+  /* -- opening a live day -- */
+
+  async function openLiveDay(key, iso, opts) {
+    opts = opts || {};
+    var token = ++loadToken;
+    live.pending = null;
+    if (live.route !== key) { live.route = key; live.days = new Map(); }
+    say('Loading route ' + key + ', ' + fmtDay(iso) + ', live…');
+    await liveUpdate(iso);
+    if (token !== loadToken) return;
+    var m = live.days.get(iso);
+    if (!m) {
+      live.pending = { key: key, iso: iso, opts: opts, token: loadToken };
+      say('The live data for route ' + key + ', ' + fmtDay(iso) + ' is not in yet' +
+          (live.error ? ' (' + live.error + ')' : '') + '. Trying again with the next update…');
+      return;
+    }
+    live.pinned = !(opts.back || opts.t != null);
+    live.glide = new Map();
+    try {
+      start(m.payload, { source: 'live', live: m.win, liveInfo: { hours: m.hours, upto: m.upto },
+                         t: opts.t, at: opts.at, gap: opts.gap });
+    } catch (e) {
+      say(e.name === 'ReplayError' ? e.message : 'Something went wrong drawing that day (' + e.message + ').');
+      console.error(e);
+    }
+  }
+
+  // At load: a pilot route opens on its newest live day (or the live day
+  // the link names), once the first head is in, if it comes within 8 s.
+  async function liveOpensFirst(key, date, q) {
+    await Promise.race([live.first, new Promise(function (r) { setTimeout(r, 8000); })]);
+    var dates = liveDates(key);
+    var iso = date ? (dates.indexOf(date) !== -1 ? date : null) : dates[dates.length - 1];
+    if (!iso) return false;
+    var gap = q.get('gap');
+    openLiveDay(key, iso, { t: q.get('t'), at: q.get('at'),
+                            gap: gap && /^\d{1,4}$/.test(gap) ? gap : null, back: live.back });
+    live.back = false;
+    return true;
+  }
+
+  // The route picker chose a pilot route: its live day, unless an earlier
+  // day is shown that the route also has (that day is kept, as for any route).
+  function liveRouteChosen(key, dates) {
+    var ld = liveDates(key);
+    if (!ld.length) return false;
+    var d = cur && cur.payload.date;
+    if (d && !cur.live && dates.indexOf(d) !== -1 && ld.indexOf(d) === -1) return false;
+    openLiveDay(key, d && ld.indexOf(d) !== -1 ? d : ld[ld.length - 1]);
+    return true;
+  }
+
+  /* -- the cursor -- */
+
+  function liveStep(now) {
+    if (live.pinned) {
+      simT = liveEdge();
+    } else if (playing) {
+      simT += speed * Math.min(250, now - lastFrame) / 1000;
+      var edge = liveEdge();
+      if (simT >= edge) { simT = edge; liveRejoin(); }     // caught up: Live again, at 1x
+    }
+    render();
+  }
+
+  function liveRejoin() {
+    live.pinned = true;
+    live.glide = new Map();
+    if (!playing) {
+      playing = true;
+      el.play.textContent = 'Pause';
+      el.play.classList.remove('paused');
+    }
+    speed = 1;
+    el.speed.value = '1';
+    liveControls();
+  }
+
+  function liveLeftEdge() {       // paused on a live day
+    if (!liveRunning() || !live.pinned) return;
+    live.pinned = false;
+    live.glide = new Map();
+    liveControls();
+  }
+
+  // The reader moved the cursor (the timeline, the slider, the arrow keys):
+  // never past the live edge, and onto it is Live again.
+  function liveScrubbed() {
+    if (!liveRunning()) return;
+    var edge = liveEdge();
+    if (simT >= edge) { simT = edge; liveRejoin(); }
+    else if (live.pinned) { live.pinned = false; live.glide = new Map(); liveControls(); }
+  }
+
+  /* -- what a live day shows -- */
+
+  // Latest: each bus at its last report, and a new report reached by a
+  // glide along the track from where the bus is (R.latestGlide).
+  function liveGlide(buses, E, p) {
+    var perf = performance.now(), here = new Set();
+    buses.forEach(function (b) {
+      var last = Math.round(simT - b.age);         // its last ping, s after t0 (pings are whole seconds)
+      var g = R.latestGlide(live.glide.get(b.reg), last, perf);
+      live.glide.set(b.reg, g.state);
+      here.add(b.reg);
+      if (g.trackT === last) return;
+      var at = R.positionsAt(E, p.blinds, g.trackT);
+      for (var i = 0; i < at.length; i++) {
+        if (at[i].reg === b.reg) { b.position = at[i].position; break; }
+      }
+    });
+    live.glide.forEach(function (s, reg) { if (!here.has(reg)) live.glide.delete(reg); });
+  }
+
+  // On each frame of a live page: the banner, the controls, the overlay.
+  function liveFrame(buses) {
+    var running = liveRunning(), n = serverNow();
+    var b = running ? R.bannerFor(live.head, n) : null;
+    var text = !b ? '' : b.kind === 'data'
+      ? 'Live data stopped at ' + fmtHM(b.at) + '. The buses stay where they were last reported, then drop out.'
+      : 'Feed stopped at ' + fmtHM(b.at) + ': no new London bus positions have come in since.';
+    if (el.liveBanner.textContent !== text) el.liveBanner.textContent = text;
+    el.liveBanner.hidden = !text;
+    liveControls();
+    var perf = performance.now();
+    if (perf - live.overlayAt < 250) return;      // four times a second is plenty
+    live.overlayAt = perf;
+    liveOverlay(buses, running, n);
+  }
+
+  // The lab overlay: how old the head is, how far behind server-now the
+  // cursor is, the buses moving and held, the last poll, the last error.
+  function liveOverlay(buses, running, n) {
+    var h = live.head, lines = [];
+    lines.push('now ' + fmtClock(n) + ' · head ' +
+               (h ? Math.round(n - h.generated) + ' s old (to ' + fmtClock(h.to) + ')' : 'none yet'));
+    lines.push('poll: ' + live.poll.text + (live.poll.at ? ' at ' + fmtClock(live.poll.at) : ''));
+    if (cur && cur.live) {
+      var held = buses.filter(function (x) { return x.held; }).length;
+      lines.push('cursor ' + lagText(n - (cur.t0 + simT)) + ' behind · ' +
+                 (!running ? 'the day is over' : live.pinned ? live.mode + ', at the edge'
+                   : 'scrubbed back, ' + speed + '×'));
+      lines.push((buses.length - held) + ' moving · ' + held + ' held');
+    } else {
+      lines.push('not a live day');
+    }
+    if (live.error) lines.push('last error ' + ago(n - live.errorAt) + ' (' + fmtClock(live.errorAt) + '): ' + live.error);
+    var text = lines.join('\n');
+    if (el.liveOverlay.textContent !== text) el.liveOverlay.textContent = text;
+  }
+
+  // The timeline of a live day: along the top, each hour signed off,
+  // compacted or live (after upto, to now); then, per frame, the part still
+  // to come shaded.
+  function liveHours(g, w, t0, span) {
+    var info = cur.liveInfo || {}, hours = info.hours || {};
+    function band(a, b, colour) {
+      var x0 = Math.max(0, (a - t0) / span * w), x1 = Math.min(w, (b - t0) / span * w);
+      if (x1 > x0) { g.fillStyle = colour; g.fillRect(x0, 0, x1 - x0, 3); }
+    }
+    Object.keys(hours).forEach(function (k) {
+      band(+k, +k + 3600, HOUR_COLOUR[hours[k]] || HOUR_COLOUR.compacted);
+    });
+    if (info.upto != null) band(Math.max(info.upto, t0), Math.min(serverNow(), cur.t1), HOUR_COLOUR.live);
+  }
+  function liveFuture(g, c, span) {
+    var x = Math.max(0, Math.round((serverNow() - cur.t0) / span * c.width));
+    if (x >= c.width) return;
+    g.fillStyle = 'rgba(17,17,17,.6)';
+    g.fillRect(x, 0, c.width - x, c.height);
+  }
+
+  /* -- the controls -- */
+
+  // Called at the end of every start on a live page.
+  function liveDayShown() {
+    var on = !!cur.live;
+    liveSpeeds(on);
+    if (on && live.pinned) liveRejoin();
+    el.timeline.title = on ? 'The day so far, across its whole service window; the shaded end is ' +
+      'still to come. Along the top, each hour: signed off (light), compacted (dark) or live ' +
+      '(amber). Click or drag to go back; onto the live edge is Live again.' : timelineTitle;
+    liveControls();
+  }
+
+  // 1x is a speed only on a live day (it is the live edge's own).
+  function liveSpeeds(on) {
+    var one = el.speed.querySelector('option[value="1"]');
+    if (on && !one) {
+      one = document.createElement('option');
+      one.value = '1';
+      one.textContent = '1×';
+      el.speed.insertBefore(one, el.speed.firstChild);
+    } else if (!on && one) {
+      one.remove();
+      if (speed === 1) speed = 60;
+    }
+    el.speed.value = String(speed);
+  }
+
+  function liveBuildControls() {
+    el.liveControls.innerHTML =
+      '<button id="live-go" class="btn"></button>' +
+      '<span class="live-modes" role="group" aria-label="Live view">' +
+      '<button class="btn" data-mode="smooth" title="Buses glide between their real reports, ' +
+      fmtDelay(live.delay) + ' behind">Smooth</button>' +
+      '<button class="btn" data-mode="latest" title="Every bus where it last reported, and how ' +
+      'long ago: as little delay as there can be without guessing">Latest</button>' +
+      '</span><span id="live-note" class="lbl"></span>';
+    $('live-go').onclick = function () {
+      if (liveRunning()) { liveRejoin(); simT = liveEdge(); render(); return; }
+      var key = cur ? cur.payload.route : resolveRoute(el.route.value);
+      var dates = liveDates(key);
+      if (dates.length) openLiveDay(key, dates[dates.length - 1]);
+    };
+    Array.prototype.forEach.call(el.liveControls.querySelectorAll('[data-mode]'), function (b) {
+      b.onclick = function () {
+        live.mode = b.getAttribute('data-mode');
+        live.glide = new Map();
+        if (live.pinned && liveRunning()) simT = liveEdge();
+        var u = new URL(location.href);
+        if (live.mode === 'latest') u.searchParams.set('mode', 'latest');
+        else u.searchParams.delete('mode');
+        history.replaceState(null, '', u.pathname + (u.search || ''));
+        liveControls();
+        if (cur) render();
+      };
+    });
+  }
+
+  function liveControls() {
+    var key = cur ? cur.payload.route : resolveRoute(el.route.value);
+    var has = liveDates(key).length > 0;
+    var atEdge = !!(live.pinned && liveRunning());
+    var sig = [has, atEdge, live.mode].join();
+    if (sig === live.ctl) return;
+    live.ctl = sig;
+    el.liveControls.hidden = !has;
+    var go = $('live-go');
+    go.classList.toggle('on', atEdge);
+    go.innerHTML = atEdge ? '<span class="dot" aria-hidden="true"></span>Live' : 'Go live';
+    go.title = atEdge ? 'At the live edge' : 'To the live edge of the day so far';
+    Array.prototype.forEach.call(el.liveControls.querySelectorAll('[data-mode]'), function (b) {
+      var on = b.getAttribute('data-mode') === live.mode;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
+    $('live-note').textContent = live.mode === 'latest' ? 'each bus at its latest report'
+      : fmtDelay(live.delay) + ' behind';
+  }
+
+  // ?delay=<s> (Smooth's delay), ?mode=latest, ?live=0 (start scrubbed back).
+  function liveInit(q) {
+    var dl = q.get('delay');
+    if (dl != null && /^\d{1,4}$/.test(dl)) live.delay = Math.min(3600, +dl);
+    if (q.get('mode') === 'latest') live.mode = 'latest';
+    live.back = q.get('live') === '0';
+    liveBuildControls();
+    el.liveOverlay.hidden = false;
+    livePoll();
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden && live.head && serverNow() >= R.nextPollAt(live.head, serverNow()) - 0.5) livePoll();
+    });
+  }
+
   /* ---- wiring ------------------------------------------------------------- */
 
   el.play.onclick = function () {
     playing = !playing;
     el.play.textContent = playing ? 'Pause' : 'Play';
     el.play.classList.toggle('paused', !playing);
+    if (LIVE && !playing) liveLeftEdge();  // a paused live day is no longer at the live edge
   };
   el.speed.onchange = function () { speed = +el.speed.value; el.speed.blur(); };
   el.slider.oninput = function () {
     if (!cur) return;
     simT = (cur.t1 - cur.t0) * (+el.slider.value / 1000);
+    if (LIVE) liveScrubbed();
     render();
   };
   var scrubbing = false;
@@ -1275,6 +1971,7 @@
       return;
     }
     var dates = availableDates(key);
+    if (LIVE && liveRouteChosen(key, dates)) return;
     if (!dates.length) { say('No replays on the server for route ' + key + '.'); return; }
     var keep = cur && dates.indexOf(cur.payload.date) !== -1 ? cur.payload.date : dates[dates.length - 1];
     loadServerDay(key, keep);
@@ -1343,10 +2040,12 @@
       e.preventDefault();
       var d = (e.shiftKey ? 600 : 60) * (e.key === 'ArrowRight' ? 1 : -1);
       simT = Math.max(0, Math.min(cur.t1 - cur.t0, simT + d));
+      if (LIVE) liveScrubbed();
       render();
     }
   });
   window.addEventListener('resize', function () { drawTimelineBase(); drawTimeline(); });
+  var timelineTitle = el.timeline.title;
 
   window.__cam = function () {
     var v = currentCam();
@@ -1390,6 +2089,7 @@
     var q = new URLSearchParams(location.search);
     var sp = +q.get('speed');
     if ([10, 30, 60, 120, 300, 600].indexOf(sp) !== -1) { speed = sp; el.speed.value = String(sp); }
+    if (LIVE) liveInit(q);                 // the first head is asked for now, beside the catalogue
     try {
       await loadCatalogue();
     } catch (e) {
@@ -1418,6 +2118,7 @@
     var dates = availableDates(key);
     var date = q.get('date');
     if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) date = null;
+    if (LIVE && await liveOpensFirst(key, date, q)) return;
     if (date && dates.indexOf(date) === -1) {
       renderDays();
       var g = gapFor(date);

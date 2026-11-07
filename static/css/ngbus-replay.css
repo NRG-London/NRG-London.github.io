@@ -145,3 +145,29 @@
   .nt-foot { margin-top: 6px; font-size: 11px; color: var(--muted); }
   .day .nmark { position: absolute; bottom: 2px; left: 50%; margin-left: -3px; width: 6px; height: 6px;
                 border-radius: 50%; background: #E0A24E; box-shadow: 0 0 0 1px #111; }
+
+  /* Live mode: the Delay Replay lab page only (<body data-live-root>; see
+     ngbus-replay.js, "live mode"). The production page never shows these. */
+  #live-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
+  #live-controls .btn.on { background: #3a2e1a; border-color: #E0A24E; color: #ffe2b0; }
+  #live-go .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px;
+                  background: #E0A24E; vertical-align: 0; animation: live-pulse 2s ease-in-out infinite; }
+  @keyframes live-pulse { 50% { opacity: .35; } }
+  @media (prefers-reduced-motion: reduce) { #live-go .dot { animation: none; } }
+  .live-modes { display: inline-flex; }
+  .live-modes .btn { border-radius: 0; }
+  .live-modes .btn:first-child { border-radius: 6px 0 0 6px; }
+  .live-modes .btn:last-child { border-radius: 0 6px 6px 0; margin-left: -1px; }
+  .day.live { border-color: #E0A24E; background: rgba(224,162,78,.14); }
+  .day .livedot { position: absolute; top: -3px; right: -3px; width: 7px; height: 7px; border-radius: 50%;
+                  background: #E0A24E; box-shadow: 0 0 0 2px #111; }
+  #live-banner { position: absolute; top: 58px; left: 50%; transform: translateX(-50%); z-index: 11;
+                 max-width: min(560px, calc(100vw - 24px)); box-sizing: border-box;
+                 background: rgba(84,30,26,.94); border: 1px solid #b0453a; color: #ffd9d4;
+                 border-radius: 8px; padding: 8px 14px; font-size: 13px; text-align: center; }
+  @media (min-width: 900px) { #live-banner { left: calc(50% + 190px); } }
+  @media (max-width: 899px) { #live-banner { top: auto; bottom: 58px; } }
+  #live-overlay { position: absolute; right: 12px; bottom: 12px; z-index: 9; pointer-events: none;
+                  white-space: pre; font: 11px/1.45 ui-monospace, Consolas, monospace; color: #cfe3f5;
+                  background: rgba(17,17,17,.8); border: 1px solid #333; border-radius: 6px; padding: 6px 8px; }
+  @media (max-width: 899px) { #live-overlay { bottom: 150px; font-size: 10px; } }   /* over a three-line banner */
