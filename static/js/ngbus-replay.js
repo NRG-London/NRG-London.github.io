@@ -1473,7 +1473,6 @@
     s = Math.max(0, Math.round(s));
     return s < 90 ? s + ' s ago' : Math.round(s / 60) + ' min ago';
   }
-  function fmtDelay(s) { return s % 60 ? s + ' s' : s / 60 + ' min'; }
   function lagText(s) {
     var a = Math.round(Math.abs(s)), r = a % 60;
     return (s < -0.5 ? '-' : '') + Math.floor(a / 60) + ':' + (r < 10 ? '0' : '') + r;
@@ -1957,7 +1956,8 @@
     [el.banner, el.liveBanner].forEach(function (bn) {
       if (bn.hidden) return;
       var r = bn.getBoundingClientRect();
-      if (r.top > window.innerHeight / 2) lift = Math.max(lift, Math.round(window.innerHeight - r.top) + 6);
+      var vh = document.documentElement.clientHeight;      // the overlay's containing block, not innerHeight
+      if (r.top > vh / 2) lift = Math.max(lift, Math.round(vh - r.top) + 6);
     });
     var bot = lift + 'px';
     if (el.liveOverlay.style.bottom !== bot) el.liveOverlay.style.bottom = bot;
