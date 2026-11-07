@@ -1615,10 +1615,11 @@
         var payload = R.mergeLive(inp.day, frags, route, p.d.t0, p.d.t1, []);
         notYet(payload, setHead, p.d);
         // A stale set's recent file can end before this head begins: no file
-        // has that stretch, so it is a hole, and nothing is drawn across it.
+        // has that stretch, so it is a hole, and no pair that may hide missing
+        // pings is drawn across it. The head's anchors say which pairs do not.
         if (!inp.fresh && inp.recent.to < head.from) {
           payload = R.splitAtHole(payload, Math.max(inp.recent.to, p.d.t0), Math.min(head.from, p.d.t1),
-                                  STALE_REASON);
+                                  STALE_REASON, head.routes[route]);
         }
         live.days.set(p.d.date, { inputs: inp, payload: payload, head: head, setHead: setHead,
                                   win: { date: p.d.date, t0: p.d.t0, t1: p.d.t1 },

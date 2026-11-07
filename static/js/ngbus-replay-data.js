@@ -765,23 +765,49 @@
   /* A live day merged from a stale set (the head names a file not yet in
    * hand, so the last day and recent files stand) has no file at all for
    * [a, b): from the old recent file's `to` to the new head's `from`. That
-   * stretch becomes a no-data hole, and no segment may join pings across it:
-   * each pair of consecutive pings whose interval meets [a, b) is cut, and a
-   * segment left with one ping is dropped, as build_route drops them. The
-   * bridges of the pairs kept are kept. Fail loudly: a gap drawn as a gap,
-   * never as a straight line across it.
+   * stretch becomes a no-data hole, and no pair of pings that may hide
+   * missing ones is drawn across it (Viewer Ruling 17).
+   *
+   * The stale set holds every ping first seen before a; the head holds every
+   * one first seen from b on, plus each bus's anchor, its last ping first
+   * seen before b (live_layers' contract). So a bus can be missing pings only
+   * between its last ping before a and an anchor at or after a, and only an
+   * anchor can lie in the hole. Hence, for consecutive pings t[i], t[i+1]:
+   *   - t[i] < a <= t[i+1] < b, entering the hole onto the anchor: cut;
+   *   - t[i] < a, t[i+1] >= b, across the whole hole: kept when the head
+   *     (headFragment) carries t[i] for that bus, its anchor, so the bus was
+   *     silent through the hole; cut when it carries none, as nothing says;
+   *   - any other pair: kept.
+   * No ping is dropped for lying in the hole: an anchor there starts a
+   * segment with the pings after it. A segment left with one ping is dropped,
+   * as build_route drops them everywhere. The bridges of the pairs kept stay.
    * -> a new payload (payload itself is not changed); payload when b <= a. */
-  function splitAtHole(payload, a, b, reason) {
+  function splitAtHole(payload, a, b, reason, headFragment) {
     if (!(b > a)) return payload;
+    var anchors = {};                    // reg -> {t: true}: the head's own pings before a
+    if (headFragment) {
+      list(headFragment.vehicles, 'the head: no vehicles').forEach(function (v) {
+        var mine = anchors[v.reg] || (anchors[v.reg] = {});
+        list(v.segs, 'the head, ' + v.reg + ': no segs').forEach(function (s) {
+          undelta(list(s.t, 'the head, ' + v.reg + ': no t')).forEach(function (tt) { if (tt < a) mine[tt] = true; });
+        });
+      });
+    }
     var vehicles = [], last = payload.t0;
     list(payload.vehicles, 'the day: no vehicles').forEach(function (v) {
-      var segs = [];
+      var segs = [], held = anchors[v.reg] || {};
+      function cut(t0, t1) {
+        if (!(t0 < a)) return false;
+        if (t1 < a) return false;
+        if (t1 < b) return true;                         // into the hole, onto its anchor
+        return !held[t0];                                // across it: kept only on the anchor's word
+      }
       v.segs.forEach(function (s) {
         var t = undelta(s.t), x = undelta(s.x), y = undelta(s.y), raw = s.br || [], br = {}, j = 0;
         for (var k = 0; k < raw.length; k += 4) { j += raw[k]; br[j] = [raw[k + 1], raw[k + 2], raw[k + 3]]; }
         var from = 0;
         for (var i = 0; i < t.length; i++) {
-          if (i + 1 < t.length && !(t[i] < b && t[i + 1] > a)) continue;   // the run goes on
+          if (i + 1 < t.length && !cut(t[i], t[i + 1])) continue;          // the run goes on
           if (i > from) {                                                  // pings from..i: two or more
             var seg = {t: delta(t.slice(from, i + 1)), x: delta(x.slice(from, i + 1)),
                        y: delta(y.slice(from, i + 1)), b: s.b.slice(from, i + 1), br: []};
