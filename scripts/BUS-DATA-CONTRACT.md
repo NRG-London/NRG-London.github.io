@@ -810,6 +810,11 @@ that names the same sprite as `dd` means "dress night buses like the day ones": 
 route then wears its own deck's sprite, `dd` or `sd` by the route's fleet (N33 and N72
 are single-deck). A viewer older than this draws the `dd` sprite on every night route.
 
+A sprite may carry `scale` in the catalogue (added 8 Nov 2026, the poppies at 1.5): the
+viewer draws it that many times its natural size, where a 64-wide sprite is a bus long.
+It is the catalogue's, not the day file's, so changing it re-sizes every day that sprite
+was stamped on. A viewer older than this draws the natural size.
+
 Animated sprites (added 5 Nov 2026, Bonfire Night's fireworks) carry `frames: {file,
 count, period}` in the catalogue as well: a strip of still frames baked from Design's
 SMIL animation in a headless browser (each frame checked pixel for pixel against the

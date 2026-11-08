@@ -149,11 +149,19 @@
     return root;
   }
 
+  // A sprite's 'scale' draws it that many times its natural size, where a
+  // 64-wide sprite is a bus long (the poppies at 1.5, Neil, 8 Nov: too small
+  // to tell apart on a phone).
+  function spriteScale(s) {
+    return typeof s.scale === 'number' && s.scale > 0 && s.scale <= 4 ? s.scale : 1;
+  }
+
   // One sprite as a pair of icons, as drawn (east) and mirrored (west), each
   // decoded once before use so a sprite that cannot be drawn is never chosen.
   function specialSprite(name, s, text) {
     var root = plainSvg(name, text);
-    var vb = s.vb, an = s.anchor, k = 2;          // drawn at twice size, for sharp edges
+    var sc = spriteScale(s);
+    var vb = s.vb, an = s.anchor, k = 2 * sc;     // drawn at twice size, for sharp edges
     if (!vb || vb.length !== 4 || !an || an.length !== 2 || !(vb[2] > 0) || !(vb[3] > 0)) throw new Error('sprite ' + name + ' has no geometry');
     var inner = root.innerHTML;
     function url(flip) {
@@ -167,7 +175,7 @@
       return { id: 'special-' + name + (flip ? '-w' : '-e'), url: url(flip), width: vb[2] * k, height: vb[3] * k,
                anchorX: flip ? vb[2] * k - ax : ax, anchorY: (an[1] - vb[1]) * k };
     }
-    var pair = { e: icon(false), w: icon(true), size: vb[2] / 64, above: an[1] - vb[1] };
+    var pair = { e: icon(false), w: icon(true), size: vb[2] / 64 * sc, above: (an[1] - vb[1]) * sc };
     return Promise.all([pair.e, pair.w].map(function (ic) {
       var img = new Image();
       img.src = ic.url;
@@ -185,7 +193,7 @@
   // reader has asked for less motion, the sprite stays still.
   var FILM_PAD = 8;                        // pixels between frames on the picture
   function specialFilm(name, s, text) {
-    var f = s.frames, vb = s.vb, an = s.anchor, k = 2;
+    var f = s.frames, vb = s.vb, an = s.anchor, k = 2 * spriteScale(s);
     var cells = Array.prototype.slice.call(plainSvg(name, text).children);
     if (!f || !(f.count > 0) || f.count !== cells.length || !(f.period > 0)) throw new Error('sprite ' + name + ': frames do not match');
     var cw = vb[2] * k, ch = vb[3] * k, n = f.count;
