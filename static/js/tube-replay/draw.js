@@ -68,10 +68,11 @@
     if (good) { ctx.strokeStyle = th.chip; ctx.lineWidth = 3; ctx.stroke(); ctx.fillStyle = th.chip; }
     else { ctx.fillStyle = th.chip; ctx.fill(); ctx.fillStyle = th.chipText; }
     ctx.textAlign = 'center'; ctx.fillText(fit(ctx, text, w - 40), x + w / 2, 130);
-    if (M.blindAt(day.blind, st.t)) {
+    const blind = M.blindText(day.blind, st.t);
+    if (blind) {
       ctx.font = font(24, 700); const bw = 380, bx = x - bw - 20;
       rr(ctx, bx, 92, bw, 54, 27); ctx.fillStyle = th.panel; ctx.fill();
-      ctx.fillStyle = th.text; ctx.fillText('No data logged', bx + bw / 2, 128);
+      ctx.fillStyle = th.text; ctx.fillText(fit(ctx, blind, bw - 40), bx + bw / 2, 128);
     }
   }
 
@@ -282,9 +283,10 @@
       ctx.font = font(L.fs(12)); const sw = ctx.measureText(st.speedLabel).width;
       if (p + cw + 10 + sw < cx - 8) { ctx.textAlign = 'left'; ctx.fillStyle = th.sub; ctx.fillText(st.speedLabel, p + cw + 10, 60); }
     }
-    // the fleet line, or a warning that nothing was logged
+    // the fleet line, or a warning that nothing usable was logged
     ctx.textAlign = 'left'; ctx.font = font(L.fs(13));
-    if (M.blindAt(day.blind, st.t)) { ctx.fillStyle = th.over; ctx.font = font(L.fs(13), 700); ctx.fillText('No data logged at this time', p, 88); }
+    const blind = M.blindText(day.blind, st.t);
+    if (blind) { ctx.fillStyle = th.over; ctx.font = font(L.fs(13), 700); ctx.fillText(blind + ' at this time', p, 88); }
     else {
       const a = M.minuteValue(day.in_service.actual, st.t), w48 = M.minuteValue(day.in_service.wtt48, st.t),
             td = M.hourValue(day.in_service.today_about, st.t);

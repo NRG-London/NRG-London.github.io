@@ -67,6 +67,13 @@
     return s;
   }
   function blindAt(blind, t) { return (blind || []).some(([x0, x1]) => t >= x0 && t < x1); }
+  // What to say over a blind minute: each spell may name its fault (coverage.py); none is no data
+  const BLIND_TEXT = { frozen: "TfL's feed froze", numbers: 'Train numbers not recognised',
+                       unfollowed: 'Trains not followed' };
+  function blindText(blind, t) {
+    const b = (blind || []).find(([x0, x1]) => t >= x0 && t < x1);
+    return b ? BLIND_TEXT[b[2]] || 'No data logged' : '';
+  }
 
   function waitAt(calls, t, blind) {
     if (!calls || !calls.length) return null;
@@ -159,7 +166,7 @@
     return [a, b];
   }
 
-  const api = { LAY, EDGE, lastIndexAtOrBefore, trainAt, trainsAt, departuresAt, ghostsAt, blindBetween, blindAt,
+  const api = { LAY, EDGE, lastIndexAtOrBefore, trainAt, trainsAt, departuresAt, ghostsAt, blindBetween, blindAt, blindText,
                 waitAt, intervalAt, longestGapAt, overdue, waitLevel, tally, minuteValue, hourValue, statusAt, clockText, waitText, parseClock,
                 ghostKey, offsetShift, clampView };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.ReplayModel = api;

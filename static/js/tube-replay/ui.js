@@ -150,11 +150,13 @@ window.ReplayStart = function () {
     }
     return false;
   }
+  // a train TfL listed without a number has v '' (followed from its predictions: unnamed.py)
+  const trainName = h => h.v ? 'Train ' + h.v : 'A train TfL listed without a number';
   function identify(h, ev) {
-    if (readout) { readout.textContent = h ? 'Train ' + h.v : ''; return; }
+    if (readout) { readout.textContent = h ? trainName(h) : ''; return; }
     if (!h) { tip.style.display = 'none'; return; }
     const r = cv.getBoundingClientRect();
-    tip.textContent = 'Train ' + h.v; tip.style.display = 'block';
+    tip.textContent = trainName(h); tip.style.display = 'block';
     tip.style.left = (ev.clientX - r.left + 14) + 'px'; tip.style.top = (ev.clientY - r.top + 14) + 'px';
   }
   function hover(ev, x, y) {
